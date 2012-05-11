@@ -1,0 +1,2 @@
+CFLAGS+=-I$(FENNEC_FOX_LIB)/Radio/simpleCC2420
+CFLAGS+=-I$(FENNEC_FOX_LIB)/Radio/tinyos

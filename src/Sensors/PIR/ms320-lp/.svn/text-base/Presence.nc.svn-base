@@ -1,0 +1,4 @@
+interface Presence
+{
+    command bool lookout(void);
+}

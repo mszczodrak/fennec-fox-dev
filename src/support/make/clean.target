@@ -1,0 +1,13 @@
+# Makefile adapted to Fennec Fox from clean.extra from TinyOS
+
+MAKE=make
+DIRS="Fennec" "Events" "support"
+
+clean: FORCE
+	rm -rf build $(CLEAN_EXTRA) pp
+	rm -rf _TOSSIMmodule.so TOSSIM.pyc TOSSIM.py app.xml simbuild
+	rm -rf VolumeMapC.nc
+	rm -f $(COMPONENT).cmap $(COMPONENT).dot $(COMPONENT).html $(COMPONENT).png
+	cd $(FENNEC_FOX_LIB);  \
+	for d in $(DIRS); do (cd $$d; $(MAKE) clean; cd .. ); done
+ 

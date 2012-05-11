@@ -1,0 +1,11 @@
+PROGRAM = imote2-ocd-program.py
+
+PROGRAMMER ?= $(FENNEC_FOX_LIB)/tools/openocd/imote2-ocd-program.py
+
+program: FORCE
+	@echo "    installing $(PLATFORM) binary using $(PROGRAM)"
+	$(PROGRAMMER) $(INSTALL_BIN)
+
+program_input: bin
+	@:
+

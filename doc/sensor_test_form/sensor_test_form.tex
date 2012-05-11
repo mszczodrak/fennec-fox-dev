@@ -1,0 +1,215 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry} %layout
+\usepackage{hyperref}  % this is needed for forms and links within the text
+ 
+\hypersetup{
+  pdfauthor   = {Marcin Szczodrak},
+  pdfkeywords = {Marcin Szczodrak, Fennec Fox Sensors Test Suit},
+  pdftitle    = {Fennec Fox Sensors Test Suit}
+}
+
+\pagestyle{myheadings}
+\markright{Fennec Fox Sensors Test Suite. \hfill 03/17/2012 Rev: 001 \hfill}
+
+ 
+\begin{document}
+
+%\thispagestyle{empty}
+
+\begin{center}
+\huge Fennec Fox Sensors Test Suite
+\end{center}
+
+\vspace{2cm}
+
+\begin{Form}
+\noindent
+\TextField[name=name, width=\textwidth]{Name:\\\\}\\\\
+\TextField[name=email, width=\textwidth]{Email:\\\\}\\\\
+\TextField[name=date, width=\textwidth]{Date:\\\\} \\\\
+\TextField[name=platform, width=\textwidth]{Platform:\\\\}
+\end{Form}
+
+\vspace{2cm}
+
+\begin{center}
+\begin{Form}
+\begin{tabular}{| c | c | c | c |}
+        \hline
+        No.             & Test Name     & Virtual Sensor	& Pass / Fail \\
+        \hline
+        \hline
+        1               & Temperature         &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t1v]{Yes}
+					&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t1p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t1f]{Fail} \\
+        \hline
+        2               & Humidity        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t2v]{Yes}
+					&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t2p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t2f]{Fail} \\
+        \hline
+        3               & Light       &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t3v]{Yes}
+					&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t3p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t3f]{Fail} \\
+        \hline
+
+        4               & Battery       &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t4v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t4p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t4f]{Fail} \\
+        \hline
+
+        5               & Accelerometer	&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t5v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t5p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t5f]{Fail} \\
+        \hline
+
+        6               & Magnetic	&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t6v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t6p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t6f]{Fail} \\
+        \hline
+
+        7               & PIR		&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t7v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t7p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t7f]{Fail} \\
+        \hline
+
+        8               & Sound      &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t8v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t8p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t8f]{Fail} \\
+        \hline
+
+
+        9               & Camera	&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t9v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t9p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t9f]{Fail} \\
+        \hline
+
+        10               & Vibration	&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t10v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t10p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t10f]{Fail} \\
+        \hline
+
+        11               & Thin Force	&
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t11v]{Yes}
+                                        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t11p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t11f]{Fail} \\
+        \hline
+
+
+
+        \hline
+\end{tabular}
+\end{Form}
+\end{center}
+
+
+\vfill
+
+
+
+
+\noindent {\large Procedure:}
+
+The Fennec Fox Sensor Test Suite is based on the Swift Fox test programs
+checking if a mote's LEDs are blinking, if the serial and printf libraries
+can communicate with a mote and PC, and if a network data collection is 
+operating between two motes. The test suite is located in the Swift Fox
+directory, in \texttt{\$ swiftfox/examples/tests}
+
+The suite has been tested on a \texttt{platform-name}, where 
+\texttt{platform-name} in one of the following: telosB, intelMote2, Z1, micaz.
+
+\newpage
+
+\begin{center}
+{\large No. 1 : Temperature} 	
+\end{center}
+\vspace{1cm}
+	Test Temperature Sensor. \newline
+	\textbf{INPUT:}\newline
+	\texttt{\$ sfc temp} \newline
+	\texttt{\$ fennec \texttt{platform-name} install}\newline
+	\textbf{OUTPUT:}\newline
+	Messages with sensor measurements can be read through USB: \newline
+	\texttt{\$ java net.tinyos.tools.PrintfClient -comm serial@/dev/ttyUSB0:115200} \newline
+	Sample output:
+	\texttt{\scriptsize 
+		Thread[Thread-1,5,main]serial@/dev/ttyUSB0:115200: resynchronising\newline
+		Temp: 28\newline
+		Temp: 27\newline
+		Temp: 28\newline
+		Temp: 28\newline
+	}
+
+\vspace{1cm}
+\TextField[multiline=true,height=20\baselineskip, width=\textwidth]{Comments\\\\}
+\newpage
+
+\begin{center}
+{\large No.2 : Humidity}	
+\end{center}
+\vspace{1cm}
+        Test Humidity Sensor. \newline
+        \textbf{INPUT:}\newline
+        \texttt{\$ sfc hum} \newline
+        \texttt{\$ fennec \texttt{platform-name} install}\newline
+        \textbf{OUTPUT:}\newline
+        Messages with sensor measurements can be read through USB: \newline
+        \texttt{\$ java net.tinyos.tools.PrintfClient -comm serial@/dev/ttyUSB0:115200} \newline
+        Sample output:
+        \texttt{\scriptsize
+                Thread[Thread-1,5,main]serial@/dev/ttyUSB0:115200: resynchronising\newline
+                Hum: 44\newline
+                Hum: 43\newline
+                Hum: 44\newline
+                Hum: 43\newline
+        }
+\vspace{1cm}
+\TextField[multiline=true,height=20\baselineskip, width=\textwidth]{Comments\\\\}
+\newpage
+
+\begin{center}
+{\large No.3 : Light}
+\end{center}
+\vspace{1cm}
+        Test Light Sensor. \newline
+        \textbf{INPUT:}\newline
+        \texttt{\$ sfc ligt} \newline
+        \texttt{\$ fennec \texttt{platform-name} install}\newline
+        \textbf{OUTPUT:}\newline
+        Messages with sensor measurements can be read through USB: \newline
+        \texttt{\$ java net.tinyos.tools.PrintfClient -comm serial@/dev/ttyUSB0:115200} \newline
+        Sample output:
+        \texttt{\scriptsize
+                Thread[Thread-1,5,main]serial@/dev/ttyUSB0:115200: resynchronising\newline
+                Ligt: 540\newline
+                Ligt: 480\newline
+                Ligt: 370\newline
+                Ligt: 380\newline
+        }
+\vspace{1cm}
+\TextField[multiline=true,height=20\baselineskip, width=\textwidth]{Comments\\\\}
+\newpage
+
+
+\end{document}

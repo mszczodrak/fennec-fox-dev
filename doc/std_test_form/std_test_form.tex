@@ -1,0 +1,148 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry} %layout
+\usepackage{hyperref}  % this is needed for forms and links within the text
+ 
+\hypersetup{
+  pdfauthor   = {Marcin Szczodrak},
+  pdfkeywords = {Marcin Szczodrak, Standard Fennec Fox Test Suit},
+  pdftitle    = {Standard Fennec Fox Test Suit}
+}
+
+\pagestyle{myheadings}
+\markright{Fennec Fox Standard Test Suite. \hfill 04/18/2012 Rev: 001 \hfill}
+
+ 
+\begin{document}
+
+%\thispagestyle{empty}
+
+\begin{center}
+\huge Fennec Fox Standard Test Suite
+\end{center}
+
+\vspace{2cm}
+
+\begin{Form}
+\noindent
+\TextField[name=name, width=\textwidth]{Name:\\\\}\\\\
+\TextField[name=email, width=\textwidth]{Email:\\\\}\\\\
+\TextField[name=date, width=\textwidth]{Date:\\\\} \\\\
+\TextField[name=platform, width=\textwidth]{Platform:\\\\}
+\end{Form}
+
+\vspace{2cm}
+
+\begin{center}
+\begin{Form}
+\begin{tabular}{| c | c | c |}
+        \hline
+        No.             & Test Name     &       Pass / Fail \\
+        \hline
+        \hline
+        1               & Blink         &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t1p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t1f]{Fail} \\
+        \hline
+        2               & Printf        &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t2p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t2f]{Fail} \\
+        \hline
+        3               & Network       &
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t3p]{Pass}
+                                    \CheckBox[bordercolor={0 0 0},height=0.4cm,width=0.4cm, name=t3f]{Fail} \\
+        \hline
+
+
+
+        \hline
+\end{tabular}
+\end{Form}
+\end{center}
+
+
+\vfill
+
+
+
+
+\noindent {\large Procedure:}
+
+The Fennec Fox Standard Test Suite is based on the Swift Fox test programs
+checking if a mote's LEDs are blinking, if the serial and printf libraries
+can communicate with a mote and PC, and if a network data collection is 
+operating between two motes. The test suite is located in the Swift Fox
+directory, in \texttt{\$ swiftfox/examples/tests}.
+
+The suite has been tested on a $platform-name$, where
+$platform-name$ in one of the following: telosB, intelMote2, Z1, micaz.
+
+\newpage
+
+\begin{center}
+{\large No. 1 : Blink} 	
+\end{center}
+\vspace{1cm}
+	\textbf{INPUT:}\newline
+	Test Blinks LEDs. \newline
+	\texttt{\$ sfc blink} \newline
+	\texttt{\$ fennec $platform-name$ install}\newline
+	\textbf{OUTPUT:}\newline
+	Should see blinking LEDs. 
+
+\vspace{1cm}
+\TextField[multiline=true,height=20\baselineskip, width=\textwidth]{Comments\\\\}
+\newpage
+
+\begin{center}
+{\large No.2 : Printf}	
+\end{center}
+\vspace{1cm}
+	\textbf{INPUT:}\newline
+	\texttt{\$ sfc printf} \newline
+	\texttt{\$ fennec $platform-name$ install}\newline
+	Using terminal on a computer to which a mote is 
+	connected to, the raw serial data is read by: \newline
+	\texttt{\$ java net.tinyos.tools.Listen -comm serial@/dev/ttyUSB0:115200} \newline
+	To see text messages, serial date should be read by: \newline
+	\texttt{\$ java net.tinyos.tools.PrintfClient -comm serial@/dev/ttyUSB0:115200} \newline
+	\textbf{OUTPUT:}\newline
+	For raw data: \newline
+	\texttt{\scriptsize 
+		serial@/dev/ttyUSB0:115200: resynchronising\newline
+		00 FF FF 00 00 1C 00 64 48 65 6C 6C 6F 20 57 6F 72 6C 64 21 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\newline
+		00 FF FF 00 00 1C 00 64 48 65 6C 6C 6F 20 57 6F 72 6C 64 21 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\newline
+		00 FF FF 00 00 1C 00 64 48 65 6C 6C 6F 20 57 6F 72 6C 64 21 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\newline
+		00 FF FF 00 00 1C 00 64 48 65 6C 6C 6F 20 57 6F 72 6C 64 21 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\newline
+	}
+	For text data: \newline
+	\texttt{\scriptsize 
+		Thread[Thread-1,5,main]serial@/dev/ttyUSB0:115200: resynchronising\newline
+		Hello World!\newline
+		Hello World!\newline
+		Hello World!\newline
+		Hello World!\newline
+	}
+
+\TextField[multiline=true,height=20\baselineskip, width=\textwidth]{Comments\\\\}
+\newpage
+
+\begin{center}
+{\large No.3 : Network}
+\end{center}
+\vspace{1cm}
+	\texttt{\$ sfc network} \newline
+	Install Fennec Fox on the first mote, giving it address 102.\newline
+	\texttt{\$ fennec $platform-name$ install, 102}\newline
+	Power-on mote with id 102: the mote's LEDs SHOULD NOT blink.\newline
+	Power-off mote with id 102.\newline
+	\texttt{\$ fennec $platform-name$ install, 101}\newline
+	Power-on mote with id 101: the mote's LEDs SHOULD blink.\newline
+	Power-on mote with id 102: the mote's LEDs SHOULD blink the same 
+	sequence that mote with 101 does.\newline
+
+\vspace{1cm}
+\TextField[multiline=true,height=20\baselineskip, width=\textwidth]{Comments\\\\}
+\newpage
+
+
+\end{document}

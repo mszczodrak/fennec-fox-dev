@@ -1,0 +1,14 @@
+                FENNEC FOX README
+
+
+The src/ directory contains the source code of the Fennec Fox
+platform. 
+
+
+INSTALLATION
+
+run 
+
+$ install.sh
+
+and restart the system

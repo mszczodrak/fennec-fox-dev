@@ -1,0 +1,29 @@
+# Makefile based on intelmote2.target and intelmote2.extra files from TinyOS
+
+PLATFORM = intelmote2
+
+PFLAGS := -I$(FENNEC_FOX_LIB)/chips/pxa27x $(PFLAGS)
+PFLAGS := -I$(FENNEC_FOX_LIB)/platforms/intelmote2 $(PFLAGS)
+PFLAGS := -I$(FENNEC_FOX_LIB)/chips/da9030 $(PFLAGS)
+
+SYSTEM_CORE_FREQUENCY ?= 13
+SYSTEM_BUS_FREQUENCY ?= 13
+
+ifdef CC2420_CHANNEL
+PFLAGS += -DCC2420_DEF_CHANNEL=$(CC2420_CHANNEL)
+endif
+
+VOLUME_FILE = volumes-pxa27xp30.xml
+VOLUME_ALLOCATOR ?= tos-storage-pxa27xp30
+
+ASSEMBLY_FILES = $(FENNEC_FOX_LIB)/platforms/intelmote2/toscrt0.s $(FENNEC_FOX_LIB)/chips/pxa27x/pxa27x_util.s $(FENNEC_FOX_LIB)/chips/pxa27x/mmu_table.s
+ASSEMBLY_OBJS:= $(ASSEMBLY_FILES)
+
+CFLAGS := -T$(FENNEC_FOX_LIB)/platforms/intelmote2/tos.x -DSYSTEM_CORE_FREQUENCY=$(SYSTEM_CORE_FREQUENCY) -DSYSTEM_BUS_FREQUENCY=$(SYSTEM_BUS_FREQUENCY)
+
+$(call TOSMake_include_platform,pxa27x)
+
+intelmote2: $(BUILD_DEPS)
+	@:
+
+

@@ -1,0 +1,5 @@
+../GOALICentralizedApp.h contains serial packet structure
+
+mig python -target=null -python-classname=GoaliSerialMsg ../GOALICentralizedApp.h goali_centralized_msg -o GoaliSerialMsg.py
+
+example.py uses the Serial Forwarder

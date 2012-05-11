@@ -1,0 +1,33 @@
+This README says which files were modified to support 
+dynamic parameters.
+
+PowerCycleC
+PowerCycleP
+		sink_addr
+		delay_after_receive
+-------------------------------------
+
+DefaultLplC
+DefaultLplP
+		delay_after_receive
+
+-------------------------------------
+
+CC2420ControlC
+CC2420ControlP
+		channel		
+		power		
+
+-------------------------------------
+
+CC2420TransmitC
+CC2420TransmitP
+		power		
+
+-------------------------------------
+
+CC2420CsmaC
+CC2420CsmaP
+		backoff
+		min_backoff
+

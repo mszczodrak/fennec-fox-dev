@@ -1,0 +1,6 @@
+./SenseEnvironmentApp.h contains serial packet structure
+
+mig python -target=null -python-classname=EnvSerialMsg ../SenseEnvironmentApp.h env_msg -o EnvSerialMsg.py
+
+
+example.py uses the Serial Forwarder

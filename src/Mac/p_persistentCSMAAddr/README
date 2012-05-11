@@ -1,0 +1,2 @@
+This MAC only does p-CSMA. Has simple header with len, source and 
+destination addresses. Can use sniffing.

@@ -1,0 +1,73 @@
+SRC = $(wildcard *.java)
+
+all: here subdirs $(FINAL_TARGETS)
+
+# figure out useful variables
+PWD = $(shell pwd)
+
+ifeq ($(SUBDIRS)_x, _x)
+
+subdirs: here
+
+subdirs-clean: here-clean
+
+else
+subdirs: here
+	@for i in $(SUBDIRS); do \
+		if [ -d $$i ]; then \
+			if [ -f $$i/Makefile ]; then \
+				$(MAKE) -C $$i; \
+			else \
+				echo "***" no Makefile in directory: $(PWD)/$$i; \
+			fi \
+		else \
+			echo "***" skipping missing directory: $(PWD)/$$i; \
+		fi; \
+	done
+
+subdirs-clean: here-clean
+	@for i in $(SUBDIRS); do \
+		if [ -d $$i ]; then \
+			if [ -f $$i/Makefile ]; then \
+				$(MAKE) -C $$i clean; \
+			else \
+				echo "***" no Makefile in directory: $(PWD)/$$i; \
+			fi \
+		else \
+			echo "***" skipping missing directory: $$i; \
+		fi; \
+	done
+
+subdirs-install: 
+	@for i in $(INSTALLDIRS); do \
+		if [ -d $$i ]; then \
+			if [ -f $$i/Makefile ]; then \
+				$(MAKE) -C $$i install; \
+			else \
+				echo "***" no Makefile in directory: $(PWD)/$$i; \
+			fi \
+		else \
+			echo "***" skipping missing directory: $$i; \
+		fi; \
+	done
+
+endif
+
+here: printdir $(INITIAL_TARGETS) $(JAVA) $(CLASSES) FORCE
+
+printdir:
+	@echo "... $(PWD)"; 
+
+here-clean: FORCE
+	@rm -f *.class *~ javacore*.txt
+	@echo "cleaning $(PWD)" 
+
+clean: here-clean subdirs-clean $(OTHER_CLEAN)
+
+install: subdirs-install
+# some phony targets - FORCE forces a command to be run on all dependencies,
+# and .PHONY prevents badness if a phony target coincides with a filename
+
+FORCE:
+
+.PHONY: all $(SUBDIRS) $(SUBDIRSCLEAN) clean
