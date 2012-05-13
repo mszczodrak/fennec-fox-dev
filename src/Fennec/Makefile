@@ -5,6 +5,7 @@ DebugMsg.java:
 	mig java -target=null -java-classname=DebugMsg DebugMsg.h debug_msg -o $@
 
 clean:
+	if [ -d sfc ];			then	rm -rf sfc; fi
 	if [ -f caches.h ]; 		then 	rm caches.h; fi
 	if [ -f modules.h ]; 		then 	rm modules.h; fi
 	if [ -f defparms.h ]; 		then 	rm defparms.h; fi
