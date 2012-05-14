@@ -31,6 +31,8 @@ configuration BlinkAppC {
   provides interface Mgmt;
   provides interface Module;
 
+  uses interface BlinkAppCParams;
+
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
   uses interface Receive as NetworkSnoop;
@@ -44,6 +46,8 @@ implementation {
   components BlinkAppP;
   Mgmt = BlinkAppP;
   Module = BlinkAppP;
+
+  BlinkAppCParams = BlinkAppP;
 
   NetworkAMSend = BlinkAppP.NetworkAMSend;
   NetworkReceive = BlinkAppP.NetworkReceive;

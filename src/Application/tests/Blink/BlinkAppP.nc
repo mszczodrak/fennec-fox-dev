@@ -32,6 +32,8 @@ module BlinkAppP {
   provides interface Mgmt;
   provides interface Module;
 
+  uses interface BlinkAppCParams;
+
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
   uses interface Receive as NetworkSnoop;
@@ -47,13 +49,12 @@ module BlinkAppP {
 implementation {
   bool on;
 
-  struct BlinkAppC *params = (struct BlinkAppC*) &BlinkAppC_data;
-
   command error_t Mgmt.start() {
-    dbg("Application", "Application Blink(%d, %d) start\n", params->led, params->delay);
+    dbg("Application", "Application Blink(%d, %d) start\n", 
+	call BlinkAppCParams.get_led(), BlinkAppCParams.get_delay());
     dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
     on = 0;
-    call Timer.startPeriodic(*params->delay);
+    call Timer.startPeriodic(call BlinkAppCParams.get_delay());
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
@@ -61,7 +62,8 @@ implementation {
   command error_t Mgmt.stop() {
     call Timer.stop();
     call Leds.set(0);
-    dbg("Application", "Application Blink(%d, %d) stop\n", *params->led, *params->delay);
+    dbg("Application", "Application Blink(%d, %d) stop\n", 
+	call BlinkAppCParams.get_led(), BlinkAppCParams.get_delay());
 
     dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
     signal Mgmt.stopDone(SUCCESS);
@@ -69,9 +71,10 @@ implementation {
   }
 
   event void Timer.fired() {
-    dbg("Application", "Application Blink set LED to %d\n", *params->led);
-    //dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, *params->led, on);
-    on ? call Leds.set(0) : call Leds.set(*params->led) ;
+    dbg("Application", "Application Blink set LED to %d\n", 
+				call BlinkAppCParams.get_led());
+    //dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkAppCParams.get_led(), on);
+    on ? call Leds.set(0) : call Leds.set(call BlinkAppCParams.get_led()) ;
     on = !on;
   }
 
