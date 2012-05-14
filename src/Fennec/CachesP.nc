@@ -1,7 +1,5 @@
-/* Swift Fox generated code for Fennec Fox CachesM module */
-
-#include "caches.h"
 #include <Fennec.h>
+#include "ff_caches.h"
 
 module CachesP @safe() {
   provides interface SimpleStart;

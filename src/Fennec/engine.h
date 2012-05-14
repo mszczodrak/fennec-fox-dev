@@ -2,7 +2,6 @@
 #define __FF__ENGINE_H_
 
 #include "Fennec.h"
-#include "caches.h"
 
 uint8_t active_layer = UNKNOWN_LAYER;
 uint8_t ctrl_turn;
