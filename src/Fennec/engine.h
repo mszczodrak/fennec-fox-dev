@@ -80,7 +80,25 @@ uint8_t ctrl_state(uint8_t ctrl) {
 }
 
 void copy_default_params(uint16_t conf_id) {
+	memcpy(
+		defaults[conf_id].application_cache, 
+		defaults[conf_id].application_default_params,
+		defaults[conf_id].application_default_size);
 
+	memcpy(
+		defaults[conf_id].network_cache, 
+		defaults[conf_id].network_default_params,
+		defaults[conf_id].network_default_size);
+
+	memcpy(
+		defaults[conf_id].mac_cache, 
+		defaults[conf_id].mac_default_params,
+		defaults[conf_id].mac_default_size);
+		
+	memcpy(
+		defaults[conf_id].radio_cache, 
+		defaults[conf_id].radio_default_params,
+		defaults[conf_id].radio_default_size);
 }
 
 #endif
