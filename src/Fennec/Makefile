@@ -6,7 +6,5 @@ DebugMsg.java:
 
 clean:
 	if [ -d sfc ];			then	rm -rf sfc; fi
-	if [ -f FennecEngineC.nc ]; 	then 	rm FennecEngineC.nc; fi
-	if [ -f FennecEngineP.nc ]; 	then 	rm FennecEngineP.nc; fi
 	if [ -f *.java ]; 		then 	rm *.java; fi
 	if [ -f *.class ]; 		then 	rm *.class; fi

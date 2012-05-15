@@ -2,6 +2,8 @@
 #define __FF__ENGINE_H_
 
 #include "Fennec.h"
+#include "ff_caches.h"
+#include "ff_defaults.h"
 
 uint8_t active_layer = UNKNOWN_LAYER;
 uint8_t ctrl_turn;
@@ -14,6 +16,7 @@ uint8_t ctrl_conf(uint16_t conf_id, uint8_t ctrl);
 void ctrl_conf_done(uint8_t status, uint8_t ctrl);
 uint8_t ctrl_state(uint8_t ctrl);
 void ctrl_state_done(uint8_t status, uint8_t ctrl);
+void copy_default_params(uint16_t conf_id);
 
 void next_layer() {
   if (ctrl_turn == ON) {
@@ -58,6 +61,7 @@ void ctrl_module_done(uint8_t status) {
 
 uint8_t ctrl_conf(uint16_t conf_id, uint8_t ctrl) {
   if (ctrl_turn == ON) {
+    copy_default_params(conf_id);
     active_layer = F_RADIO;
   } else {
     active_layer = F_APPLICATION;
@@ -73,6 +77,11 @@ void ctrl_conf_done(uint8_t status, uint8_t ctrl) {
 uint8_t ctrl_state(uint8_t ctrl) {
   ctrl_turn = ctrl;
   return ctrl_conf(active_state, ctrl);
+}
+
+void copy_default_params(uint16_t conf_id) {
+
+
 }
 
 #endif
