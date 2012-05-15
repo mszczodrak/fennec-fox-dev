@@ -103,16 +103,16 @@ struct default_params {
 	int 	application_default_size;
 
 	void 	*network_cache;
-	void 	*network_cache_default_params;
-	int 	network_cache_default_size;
+	void 	*network_default_params;
+	int 	network_default_size;
 
 	void 	*mac_cache;
-	void 	*mac_cache_default_params;
-	int 	mac_cache_default_size;
+	void 	*mac_default_params;
+	int 	mac_default_size;
 
 	void 	*radio_cache;
-	void 	*radio_cache_default_params;
-	int 	radio_cache_default_size;
+	void 	*radio_default_params;
+	int 	radio_default_size;
 };
 
 
