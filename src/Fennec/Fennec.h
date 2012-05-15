@@ -98,11 +98,21 @@ struct fennec_configuration {
 };
 
 struct default_params {
-  void *application;
-  void *network;
-  void *mac;
-  void *radio;
-  void *level;
+	void 	*application_cache;
+	void 	*application_default_params;
+	int 	application_default_size;
+
+	void 	*network_cache;
+	void 	*network_cache_default_params;
+	int 	network_cache_default_size;
+
+	void 	*mac_cache;
+	void 	*mac_cache_default_params;
+	int 	mac_cache_default_size;
+
+	void 	*radio_cache;
+	void 	*radio_cache_default_params;
+	int 	radio_cache_default_size;
 };
 
 

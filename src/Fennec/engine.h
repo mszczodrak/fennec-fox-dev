@@ -81,7 +81,6 @@ uint8_t ctrl_state(uint8_t ctrl) {
 
 void copy_default_params(uint16_t conf_id) {
 
-
 }
 
 #endif
