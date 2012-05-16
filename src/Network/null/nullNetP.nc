@@ -1,5 +1,5 @@
 /*
- *  Dummy network module for Fennec Fox platform.
+ *  Null network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Network: Dummy Network Protocol
+ * Network: Null Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
-#include "dummyNet.h"
+#include "nullNet.h"
 
-module dummyNetP {
+module nullNetP {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as NetworkAMSend;
@@ -38,6 +38,8 @@ module dummyNetP {
   provides interface Packet as NetworkPacket;
   provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   provides interface ModuleStatus as NetworkStatus;
+
+  uses interface nullNetCParams;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
@@ -51,13 +53,13 @@ module dummyNetP {
 implementation {
 
   command error_t Mgmt.start() {
-    dbg("Network", "Network dummy starts\n");
+    dbg("Network", "Network null starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    dbg("Network", "Network dummy stops\n");
+    dbg("Network", "Network null stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -168,4 +170,8 @@ implementation {
 
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
   }
+
+  event void nullNetCParams.receive_status(uint16_t status_flag) {
+  }
+
 }

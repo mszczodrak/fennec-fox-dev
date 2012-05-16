@@ -17,7 +17,7 @@ use application vib $(FENNEC_FOX_LIB)/Application/tests/Vibration ()
 use application thfrc $(FENNEC_FOX_LIB)/Application/tests/ThinForce ()
 
 
-use application dummyApp $(FENNEC_FOX_LIB)/Application/dummy ()
+use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 #use application blink $(FENNEC_FOX_LIB)/Application/Blink ( uint8_t, uint16_t)
 #use application counter $(FENNEC_FOX_LIB)/Application/Counter ()
 use application rssilqi $(FENNEC_FOX_LIB)/Application/RssiLqi ()
@@ -49,7 +49,7 @@ use application pushData $(FENNEC_FOX_LIB)/Application/pushData ()
 #use application remoteblink http://www.cs.columbia.edu/~msz/fennec/libs/RemoteBlink ()
 
 # Standard Fennec Fox Network Protocols
-use network dummyNet $(FENNEC_FOX_LIB)/Network/dummy ()
+use network nullNet $(FENNEC_FOX_LIB)/Network/null ()
 use network broadcast $(FENNEC_FOX_LIB)/Network/broadcast ()
 use network basicp2p $(FENNEC_FOX_LIB)/Network/basicp2p ()
 use network fixedPath $(FENNEC_FOX_LIB)/Network/fixedPath ()
@@ -69,7 +69,7 @@ use source light $(FENNEC_FOX_LIB)/Events/Light ()
 use source voltage $(FENNEC_FOX_LIB)/Events/Voltage ()
 
 # Mac
-use mac dummyMac $(FENNEC_FOX_LIB)/Mac/dummy ()
+use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
 use mac simpleMac $(FENNEC_FOX_LIB)/Mac/simple ()
 use mac simpleCCAMac $(FENNEC_FOX_LIB)/Mac/simpleCCA ()
 use mac simpleAddrMac $(FENNEC_FOX_LIB)/Mac/simpleAddr ()
@@ -89,7 +89,7 @@ use mac clusterMedium $(FENNEC_FOX_LIB)/Mac/clusterMedium ()
 use mac flush $(FENNEC_FOX_LIB)/Mac/flush ()
 
 # Radio
-use radio dummyRadio $(FENNEC_FOX_LIB)/Radio/dummy ()
+use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
 use radio simpleCC2420 $(FENNEC_FOX_LIB)/Radio/simpleCC2420 ()
 use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 ()
 use radio uwb01 $(FENNEC_FOX_LIB)/Radio/UWBCISL01 ()

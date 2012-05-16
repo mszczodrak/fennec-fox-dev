@@ -27,9 +27,9 @@
 
 
 #include <Fennec.h>
-#include "dummyRadio.h"
+#include "nullRadio.h"
 
-module dummyRadioP @safe() {
+module nullRadioP @safe() {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as RadioAMSend;
@@ -39,18 +39,20 @@ module dummyRadioP @safe() {
   provides interface Packet as RadioPacket;
   provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
+
+  uses interface nullRadioCParams;
 }
 
 implementation {
 
   command error_t Mgmt.start() {
-    dbg("Radio", "Radio dummy starts\n");
+    dbg("Radio", "Radio null starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    dbg("Radio", "Radio dummy stops\n");
+    dbg("Radio", "Radio null stops\n");
     signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;
   }
@@ -140,5 +142,9 @@ implementation {
   async command bool RadioPacketAcknowledgements.wasAcked(message_t* msg) {
     return 1;
   }
+
+  event void nullRadioCParams.receive_status(uint16_t status_flag) {
+  }
+
 }
 

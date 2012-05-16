@@ -1,5 +1,5 @@
 /*
- *  Dummy application module for Fennec Fox platform.
+ *  Null application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,41 +19,58 @@
  */
 
 /*
- * Network: Dummy Application Module
+ * Network: Null Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
-#include "dummyApp.h"
+#include "nullApp.h"
 
-generic module dummyAppP() {
-
+module nullAppP {
   provides interface Mgmt;
   provides interface Module;
-  uses interface NetworkCall;
-  uses interface NetworkSignal;
+
+  uses interface nullAppCParams;
+
+  uses interface AMSend as NetworkAMSend;
+  uses interface Receive as NetworkReceive;
+  uses interface Receive as NetworkSnoop;
+  uses interface AMPacket as NetworkAMPacket;
+  uses interface Packet as NetworkPacket;
+  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+  uses interface ModuleStatus as NetworkStatus;
 }
 
 implementation {
 
   command error_t Mgmt.start() {
+    dbg("Application", "Application null starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    dbg("Application", "Application null stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
 
-  event void NetworkSignal.sendDone(msg_t *msg, error_t err) {
-    signal Module.drop_message(msg);
+  event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+
+  event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+    return msg;
   }
 
-  event void NetworkSignal.receive(msg_t *msg, uint8_t *payload, uint8_t size) {
-    signal Module.drop_message(msg);
+  event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+    return msg;
+  }
+
+  event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
+  }
+
+  event void nullAppCParams.receive_status(uint16_t status_flag) {
   }
 
 }

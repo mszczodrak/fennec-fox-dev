@@ -1,5 +1,5 @@
 /*
- *  Dummy application module for Fennec Fox platform.
+ *  Null application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,15 +19,17 @@
  */
 
 /*
- * Network: Dummy Application Module
+ * Network: Null Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-configuration dummyAppC {
+configuration nullAppC {
   provides interface Mgmt;
   provides interface Module;
+
+  uses interface nullAppCParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -40,15 +42,17 @@ configuration dummyAppC {
 
 implementation {
 
-  components dummyAppP;
-  Mgmt = dummyAppP;
-  Module = dummyAppP;
+  components nullAppP;
+  Mgmt = nullAppP;
+  Module = nullAppP;
 
-  NetworkAMSend = dummyAppP.NetworkAMSend;
-  NetworkReceive = dummyAppP.NetworkReceive;
-  NetworkSnoop = dummyAppP.NetworkSnoop;
-  NetworkAMPacket = dummyAppP.NetworkAMPacket;
-  NetworkPacket = dummyAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = dummyAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = dummyAppP.NetworkStatus;
+  nullAppCParams = nullAppP;
+
+  NetworkAMSend = nullAppP.NetworkAMSend;
+  NetworkReceive = nullAppP.NetworkReceive;
+  NetworkSnoop = nullAppP.NetworkSnoop;
+  NetworkAMPacket = nullAppP.NetworkAMPacket;
+  NetworkPacket = nullAppP.NetworkPacket;
+  NetworkPacketAcknowledgements = nullAppP.NetworkPacketAcknowledgements;
+  NetworkStatus = nullAppP.NetworkStatus;
 }

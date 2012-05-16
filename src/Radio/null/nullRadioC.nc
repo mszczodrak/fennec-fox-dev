@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  Null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,13 +19,13 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: Null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-configuration dummyRadioC {
+configuration nullRadioC {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as RadioAMSend;
@@ -36,6 +36,7 @@ configuration dummyRadioC {
   provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
 
+  uses interface nullRadioCParams;
 }
 
 implementation {
@@ -44,14 +45,15 @@ implementation {
     CC_FF_PORT = 114,
   };
 
-  components dummyRadioP;
-  Mgmt = dummyRadioP;
-  Module = dummyRadioP;
-  RadioAMSend = dummyRadioP.RadioAMSend;
-  RadioReceive = dummyRadioP.RadioReceive;
-  RadioSnoop = dummyRadioP.RadioSnoop;
-  RadioAMPacket = dummyRadioP.RadioAMPacket;
-  RadioPacket = dummyRadioP.RadioPacket;
-  RadioPacketAcknowledgements = dummyRadioP.RadioPacketAcknowledgements;
-  RadioStatus = dummyRadioP.RadioStatus;
+  components nullRadioP;
+  Mgmt = nullRadioP;
+  Module = nullRadioP;
+  nullRadioCParams = nullRadioP;
+  RadioAMSend = nullRadioP.RadioAMSend;
+  RadioReceive = nullRadioP.RadioReceive;
+  RadioSnoop = nullRadioP.RadioSnoop;
+  RadioAMPacket = nullRadioP.RadioAMPacket;
+  RadioPacket = nullRadioP.RadioPacket;
+  RadioPacketAcknowledgements = nullRadioP.RadioPacketAcknowledgements;
+  RadioStatus = nullRadioP.RadioStatus;
 }

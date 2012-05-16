@@ -1,5 +1,5 @@
 /*
- *  Dummy mac module for Fennec Fox platform.
+ *  Null mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,13 +19,13 @@
  */
 
 /*
- * Network: Dummy Mac Protocol
+ * Network: Null Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-configuration dummyMacC {
+configuration nullMacC {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as MacAMSend;
@@ -35,6 +35,8 @@ configuration dummyMacC {
   provides interface Packet as MacPacket;
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
+
+  uses interface nullMacCParams;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -46,22 +48,23 @@ configuration dummyMacC {
 }
 
 implementation {
-  components dummyMacP;
-  Mgmt = dummyMacP;
-  Module = dummyMacP;
-  MacAMSend = dummyMacP.MacAMSend;
-  MacReceive = dummyMacP.MacReceive;
-  MacSnoop = dummyMacP.MacSnoop;
-  MacAMPacket = dummyMacP.MacAMPacket;
-  MacPacket = dummyMacP.MacPacket;
-  MacPacketAcknowledgements = dummyMacP.MacPacketAcknowledgements;
-  MacStatus = dummyMacP.MacStatus;
-  RadioAMSend = dummyMacP;
-  RadioReceive = dummyMacP.RadioReceive;
-  RadioSnoop = dummyMacP.RadioSnoop;
-  RadioAMPacket = dummyMacP.RadioAMPacket;
-  RadioPacket = dummyMacP.RadioPacket;
-  RadioPacketAcknowledgements = dummyMacP.RadioPacketAcknowledgements;
-  RadioStatus = dummyMacP.RadioStatus;
+  components nullMacP;
+  Mgmt = nullMacP;
+  Module = nullMacP;
+  nullMacCParams = nullMacP;
+  MacAMSend = nullMacP.MacAMSend;
+  MacReceive = nullMacP.MacReceive;
+  MacSnoop = nullMacP.MacSnoop;
+  MacAMPacket = nullMacP.MacAMPacket;
+  MacPacket = nullMacP.MacPacket;
+  MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
+  MacStatus = nullMacP.MacStatus;
+  RadioAMSend = nullMacP;
+  RadioReceive = nullMacP.RadioReceive;
+  RadioSnoop = nullMacP.RadioSnoop;
+  RadioAMPacket = nullMacP.RadioAMPacket;
+  RadioPacket = nullMacP.RadioPacket;
+  RadioPacketAcknowledgements = nullMacP.RadioPacketAcknowledgements;
+  RadioStatus = nullMacP.RadioStatus;
 }
 

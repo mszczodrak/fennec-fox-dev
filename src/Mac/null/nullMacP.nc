@@ -1,5 +1,5 @@
 /*
- *  Dummy mac module for Fennec Fox platform.
+ *  Null mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Network: Dummy Mac Protocol
+ * Network: Null Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
-#include "dummyMac.h"
+#include "nullMac.h"
 
-module dummyMacP {
+module nullMacP {
 
   provides interface Mgmt;
   provides interface Module;
@@ -39,6 +39,8 @@ module dummyMacP {
   provides interface Packet as MacPacket;
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
+
+  uses interface nullMacCParams;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -52,19 +54,19 @@ module dummyMacP {
 implementation {
 
   command error_t Mgmt.start() {
-    dbg("Mac", "Mac dummy starts\n");
+    dbg("Mac", "Mac null starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    dbg("Mac", "Mac dummy stops\n");
+    dbg("Mac", "Mac null stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    dbg("Mac", "Mac: Dummy send\n");
+    dbg("Mac", "Mac: Null send\n");
     return call RadioAMSend.send(addr, msg, len);
   }
 
@@ -73,27 +75,27 @@ implementation {
   }
 
   command uint8_t MacAMSend.maxPayloadLength() {
-    //dbg("Mac", "Mac: Dummy maxPayloadLength\n");
+    //dbg("Mac", "Mac: Null maxPayloadLength\n");
     return call RadioAMSend.maxPayloadLength();
   }
 
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-    //dbg("Mac", "Mac: Dummy getPayload\n");
+    //dbg("Mac", "Mac: Null getPayload\n");
     return call RadioAMSend.getPayload(msg, len);
   }
 
   event void RadioAMSend.sendDone(message_t *msg, uint8_t len) {
-    dbg("Mac", "Mac: Dummy sendDone\n");
+    dbg("Mac", "Mac: Null sendDone\n");
     signal MacAMSend.sendDone(msg, len);
   }
 
   event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    dbg("Mac", "Mac: Dummy receive\n");
+    dbg("Mac", "Mac: Null receive\n");
     return signal MacReceive.receive(msg, payload, len);
   }
 
   event message_t* RadioSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    //dbg("Mac", "Mac: Dummy snoop\n");
+    //dbg("Mac", "Mac: Null snoop\n");
     return signal MacSnoop.receive(msg, payload, len);
   }
 
@@ -176,6 +178,10 @@ implementation {
   event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
     return signal MacStatus.status(layer, status_flag);
   }
+
+  event void nullMacCParams.receive_status(uint16_t status_flag) {
+  }
+
 
 }
 

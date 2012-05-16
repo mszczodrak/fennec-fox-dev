@@ -1,5 +1,5 @@
 /*
- *  Dummy application module for Fennec Fox platform.
+ *  Null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,24 +19,19 @@
  */
 
 /*
- * Network: Dummy Application Module
+ * Network: Null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-generic configuration dummyAppC() {
-   provides interface Mgmt;
-   provides interface Module;
-   uses interface NetworkCall;
-   uses interface NetworkSignal;
-}
 
-implementation {
+#ifndef __H_null_RADIO__
+#define __H_null_RADIO___
 
-  components new dummyAppP();
-  Mgmt = dummyAppP;
-  Module = dummyAppP;
-  NetworkCall = dummyAppP;
-  NetworkSignal = dummyAppP;
-}
+enum {
+        null_MIN_MESSAGE_SIZE        	= 5,
+        null_MAX_MESSAGE_SIZE        	= 127,
+};
+
+#endif

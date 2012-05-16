@@ -1,5 +1,5 @@
 /*
- *  Dummy application module for Fennec Fox platform.
+ *  Null application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,15 +19,15 @@
  */
 
 /*
- * Network: Dummy Application Module
+ * Network: Null Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 
-#ifndef __dummy_APP_H_
-#define __dummy_APP_H_
+#ifndef __null_APP_H_
+#define __null_APP_H_
 
 
 #endif

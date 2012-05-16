@@ -1,5 +1,5 @@
 /*
- *  Dummy network module for Fennec Fox platform.
+ *  Null network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Dummy Network Protocol
+ * Network: Null Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -27,7 +27,7 @@
 
 #include <Fennec.h>
 
-configuration dummyNetC {
+configuration nullNetC {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as NetworkAMSend;
@@ -37,6 +37,8 @@ configuration dummyNetC {
   provides interface Packet as NetworkPacket;
   provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   provides interface ModuleStatus as NetworkStatus;
+
+  uses interface nullNetCParams;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
@@ -49,22 +51,23 @@ configuration dummyNetC {
 
 implementation {
 
-  components dummyNetP;
-  Mgmt = dummyNetP;
-  Module = dummyNetP;
-  NetworkAMSend = dummyNetP.NetworkAMSend;
-  NetworkReceive = dummyNetP.NetworkReceive;
-  NetworkSnoop = dummyNetP.NetworkSnoop;
-  NetworkAMPacket = dummyNetP.NetworkAMPacket;
-  NetworkPacket = dummyNetP.NetworkPacket;
-  NetworkPacketAcknowledgements = dummyNetP.NetworkPacketAcknowledgements;
-  NetworkStatus = dummyNetP.NetworkStatus;
+  components nullNetP;
+  Mgmt = nullNetP;
+  Module = nullNetP;
+  nullNetCParams = nullNetP;
+  NetworkAMSend = nullNetP.NetworkAMSend;
+  NetworkReceive = nullNetP.NetworkReceive;
+  NetworkSnoop = nullNetP.NetworkSnoop;
+  NetworkAMPacket = nullNetP.NetworkAMPacket;
+  NetworkPacket = nullNetP.NetworkPacket;
+  NetworkPacketAcknowledgements = nullNetP.NetworkPacketAcknowledgements;
+  NetworkStatus = nullNetP.NetworkStatus;
 
-  MacAMSend = dummyNetP;
-  MacReceive = dummyNetP.MacReceive;
-  MacSnoop = dummyNetP.MacSnoop;
-  MacAMPacket = dummyNetP.MacAMPacket;
-  MacPacket = dummyNetP.MacPacket;
-  MacPacketAcknowledgements = dummyNetP.MacPacketAcknowledgements;
-  MacStatus = dummyNetP.MacStatus;
+  MacAMSend = nullNetP;
+  MacReceive = nullNetP.MacReceive;
+  MacSnoop = nullNetP.MacSnoop;
+  MacAMPacket = nullNetP.MacAMPacket;
+  MacPacket = nullNetP.MacPacket;
+  MacPacketAcknowledgements = nullNetP.MacPacketAcknowledgements;
+  MacStatus = nullNetP.MacStatus;
 }

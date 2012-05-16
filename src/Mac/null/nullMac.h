@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  Null mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,19 +19,18 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: Null Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
+#ifndef __null_MAC_H__
+#define __null_MAC_H__
 
-#ifndef __H_dummy_RADIO__
-#define __H_dummy_RADIO___
 
-enum {
-        dummy_MIN_MESSAGE_SIZE        	= 5,
-        dummy_MAX_MESSAGE_SIZE        	= 127,
+nx_struct null_mac_footer {
+  nx_uint16_t footer;
 };
 
 #endif
