@@ -51,7 +51,7 @@ implementation {
 
   command error_t Mgmt.start() {
     dbg("Application", "Application Blink(%d, %d) start\n", 
-	call BlinkAppCParams.get_led(), BlinkAppCParams.get_delay());
+	call BlinkAppCParams.get_led(), call BlinkAppCParams.get_delay());
     dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
     on = 0;
     call Timer.startPeriodic(call BlinkAppCParams.get_delay());
@@ -63,7 +63,7 @@ implementation {
     call Timer.stop();
     call Leds.set(0);
     dbg("Application", "Application Blink(%d, %d) stop\n", 
-	call BlinkAppCParams.get_led(), BlinkAppCParams.get_delay());
+	call BlinkAppCParams.get_led(), call BlinkAppCParams.get_delay());
 
     dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
     signal Mgmt.stopDone(SUCCESS);

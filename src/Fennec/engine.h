@@ -51,19 +51,22 @@ void ctrl_module_done(uint8_t status) {
     ctrl_module(next_module(), ctrl_turn);
   } else {
     next_layer();
+    //dbg("FennecEngine", "Done, next layer is %d\n", active_layer);
     if (active_layer == UNKNOWN_LAYER) {
-      ctrl_module(next_module(), ctrl_turn);
-    } else {
       ctrl_conf_done(0, ctrl_turn);
+    } else {
+      ctrl_module(next_module(), ctrl_turn);
     }
   }
 }
 
 uint8_t ctrl_conf(uint16_t conf_id, uint8_t ctrl) {
   if (ctrl_turn == ON) {
+    //dbg("FennecEngine", "Start conf %d\n", conf_id);
     copy_default_params(conf_id);
     active_layer = F_RADIO;
   } else {
+    //dbg("FennecEngine", "Stop conf %d\n", conf_id);
     active_layer = F_APPLICATION;
   }
   ctrl_module(next_module(), ctrl_turn);
