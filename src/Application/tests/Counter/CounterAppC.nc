@@ -28,7 +28,7 @@ configuration CounterAppC {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface BlinkAppCParams;
+  uses interface CounterAppParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -41,8 +41,11 @@ configuration CounterAppC {
 
 implementation {
 
-  components new CounterAppP(init_delay_ms, delay_ms, delay_scale, src, dest, max_sequence);
+  components CounterAppP;
   Mgmt = CounterAppP;
+  Module = CounterAppP;
+
+  CounterAppParams = CounterAppP;
 
   NetworkAMSend = CounterAppP.NetworkAMSend;
   NetworkReceive = CounterAppP.NetworkReceive;
@@ -54,9 +57,7 @@ implementation {
 
   components LedsC;
   components new TimerMilliC();
-  components new TimerMilliC() as ExperimentTimerC;
 
   CounterAppP.Leds -> LedsC;
   CounterAppP.Timer -> TimerMilliC;
-  CounterAppP.ExperimentTimer -> ExperimentTimerC;
 }
