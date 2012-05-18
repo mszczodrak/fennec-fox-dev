@@ -40,7 +40,7 @@ module nullMacP {
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
 
-  uses interface nullMacCParams;
+  uses interface nullMacParams;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -179,7 +179,7 @@ implementation {
     return signal MacStatus.status(layer, status_flag);
   }
 
-  event void nullMacCParams.receive_status(uint16_t status_flag) {
+  event void nullMacParams.receive_status(uint16_t status_flag) {
   }
 
 

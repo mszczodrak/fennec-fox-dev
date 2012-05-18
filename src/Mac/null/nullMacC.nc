@@ -36,7 +36,7 @@ configuration nullMacC {
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
 
-  uses interface nullMacCParams;
+  uses interface nullMacParams;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -51,7 +51,7 @@ implementation {
   components nullMacP;
   Mgmt = nullMacP;
   Module = nullMacP;
-  nullMacCParams = nullMacP;
+  nullMacParams = nullMacP;
   MacAMSend = nullMacP.MacAMSend;
   MacReceive = nullMacP.MacReceive;
   MacSnoop = nullMacP.MacSnoop;

@@ -39,7 +39,7 @@ module nullNetP {
   provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   provides interface ModuleStatus as NetworkStatus;
 
-  uses interface nullNetCParams;
+  uses interface nullNetParams;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
@@ -171,7 +171,7 @@ implementation {
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
   }
 
-  event void nullNetCParams.receive_status(uint16_t status_flag) {
+  event void nullNetParams.receive_status(uint16_t status_flag) {
   }
 
 }

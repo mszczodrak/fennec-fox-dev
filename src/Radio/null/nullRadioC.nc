@@ -36,7 +36,7 @@ configuration nullRadioC {
   provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
 
-  uses interface nullRadioCParams;
+  uses interface nullRadioParams;
 }
 
 implementation {
@@ -48,7 +48,7 @@ implementation {
   components nullRadioP;
   Mgmt = nullRadioP;
   Module = nullRadioP;
-  nullRadioCParams = nullRadioP;
+  nullRadioParams = nullRadioP;
   RadioAMSend = nullRadioP.RadioAMSend;
   RadioReceive = nullRadioP.RadioReceive;
   RadioSnoop = nullRadioP.RadioSnoop;

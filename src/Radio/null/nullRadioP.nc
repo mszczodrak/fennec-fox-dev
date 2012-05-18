@@ -40,7 +40,7 @@ module nullRadioP @safe() {
   provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
 
-  uses interface nullRadioCParams;
+  uses interface nullRadioParams;
 }
 
 implementation {
@@ -143,7 +143,7 @@ implementation {
     return 1;
   }
 
-  event void nullRadioCParams.receive_status(uint16_t status_flag) {
+  event void nullRadioParams.receive_status(uint16_t status_flag) {
   }
 
 }

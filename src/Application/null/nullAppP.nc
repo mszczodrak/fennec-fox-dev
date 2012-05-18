@@ -32,7 +32,7 @@ module nullAppP {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface nullAppCParams;
+  uses interface nullAppParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -70,7 +70,7 @@ implementation {
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
   }
 
-  event void nullAppCParams.receive_status(uint16_t status_flag) {
+  event void nullAppParams.receive_status(uint16_t status_flag) {
   }
 
 }

@@ -38,7 +38,7 @@ configuration nullNetC {
   provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   provides interface ModuleStatus as NetworkStatus;
 
-  uses interface nullNetCParams;
+  uses interface nullNetParams;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
@@ -54,7 +54,7 @@ implementation {
   components nullNetP;
   Mgmt = nullNetP;
   Module = nullNetP;
-  nullNetCParams = nullNetP;
+  nullNetParams = nullNetP;
   NetworkAMSend = nullNetP.NetworkAMSend;
   NetworkReceive = nullNetP.NetworkReceive;
   NetworkSnoop = nullNetP.NetworkSnoop;

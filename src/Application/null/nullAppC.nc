@@ -29,7 +29,7 @@ configuration nullAppC {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface nullAppCParams;
+  uses interface nullAppParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -46,7 +46,7 @@ implementation {
   Mgmt = nullAppP;
   Module = nullAppP;
 
-  nullAppCParams = nullAppP;
+  nullAppParams = nullAppP;
 
   NetworkAMSend = nullAppP.NetworkAMSend;
   NetworkReceive = nullAppP.NetworkReceive;

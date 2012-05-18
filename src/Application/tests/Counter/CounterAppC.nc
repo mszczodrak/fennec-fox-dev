@@ -24,8 +24,11 @@
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
-generic configuration CounterAppC(uint16_t init_delay_ms, uint16_t delay_ms, uint16_t delay_scale, uint16_t src, uint16_t dest, uint16_t max_sequence) {
+configuration CounterAppC {
   provides interface Mgmt;
+  provides interface Module;
+
+  uses interface BlinkAppCParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
