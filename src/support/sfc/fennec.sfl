@@ -1,8 +1,10 @@
 
 # Standard Fennec Fox Applications
-use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( uint8_t led, uint16_t delay)
+use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
+	uint8_t led, uint16_t delay)
 use application printf $(FENNEC_FOX_LIB)/Application/tests/Printf ()
-use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter ()
+use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter ( 
+	uint16_t delay_ms, uint16_t delay_scale, uint16_t src, uint16_t dest )
 
 use application temp $(FENNEC_FOX_LIB)/Application/tests/Temperature ()
 use application hum $(FENNEC_FOX_LIB)/Application/tests/Humidity ()
