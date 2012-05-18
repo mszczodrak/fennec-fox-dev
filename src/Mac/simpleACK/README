@@ -1,2 +1,0 @@
-This MAC only tries to send. Has simple header with len, source and 
-destination addresses. Can use sniffing.
