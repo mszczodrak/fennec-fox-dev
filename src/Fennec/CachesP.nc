@@ -90,6 +90,16 @@ implementation {
     signal PolicyCache.wrong_conf();
   }
 
+  task void check_event() {
+    uint8_t i;
+    for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
+      if (((policies[i].src_conf == ANY) || (policies[i].src_conf == active_state))
+         && (policies[i].event_mask == event_mask)) {
+        signal PolicyCache.newConf( policies[i].dst_conf );
+      }
+    }
+  }
+
   module_t get_module_id(state_t state_id, conf_t conf_id, layer_t layer_id) @C() {
     return get_protocol(layer_id, conf_id);
   }
@@ -108,16 +118,24 @@ implementation {
 
   command void EventCache.setBit(uint16_t bit) {
     event_mask |= (1 << (bit - 1));
-    checkEvent();
+    post check_event();
   }
 
   command void EventCache.clearBit(uint16_t bit) {
     event_mask &= ~(1 << (bit - 1));
-    checkEvent();
+    post check_event();
   }
 
   command bool EventCache.eventStatus(uint16_t event_num) {
-    return eventStatus(event_num);
+	uint8_t i;
+	for( i=0; i < NUMBER_OF_POLICIES; i++ ){
+		if (((policies[i].src_conf == ANY) || 
+			(policies[i].src_conf == active_state)) &&
+			(policies[i].event_mask & (1 << event_num))) {
+			return 1;
+		}
+	}
+	return 0;
   }
-
 }
+
