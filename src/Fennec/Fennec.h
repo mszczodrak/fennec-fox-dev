@@ -129,10 +129,10 @@ struct configuration_cache {
   uint32_t radio_len;
 };
 
-nx_struct fennec_policy {
-  nxle_uint8_t  src_conf;
-  nxle_uint16_t event_mask;
-  nxle_uint8_t  dst_conf;
+struct fennec_policy {
+  uint8_t  src_conf;
+  uint16_t event_mask;
+  uint8_t  dst_conf;
 };
 
 struct fennec_event {
