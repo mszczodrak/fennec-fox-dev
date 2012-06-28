@@ -1,5 +1,5 @@
 /*
- *  Dummy network module for Fennec Fox platform.
+ *  Ctp network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Dummy Network Protocol
+ * Network: Ctp Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -28,9 +28,12 @@
 #include <Fennec.h>
 #include "ctpNet.h"
 
-generic module ctpNetP(uint16_t root) {
+module ctpNetP {
   provides interface Mgmt;
   provides interface Module;
+
+  uses interface ctpNetParams;
+
   provides interface ModuleStatus as NetworkStatus;
   provides interface AMSend as NetworkAMSend;
   provides interface AMPacket as NetworkAMPacket;
@@ -43,17 +46,13 @@ generic module ctpNetP(uint16_t root) {
   uses interface AMPacket as CtpAMPacket;
   uses interface Packet as CtpPacket;
   uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
-
-  uses interface ParametersCtp;
 }
 
 implementation {
 
   command error_t Mgmt.start() {
-    call ParametersCtp.set_root_addr(root);
-
     call RoutingControl.start();
-    if (TOS_NODE_ID == root) {
+    if (TOS_NODE_ID == call ctpNetParams.get_root()) {
       call RootControl.setRoot();
     }
 
@@ -167,5 +166,9 @@ implementation {
   async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
     return call CtpPacketAcknowledgements.wasAcked(msg);
   }
+
+  event void ctpNetParams.receive_status(uint16_t status_flag) {
+  }
+
 
 }

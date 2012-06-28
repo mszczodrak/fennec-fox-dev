@@ -1,5 +1,5 @@
 /*
- *  Dummy network module for Fennec Fox platform.
+ *  Ctp network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Dummy Network Protocol
+ * Network: Ctp Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -27,9 +27,12 @@
 
 #include <Fennec.h>
 
-generic configuration ctpNetC(uint16_t root) {
+configuration ctpNetC {
   provides interface Mgmt;
   provides interface Module;
+
+  uses interface ctpNetParams;
+
   provides interface AMSend as NetworkAMSend;
   provides interface Receive as NetworkReceive;
   provides interface Receive as NetworkSnoop;
@@ -56,9 +59,10 @@ implementation {
     TEST_NETWORK_QUEUE_SIZE = 8,
   };
 
-  components new ctpNetP(root);
+  components ctpNetP;
   Mgmt = ctpNetP;
   Module = ctpNetP;
+  ctpNetParams = ctpNetP;
   NetworkStatus = ctpNetP;
   NetworkAMSend = ctpNetP;
   NetworkAMPacket = ctpNetP;
@@ -88,8 +92,4 @@ implementation {
   ctpNetP.CtpPacketAcknowledgements -> CtpActiveMessageC.PacketAcknowledgements;
 
   ctpNetP.CtpAMPacket -> CtpP.AMPacket;
-
-  components ParametersCtpP;
-  ctpNetP.ParametersCtp -> ParametersCtpP;
-
 }
