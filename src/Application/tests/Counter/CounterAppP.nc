@@ -79,7 +79,8 @@ implementation {
 
 
   void sendMessage() {
-    CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet, sizeof(CounterMsg));
+    CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet,
+							sizeof(CounterMsg));
 
     if (msg == NULL) {
       return;
@@ -88,10 +89,12 @@ implementation {
     msg->source = TOS_NODE_ID;
     msg->seqno = seqno;
 
-    dbg("Application", "Application Counter sends %d %d\n", msg->seqno, msg->source); 
+    dbg("Application", "Application Counter sends %d %d\n", msg->seqno,
+								msg->source); 
     dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, 0);
 
-    if (call NetworkAMSend.send(dest, &packet, sizeof(CounterMsg)) != SUCCESS) {
+    if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
+					sizeof(CounterMsg)) != SUCCESS) {
     }
     else {
       sendBusy = TRUE;
@@ -110,9 +113,6 @@ implementation {
 
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    if (error == SUCCESS) {
-      CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg, sizeof(CounterMsg));
-    }
     sendBusy = FALSE;
   }
 
