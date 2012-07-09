@@ -15,7 +15,10 @@ use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
 
 use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
-use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 ()
+use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (uint16_t sink_addr,
+	uint8_t channel, uint8_t power, uint16_t remote_wakeup, 
+	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
+	uint8_t ack, uint8_t cca, uint8_t crc)
 
 use application temp $(FENNEC_FOX_LIB)/Application/tests/Temperature ()
 use application hum $(FENNEC_FOX_LIB)/Application/tests/Humidity ()
@@ -31,21 +34,6 @@ use application thfrc $(FENNEC_FOX_LIB)/Application/tests/ThinForce ()
 
 
 #use application counter $(FENNEC_FOX_LIB)/Application/Counter ()
-use application rssilqi $(FENNEC_FOX_LIB)/Application/RssiLqi ()
-use application sendPicture $(FENNEC_FOX_LIB)/Application/SendPicture ()
-
-use application testAudio $(FENNEC_FOX_LIB)/Application/TestAudio ()
-use application testSerial $(FENNEC_FOX_LIB)/Application/TestSerial ()
-use application testPrintf $(FENNEC_FOX_LIB)/Application/TestPrintf ()
-use application testRemoteDebug $(FENNEC_FOX_LIB)/Application/TestRemoteDebug ()
-use application sendVoltage $(FENNEC_FOX_LIB)/Application/SendVoltage ()
-use application goaliCentralized $(FENNEC_FOX_LIB)/Application/GOALICentralized ()
-use application goaliDistributed $(FENNEC_FOX_LIB)/Application/GOALIDistributed ()
-use application goaliDistributedJacobi $(FENNEC_FOX_LIB)/Application/GOALIDistributed/GOALIDistributedJacobi ()
-use application goaliDistributedReceive $(FENNEC_FOX_LIB)/Application/GOALIDistributed/GOALIDistributedReceive ()
-use application goaliDistributedReport $(FENNEC_FOX_LIB)/Application/GOALIDistributed/GOALIDistributedReport ()
-use application testIDEP $(FENNEC_FOX_LIB)/Application/TestIDEP ()
-use application senseEnv $(FENNEC_FOX_LIB)/Application/SenseEnvironment () 
 #use application remoteblink http://www.cs.columbia.edu/~msz/fennec/libs/RemoteBlink ()
 
 # Standard Fennec Fox Network Protocols
@@ -73,9 +61,4 @@ use mac simplePreloadACKOKMac $(FENNEC_FOX_LIB)/Mac/simplePreloadACKOK ()
 use mac ieee802154 $(FENNEC_FOX_LIB)/Mac/ieee802154 ()
 use mac clusterMedium $(FENNEC_FOX_LIB)/Mac/clusterMedium ()
 use mac flush $(FENNEC_FOX_LIB)/Mac/flush ()
-
-# Radio
-use radio simpleCC2420 $(FENNEC_FOX_LIB)/Radio/simpleCC2420 ()
-use radio lpl $(FENNEC_FOX_LIB)/Radio/lpl ()
-use radio xlpl $(FENNEC_FOX_LIB)/Radio/xlpl ()
 
