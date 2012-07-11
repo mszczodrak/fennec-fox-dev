@@ -28,9 +28,11 @@
 #include <Fennec.h>
 #include "PrintfApp.h"
 
-generic module PrintfAppP() {
+module PrintfAppP {
   provides interface Mgmt;
   provides interface Module;
+
+  uses interface PrintfAppParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -73,4 +75,8 @@ implementation {
     printf("Hello World!\n");
     printfflush();
   }
+
+  event void PrintfAppParams.receive_status(uint16_t status_flag) {
+  }
+
 }

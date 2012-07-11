@@ -25,9 +25,11 @@
  * Last Modified: 1/5/2012
  */
 
-generic configuration PrintfAppC() {
+configuration PrintfAppC {
   provides interface Mgmt;
   provides interface Module;
+
+  uses interface PrintfAppParams;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -40,9 +42,11 @@ generic configuration PrintfAppC() {
 
 implementation {
 
-  components new PrintfAppP();
+  components PrintfAppP;
   Mgmt = PrintfAppP;
   Module = PrintfAppP;
+
+  PrintfAppParams = PrintfAppP;
 
   NetworkAMSend = PrintfAppP.NetworkAMSend;
   NetworkReceive = PrintfAppP.NetworkReceive;

@@ -29,5 +29,8 @@
 #ifndef __PRINTF_APP_H_
 #define __PRINTF_APP_H_
 
+#define NEW_PRINTF_SEMANTICS
+#include "printf.h"
+
 
 #endif
