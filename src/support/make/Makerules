@@ -1,8 +1,46 @@
-# Makefile based on v1.7 from Tinyos by Cory Sharp and klueska
+#-*-Makefile-*- vim:syntax=make
+#$Id: Makerules,v 1.6 2008/09/26 20:13:58 klueska Exp $
+
+# @author Cory Sharp <cssharp@eecs.berkeley.edu>
 
 ### --- This makefile requires GNU Make version 3.80 or newer.
 
-TINYOS_MAKE_PATH := $(FENNEC_FOX_LIB)/support/make
+
+### ---
+### --- Prepare variables
+### ---
+
+#  Get TOSDIR from ncc if it isn't set already.
+ifndef TOSDIR
+TOSDIR := $(shell ncc -print-tosdir)
+endif
+
+#  Mung MAKERULES for Cygwin; see the warning below for more details.
+ifneq ($(findstring \,$(MAKERULES)),)
+MAKERULES := $(subst \,/,$(MAKERULES))
+define BACKSLASH_WARNING
+warning, MAKERULES contains backslashes.
+
+    The environment variable MAKERULES contains backslashes \'s.  This can
+    cause shell scripts including ones in this make system to fail in
+    strange ways.  I've changed those to forward slashes for you for this
+    build.  However, you are strongly encouraged to respecify MAKERULES as
+    either a standard unix-style path or as a mixed-style path where the
+    backslashes are replaced with forward slashes /'s.
+
+endef
+$(warning $(BACKSLASH_WARNING))
+endif
+
+#  Deduce TINYOS_MAKE_PATH, the path to this file, if it's not defined already.
+ifndef TINYOS_MAKE_PATH
+  ifdef MAKERULES
+    TINYOS_MAKE_PATH := $(dir $(MAKERULES))
+    TINYOS_MAKE_PATH := $(TINYOS_MAKE_PATH:%/=%)
+  else
+    TINYOS_MAKE_PATH := $(TOSDIR)/../support/make
+  endif
+endif
 
 #  Use a default Makelocal if it's not defined already.
 TINYOS_MAKELOCAL ?= $(TINYOS_MAKE_PATH)/Makelocal
@@ -11,9 +49,7 @@ TINYOS_MAKELOCAL ?= $(TINYOS_MAKE_PATH)/Makelocal
 TINYOS_MAKEDEFAULTS ?= $(TINYOS_MAKE_PATH)/Makedefaults
 
 #  Allow users to specify additional directories to find TOSMake files.
-TOSMAKE_TEMP_PATH := $(TOSMAKE_PATH)
-TOSMAKE_PATH = $(TINYOS_MAKE_PATH) 
-TOSMAKE_PATH += $(TOSMAKE_TEMP_PATH)
+TOSMAKE_PATH += $(TINYOS_MAKE_PATH)
 
 #  Save makecmdgoals (a read only var) to goals so that we can modify it.
 GOALS += $(MAKECMDGOALS)
@@ -78,6 +114,15 @@ $(eval OTHERS = $(filter-out $(EXTRAS) $(TARGETS),$(GOALS)))
 $(foreach file,$(NEW_EXTRAS) $(NEW_TARGETS),$(if $(filter $(call names,$(file)),$(GOALS)),$(eval include $(file))))
 endef
 
+TOSMake_accum_dir = $(eval $(call TOSMake_accum_dir_define,$(1)))
+define TOSMake_accum_dir_define
+$(eval NEW_EXTRAS := $(call TOSMake_makelist,$(1),extra))
+$(eval NEW_TARGETS := $(call TOSMake_makelist,$(1),target))
+$(eval VALID_EXTRAS += $(NEW_EXTRAS))
+$(eval VALID_TARGETS += $(NEW_TARGETS))
+$(eval TARGETS = $(filter $(call names,$(VALID_TARGETS)),$(GOALS)))
+endef
+
 #  TOSMake_include_platform(dir)
 #    Pull in a directory as a new TOSMake platform, which MUST be a subdir of
 #    TOSMAKE_PATH.  A platform directory must also have a .rules file, which
@@ -97,10 +142,13 @@ endef
 -include $(TINYOS_MAKELOCAL)
 -include $(TINYOS_MAKEDEFAULTS)
 
-PLATFORMDIR ?= $(FENNEC_FOX_LIB)/platforms/$(PLATFORM)
+PLATFORMDIR ?= $(TOSDIR)/platforms/$(PLATFORM)
 
 #  Mark TOSMAKE_PATH with a + so that they're not searched for by TOSMake_find.
-$(foreach incdir,$(addprefix +,$(TOSMAKE_PATH)),$(call TOSMake_include_dir,$(incdir)))
+$(foreach incdir,$(addprefix +,$(TOSMAKE_PATH)),$(call TOSMake_accum_dir,$(incdir)))
+
+$(foreach file,$(VALID_EXTRAS),$(if $(filter $(call names,$(file)),$(GOALS)),$(eval include $(file))))
+$(foreach file,$(VALID_TARGETS),$(if $(filter $(call names,$(file)),$(GOALS)),$(eval include $(file))))
 
 #  Make default rules for each extra with full argument
 $(foreach goal,$(MAKECMDGOALS),$(if $(filter-out $(TARGETS) help,$(goal)),$(eval $(call TOSMake_extra_targets,$(goal)))))
@@ -115,8 +163,8 @@ $(foreach goal,$(MAKECMDGOALS),$(if $(filter-out $(TARGETS) help,$(goal)),$(eval
 define USAGE
 
 
-Usage:  fennec <target> <extras>
-        fennec <target> help
+Usage:  make <target> <extras>
+        make <target> help
 
         Valid targets: $(call names,$(VALID_TARGETS))
         Valid extras: $(call names,$(VALID_EXTRAS))
@@ -139,7 +187,7 @@ ifeq ($(filter help,$(GOALS)),help)
 define USAGE
 
 
-Usage:  fennec $(TARGETS) <extras>
+Usage:  make $(TARGETS) <extras>
 
 	Valid targets: $(call names,$(VALID_TARGETS))
         Valid extras: $(call names,$(VALID_EXTRAS))

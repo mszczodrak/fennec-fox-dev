@@ -1,5 +1,5 @@
 #-*-Makefile-*- vim:syntax=make
-#$Id: tosboot.extra,v 1.4 2009/11/10 07:03:34 rflury Exp $
+#$Id: tosboot.extra,v 1.4 2009-11-10 07:03:34 rflury Exp $
 
 DELUGE_DIR ?= $(TOSDIR)/lib/net/Deluge
 DELUGE_EXTRA ?= $(DELUGE_DIR)/extra
@@ -14,6 +14,17 @@ ifeq ($(BOOTLOADER),tosboot)
     CFLAGS += -I$(DELUGE_EXTRA) -I$(DELUGE_EXTRA)/msp430 -I$(DELUGE_EXTRA)/telos
     ifeq ($(filter docs,$(GOALS)),)
       CFLAGS += -Wl,--section-start=.text=0x4a00,--defsym=_reset_vector__=0x4000
+      # Pull back in mspgcc CRT code discarded by the redefinition of
+      # _reset_vector__.
+      CFLAGS += -Wl,--undefined=__init_stack
+      CFLAGS += -Wl,--undefined=__low_level_init
+      CFLAGS += -Wl,--undefined=__do_copy_data
+      CFLAGS += -Wl,--undefined=__do_clear_bss
+      CFLAGS += -Wl,--undefined=__stop_progExec__
+      CFLAGS += -Wl,--undefined=_endless_loop__
+      ifeq ("$(shell expr `msp430-gcc -dumpversion` \>= '4.6.3')","1")
+        CFLAGS += -Wl,--undefined=__watchdog_support
+      endif
     endif
     ifeq ($(TARGETS),telosb)
 	CFLAGS += -I$(DELUGE_EXTRA)/telosb
@@ -35,7 +46,7 @@ ifeq ($(BOOTLOADER),tosboot)
   endif
 
   ifeq ($(TARGETS),mulle)
-    CFLAGS += -I$(DELUGE_EXTRA) -I$(DELUGE_EXTRA)/mulle -I$(DELUGE_EXTRA)/m16c62p
+    CFLAGS += -I$(DELUGE_EXTRA) -I$(DELUGE_EXTRA)/mulle -I$(DELUGE_EXTRA)/m16c60 -I$(DELUGE_EXTRA)/m16c60/62p
     BOOTLOADER_IMG ?= $(TOSBOOT_DIR)/mulle/main.srec
   endif
 
