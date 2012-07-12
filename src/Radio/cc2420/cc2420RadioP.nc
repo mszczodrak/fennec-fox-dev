@@ -28,10 +28,7 @@
 #include <Fennec.h>
 #include "cc2420Radio.h"
 
-generic module cc2420RadioP(am_addr_t sink_addr, uint8_t channel, uint8_t power,
-                                uint16_t remote_wakeup, uint16_t delay_after_receive,
-                                uint16_t backoff, uint16_t min_backoff, uint8_t ack, 
-				uint8_t cca, uint8_t crc) @safe() {
+module cc2420RadioP @safe() {
 
   provides interface Mgmt;
   provides interface ModuleStatus as RadioStatus;
@@ -39,6 +36,7 @@ generic module cc2420RadioP(am_addr_t sink_addr, uint8_t channel, uint8_t power,
   provides interface Receive as RadioReceive;
   provides interface Receive as RadioSnoop;
 
+  uses interface cc2420RadioParams;
 
   uses interface SplitControl as RadioControl;
   uses interface ParametersCC2420;
@@ -60,16 +58,16 @@ implementation {
       return SUCCESS;
     }
 
-    call ParametersCC2420.set_sink_addr(sink_addr);
-    call ParametersCC2420.set_channel(channel);
-    call ParametersCC2420.set_power(power);
-    call ParametersCC2420.set_remote_wakeup(remote_wakeup);
-    call ParametersCC2420.set_delay_after_receive(delay_after_receive);
-    call ParametersCC2420.set_backoff(backoff);
-    call ParametersCC2420.set_min_backoff(min_backoff);
-    call ParametersCC2420.set_ack(ack);
-    call ParametersCC2420.set_cca(cca);
-    call ParametersCC2420.set_crc(crc);
+    call ParametersCC2420.set_sink_addr(call cc2420RadioParams.get_sink_addr());
+    call ParametersCC2420.set_channel(call cc2420RadioParams.get_channel());
+    call ParametersCC2420.set_power(call cc2420RadioParams.get_power());
+    call ParametersCC2420.set_remote_wakeup(call cc2420RadioParams.get_remote_wakeup());
+    call ParametersCC2420.set_delay_after_receive(call cc2420RadioParams.get_delay_after_receive());
+    call ParametersCC2420.set_backoff(call cc2420RadioParams.get_backoff());
+    call ParametersCC2420.set_min_backoff(call cc2420RadioParams.get_min_backoff());
+    call ParametersCC2420.set_ack(call cc2420RadioParams.get_ack());
+    call ParametersCC2420.set_cca(call cc2420RadioParams.get_cca());
+    call ParametersCC2420.set_crc(call cc2420RadioParams.get_crc());
 
     dbg("Radio", "Radio cc2420 starts\n");
 
@@ -146,7 +144,6 @@ implementation {
     signal RadioAMSend.sendDone(msg, error);
   }
 
-
   event message_t* Receive.receive(message_t *msg, void* payload, uint8_t len) {
     msg->conf = call AMPacket.group(msg);
     dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
@@ -156,6 +153,9 @@ implementation {
   event message_t* Snoop.receive(message_t *msg, void* payload, uint8_t len) {
     msg->conf = call AMPacket.group(msg);
     return signal RadioSnoop.receive(msg, payload, len);
+  }
+
+  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
 
 }

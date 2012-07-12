@@ -29,10 +29,7 @@
 
 #define LOW_POWER_LISTENING
 
-generic configuration cc2420RadioC(am_addr_t sink_addr, uint8_t channel, uint8_t power, 
-					uint16_t remote_wakeup, uint16_t delay_after_receive,
-					uint16_t backoff, uint16_t min_backoff, uint8_t ack, 
-					uint8_t cca, uint8_t crc) {
+configuration cc2420RadioC {
   provides interface Mgmt;
   provides interface AMSend as RadioAMSend;
   provides interface Receive as RadioReceive;
@@ -41,6 +38,8 @@ generic configuration cc2420RadioC(am_addr_t sink_addr, uint8_t channel, uint8_t
   provides interface Packet as RadioPacket;
   provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
+
+  uses interface cc2420RadioParams;
 }
 
 implementation {
@@ -49,22 +48,22 @@ implementation {
     U_CC_FF_PORT = unique("CC2420_CC_FF_PORT"),
   };
 
-  components new cc2420RadioP(sink_addr, channel, power, remote_wakeup, 
-				delay_after_receive, backoff, min_backoff, ack, cca, crc);
+  components cc2420RadioP;
 #ifdef TOSSIM
   components ActiveMessageC as AM;
 #else
   components CC2420ActiveMessageC as AM;
 #endif
 
-  components ParametersCC2420P;
 
   Mgmt = cc2420RadioP;
   RadioStatus = cc2420RadioP;
   RadioAMSend = cc2420RadioP.RadioAMSend;
   RadioReceive = cc2420RadioP.RadioReceive;
   RadioSnoop = cc2420RadioP.RadioSnoop;
+  cc2420RadioParams = cc2420RadioP;
 
+  components ParametersCC2420P;
   cc2420RadioP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
   cc2420RadioP.RadioControl -> AM;
 
