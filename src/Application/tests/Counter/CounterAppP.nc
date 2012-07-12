@@ -98,7 +98,7 @@ implementation {
     }
     else {
       sendBusy = TRUE;
-      //call Leds.set(seqno);
+      call Leds.set(seqno);
     }
   }
 
