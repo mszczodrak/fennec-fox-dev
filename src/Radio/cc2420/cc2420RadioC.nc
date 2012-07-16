@@ -27,7 +27,7 @@
 
 #include "cc2420Radio.h"
 
-#define LOW_POWER_LISTENING
+//#define LOW_POWER_LISTENING
 
 configuration cc2420RadioC {
   provides interface Mgmt;
