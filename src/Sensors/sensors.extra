@@ -1,36 +1,25 @@
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Temperature
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Temperature/tmp102
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Humidity
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Light
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Light/phidget_1127_0
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Voltage
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Accelerometer
 
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/PIR
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/PIR/ms320-lp
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/PIR/phidget_1111_0
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/phidget_1111_0
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/phidget_1127_0
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/phidget_1108_0
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/phidget_1133_0
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/ms320_lp
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/tmp102
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/adxl345
 
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Magnetic
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Magnetic/phidget_1108_0
 
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Sound
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Sound/phidget_1133_0
-
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Battery
-
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Vibration
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Vibration/phidget_1104_0
-
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/ThinForce
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/ThinForce/phidget_1131_0
-
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Occupancy
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Camera
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Camera/ov7670

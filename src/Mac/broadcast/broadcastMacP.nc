@@ -28,7 +28,7 @@
 #include <Fennec.h>
 #include "broadcastMac.h"
 
-generic module broadcastMacP() {
+module broadcastMacP {
 
   provides interface Mgmt;
   provides interface Module;
@@ -50,6 +50,8 @@ generic module broadcastMacP() {
 
   uses interface Leds;
   uses interface Timer<TMilli> as Timer;
+
+  uses interface broadcastMacParams;
 
   uses interface SplitControl as SerialCtrl;
   uses interface AMSend as SerialAMSend;

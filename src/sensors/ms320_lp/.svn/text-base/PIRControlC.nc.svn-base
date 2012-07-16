@@ -1,0 +1,26 @@
+
+configuration PIRControlC {
+  provides {
+    interface SplitControl as PIRSwitch;
+    interface Presence;
+  }
+}
+implementation {
+  
+  components PIRControlP;
+  PIRSwitch = PIRControlP.PIRSwitch;
+  Presence = PIRControlP.Presence;
+
+  components new TimerMilliC() as PIRTimer;
+  PIRControlP.PIRTimer -> PIRTimer;
+
+  components LedsC;
+  PIRControlP.Leds -> LedsC;
+
+  components HplMsp430GeneralIOC as GeneralIOC;
+  components new Msp430GpioC() as PresenceImpl;
+
+  PresenceImpl -> GeneralIOC.Port42; 
+  PIRControlP.PresencePin -> PresenceImpl;
+  
+}

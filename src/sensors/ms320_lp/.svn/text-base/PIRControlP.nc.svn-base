@@ -1,0 +1,61 @@
+
+module PIRControlP {
+  provides {
+    interface SplitControl as PIRSwitch;
+    interface Presence;
+  }
+  uses {
+    interface Leds;
+    interface GeneralIO as PresencePin;
+    interface Timer<TMilli> as PIRTimer;
+  }
+}
+implementation {
+
+  enum {
+	S_STARTED,
+	S_STOPPED,
+  };
+
+  uint8_t state = S_STOPPED;
+
+  command error_t PIRSwitch.start(){
+    if(state == S_STOPPED){
+      call PresencePin.makeInput();
+      call PIRTimer.startOneShot(256);
+      return SUCCESS;
+    }
+    return FAIL;
+  }
+
+  command error_t PIRSwitch.stop(){
+    if(state == S_STARTED){
+      call PresencePin.makeOutput();
+      call PresencePin.clr();
+      call PIRTimer.startOneShot(256);
+      return SUCCESS;
+    }
+    return FAIL;
+  }
+
+  event void PIRTimer.fired(){
+    if(state == S_STOPPED){
+      state = S_STARTED;
+      signal PIRSwitch.startDone(SUCCESS);
+    } else if(state == S_STARTED) {
+      state = S_STOPPED;
+      signal PIRSwitch.stopDone(SUCCESS);
+    }
+  }
+
+  command bool Presence.lookout(){
+    if(call PresencePin.get()){
+      return FALSE;
+    } else {
+      return TRUE;
+    }
+  }
+
+}
+
+
