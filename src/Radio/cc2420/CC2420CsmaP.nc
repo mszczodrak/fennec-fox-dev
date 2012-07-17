@@ -56,6 +56,7 @@ module CC2420CsmaP @safe() {
 
 implementation {
 
+/*
   enum {
     S_STOPPED,
     S_STARTING,
@@ -63,6 +64,7 @@ implementation {
     S_STOPPING,
     S_TRANSMITTING,
   };
+*/
 
   message_t* ONE_NOK m_msg;
   

@@ -56,14 +56,16 @@
 #define S_TURN_OFF		25
 #define S_PREAMBLE		26
 #define S_RECEIVING          	27
+#define S_BEGIN_TRANSMIT	28
+#define S_LOAD			29
 
 /* tx */
-#define S_SFD                   28
-#define S_EFD                   29
+#define S_SFD                   40
+#define S_EFD                   41
 
 /* rx */
-#define S_RX_LENGTH             30 
-#define S_RX_FCF                31
-#define S_RX_PAYLOAD            32
+#define S_RX_LENGTH             42 
+#define S_RX_FCF                43
+#define S_RX_PAYLOAD            44
 
 #endif
