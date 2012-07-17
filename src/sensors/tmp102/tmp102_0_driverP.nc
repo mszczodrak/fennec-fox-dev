@@ -41,8 +41,6 @@ implementation {
     occurence_data = 0;
     call Timer.startPeriodic(rate);
 
-    //printf("\t\t\t\tStart Periodic at %d\n", rate);
-
     signal SensorCtrl.startDone(SUCCESS);
     return SUCCESS;
   }
@@ -60,7 +58,6 @@ implementation {
 
   command error_t SensorCtrl.set_rate(uint32_t new_rate) {
     rate = new_rate;
-    //printf("\t\t\t\tStart Periodic at %d\n", rate);
     call Timer.startPeriodic(rate);
     return SUCCESS;
   }
@@ -100,7 +97,6 @@ implementation {
   event void Timer.fired() {
     atomic P5DIR |= 0x01;
     atomic P5OUT |= 0x01;
-    //printf("\t\t\t\tFired\n");
     //call Battery.read();
     call TimerSensor.startOneShot(100);
   }
@@ -126,7 +122,6 @@ implementation {
     }
 
     if (signaling) {
-    //printf("\t\t\t\tSignaling\n");
       signal Raw.readDone(SUCCESS, raw_data);
       signal Calibrated.readDone(SUCCESS, calibrated_data);
       signal Occurence.readDone(SUCCESS, occurence_data);
@@ -135,7 +130,6 @@ implementation {
 
 
   task void calibrate() {
-    //printf("\t\t\t\tCalibrate\n");
     calibrated_data = raw_data * 0.0625;
     post check_event();
   }
@@ -161,7 +155,6 @@ implementation {
       tmp = tmp >> 4;
     }
     call Resource.release();
-    //printf("Mode: %d, sign %d\n", mode, negative_number);
     atomic raw_data = tmp;
     post calibrate();
   }
@@ -190,6 +183,5 @@ implementation {
   default event void Raw.readDone(error_t err, uint16_t data) {}
   default event void Calibrated.readDone(error_t err, uint16_t data) {}
   default event void Occurence.readDone(error_t err, bool data) {}
-
 
 }
