@@ -22,8 +22,6 @@ implementation {
   adxl345_t calibrated_data;
   bool occurence_data = 0;
 
-  norace uint8_t state = S_STOPPED;
-
   uint16_t sensitivity = ADXL345_0_DEFAULT_SENSITIVITY;
   uint32_t rate = ADXL345_0_DEFAULT_RATE;
   uint8_t signaling = ADXL345_0_DEFAULT_SIGNALING;
@@ -36,7 +34,6 @@ implementation {
   command error_t SensorCtrl.start() {
     battery = 0;
     occurence_data = 0;
-    state = S_STARTING;
     call Timer.startPeriodic(rate);
     signal SensorCtrl.startDone(SUCCESS);
 
@@ -47,7 +44,6 @@ implementation {
 
   command error_t SensorCtrl.stop() {
     call Timer.stop();
-    state = S_STOPPED;
     signal SensorCtrl.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -96,12 +92,9 @@ implementation {
   }
 
   event void Timer.fired() {
-    if (state == S_STARTED) {
-      state = S_LOADING;
-      //call Battery.read();
-      adxlcmd = ADXLCMD_READ_X;
-      call Resource.request();
-    }
+    //call Battery.read();
+    adxlcmd = ADXLCMD_READ_X;
+    call Resource.request();
   }
 
   event void Resource.granted(){
@@ -153,7 +146,6 @@ implementation {
       signal Calibrated.readDone(SUCCESS, calibrated_data);
       signal Occurence.readDone(SUCCESS, occurence_data);
     }
-    state = S_STARTED;
   }
 
   task void calibrate() {
@@ -213,7 +205,6 @@ implementation {
 
     switch(adxlcmd) {
       case ADXLCMD_START:
-        state = S_STARTED;
         call Resource.release();
         break;
 
