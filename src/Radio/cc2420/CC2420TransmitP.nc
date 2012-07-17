@@ -88,7 +88,6 @@ module CC2420TransmitP @safe() {
 
 implementation {
 
-/*
   typedef enum {
     S_STOPPED,
     S_STARTED,
@@ -100,7 +99,6 @@ implementation {
     S_ACK_WAIT,
     S_CANCEL,
   } cc2420_transmit_state_t;
-*/
 
   // This specifies how many jiffies the stack should wait after a
   // TXACTIVE to receive an SFD interrupt before assuming something is
@@ -128,7 +126,7 @@ implementation {
   norace uint8_t m_tx_power;
   norace uint8_t default_tx_power;
   
-  uint16_t m_state = S_STOPPED;
+  cc2420_transmit_state_t m_state = S_STOPPED;
 
   bool m_receiving = FALSE;
   

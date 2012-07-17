@@ -27,45 +27,49 @@
 #ifndef FF_STATES_H
 #define FF_STATES_H
 
-/* States */
-#define S_NONE			0
-#define S_STOPPED               1
-#define S_STARTING              2
-#define S_STARTED               3
-#define S_STOPPING              4
-#define S_TRANSMITTING          5
-#define S_LOADING               6
-#define S_LOADED                7
-#define S_CANCEL                8
-#define S_ACK_WAIT              9
-#define S_SAMPLE_CCA            10
-#define S_SENDING_ACK           11
-#define S_NOT_ACKED             12
-#define S_BROADCASTING          13
-#define S_HALTED                14
-#define S_BRIDGE_DELAY          15
-#define S_DISCOVER_DELAY        16
-#define S_INIT        		17
-#define S_SYNC       		18
-#define S_SYNC_SEND       	19
-#define S_SYNC_RECEIVE  	20
-#define S_SEND_DONE		21
-#define S_SLEEPING		22
-#define S_OPERATIONAL		23
-#define S_TURN_ON		24
-#define S_TURN_OFF		25
-#define S_PREAMBLE		26
-#define S_RECEIVING          	27
-#define S_BEGIN_TRANSMIT	28
-#define S_LOAD			29
+enum {
+        /* States */
+        S_NONE                  = 0,
+        S_STOPPED               = 1,
+        S_STARTING              = 2,
+        S_STARTED               = 3,
+        S_STOPPING              = 4,
+        S_TRANSMITTING          = 5,
+        S_LOADING               = 6,
+        S_LOADED                = 7,
+        S_CANCEL                = 8,
+        S_ACK_WAIT              = 9,
+        S_SAMPLE_CCA            = 10,
+        S_SENDING_ACK           = 11,
+        S_NOT_ACKED             = 12,
+        S_BROADCASTING          = 13,
+        S_HALTED                = 14,
+        S_BRIDGE_DELAY          = 15,
+        S_DISCOVER_DELAY        = 16,
+        S_INIT                  = 17,
+        S_SYNC                  = 18,
+        S_SYNC_SEND             = 19,
+        S_SYNC_RECEIVE          = 20,
+        S_SEND_DONE             = 21,
+        S_SLEEPING              = 22,
+        S_OPERATIONAL           = 23,
+        S_TURN_ON               = 24,
+        S_TURN_OFF              = 25,
+        S_PREAMBLE              = 26,
+        S_RECEIVING             = 27,
+	S_BEGIN_TRANSMIT        = 28,
+	S_LOAD                  = 29,
 
-/* tx */
-#define S_SFD                   40
-#define S_EFD                   41
 
-/* rx */
-#define S_RX_LENGTH             42 
-#define S_RX_FCF                43
-#define S_RX_PAYLOAD            44
+                /* tx */
+        S_SFD                   = 40,
+        S_EFD                   = 41,
+
+                /* rx */
+        S_RX_LENGTH             = 42,
+        S_RX_FCF                = 43,
+        S_RX_PAYLOAD            = 44,
+};
+
 
 #endif
