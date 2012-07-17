@@ -248,6 +248,10 @@ implementation {
 			sizeof(neighborhood) + 1);
     clear_neighborhood();
   }
+
+  event void broadcastMacParams.receive_status(uint16_t status_flag) {
+  }
+
 }
 
 
