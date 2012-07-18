@@ -98,34 +98,41 @@ implementation {
   }
 
   event void Resource.granted(){
+    error_t i2c_err;
     switch(adxlcmd){
       case ADXLCMD_START:
         databuf[0] = ADXL345_POWER_CTL;
         databuf[1] = ADXL345_MEASURE_MODE;
-        call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
         break;
 
       case ADXLCMD_READ_X:
         pointer = ADXL345_DATAX0;
-        call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
         break;
 
       case ADXLCMD_READ_Y:
         pointer = ADXL345_DATAY0;
-        call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
         break;
 
       case ADXLCMD_READ_Z:
         pointer = ADXL345_DATAZ0;
-        call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
         break;
 
       case ADXLCMD_SET_RANGE:
         databuf[0] = ADXL345_DATAFORMAT;
         databuf[1] = dataformat;
-        call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
         break;
     }
+
+    if (i2c_err) {
+      call Resource.release();
+      printf("\t\t\t\tAcc I2C FAILED\n");
+    }
+
   }
 
   async event void ResourceRequested.requested() {}
