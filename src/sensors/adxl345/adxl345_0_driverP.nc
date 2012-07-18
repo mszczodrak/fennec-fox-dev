@@ -92,33 +92,38 @@ implementation {
   }
 
   void write_to_i2c() {
-    error_t i2c_err;
+    error_t i2c_err = FAIL;
     switch(adxlcmd){
       case ADXLCMD_START:
         databuf[0] = ADXL345_POWER_CTL;
         databuf[1] = ADXL345_MEASURE_MODE;
-        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), 
+					ADXL345_ADDRESS, 2, databuf);
         break;
 
       case ADXLCMD_READ_X:
         pointer = ADXL345_DATAX0;
-        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), 
+					ADXL345_ADDRESS, 1, &pointer);
         break;
 
       case ADXLCMD_READ_Y:
         pointer = ADXL345_DATAY0;
-        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), 
+					ADXL345_ADDRESS, 1, &pointer);
         break;
 
       case ADXLCMD_READ_Z:
         pointer = ADXL345_DATAZ0;
-        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), 
+					ADXL345_ADDRESS, 1, &pointer);
         break;
 
       case ADXLCMD_SET_RANGE:
         databuf[0] = ADXL345_DATAFORMAT;
         databuf[1] = dataformat;
-        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
+        i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), 
+					ADXL345_ADDRESS, 2, databuf);
         break;
     }
     if (i2c_err) {
@@ -177,7 +182,8 @@ implementation {
   }
 
 
-  async event void I2CBasicAddr.readDone(error_t error, uint16_t addr, uint8_t length, uint8_t *data){
+  async event void I2CBasicAddr.readDone(error_t error, uint16_t addr, 
+					uint8_t length, uint8_t *data){
     uint16_t tmp;
 
     if(! call Resource.isOwner()) {
@@ -211,31 +217,33 @@ implementation {
   }
 
 
-  async event void I2CBasicAddr.writeDone(error_t error, uint16_t addr, uint8_t length, uint8_t *data){
+  async event void I2CBasicAddr.writeDone(error_t error, uint16_t addr, 
+					uint8_t length, uint8_t *data){
+
+    error_t erro = FAIL;
+
     if(! call Resource.isOwner()) {
       return;
     }
 
     switch(adxlcmd) {
-      case ADXLCMD_START:
-        call Resource.release();
-        break;
-
       case ADXLCMD_READ_X:
-        call I2CBasicAddr.read((I2C_START | I2C_STOP),  ADXL345_ADDRESS, 2, databuf);
+        erro = call I2CBasicAddr.read((I2C_START | I2C_STOP),  
+					ADXL345_ADDRESS, 2, databuf);
         break;
 
       case ADXLCMD_READ_Y:
-        call I2CBasicAddr.read((I2C_START | I2C_STOP),  ADXL345_ADDRESS, 2, databuf);
+        erro = call I2CBasicAddr.read((I2C_START | I2C_STOP),  
+					ADXL345_ADDRESS, 2, databuf);
         break;
 
       case ADXLCMD_READ_Z:
-        call I2CBasicAddr.read((I2C_START | I2C_STOP),  ADXL345_ADDRESS, 2, databuf);
+        erro = call I2CBasicAddr.read((I2C_START | I2C_STOP),  
+					ADXL345_ADDRESS, 2, databuf);
         break;
-
-      case ADXLCMD_SET_RANGE:
-        call Resource.release();
-        break;
+    }
+    if (erro) {
+      call Resource.release();
     }
   }
 

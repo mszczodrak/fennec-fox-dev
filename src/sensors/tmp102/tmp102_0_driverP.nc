@@ -95,15 +95,12 @@ implementation {
   }
 
   event void Timer.fired() {
-    if (call Resource.isOwner()) {
-      call Resource.release();
-    }
     atomic P5DIR |= 0x01;
     atomic P5OUT |= 0x01;
     call TimerSensor.startOneShot(100);
   }
 
-  event void TimerSensor.fired() {
+  void write_to_i2c() {
     error_t i2c_err;
     pointer = TMP102_TEMPREG;
     i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP),
@@ -113,8 +110,16 @@ implementation {
     }
   }
 
+  event void TimerSensor.fired() {
+    if (call Resource.isOwner()) {
+      write_to_i2c();
+    } else {
+      call Resource.request();
+    }
+  }
+
   event void Resource.granted(){
-    accessI2C();
+    write_to_i2c();
   }
 
   task void check_event() {
@@ -166,11 +171,15 @@ implementation {
 
   async event void I2CBasicAddr.writeDone(error_t error, uint16_t addr, 
 					uint8_t length, uint8_t *data) {
+    error_t i2c_err;
     if (!call Resource.isOwner()) {
       return; 
     }
-    call I2CBasicAddr.read((I2C_START | I2C_STOP),  
+    i2c_err = call I2CBasicAddr.read((I2C_START | I2C_STOP),  
 			TMP102_ADDRESS, 2, temperaturebuff);
+    if (i2c_err) {
+      call Resource.release();
+    }
   }   
 
   event void Battery.readDone(error_t error, uint16_t data){
