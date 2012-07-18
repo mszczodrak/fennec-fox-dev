@@ -94,29 +94,23 @@ implementation {
     return SUCCESS;
   }
 
-  void start_sensing() {
+  event void Timer.fired() {
+    if (call Resource.isOwner()) {
+      call Resource.release();
+    }
     atomic P5DIR |= 0x01;
     atomic P5OUT |= 0x01;
     call TimerSensor.startOneShot(100);
   }
 
-  void accessI2C() {
+  event void TimerSensor.fired() {
     error_t i2c_err;
     pointer = TMP102_TEMPREG;
     i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP),
                         TMP102_ADDRESS, 1, &pointer);
     if (i2c_err) {
       call Resource.release();
-      printf("\t\t\t\t\tTMP I2C - FAILED\n");
     }
-  }
-
-  event void Timer.fired() {
-    start_sensing();
-  }
-
-  event void TimerSensor.fired() {
-    call Resource.request();
   }
 
   event void Resource.granted(){

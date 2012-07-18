@@ -91,13 +91,7 @@ implementation {
     return SUCCESS;
   }
 
-  event void Timer.fired() {
-    //call Battery.read();
-    adxlcmd = ADXLCMD_READ_X;
-    call Resource.request();
-  }
-
-  event void Resource.granted(){
+  void write_to_i2c() {
     error_t i2c_err;
     switch(adxlcmd){
       case ADXLCMD_START:
@@ -127,12 +121,24 @@ implementation {
         i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 2, databuf);
         break;
     }
-
     if (i2c_err) {
       call Resource.release();
-      printf("\t\t\t\tAcc I2C FAILED\n");
     }
+  }
 
+  event void Timer.fired() {
+    adxlcmd = ADXLCMD_READ_X;
+    //call Battery.read();
+
+    if (call Resource.isOwner()) {
+      write_to_i2c();
+    } else {
+      call Resource.request();
+    }
+  }
+
+  event void Resource.granted() {
+    write_to_i2c();
   }
 
   async event void ResourceRequested.requested() {}
