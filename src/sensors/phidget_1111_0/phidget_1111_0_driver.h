@@ -10,15 +10,18 @@
 #define PHIDGET_1111_0_SENSOR_NO_MOTION 	2350
 #define PHIDGET_1111_0_SENSOR_MOTION_STEP 	(2350 / 100)
 
+#ifndef PHIDGET_1111_0_INPUT_CHANNEL
+#define PHIDGET_1111_0_INPUT_CHANNEL	INPUT_CHANNEL_A1
+
 msp430adc12_channel_config_t phidget_1111_0_adc_config = {
-    INPUT_CHANNEL_A1,           // input channel
-    REFERENCE_AVcc_AVss,        // reference voltage
-    REFVOLT_LEVEL_NONE,         // reference voltage level
-    SHT_SOURCE_ACLK,            // clock source sample-hold-time
-    SHT_CLOCK_DIV_1,            // clock divider sample-hold-time
-    SAMPLE_HOLD_4_CYCLES,       // sample-hold-time
-    SAMPCON_SOURCE_SMCLK,       // clock source sampcon signal
-    SAMPCON_CLOCK_DIV_1         // clock divider sampcon
+    PHIDGET_1111_0_INPUT_CHANNEL,           	// input channel
+    REFERENCE_AVcc_AVss,        		// reference voltage
+    REFVOLT_LEVEL_NONE,         		// reference voltage level
+    SHT_SOURCE_ACLK,            		// clock source sample-hold-time
+    SHT_CLOCK_DIV_1,            		// clock divider sample-hold-time
+    SAMPLE_HOLD_4_CYCLES,       		// sample-hold-time
+    SAMPCON_SOURCE_SMCLK,       		// clock source sampcon signal
+    SAMPCON_CLOCK_DIV_1         		// clock divider sampcon
 };
 
 #endif
