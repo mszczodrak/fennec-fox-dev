@@ -12,6 +12,7 @@
 
 #ifndef PHIDGET_1111_0_INPUT_CHANNEL
 #define PHIDGET_1111_0_INPUT_CHANNEL	INPUT_CHANNEL_A1
+#endif
 
 msp430adc12_channel_config_t phidget_1111_0_adc_config = {
     PHIDGET_1111_0_INPUT_CHANNEL,           	// input channel
