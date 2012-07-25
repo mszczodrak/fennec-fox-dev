@@ -13,7 +13,8 @@ use network nullNet $(FENNEC_FOX_LIB)/Network/null ()
 use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
 
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
-use mac broadcast $(FENNEC_FOX_LIB)/Mac/broadcast ()
+use mac broadcast $(FENNEC_FOX_LIB)/Mac/tests/broadcast ()
+use mac link $(FENNEC_FOX_LIB)/Mac/tests/linkquality ()
 
 use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
 use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (uint16_t sink_addr,
