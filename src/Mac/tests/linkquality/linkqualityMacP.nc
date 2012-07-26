@@ -119,10 +119,20 @@ implementation {
   }
 
   event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
+    nx_struct linkquality_mac_beacon *in_msg = 
+				(nx_struct linkquality_mac_beacon*) payload;
+    nx_struct linkquality_mac_serial *pkt = 
+				(nx_struct linkquality_mac_serial*) call
+				SerialPacket.getPayload(&new_msg, 
+				sizeof(nx_struct linkquality_mac_serial));
+    cc2420_metadata_t* m = (cc2420_metadata_t*) msg->metadata;
     dbg("Mac", "Mac: LinkQuality receive\n");
+    pkt->from = in_msg->src;
+    pkt->rssi = m->rssi;
+    pkt->lqi = m->lqi;
 
-
-
+    call SerialAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
+				sizeof(nx_struct linkquality_mac_serial));
 
     return signal MacReceive.receive(msg, payload, len);
   }

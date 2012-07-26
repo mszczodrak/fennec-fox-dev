@@ -33,6 +33,7 @@ nx_struct linkquality_mac_beacon {
 };
 
 nx_struct linkquality_mac_serial {
+  nx_uint16_t from;
   nx_uint8_t rssi;
   nx_uint8_t lqi;
 };
