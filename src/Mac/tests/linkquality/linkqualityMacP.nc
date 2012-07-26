@@ -1,5 +1,5 @@
 /*
- *  Null mac module for Fennec Fox platform.
+ *  LinkQuality mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Null Mac Protocol
+ * Network: LinkQuality Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -51,6 +51,10 @@ module linkqualityMacP {
   uses interface ModuleStatus as RadioStatus;
 
   uses interface Timer<TMilli> as Timer;
+
+  uses interface SplitControl as SerialCtrl;
+  uses interface AMSend as SerialAMSend;
+  uses interface Packet as SerialPacket;
 }
 
 implementation {
@@ -61,6 +65,8 @@ implementation {
     dbg("Mac", "Mac linkquality starts\n");
     if (TOS_NODE_ID == call linkqualityMacParams.get_src()) {
       call Timer.startPeriodic(call linkqualityMacParams.get_delay_ms());
+    } else {
+      call SerialCtrl.start();
     }
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
@@ -68,6 +74,8 @@ implementation {
 
   command error_t Mgmt.stop() {
     dbg("Mac", "Mac linkquality stops\n");
+    call SerialCtrl.stop();
+    call Timer.stop();
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -82,8 +90,12 @@ implementation {
 		sizeof(nx_struct linkquality_mac_beacon));
   }
 
+  event void SerialCtrl.startDone(error_t status) {}
+  event void SerialCtrl.stopDone(error_t status) {}
+  event void SerialAMSend.sendDone(message_t *msg, uint8_t len) {}
+
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    dbg("Mac", "Mac: Null send\n");
+    dbg("Mac", "Mac: LinkQuality send\n");
     return call RadioAMSend.send(addr, msg, len);
   }
 
@@ -92,27 +104,31 @@ implementation {
   }
 
   command uint8_t MacAMSend.maxPayloadLength() {
-    //dbg("Mac", "Mac: Null maxPayloadLength\n");
+    //dbg("Mac", "Mac: LinkQuality maxPayloadLength\n");
     return call RadioAMSend.maxPayloadLength();
   }
 
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-    //dbg("Mac", "Mac: Null getPayload\n");
+    //dbg("Mac", "Mac: LinkQuality getPayload\n");
     return call RadioAMSend.getPayload(msg, len);
   }
 
   event void RadioAMSend.sendDone(message_t *msg, uint8_t len) {
-    dbg("Mac", "Mac: Null sendDone\n");
+    dbg("Mac", "Mac: LinkQuality sendDone\n");
     signal MacAMSend.sendDone(msg, len);
   }
 
   event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    dbg("Mac", "Mac: Null receive\n");
+    dbg("Mac", "Mac: LinkQuality receive\n");
+
+
+
+
     return signal MacReceive.receive(msg, payload, len);
   }
 
   event message_t* RadioSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    //dbg("Mac", "Mac: Null snoop\n");
+    //dbg("Mac", "Mac: LinkQuality snoop\n");
     return signal MacSnoop.receive(msg, payload, len);
   }
 

@@ -59,7 +59,7 @@ implementation {
   MacPacket = linkqualityMacP.MacPacket;
   MacPacketAcknowledgements = linkqualityMacP.MacPacketAcknowledgements;
   MacStatus = linkqualityMacP.MacStatus;
-  RadioAMSend = linkqualityMacP;
+  RadioAMSend = linkqualityMacP.RadioAMSend;
   RadioReceive = linkqualityMacP.RadioReceive;
   RadioSnoop = linkqualityMacP.RadioSnoop;
   RadioAMPacket = linkqualityMacP.RadioAMPacket;
@@ -69,5 +69,12 @@ implementation {
 
   components new TimerMilliC() as Timer;
   linkqualityMacP.Timer -> Timer;
+
+  components SerialActiveMessageC as SerialAM;
+  linkqualityMacP.SerialCtrl -> SerialAM;
+//  linkqualityMacP.SerialReceive -> SerialAM.Receive[111];
+  linkqualityMacP.SerialAMSend -> SerialAM.AMSend[111];
+  linkqualityMacP.SerialPacket -> SerialAM;
+
 }
 

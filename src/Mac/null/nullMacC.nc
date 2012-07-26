@@ -59,7 +59,7 @@ implementation {
   MacPacket = nullMacP.MacPacket;
   MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
   MacStatus = nullMacP.MacStatus;
-  RadioAMSend = nullMacP;
+  RadioAMSend = nullMacP.RadioAMSend;
   RadioReceive = nullMacP.RadioReceive;
   RadioSnoop = nullMacP.RadioSnoop;
   RadioAMPacket = nullMacP.RadioAMPacket;
