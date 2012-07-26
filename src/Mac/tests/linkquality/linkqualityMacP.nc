@@ -51,6 +51,7 @@ module linkqualityMacP {
   uses interface ModuleStatus as RadioStatus;
 
   uses interface Timer<TMilli> as Timer;
+  uses interface Leds;
 
   uses interface SplitControl as SerialCtrl;
   uses interface AMSend as SerialAMSend;
@@ -86,8 +87,13 @@ implementation {
 		RadioPacket.getPayload(&new_msg, 
 		sizeof(nx_struct linkquality_mac_beacon));
     pkt->src = TOS_NODE_ID;
-    call RadioAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
-		sizeof(nx_struct linkquality_mac_beacon));
+
+    if (call RadioAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
+	sizeof(nx_struct linkquality_mac_beacon)) == SUCCESS) {
+      call Leds.led1Toggle();
+    } else {
+      call Leds.led0Toggle();
+    }
   }
 
   event void SerialCtrl.startDone(error_t status) {}
@@ -119,20 +125,28 @@ implementation {
   }
 
   event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    nx_struct linkquality_mac_beacon *in_msg = 
-				(nx_struct linkquality_mac_beacon*) payload;
-    nx_struct linkquality_mac_serial *pkt = 
-				(nx_struct linkquality_mac_serial*) call
+    nx_struct linkquality_mac_beacon *in_msg;
+    nx_struct linkquality_mac_serial *pkt;
+    cc2420_metadata_t* m;
+
+
+    in_msg = (nx_struct linkquality_mac_beacon*) payload;
+    pkt = (nx_struct linkquality_mac_serial*) call
 				SerialPacket.getPayload(&new_msg, 
 				sizeof(nx_struct linkquality_mac_serial));
-    cc2420_metadata_t* m = (cc2420_metadata_t*) msg->metadata;
+
+    m = (cc2420_metadata_t*) msg->metadata;
     dbg("Mac", "Mac: LinkQuality receive\n");
     pkt->from = in_msg->src;
     pkt->rssi = m->rssi;
     pkt->lqi = m->lqi;
 
-    call SerialAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
-				sizeof(nx_struct linkquality_mac_serial));
+    if (call SerialAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
+			sizeof(nx_struct linkquality_mac_serial)) == SUCCESS) {
+      call Leds.led2Toggle();
+    } else {
+      call Leds.led0Toggle();
+    }
 
     return signal MacReceive.receive(msg, payload, len);
   }

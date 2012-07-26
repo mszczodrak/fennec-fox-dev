@@ -70,6 +70,9 @@ implementation {
   components new TimerMilliC() as Timer;
   linkqualityMacP.Timer -> Timer;
 
+  components LedsC;
+  linkqualityMacP.Leds -> LedsC;
+
   components SerialActiveMessageC as SerialAM;
   linkqualityMacP.SerialCtrl -> SerialAM;
 //  linkqualityMacP.SerialReceive -> SerialAM.Receive[111];
