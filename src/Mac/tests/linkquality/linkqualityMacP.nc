@@ -88,6 +88,8 @@ implementation {
 		sizeof(nx_struct linkquality_mac_beacon));
     pkt->src = TOS_NODE_ID;
 
+    call Leds.led0Off();
+
     if (call RadioAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
 	sizeof(nx_struct linkquality_mac_beacon)) == SUCCESS) {
       call Leds.led1Toggle();
@@ -140,6 +142,8 @@ implementation {
     pkt->from = in_msg->src;
     pkt->rssi = m->rssi;
     pkt->lqi = m->lqi;
+
+    call Leds.led0Off();
 
     if (call SerialAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
 			sizeof(nx_struct linkquality_mac_serial)) == SUCCESS) {
