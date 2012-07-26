@@ -66,5 +66,8 @@ implementation {
   RadioPacket = linkqualityMacP.RadioPacket;
   RadioPacketAcknowledgements = linkqualityMacP.RadioPacketAcknowledgements;
   RadioStatus = linkqualityMacP.RadioStatus;
+
+  components new TimerMilliC() as Timer;
+  linkqualityMacP.Timer -> Timer;
 }
 

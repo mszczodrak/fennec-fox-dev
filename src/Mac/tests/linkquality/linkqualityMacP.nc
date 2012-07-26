@@ -49,12 +49,19 @@ module linkqualityMacP {
   uses interface Packet as RadioPacket;
   uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
+
+  uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
 
+  message_t new_msg;
+
   command error_t Mgmt.start() {
     dbg("Mac", "Mac linkquality starts\n");
+    if (TOS_NODE_ID == call linkqualityMacParams.get_src()) {
+      call Timer.startPeriodic(call linkqualityMacParams.get_delay_ms());
+    }
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
@@ -63,6 +70,16 @@ implementation {
     dbg("Mac", "Mac linkquality stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
+  }
+
+  event void Timer.fired() {
+    nx_struct linkquality_mac_beacon *pkt = 
+		(nx_struct linkquality_mac_beacon*) call 
+		RadioPacket.getPayload(&new_msg, 
+		sizeof(nx_struct linkquality_mac_beacon));
+    pkt->src = TOS_NODE_ID;
+    call RadioAMSend.send(AM_BROADCAST_ADDR, &new_msg, 
+		sizeof(nx_struct linkquality_mac_beacon));
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {

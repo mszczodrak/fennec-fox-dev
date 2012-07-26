@@ -28,9 +28,13 @@
 #ifndef __linkquality_MAC_H__
 #define __linkquality_MAC_H__
 
+nx_struct linkquality_mac_beacon {
+  nx_uint16_t src;
+};
 
-nx_struct linkquality_mac_footer {
-  nx_uint16_t footer;
+nx_struct linkquality_mac_serial {
+  nx_uint8_t rssi;
+  nx_uint8_t lqi;
 };
 
 #endif
