@@ -30,59 +30,70 @@
  */
 
 /**
- * Basic implementation of a CSMA MAC for the ChipCon CC2420 radio.
+ * An HAL abstraction of the ChipCon CC2420 radio. This abstraction
+ * deals specifically with radio power operations (e.g. voltage
+ * regulator, oscillator, etc). However, it does not include
+ * transmission power, see the CC2420Config interface.
  *
  * @author Jonathan Hui <jhui@archrock.com>
- * @version $Revision: 1.2 $ $Date: 2008-05-14 21:33:07 $
+ * @version $Revision: 1.1 $ $Date: 2007-07-04 00:37:14 $
  */
 
-#include "CC2420.h"
-#include "IEEE802154.h"
+interface RadioPower {
 
-configuration CC2420CsmaC {
+  /**
+   * Start the voltage regulator on the CC2420. On SUCCESS,
+   * <code>startVReg()</code> will be signalled when the voltage
+   * regulator is fully on.
+   *
+   * @return SUCCESS if the request was accepted, FAIL otherwise.
+   */
+  async command error_t startVReg();
 
-  provides interface SplitControl;
-  provides interface Send;
-  provides interface Receive;
-  provides interface RadioBackoff;
-
-  uses interface ParametersCC2420;
-}
-
-implementation {
-
-  components CC2420CsmaP as CsmaP;
-  RadioBackoff = CsmaP;
-  SplitControl = CsmaP;
-  Send = CsmaP;
-  ParametersCC2420 = CsmaP;
+  /**
+   * Signals that the voltage regulator has been started.
+   */
+  async event void startVRegDone();
   
-  components CC2420ControlC;
-  CsmaP.Resource -> CC2420ControlC;
-  CsmaP.CC2420Power -> CC2420ControlC;
+  /**
+   * Stop the voltage regulator immediately.
+   *
+   * @return SUCCESS always
+   */
+  async command error_t stopVReg();
 
-  components CC2420TransmitC;
-  CsmaP.SubControl -> CC2420TransmitC;
-  CsmaP.CC2420Transmit -> CC2420TransmitC;
-  CsmaP.SubBackoff -> CC2420TransmitC;
+  /**
+   * Start the oscillator. On SUCCESS, <code>startOscillator</code>
+   * will be signalled when the oscillator has been started.
+   *
+   * @return SUCCESS if the request was accepted, FAIL otherwise.
+   */
+  async command error_t startOscillator();
 
-  components CC2420ReceiveC;
-  Receive = CC2420ReceiveC;
-  CsmaP.SubControl -> CC2420ReceiveC;
+  /**
+   * Signals that the oscillator has been started.
+   */
+  async event void startOscillatorDone();
 
-  components CC2420PacketC;
-  CsmaP.CC2420Packet -> CC2420PacketC;
-  CsmaP.CC2420PacketBody -> CC2420PacketC;
-  
-  components RandomC;
-  CsmaP.Random -> RandomC;
+  /**
+   * Stop the oscillator.
+   *
+   * @return SUCCESS if the oscillator was stopped, FAIL otherwise.
+   */
+  async command error_t stopOscillator();
 
-  components new StateC();
-  CsmaP.SplitControlState -> StateC;
-  
-  components LedsC as Leds;
-  CsmaP.Leds -> Leds;
- 
-  components ParametersCC2420P;
-  CsmaP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420; 
+  /**
+   * Enable RX.
+   *
+   * @return SUCCESS if receive mode has been enabled, FAIL otherwise.
+   */
+  async command error_t rxOn();
+
+  /**
+   * Disable RX.
+   *
+   * @return SUCCESS if receive mode has been disabled, FAIL otherwise.
+   */
+  async command error_t rfOff();
+
 }

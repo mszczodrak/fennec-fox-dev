@@ -28,11 +28,13 @@
 #ifndef __H_CSMACA_MAC_H_
 #define __H_CSMACA_MAC_H_
 
+/*
 enum {
         cc2420_MIN_MESSAGE_SIZE         = 5,
         cc2420_MAX_MESSAGE_SIZE         = 127,
         CC_FF_PORT = 33,
 };
+*/
 
 #endif
 

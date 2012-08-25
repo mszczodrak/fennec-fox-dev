@@ -27,8 +27,6 @@
 
 #include "cc2420Radio.h"
 
-//#define LOW_POWER_LISTENING
-
 configuration cc2420RadioC {
   provides interface Mgmt;
   provides interface AMSend as RadioAMSend;
@@ -40,6 +38,13 @@ configuration cc2420RadioC {
   provides interface ModuleStatus as RadioStatus;
 
   uses interface cc2420RadioParams;
+
+
+  provides interface Resource;
+  provides interface RadioConfig;
+  provides interface RadioPower;
+  provides interface Read<uint16_t> as ReadRssi;
+
 }
 
 implementation {
@@ -66,6 +71,12 @@ implementation {
   components ParametersCC2420P;
   cc2420RadioP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
   cc2420RadioP.RadioControl -> AM;
+
+  components CC2420ControlC;
+  Resource = CC2420ControlC;
+  RadioConfig = CC2420ControlC;
+  RadioPower = CC2420ControlC;
+  ReadRssi = CC2420ControlC;
 
   cc2420RadioP.AMSend -> AM.AMSend[U_CC_FF_PORT];
   cc2420RadioP.Receive -> AM.Receive[U_CC_FF_PORT];

@@ -43,7 +43,7 @@ module CC2420ControlP @safe() {
 
   provides interface Init;
   provides interface Resource;
-  provides interface CC2420Config;
+  provides interface RadioConfig;
   provides interface CC2420Power;
   provides interface Read<uint16_t> as ReadRssi;
 
@@ -313,41 +313,41 @@ implementation {
   }
 
   
-  /***************** CC2420Config Commands ****************/
-  command uint8_t CC2420Config.getChannel() {
+  /***************** RadioConfig Commands ****************/
+  command uint8_t RadioConfig.getChannel() {
     atomic return m_channel;
   }
 
-  command void CC2420Config.setChannel( uint8_t channel ) {
+  command void RadioConfig.setChannel( uint8_t channel ) {
     atomic m_channel = channel;
   }
 
-  command ieee_eui64_t CC2420Config.getExtAddr() {
+  command ieee_eui64_t RadioConfig.getExtAddr() {
     return m_ext_addr;
   }
 
-  async command uint16_t CC2420Config.getShortAddr() {
+  async command uint16_t RadioConfig.getShortAddr() {
     atomic return m_short_addr;
   }
 
-  command void CC2420Config.setShortAddr( uint16_t addr ) {
+  command void RadioConfig.setShortAddr( uint16_t addr ) {
     atomic m_short_addr = addr;
   }
 
-  async command uint16_t CC2420Config.getPanAddr() {
+  async command uint16_t RadioConfig.getPanAddr() {
     atomic return m_pan;
   }
 
-  command void CC2420Config.setPanAddr( uint16_t pan ) {
+  command void RadioConfig.setPanAddr( uint16_t pan ) {
     atomic m_pan = pan;
   }
 
   /**
    * Sync must be called to commit software parameters configured on
-   * the microcontroller (through the CC2420Config interface) to the
+   * the microcontroller (through the RadioConfig interface) to the
    * CC2420 radio chip.
    */
-  command error_t CC2420Config.sync() {
+  command error_t RadioConfig.sync() {
     atomic {
       if ( m_sync_busy ) {
         return FAIL;
@@ -369,7 +369,7 @@ implementation {
    *     in hardware. This doesn't affect software address recognition. The
    *     driver must sync with the chip after changing this value.
    */
-  command void CC2420Config.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
+  command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
     atomic {
       addressRecognition = enableAddressRecognition;
       hwAddressRecognition = useHwAddressRecognition;
@@ -379,14 +379,14 @@ implementation {
   /**
    * @return TRUE if address recognition is enabled
    */
-  async command bool CC2420Config.isAddressRecognitionEnabled() {
+  async command bool RadioConfig.isAddressRecognitionEnabled() {
     atomic return addressRecognition;
   }
   
   /**
    * @return TRUE if address recognition is performed first in hardware.
    */
-  async command bool CC2420Config.isHwAddressRecognitionDefault() {
+  async command bool RadioConfig.isHwAddressRecognitionDefault() {
     atomic return hwAddressRecognition;
   }
   
@@ -397,7 +397,7 @@ implementation {
    * @param hwAutoAck TRUE to default to hardware auto acks, FALSE to
    *     default to software auto acknowledgements
    */
-  command void CC2420Config.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
+  command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
     atomic autoAckEnabled = enableAutoAck;
     atomic hwAutoAckDefault = hwAutoAck;
   }
@@ -406,14 +406,14 @@ implementation {
    * @return TRUE if hardware auto acks are the default, FALSE if software
    *     acks are the default
    */
-  async command bool CC2420Config.isHwAutoAckDefault() {
+  async command bool RadioConfig.isHwAutoAckDefault() {
     atomic return hwAutoAckDefault;    
   }
   
   /**
    * @return TRUE if auto acks are enabled
    */
-  async command bool CC2420Config.isAutoAckEnabled() {
+  async command bool RadioConfig.isAutoAckEnabled() {
     atomic return autoAckEnabled;
   }
   
@@ -490,12 +490,12 @@ implementation {
    * Attempt to synchronize our current settings with the CC2420
    */
   task void sync() {
-    call CC2420Config.sync();
+    call RadioConfig.sync();
   }
   
   task void syncDone() {
     atomic m_sync_busy = FALSE;
-    signal CC2420Config.syncDone( SUCCESS );
+    signal RadioConfig.syncDone( SUCCESS );
   }
   
   
@@ -566,7 +566,7 @@ implementation {
     }
   }
   /***************** Defaults ****************/
-  default event void CC2420Config.syncDone( error_t error ) {
+  default event void RadioConfig.syncDone( error_t error ) {
   }
 
   default event void ReadRssi.readDone(error_t error, uint16_t data) {
