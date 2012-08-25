@@ -1,5 +1,5 @@
 /*
- *  CC2420 radio module for Fennec Fox platform.
+ *  Null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,15 @@
  */
 
 /*
- * Network: CC2420 Radio Protocol
+ * Network: Null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#include "cc2420Radio.h"
-
 configuration cc2420RadioC {
   provides interface Mgmt;
+  provides interface Module;
   provides interface AMSend as RadioAMSend;
   provides interface Receive as RadioReceive;
   provides interface Receive as RadioSnoop;
@@ -39,53 +38,34 @@ configuration cc2420RadioC {
 
   uses interface cc2420RadioParams;
 
-
   provides interface Resource;
   provides interface RadioConfig;
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
-
 }
 
 implementation {
 
   enum {
-    U_CC_FF_PORT = unique("CC2420_CC_FF_PORT"),
+    CC_FF_PORT = 114,
   };
 
   components cc2420RadioP;
-#ifdef TOSSIM
-  components ActiveMessageC as AM;
-#else
-  components CC2420ActiveMessageC as AM;
-#endif
-
-
   Mgmt = cc2420RadioP;
-  RadioStatus = cc2420RadioP;
+  Module = cc2420RadioP;
+  cc2420RadioParams = cc2420RadioP;
   RadioAMSend = cc2420RadioP.RadioAMSend;
   RadioReceive = cc2420RadioP.RadioReceive;
   RadioSnoop = cc2420RadioP.RadioSnoop;
-  cc2420RadioParams = cc2420RadioP;
+  RadioAMPacket = cc2420RadioP.RadioAMPacket;
+  RadioPacket = cc2420RadioP.RadioPacket;
+  RadioPacketAcknowledgements = cc2420RadioP.RadioPacketAcknowledgements;
+  RadioStatus = cc2420RadioP.RadioStatus;
 
-  components ParametersCC2420P;
-  cc2420RadioP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-  cc2420RadioP.RadioControl -> AM;
-
-  components CC2420ControlC;
-  Resource = CC2420ControlC;
-  RadioConfig = CC2420ControlC;
-  RadioPower = CC2420ControlC;
-  ReadRssi = CC2420ControlC;
-
-  cc2420RadioP.AMSend -> AM.AMSend[U_CC_FF_PORT];
-  cc2420RadioP.Receive -> AM.Receive[U_CC_FF_PORT];
-  cc2420RadioP.Snoop -> AM.Snoop[U_CC_FF_PORT];
-  cc2420RadioP.AMPacket -> AM.AMPacket;
-
-  RadioPacket = AM.Packet;
-  RadioAMPacket = AM.AMPacket;
-  RadioPacketAcknowledgements = AM.PacketAcknowledgements;
-
+  components cc2420ControlC;
+  Resource = cc2420ControlC;
+  RadioConfig = cc2420ControlC;
+  RadioPower = cc2420ControlC;
+  ReadRssi = cc2420ControlC;
+  
 }
-

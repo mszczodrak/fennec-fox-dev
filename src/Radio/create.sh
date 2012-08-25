@@ -2,7 +2,7 @@
 # Author: Marcin Szczodrak
 # msz@cs.columbia.edu
 
-BASE_EXAMPLE="dummy"
+BASE_EXAMPLE="null"
 NEW_MODULE=$1
 
 PP="_"

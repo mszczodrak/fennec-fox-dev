@@ -39,12 +39,12 @@
 #include <Ieee154.h>
 #include "Timer.h"
 
-module CC2420ControlP @safe() {
+module cc2420ControlP @safe() {
 
   provides interface Init;
   provides interface Resource;
   provides interface RadioConfig;
-  provides interface CC2420Power;
+  provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
 
   uses interface LocalIeeeEui64;
@@ -224,8 +224,8 @@ implementation {
     dbgs(F_RADIO, S_NONE, DBGS_RADIO_ON_PERIOD, (uint16_t)(on_time >> 16), (uint16_t)on_time);
   }
 
-  /***************** CC2420Power Commands ****************/
-  async command error_t CC2420Power.startVReg() {
+  /***************** RadioPower Commands ****************/
+  async command error_t RadioPower.startVReg() {
     post get_params();
     atomic {
       if ( m_state != S_VREG_STOPPED ) {
@@ -239,7 +239,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t CC2420Power.stopVReg() {
+  async command error_t RadioPower.stopVReg() {
     m_state = S_VREG_STOPPED;
     call RSTN.clr();
     call VREN.clr();
@@ -248,7 +248,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t CC2420Power.startOscillator() {
+  async command error_t RadioPower.startOscillator() {
     atomic {
       if ( m_state != S_VREG_STARTED ) {
         return FAIL;
@@ -281,7 +281,7 @@ implementation {
   }
 
 
-  async command error_t CC2420Power.stopOscillator() {
+  async command error_t RadioPower.stopOscillator() {
     atomic {
       if ( m_state != S_XOSC_STARTED ) {
         return FAIL;
@@ -292,7 +292,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t CC2420Power.rxOn() {
+  async command error_t RadioPower.rxOn() {
     atomic {
       if ( m_state != S_XOSC_STARTED ) {
         return FAIL;
@@ -302,7 +302,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t CC2420Power.rfOff() {
+  async command error_t RadioPower.rfOff() {
     atomic {  
       if ( m_state != S_XOSC_STARTED ) {
         return FAIL;
@@ -460,7 +460,7 @@ implementation {
       m_state = S_VREG_STARTED;
       call RSTN.clr();
       call RSTN.set();
-      signal CC2420Power.startVRegDone();
+      signal RadioPower.startVRegDone();
     }
   }
 
@@ -472,7 +472,7 @@ implementation {
     writeId();
     call CSN.set();
     call CSN.clr();
-    signal CC2420Power.startOscillatorDone();
+    signal RadioPower.startOscillatorDone();
   }
  
   /***************** ActiveMessageAddress Events ****************/

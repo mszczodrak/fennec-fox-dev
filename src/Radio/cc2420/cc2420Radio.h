@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  Null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,20 +19,19 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: Null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#ifndef __H_CC2420_RADIO_H_
-#define __H_CC2420_RADIO_H_
+
+#ifndef __H_cc2420_RADIO__
+#define __H_cc2420_RADIO___
 
 enum {
-        cc2420_MIN_MESSAGE_SIZE         = 5,
-        cc2420_MAX_MESSAGE_SIZE         = 127,
-        CC_FF_PORT = 33,
+        cc2420_MIN_MESSAGE_SIZE        	= 5,
+        cc2420_MAX_MESSAGE_SIZE        	= 127,
 };
 
 #endif
-

@@ -25,134 +25,122 @@
  * Last Modified: 1/5/2012
  */
 
+
 #include <Fennec.h>
 #include "cc2420Radio.h"
 
 module cc2420RadioP @safe() {
-
   provides interface Mgmt;
-  provides interface ModuleStatus as RadioStatus;
+  provides interface Module;
   provides interface AMSend as RadioAMSend;
   provides interface Receive as RadioReceive;
   provides interface Receive as RadioSnoop;
+  provides interface AMPacket as RadioAMPacket;
+  provides interface Packet as RadioPacket;
+  provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
+  provides interface ModuleStatus as RadioStatus;
 
   uses interface cc2420RadioParams;
-
-  uses interface SplitControl as RadioControl;
-  uses interface ParametersCC2420;
-
-  uses interface AMSend;
-  uses interface Receive;
-  uses interface Receive as Snoop;
-  uses interface AMPacket;
 }
 
 implementation {
 
-  uint8_t status = S_STOPPED;
-
   command error_t Mgmt.start() {
-    if (status == S_STARTED) {
-      dbg("Radio", "Radio cc2420 already started\n");
-      signal Mgmt.startDone(SUCCESS);
-      return SUCCESS;
-    }
-
-    call ParametersCC2420.set_sink_addr(call cc2420RadioParams.get_sink_addr());
-    call ParametersCC2420.set_channel(call cc2420RadioParams.get_channel());
-    call ParametersCC2420.set_power(call cc2420RadioParams.get_power());
-    call ParametersCC2420.set_remote_wakeup(call cc2420RadioParams.get_remote_wakeup());
-    call ParametersCC2420.set_delay_after_receive(call cc2420RadioParams.get_delay_after_receive());
-    call ParametersCC2420.set_backoff(call cc2420RadioParams.get_backoff());
-    call ParametersCC2420.set_min_backoff(call cc2420RadioParams.get_min_backoff());
-    call ParametersCC2420.set_ack(call cc2420RadioParams.get_ack());
-    call ParametersCC2420.set_cca(call cc2420RadioParams.get_cca());
-    call ParametersCC2420.set_crc(call cc2420RadioParams.get_crc());
-
     dbg("Radio", "Radio cc2420 starts\n");
-
-    if (call RadioControl.start() != SUCCESS) {
-      signal Mgmt.startDone(FAIL);
-    }
-    status = S_STARTING;
+    signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    if (status == S_STOPPED) {
-      dbg("Radio", "Radio cc2420 already stopped\n");
-      signal Mgmt.stopDone(SUCCESS);
-      return SUCCESS;
-    }
-
     dbg("Radio", "Radio cc2420 stops\n");
-
-    if (call RadioControl.stop() != SUCCESS) {
-      signal Mgmt.stopDone(FAIL);
-    }
-    status = S_STOPPING;
+    signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;
   }
 
-
-  event void RadioControl.startDone(error_t err) {
-    if (err != SUCCESS) {
-      call RadioControl.start();
-    } else {
-      if (status == S_STARTING) {
-        dbg("Radio", "Radio cc2420 got RadioControl startDone\n");
-        status = S_STARTED;
-        signal RadioStatus.status(F_RADIO, ON);
-        signal Mgmt.startDone(SUCCESS);
-      }
-    }
-  }
-
-
-  event void RadioControl.stopDone(error_t err) {
-    if (err != SUCCESS) {
-      call RadioControl.stop();
-    } else {
-      if (status == S_STOPPING) {
-        dbg("Radio", "Radio cc2420 got RadioControl stopDone\n");
-        status = S_STOPPED;
-        signal RadioStatus.status(F_RADIO, OFF);
-        signal Mgmt.stopDone(SUCCESS);
-      }
-    }
-  }
-
   command error_t RadioAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    call AMPacket.setGroup(msg, msg->conf);
-    dbg("Radio", "Radio sends msg on state %d\n", msg->conf);
-    return call AMSend.send(addr, msg, len);
+    return SUCCESS;
   }
 
   command error_t RadioAMSend.cancel(message_t* msg) {
-    return call AMSend.cancel(msg);
+    return SUCCESS;
   }
 
   command uint8_t RadioAMSend.maxPayloadLength() {
-    return call AMSend.maxPayloadLength();
+    return 0;
   }
 
   command void* RadioAMSend.getPayload(message_t* msg, uint8_t len) {
-    return call AMSend.getPayload(msg, len);
+    return NULL;
   }
 
-  event void AMSend.sendDone(message_t *msg, error_t error) {
-    signal RadioAMSend.sendDone(msg, error);
+  command am_addr_t RadioAMPacket.address() {
+    return TOS_NODE_ID;
   }
 
-  event message_t* Receive.receive(message_t *msg, void* payload, uint8_t len) {
-    msg->conf = call AMPacket.group(msg);
-    dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
-    return signal RadioReceive.receive(msg, payload, len);
+  command am_addr_t RadioAMPacket.destination(message_t* amsg) {
+    return TOS_NODE_ID;
   }
 
-  event message_t* Snoop.receive(message_t *msg, void* payload, uint8_t len) {
-    msg->conf = call AMPacket.group(msg);
-    return signal RadioSnoop.receive(msg, payload, len);
+  command am_addr_t RadioAMPacket.source(message_t* amsg) {
+    return TOS_NODE_ID;
+  }
+
+  command void RadioAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+  }
+
+  command void RadioAMPacket.setSource(message_t* amsg, am_addr_t addr) {
+  }
+
+  command bool RadioAMPacket.isForMe(message_t* amsg) {
+    return FALSE;
+  }
+
+  command am_id_t RadioAMPacket.type(message_t* amsg) {
+    return 0;
+  }
+
+  command void RadioAMPacket.setType(message_t* amsg, am_id_t t) {
+  }
+
+  command am_group_t RadioAMPacket.group(message_t* amsg) {
+    return 0;
+  }
+
+  command void RadioAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+  }
+
+  command am_group_t RadioAMPacket.localGroup() {
+    return 0;
+  }
+
+  command void RadioPacket.clear(message_t* msg) {
+  }
+
+  command uint8_t RadioPacket.payloadLength(message_t* msg) {
+    return 0;
+  }
+
+  command void RadioPacket.setPayloadLength(message_t* msg, uint8_t len) {
+  }
+
+  command uint8_t RadioPacket.maxPayloadLength() {
+    return 128;
+  }
+
+  command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
+    return (void*)msg;
+  }
+
+  async command error_t RadioPacketAcknowledgements.requestAck( message_t* msg ) {
+    return SUCCESS;
+  }
+
+  async command error_t RadioPacketAcknowledgements.noAck( message_t* msg ) {
+    return SUCCESS;
+  }
+
+  async command bool RadioPacketAcknowledgements.wasAcked(message_t* msg) {
+    return 1;
   }
 
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
