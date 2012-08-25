@@ -15,6 +15,10 @@ use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
 use mac broadcast $(FENNEC_FOX_LIB)/Mac/tests/broadcast ()
 use mac link $(FENNEC_FOX_LIB)/Mac/tests/linkquality (uint16_t src, uint16_t delay_ms)
+use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (uint16_t sink_addr,
+	uint8_t channel, uint8_t power, uint16_t remote_wakeup, 
+	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
+	uint8_t ack, uint8_t cca, uint8_t crc)
 
 use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
 use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (uint16_t sink_addr,
