@@ -43,6 +43,8 @@ configuration CC2420ReceiveC {
   provides interface Receive;
   provides interface ReceiveIndicator as PacketIndicator;
 
+  uses interface RadioConfig;
+
 }
 
 implementation {
@@ -50,7 +52,6 @@ implementation {
   components CC2420ReceiveP;
   components CC2420PacketC;
   components new CC2420SpiC() as Spi;
-  components CC2420ControlC;
   
   components HplCC2420PinsC as Pins;
   components HplCC2420InterruptsC as InterruptsC;
@@ -76,7 +77,7 @@ implementation {
   CC2420ReceiveP.CC2420Packet -> CC2420PacketC;
   CC2420ReceiveP.CC2420PacketBody -> CC2420PacketC;
   CC2420ReceiveP.PacketTimeStamp -> CC2420PacketC;
-  CC2420ReceiveP.CC2420Config -> CC2420ControlC;
+  RadioConfig = CC2420ReceiveP.RadioConfig;
 
   CC2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
   CC2420ReceiveP.SECCTRL1 -> Spi.SECCTRL1;

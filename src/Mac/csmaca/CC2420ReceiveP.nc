@@ -61,7 +61,7 @@ module CC2420ReceiveP @safe() {
   uses interface CC2420Strobe as SFLUSHRX;
   uses interface CC2420Packet;
   uses interface CC2420PacketBody;
-  uses interface CC2420Config;
+  uses interface RadioConfig;
   uses interface PacketTimeStamp<T32khz,uint32_t>;
 
   uses interface CC2420Strobe as SRXDEC;
@@ -379,8 +379,8 @@ implementation {
       return;
     }
     if( (header.fcf & (1 << IEEE154_FCF_SECURITY_ENABLED)) && (crc << 7) ){
-      if(call CC2420Config.isAddressRecognitionEnabled()){
-	if(!(header.dest==call CC2420Config.getShortAddr() || header.dest==AM_BROADCAST_ADDR)){
+      if(call RadioConfig.isAddressRecognitionEnabled()){
+	if(!(header.dest==call RadioConfig.getShortAddr() || header.dest==AM_BROADCAST_ADDR)){
 	  packetLength = header.length + 1;
 	  m_state = S_RX_LENGTH;
 	  call SpiResource.release();
@@ -593,9 +593,9 @@ implementation {
        * address is useful when we want to sniff packets from other transmitters
        * while acknowledging packets that were destined for our local address.
        */
-      if(call CC2420Config.isAutoAckEnabled() && !call CC2420Config.isHwAutoAckDefault()) {
+      if(call RadioConfig.isAutoAckEnabled() && !call RadioConfig.isHwAutoAckDefault()) {
         if (((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1)
-            && ((header->dest == call CC2420Config.getShortAddr())
+            && ((header->dest == call RadioConfig.getShortAddr())
                 || (header->dest == AM_BROADCAST_ADDR))
             && ((( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == IEEE154_TYPE_DATA)) {
           // CSn flippage cuts off our FIFO; SACK and begin reading again
@@ -705,8 +705,8 @@ implementation {
     waitForNextPacket();
   }
 
-  /****************** CC2420Config Events ****************/
-  event void CC2420Config.syncDone( error_t error ) {
+  /****************** RadioConfig Events ****************/
+  event void RadioConfig.syncDone( error_t error ) {
   }
   
   /****************** Functions ****************/
@@ -824,19 +824,19 @@ implementation {
   bool passesAddressCheck(message_t *msg) {
     cc2420_header_t *header = call CC2420PacketBody.getHeader( msg );
     int mode = (header->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 3;
-    ieee_eui64_t *ext_addr;  
+//    ieee_eui64_t *ext_addr;  
 
-    if(!(call CC2420Config.isAddressRecognitionEnabled())) {
+    if(!(call RadioConfig.isAddressRecognitionEnabled())) {
       return TRUE;
     }
 
     if (mode == IEEE154_ADDR_SHORT) {
-      return (header->dest == call CC2420Config.getShortAddr()
+      return (header->dest == call RadioConfig.getShortAddr()
               || header->dest == IEEE154_BROADCAST_ADDR);
-    } else if (mode == IEEE154_ADDR_EXT) {
-      ieee_eui64_t local_addr = (call CC2420Config.getExtAddr());
-      ext_addr = TCAST(ieee_eui64_t* ONE, &header->dest);
-      return (memcmp(ext_addr->data, local_addr.data, IEEE_EUI64_LENGTH) == 0);
+//    } else if (mode == IEEE154_ADDR_EXT) {
+//      ieee_eui64_t local_addr = (call RadioConfig.getExtAddr());
+//      ext_addr = TCAST(ieee_eui64_t* ONE, &header->dest);
+//      return (memcmp(ext_addr->data, local_addr.data, IEEE_EUI64_LENGTH) == 0);
     } else {
       /* reject frames with either no address or invalid type */
       return FALSE;

@@ -61,7 +61,7 @@ module CC2420ActiveMessageP @safe() {
     interface Receive as SubReceive;
     interface CC2420Packet;
     interface CC2420PacketBody;
-    interface CC2420Config;
+//    interface CC2420Config;
     interface ActiveMessageAddress;
     interface RadioBackoff as SubBackoff;
 
@@ -191,7 +191,8 @@ implementation {
   }
 
   command am_group_t AMPacket.localGroup() {
-    return call CC2420Config.getPanAddr();
+    return 0;
+//    return call CC2420Config.getPanAddr();
   }
   
 
@@ -247,8 +248,8 @@ implementation {
   }
   
   /***************** CC2420Config Events ****************/
-  event void CC2420Config.syncDone( error_t error ) {
-  }
+//  event void CC2420Config.syncDone( error_t error ) {
+//  }
   
   
   /***************** RadioBackoff ***********************/

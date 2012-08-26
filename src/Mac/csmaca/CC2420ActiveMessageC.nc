@@ -101,7 +101,7 @@ implementation {
   AM.ActiveMessageAddress -> ActiveMessageAddressC;
   AM.CC2420Packet -> CC2420PacketC;
   AM.CC2420PacketBody -> CC2420PacketC;
-  AM.CC2420Config -> CC2420ControlC;
+//  AM.CC2420Config -> CC2420ControlC;
   
   AM.SubBackoff -> CsmaC;
 
