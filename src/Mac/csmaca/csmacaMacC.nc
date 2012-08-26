@@ -104,7 +104,7 @@ implementation {
   RadioStatus = csmacaMacP.RadioStatus;
 
   components CC2420ReceiveC;
-  components CC2420TransmitC;
+  components cc2420TransmitC;
 
   RadioConfig = CC2420ReceiveC;
 

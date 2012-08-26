@@ -54,7 +54,7 @@ module DefaultLplP {
   
   uses {
     interface Send as SubSend;
-    interface CC2420Transmit as Resend;
+    interface RadioTransmit as Resend;
     interface RadioBackoff;
     interface Receive as SubReceive;
     interface SplitControl as SubControl;

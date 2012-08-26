@@ -47,7 +47,7 @@ configuration PowerCycleC {
 
 implementation {
   components PowerCycleP,
-      CC2420TransmitC,
+      cc2420TransmitC,
       CC2420ReceiveC,
       CC2420CsmaC,
       LedsC,
@@ -67,8 +67,8 @@ implementation {
   SplitControlState = SplitControlStateC;
   RadioPowerState = RadioPowerStateC;
   
-  PowerCycleP.EnergyIndicator -> CC2420TransmitC.EnergyIndicator;
-  PowerCycleP.ByteIndicator -> CC2420TransmitC.ByteIndicator;
+  PowerCycleP.EnergyIndicator -> cc2420TransmitC.EnergyIndicator;
+  PowerCycleP.ByteIndicator -> cc2420TransmitC.ByteIndicator;
   PowerCycleP.PacketIndicator -> CC2420ReceiveC.PacketIndicator;
   PowerCycleP.SubControl -> CC2420CsmaC;
   PowerCycleP.SendState -> LplC;

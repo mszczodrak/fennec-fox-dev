@@ -43,7 +43,7 @@
 #include "crc.h"
 #include "message.h"
 
-module CC2420TransmitP @safe() {
+module cc2420TransmitP @safe() {
 
   provides interface Init;
   provides interface StdControl;

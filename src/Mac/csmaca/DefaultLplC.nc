@@ -60,7 +60,7 @@ implementation {
       PowerCycleC,
       CC2420RadioC,
       CC2420CsmaC,
-      CC2420TransmitC,
+      cc2420TransmitC,
       CC2420PacketC,
       RandomC,
       new StateC() as SendStateC,
@@ -88,7 +88,7 @@ implementation {
   DefaultLplP.OffTimer -> OffTimerC;
   DefaultLplP.SendDoneTimer -> SendDoneTimerC;
   DefaultLplP.PowerCycle -> PowerCycleC;
-  DefaultLplP.Resend -> CC2420TransmitC;
+  DefaultLplP.Resend -> cc2420TransmitC;
   DefaultLplP.PacketAcknowledgements -> CC2420RadioC;
   DefaultLplP.CC2420PacketBody -> CC2420PacketC;
   DefaultLplP.RadioBackoff -> CC2420CsmaC;

@@ -38,7 +38,7 @@
 
 #include "IEEE802154.h"
 
-configuration CC2420TransmitC {
+configuration cc2420TransmitC {
 
   provides {
     interface StdControl;
@@ -51,60 +51,60 @@ configuration CC2420TransmitC {
 
 implementation {
 
-  components CC2420TransmitP;
-  StdControl = CC2420TransmitP;
-  RadioTransmit = CC2420TransmitP;
-  RadioBackoff = CC2420TransmitP;
-  EnergyIndicator = CC2420TransmitP.EnergyIndicator;
-  ByteIndicator = CC2420TransmitP.ByteIndicator;
+  components cc2420TransmitP;
+  StdControl = cc2420TransmitP;
+  RadioTransmit = cc2420TransmitP;
+  RadioBackoff = cc2420TransmitP;
+  EnergyIndicator = cc2420TransmitP.EnergyIndicator;
+  ByteIndicator = cc2420TransmitP.ByteIndicator;
 
   components MainC;
-  MainC.SoftwareInit -> CC2420TransmitP;
+  MainC.SoftwareInit -> cc2420TransmitP;
   MainC.SoftwareInit -> Alarm;
   
   components AlarmMultiplexC as Alarm;
-  CC2420TransmitP.BackoffTimer -> Alarm;
+  cc2420TransmitP.BackoffTimer -> Alarm;
 
   components HplCC2420PinsC as Pins;
-  CC2420TransmitP.CCA -> Pins.CCA;
-  CC2420TransmitP.CSN -> Pins.CSN;
-  CC2420TransmitP.SFD -> Pins.SFD;
+  cc2420TransmitP.CCA -> Pins.CCA;
+  cc2420TransmitP.CSN -> Pins.CSN;
+  cc2420TransmitP.SFD -> Pins.SFD;
 
   components HplCC2420InterruptsC as Interrupts;
-  CC2420TransmitP.CaptureSFD -> Interrupts.CaptureSFD;
+  cc2420TransmitP.CaptureSFD -> Interrupts.CaptureSFD;
 
   components new CC2420SpiC() as Spi;
-  CC2420TransmitP.SpiResource -> Spi;
-  CC2420TransmitP.ChipSpiResource -> Spi;
-  CC2420TransmitP.SNOP        -> Spi.SNOP;
-  CC2420TransmitP.STXON       -> Spi.STXON;
-  CC2420TransmitP.STXONCCA    -> Spi.STXONCCA;
-  CC2420TransmitP.SFLUSHTX    -> Spi.SFLUSHTX;
-  CC2420TransmitP.TXCTRL      -> Spi.TXCTRL;
-  CC2420TransmitP.TXFIFO      -> Spi.TXFIFO;
-  CC2420TransmitP.TXFIFO_RAM  -> Spi.TXFIFO_RAM;
-  CC2420TransmitP.MDMCTRL1    -> Spi.MDMCTRL1;
-  CC2420TransmitP.SECCTRL0 -> Spi.SECCTRL0;
-  CC2420TransmitP.SECCTRL1 -> Spi.SECCTRL1;
-  CC2420TransmitP.STXENC -> Spi.STXENC;
-  CC2420TransmitP.TXNONCE -> Spi.TXNONCE;
-  CC2420TransmitP.KEY0 -> Spi.KEY0;
-  CC2420TransmitP.KEY1 -> Spi.KEY1;
+  cc2420TransmitP.SpiResource -> Spi;
+  cc2420TransmitP.ChipSpiResource -> Spi;
+  cc2420TransmitP.SNOP        -> Spi.SNOP;
+  cc2420TransmitP.STXON       -> Spi.STXON;
+  cc2420TransmitP.STXONCCA    -> Spi.STXONCCA;
+  cc2420TransmitP.SFLUSHTX    -> Spi.SFLUSHTX;
+  cc2420TransmitP.TXCTRL      -> Spi.TXCTRL;
+  cc2420TransmitP.TXFIFO      -> Spi.TXFIFO;
+  cc2420TransmitP.TXFIFO_RAM  -> Spi.TXFIFO_RAM;
+  cc2420TransmitP.MDMCTRL1    -> Spi.MDMCTRL1;
+  cc2420TransmitP.SECCTRL0 -> Spi.SECCTRL0;
+  cc2420TransmitP.SECCTRL1 -> Spi.SECCTRL1;
+  cc2420TransmitP.STXENC -> Spi.STXENC;
+  cc2420TransmitP.TXNONCE -> Spi.TXNONCE;
+  cc2420TransmitP.KEY0 -> Spi.KEY0;
+  cc2420TransmitP.KEY1 -> Spi.KEY1;
   
   components CC2420ReceiveC;
-  CC2420TransmitP.CC2420Receive -> CC2420ReceiveC;
+  cc2420TransmitP.CC2420Receive -> CC2420ReceiveC;
   
   components CC2420PacketC;
-  CC2420TransmitP.CC2420Packet -> CC2420PacketC;
-  CC2420TransmitP.CC2420PacketBody -> CC2420PacketC;
-  CC2420TransmitP.PacketTimeStamp -> CC2420PacketC;
-  CC2420TransmitP.PacketTimeSyncOffset -> CC2420PacketC;
+  cc2420TransmitP.CC2420Packet -> CC2420PacketC;
+  cc2420TransmitP.CC2420PacketBody -> CC2420PacketC;
+  cc2420TransmitP.PacketTimeStamp -> CC2420PacketC;
+  cc2420TransmitP.PacketTimeSyncOffset -> CC2420PacketC;
 
   components LedsC;
-  CC2420TransmitP.Leds -> LedsC;
+  cc2420TransmitP.Leds -> LedsC;
 
   components ParametersCC2420P;
-  CC2420TransmitP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
+  cc2420TransmitP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
 
 
 }

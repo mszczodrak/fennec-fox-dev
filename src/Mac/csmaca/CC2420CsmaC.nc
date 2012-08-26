@@ -61,10 +61,10 @@ implementation {
   RadioPower = CsmaP.RadioPower;
   RadioResource = CsmaP.RadioResource;
   
-  components CC2420TransmitC;
-  CsmaP.SubControl -> CC2420TransmitC;
-  CsmaP.RadioTransmit -> CC2420TransmitC;
-  CsmaP.SubBackoff -> CC2420TransmitC;
+  components cc2420TransmitC;
+  CsmaP.SubControl -> cc2420TransmitC;
+  CsmaP.RadioTransmit -> cc2420TransmitC;
+  CsmaP.SubBackoff -> cc2420TransmitC;
 
   components CC2420ReceiveC;
   Receive = CC2420ReceiveC;
