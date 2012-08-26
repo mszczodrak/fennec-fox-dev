@@ -41,12 +41,27 @@ module cc2420RadioP @safe() {
   provides interface ModuleStatus as RadioStatus;
 
   uses interface cc2420RadioParams;
+  uses interface ParametersCC2420;
 }
 
 implementation {
 
   command error_t Mgmt.start() {
     dbg("Radio", "Radio cc2420 starts\n");
+
+    call ParametersCC2420.set_sink_addr(call cc2420RadioParams.get_sink_addr());
+    call ParametersCC2420.set_channel(call cc2420RadioParams.get_channel());
+    call ParametersCC2420.set_power(call cc2420RadioParams.get_power());
+    call ParametersCC2420.set_remote_wakeup(call cc2420RadioParams.get_remote_wakeup());
+    call ParametersCC2420.set_delay_after_receive(call cc2420RadioParams.get_delay_after_receive());
+    call ParametersCC2420.set_backoff(call cc2420RadioParams.get_backoff());
+    call ParametersCC2420.set_min_backoff(call cc2420RadioParams.get_min_backoff());
+    call ParametersCC2420.set_ack(call cc2420RadioParams.get_ack());
+    call ParametersCC2420.set_cca(call cc2420RadioParams.get_cca());
+    call ParametersCC2420.set_crc(call cc2420RadioParams.get_crc());
+
+
+
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }

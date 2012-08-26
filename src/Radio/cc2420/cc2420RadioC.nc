@@ -62,10 +62,13 @@ implementation {
   RadioPacketAcknowledgements = cc2420RadioP.RadioPacketAcknowledgements;
   RadioStatus = cc2420RadioP.RadioStatus;
 
+  components ParametersCC2420P;
+  cc2420RadioP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
+
   components cc2420ControlC;
   Resource = cc2420ControlC;
   RadioConfig = cc2420ControlC;
   RadioPower = cc2420ControlC;
   ReadRssi = cc2420ControlC;
-  
+
 }
