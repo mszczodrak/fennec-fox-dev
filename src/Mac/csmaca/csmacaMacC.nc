@@ -52,6 +52,7 @@ configuration csmacaMacC {
   uses interface RadioConfig;
   uses interface RadioPower;
   uses interface Read<uint16_t> as ReadRssi;
+  uses interface Resource as RadioResource;
 }
 
 implementation {
@@ -78,6 +79,7 @@ implementation {
   RadioConfig = csmacaMacP.RadioConfig;
   RadioPower = csmacaMacP.RadioPower;
   ReadRssi = csmacaMacP.ReadRssi;
+  RadioResource = csmacaMacP.RadioResource;
 
 
   components ParametersCC2420P;
@@ -105,6 +107,10 @@ implementation {
   components CC2420TransmitC;
 
   RadioConfig = CC2420ReceiveC;
+
+  components CC2420CsmaC;
+  RadioPower = CC2420CsmaC.RadioPower;
+  RadioResource = CC2420CsmaC.RadioResource;
 
 }
 

@@ -41,7 +41,7 @@
 
 configuration cc2420ControlC {
 
-  provides interface Resource;
+  provides interface Resource as RadioResource;
   provides interface RadioConfig;
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
@@ -53,10 +53,10 @@ configuration cc2420ControlC {
 implementation {
   
   components cc2420ControlP;
-  Resource = cc2420ControlP;
-  RadioConfig = cc2420ControlP;
-  RadioPower = cc2420ControlP;
-  ReadRssi = cc2420ControlP;
+  RadioResource = cc2420ControlP.RadioResource;
+  RadioConfig = cc2420ControlP.RadioConfig;
+  RadioPower = cc2420ControlP.RadioPower;
+  ReadRssi = cc2420ControlP.ReadRssi;
 
   cc2420RadioParams = cc2420ControlP;
 

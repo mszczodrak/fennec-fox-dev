@@ -76,7 +76,6 @@ implementation {
   components CC2420ActiveMessageP as AM;
   components ActiveMessageAddressC;
   components CC2420CsmaC as CsmaC;
-  components CC2420ControlC;
   components CC2420PacketC;
   
   SplitControl = Radio;
@@ -101,7 +100,6 @@ implementation {
   AM.ActiveMessageAddress -> ActiveMessageAddressC;
   AM.CC2420Packet -> CC2420PacketC;
   AM.CC2420PacketBody -> CC2420PacketC;
-//  AM.CC2420Config -> CC2420ControlC;
   
   AM.SubBackoff -> CsmaC;
 

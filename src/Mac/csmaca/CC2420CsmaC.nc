@@ -47,6 +47,8 @@ configuration CC2420CsmaC {
   provides interface RadioBackoff;
 
   uses interface ParametersCC2420;
+  uses interface RadioPower;
+  uses interface Resource as RadioResource;
 }
 
 implementation {
@@ -56,11 +58,9 @@ implementation {
   SplitControl = CsmaP;
   Send = CsmaP;
   ParametersCC2420 = CsmaP;
+  RadioPower = CsmaP.RadioPower;
+  RadioResource = CsmaP.RadioResource;
   
-  components CC2420ControlC;
-  CsmaP.Resource -> CC2420ControlC;
-  CsmaP.CC2420Power -> CC2420ControlC;
-
   components CC2420TransmitC;
   CsmaP.SubControl -> CC2420TransmitC;
   CsmaP.CC2420Transmit -> CC2420TransmitC;

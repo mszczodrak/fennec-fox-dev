@@ -42,7 +42,7 @@
 module cc2420ControlP @safe() {
 
   provides interface Init;
-  provides interface Resource;
+  provides interface Resource as RadioResource;
   provides interface RadioConfig;
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
@@ -190,7 +190,7 @@ implementation {
   }
 
   /***************** Resource Commands ****************/
-  async command error_t Resource.immediateRequest() {
+  async command error_t RadioResource.immediateRequest() {
     error_t error = call SpiResource.immediateRequest();
     if ( error == SUCCESS ) {
       call CSN.clr();
@@ -198,15 +198,15 @@ implementation {
     return error;
   }
 
-  async command error_t Resource.request() {
+  async command error_t RadioResource.request() {
     return call SpiResource.request();
   }
 
-  async command bool Resource.isOwner() {
+  async command bool RadioResource.isOwner() {
     return call SpiResource.isOwner();
   }
 
-  async command error_t Resource.release() {
+  async command error_t RadioResource.release() {
     atomic {
       call CSN.set();
       return call SpiResource.release();
@@ -439,7 +439,7 @@ implementation {
 
   event void SpiResource.granted() {
     call CSN.clr();
-    signal Resource.granted();
+    signal RadioResource.granted();
   }
 
   event void RssiResource.granted() { 
@@ -575,14 +575,14 @@ implementation {
   
 
 
-  default async event void RadioPower.startVRegDone() {
-  }
+//  default async event void RadioPower.startVRegDone() {
+//  }
 
-  default event void Resource.granted() {
-  }
+//  default event void Resource.granted() {
+//  }
 
-  default async event void RadioPower.startOscillatorDone() {
-  }
+//  default async event void RadioPower.startOscillatorDone() {
+//  }
 
 
 

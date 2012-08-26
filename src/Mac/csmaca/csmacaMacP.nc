@@ -56,6 +56,7 @@ module csmacaMacP @safe() {
   uses interface RadioConfig;
   uses interface RadioPower;
   uses interface Read<uint16_t> as ReadRssi;
+  uses interface Resource as RadioResource;
 }
 
 implementation {
@@ -201,6 +202,10 @@ implementation {
   }
 
   event void ReadRssi.readDone(error_t error, uint16_t rssi) {
+  }
+
+  event void RadioResource.granted() {
+
   }
 
 }

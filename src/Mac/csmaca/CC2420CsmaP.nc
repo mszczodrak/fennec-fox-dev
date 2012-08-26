@@ -40,8 +40,7 @@ module CC2420CsmaP @safe() {
   provides interface Send;
   provides interface RadioBackoff;
 
-  uses interface Resource;
-  uses interface CC2420Power;
+  uses interface Resource as RadioResource;
   uses interface StdControl as SubControl;
   uses interface CC2420Transmit;
   uses interface RadioBackoff as SubBackoff;
@@ -52,6 +51,7 @@ module CC2420CsmaP @safe() {
   uses interface State as SplitControlState;
 
   uses interface ParametersCC2420;
+  uses interface RadioPower;
 }
 
 implementation {
@@ -87,7 +87,7 @@ implementation {
     cc2420_min_backoff = call ParametersCC2420.get_min_backoff();
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      call CC2420Power.startVReg();
+      call RadioPower.startVReg();
       return SUCCESS;
     
     } else if(call SplitControlState.isState(S_STARTED)) {
@@ -219,18 +219,18 @@ implementation {
   }
 
   task void resource_request() {
-    call Resource.request();
+    call RadioResource.request();
   }
 
-  async event void CC2420Power.startVRegDone() {
+  async event void RadioPower.startVRegDone() {
     post resource_request();
   }
   
-  event void Resource.granted() {
-    call CC2420Power.startOscillator();
+  event void RadioResource.granted() {
+    call RadioPower.startOscillator();
   }
 
-  async event void CC2420Power.startOscillatorDone() {
+  async event void RadioPower.startOscillatorDone() {
     post startDone_task();
   }
   
@@ -271,8 +271,8 @@ implementation {
 
   task void startDone_task() {
     call SubControl.start();
-    call CC2420Power.rxOn();
-    call Resource.release();
+    call RadioPower.rxOn();
+    call RadioResource.release();
     call SplitControlState.forceState(S_STARTED);
     signal SplitControl.startDone( SUCCESS );
   }
@@ -289,7 +289,7 @@ implementation {
    */
   void shutdown() {
     call SubControl.stop();
-    call CC2420Power.stopVReg();
+    call RadioPower.stopVReg();
     post stopDone_task();
   }
 
