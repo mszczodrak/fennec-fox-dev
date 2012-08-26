@@ -45,6 +45,8 @@ configuration cc2420ControlC {
   provides interface RadioConfig;
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
+
+  uses interface cc2420RadioParams;
   
 }
 
@@ -55,6 +57,8 @@ implementation {
   RadioConfig = cc2420ControlP;
   RadioPower = cc2420ControlP;
   ReadRssi = cc2420ControlP;
+
+  cc2420RadioParams = cc2420ControlP;
 
   components MainC;
   MainC.SoftwareInit -> cc2420ControlP;
@@ -98,9 +102,6 @@ implementation {
 
   components LocalIeeeEui64C;
   cc2420ControlP.LocalIeeeEui64 -> LocalIeeeEui64C;
-
-  components ParametersCC2420P;
-  cc2420ControlP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
 
 }
 

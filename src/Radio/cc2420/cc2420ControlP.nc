@@ -76,7 +76,7 @@ module cc2420ControlP @safe() {
   uses interface Resource as SyncResource;
 
   uses interface Leds;
-  uses interface ParametersCC2420;
+  uses interface cc2420RadioParams;
 }
 
 implementation {
@@ -131,10 +131,10 @@ implementation {
 
   task void get_params() {
     atomic {
-      m_tx_power = call ParametersCC2420.get_power();
-      m_channel = call ParametersCC2420.get_channel();
-      autoAckEnabled = call ParametersCC2420.get_ack();    
-      autoCrc = call ParametersCC2420.get_crc();
+      m_tx_power = call cc2420RadioParams.get_power();
+      m_channel = call cc2420RadioParams.get_channel();
+      autoAckEnabled = call cc2420RadioParams.get_ack();    
+      autoCrc = call cc2420RadioParams.get_crc();
     }
   }
     
@@ -158,8 +158,8 @@ implementation {
       m_ext_addr.data[7-i] = t;
     }
 
-    m_tx_power = call ParametersCC2420.get_power();
-    m_channel = call ParametersCC2420.get_channel();
+    m_tx_power = call cc2420RadioParams.get_power();
+    m_channel = call cc2420RadioParams.get_channel();
 
 #if defined(CC2420_NO_ADDRESS_RECOGNITION)
     addressRecognition = FALSE;
@@ -582,6 +582,13 @@ implementation {
   }
 
   default async event void RadioPower.startOscillatorDone() {
+  }
+
+
+
+
+
+  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
 
   
