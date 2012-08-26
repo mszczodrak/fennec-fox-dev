@@ -54,6 +54,8 @@ module csmacaMacP @safe() {
   uses interface ModuleStatus as RadioStatus;
 
   uses interface RadioConfig;
+  uses interface RadioPower;
+  uses interface Read<uint16_t> as ReadRssi;
 }
 
 implementation {
@@ -190,6 +192,15 @@ implementation {
 
   event void RadioConfig.syncDone(error_t error) {
   
+  }
+
+  async event void RadioPower.startVRegDone() {
+  }
+
+  async event void RadioPower.startOscillatorDone() {
+  }
+
+  event void ReadRssi.readDone(error_t error, uint16_t rssi) {
   }
 
 }

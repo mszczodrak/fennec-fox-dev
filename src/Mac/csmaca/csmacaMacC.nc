@@ -50,7 +50,8 @@ configuration csmacaMacC {
   uses interface ModuleStatus as RadioStatus;
 
   uses interface RadioConfig;
-
+  uses interface RadioPower;
+  uses interface Read<uint16_t> as ReadRssi;
 }
 
 implementation {
@@ -75,6 +76,9 @@ implementation {
   csmacaMacParams = csmacaMacP;
 
   RadioConfig = csmacaMacP.RadioConfig;
+  RadioPower = csmacaMacP.RadioPower;
+  ReadRssi = csmacaMacP.ReadRssi;
+
 
   components ParametersCC2420P;
   csmacaMacP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
