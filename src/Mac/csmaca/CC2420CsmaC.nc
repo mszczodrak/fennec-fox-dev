@@ -63,7 +63,7 @@ implementation {
   
   components CC2420TransmitC;
   CsmaP.SubControl -> CC2420TransmitC;
-  CsmaP.CC2420Transmit -> CC2420TransmitC;
+  CsmaP.RadioTransmit -> CC2420TransmitC;
   CsmaP.SubBackoff -> CC2420TransmitC;
 
   components CC2420ReceiveC;

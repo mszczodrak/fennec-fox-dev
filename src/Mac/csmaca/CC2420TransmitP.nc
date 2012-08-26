@@ -47,7 +47,7 @@ module CC2420TransmitP @safe() {
 
   provides interface Init;
   provides interface StdControl;
-  provides interface CC2420Transmit as Send;
+  provides interface RadioTransmit;
   provides interface RadioBackoff;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
@@ -193,15 +193,15 @@ implementation {
 
 
   /**************** Send Commands ****************/
-  async command error_t Send.send( message_t* ONE p_msg, bool useCca ) {
+  async command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
     return send( p_msg, useCca );
   }
 
-  async command error_t Send.resend(bool useCca) {
+  async command error_t RadioTransmit.resend(bool useCca) {
     return resend( useCca );
   }
 
-  async command error_t Send.cancel() {
+  async command error_t RadioTransmit.cancel() {
     atomic {
       switch( m_state ) {
       case S_LOAD:
@@ -219,6 +219,7 @@ implementation {
     return SUCCESS;
   }
 
+/*
   async command error_t Send.modify( uint8_t offset, uint8_t* buf, 
                                      uint8_t len ) {
     call CSN.clr();
@@ -226,7 +227,9 @@ implementation {
     call CSN.set();
     return SUCCESS;
   }
-  
+*/  
+
+
   /***************** Indicator Commands ****************/
   command bool EnergyIndicator.isReceiving() {
     return !(call CCA.get());
@@ -441,7 +444,7 @@ implementation {
       atomic {
         m_state = S_STARTED;
       }
-      signal Send.sendDone( m_msg, ECANCEL );
+      signal RadioTransmit.sendDone( m_msg, ECANCEL );
       break;
       
     default:
@@ -467,7 +470,7 @@ implementation {
       }
       releaseSpiResource();
       m_state = S_STARTED;
-      signal Send.sendDone( m_msg, ECANCEL );
+      signal RadioTransmit.sendDone( m_msg, ECANCEL );
       
     } else if ( !m_cca ) {
       atomic {
@@ -612,128 +615,6 @@ implementation {
     
     return SUCCESS;
   }
-#ifdef CC2420_HW_SECURITY
-
-  task void waitTask(){
-    call Leds.led2Toggle();
-    if(SECURITYLOCK == 1){
-      post waitTask();
-    }else{
-      securityCheck();
-    }
-  }
-
-  void securityCheck(){
-
-    cc2420_header_t* msg_header;
-    cc2420_status_t status;
-    security_header_t* secHdr;
-    uint8_t mode;
-    uint8_t key;
-    uint8_t micLength;
-
-    msg_header = (cc2420_header_t*)m_msg->header;
-
-    if(!(msg_header->fcf & (1 << IEEE154_FCF_SECURITY_ENABLED))){
-      // Security is not used for this packet
-      // Make sure to set mode to 0 and the others to the default values
-      CTR_SECCTRL0 = ((0 << CC2420_SECCTRL0_SEC_MODE) |
-		      (1 << CC2420_SECCTRL0_SEC_M) |
-		      (1 << CC2420_SECCTRL0_SEC_TXKEYSEL) |
-		      (1 << CC2420_SECCTRL0_SEC_CBC_HEAD)) ;
-      
-      call CSN.clr();
-      call SECCTRL0.write(CTR_SECCTRL0);
-      call CSN.set();
-
-      return;
-    }
-
-    if(SECURITYLOCK == 1){
-      post waitTask();
-    }else {
-      //Will perform encryption lock registers
-      atomic SECURITYLOCK = 1;
-
-      secHdr = (security_header_t*) &msg_header->secHdr;
-#if ! defined(TFRAMES_ENABLED)
-    secHdr=(security_header_t*)((uint8_t*)secHdr+1);
-#endif
-
-      memcpy(&nonceValue[3], &(secHdr->frameCounter), 4);
-
-      skip = secHdr->reserved;
-      key = secHdr->keyID[0]; // For now this is the only key selection mode.
-
-      if (secHdr->secLevel == NO_SEC){
-	mode = CC2420_NO_SEC;
-	micLength = 4;
-      }else if (secHdr->secLevel == CBC_MAC_4){
-	//	call Leds.led0Toggle();
-	mode = CC2420_CBC_MAC;
-	micLength = 4;
-      }else if (secHdr->secLevel == CBC_MAC_8){
-	mode = CC2420_CBC_MAC;
-	micLength = 8;
-      }else if (secHdr->secLevel == CBC_MAC_16){
-	mode = CC2420_CBC_MAC;
-	micLength = 16;
-      }else if (secHdr->secLevel == CTR){
-	//	call Leds.led1Toggle();
-	mode = CC2420_CTR;
-	micLength = 4;
-      }else if (secHdr->secLevel == CCM_4){
-	mode = CC2420_CCM;
-	micLength = 4;
-      }else if (secHdr->secLevel == CCM_8){
-	mode = CC2420_CCM;
-	micLength = 8;
-      }else if (secHdr->secLevel == CCM_16){
-	mode = CC2420_CCM;
-	micLength = 16;
-      }else{
-	return;
-      }
-      
-      CTR_SECCTRL0 = ((mode << CC2420_SECCTRL0_SEC_MODE) |
-		      ((micLength-2)/2 << CC2420_SECCTRL0_SEC_M) |
-		      (key << CC2420_SECCTRL0_SEC_TXKEYSEL) |
-		      (1 << CC2420_SECCTRL0_SEC_CBC_HEAD)) ;
-#ifndef TFRAMES_ENABLED
-      CTR_SECCTRL1 = (skip+11+sizeof(security_header_t)+((skip+11+sizeof(security_header_t))<<8));
-#else
-      CTR_SECCTRL1 = (skip+10+sizeof(security_header_t)+((skip+10+sizeof(security_header_t))<<8));
-#endif
-
-      call CSN.clr();
-      call SECCTRL0.write(CTR_SECCTRL0);
-      call CSN.set();
-
-      call CSN.clr();
-      call SECCTRL1.write(CTR_SECCTRL1);
-      call CSN.set();
-
-      call CSN.clr();
-      call TXNONCE.write(0, nonceValue, 16);
-      call CSN.set();
-
-      call CSN.clr();
-      status = call SNOP.strobe();
-      call CSN.set();
-
-      while(status & CC2420_STATUS_ENC_BUSY){
-	call CSN.clr();
-	status = call SNOP.strobe();
-	call CSN.set();
-      }
-      
-      // Inline security will be activated by STXON or STXONCCA strobes
-
-      atomic SECURITYLOCK = 0;
-
-    }
-  }
-#endif
 
   /**
    * Attempt to send the packet we have loaded into the tx buffer on 
@@ -761,15 +642,10 @@ implementation {
         releaseSpiResource();
         call CSN.set();
         m_state = S_STARTED;
-        signal Send.sendDone( m_msg, ECANCEL );
+        signal RadioTransmit.sendDone( m_msg, ECANCEL );
         return;
       }
-#ifdef CC2420_HW_SECURITY
-      if(securityChecked != 1){
-	securityCheck();
-      }
-      securityChecked = 1;
-#endif
+
       call CSN.clr();
       status = m_cca ? call STXONCCA.strobe() : call STXON.strobe();
       if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
@@ -866,7 +742,7 @@ implementation {
     atomic m_state = S_STARTED;
     abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
-    signal Send.sendDone( m_msg, err );
+    signal RadioTransmit.sendDone( m_msg, err );
   }
 
 }

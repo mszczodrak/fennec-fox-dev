@@ -30,44 +30,47 @@
  */
 
 /**
- * Implementation of the transmit path for the ChipCon CC2420 radio.
+ * Low-level abstraction for the transmit path implementaiton of the
+ * ChipCon CC2420 radio.
  *
  * @author Jonathan Hui <jhui@archrock.com>
- * @version $Revision: 1.3 $ $Date: 2009-08-14 20:33:43 $
+ * @version $Revision: 1.2 $ $Date: 2008-06-03 04:43:03 $
  */
 
-#include "IEEE802154.h"
+#include "message.h"
 
-configuration CC2420TransmitC {
+interface RadioTransmit {
 
-  provides {
-    interface StdControl;
-    interface CC2420Transmit;
-    interface RadioBackoff;
-    interface ReceiveIndicator as EnergyIndicator;
-    interface ReceiveIndicator as ByteIndicator;
-  }
+  /**
+   * Send a message
+   *
+   * @param p_msg message to send.
+   * @param useCca TRUE if this Tx should use clear channel assessments
+   * @return SUCCESS if the request was accepted, FAIL otherwise.
+   */
+  async command error_t send( message_t* ONE p_msg, bool useCca );
+
+  /**
+   * Send the previous message again
+   * @param useCca TRUE if this re-Tx should use clear channel assessments
+   * @return SUCCESS if the request was accepted, FAIL otherwise.
+   */
+  async command error_t resend(bool useCca);
+
+  /**
+   * Cancel sending of the message.
+   *
+   * @return SUCCESS if the request was accepted, FAIL otherwise.
+   */
+  async command error_t cancel();
+
+  /**
+   * Signal that a message has been sent
+   *
+   * @param p_msg message to send.
+   * @param error notifaction of how the operation went.
+   */
+  async event void sendDone( message_t* ONE_NOK p_msg, error_t error );
+
 }
 
-implementation {
-
-  components CC2420TransmitP;
-  StdControl = CC2420TransmitP;
-  CC2420Transmit = CC2420TransmitP;
-  RadioBackoff = CC2420TransmitP;
-  EnergyIndicator = CC2420TransmitP.EnergyIndicator;
-  ByteIndicator = CC2420TransmitP.ByteIndicator;
-
-  //components CC2420ReceiveC;
-  //CC2420TransmitP.CC2420Receive -> CC2420ReceiveC;
-  
-  components CC2420PacketC;
-  CC2420TransmitP.CC2420Packet -> CC2420PacketC;
-  CC2420TransmitP.CC2420PacketBody -> CC2420PacketC;
-  CC2420TransmitP.PacketTimeStamp -> CC2420PacketC;
-  CC2420TransmitP.PacketTimeSyncOffset -> CC2420PacketC;
-
-  components ParametersCC2420P;
-  CC2420TransmitP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-
-}

@@ -42,7 +42,7 @@ module CC2420CsmaP @safe() {
 
   uses interface Resource as RadioResource;
   uses interface StdControl as SubControl;
-  uses interface CC2420Transmit;
+  uses interface RadioTransmit;
   uses interface RadioBackoff as SubBackoff;
   uses interface Random;
   uses interface Leds;
@@ -123,7 +123,7 @@ implementation {
 
   /***************** Send Commands ****************/
   command error_t Send.cancel( message_t* p_msg ) {
-    return call CC2420Transmit.cancel();
+    return call RadioTransmit.cancel();
   }
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
@@ -167,7 +167,7 @@ implementation {
     ccaOn = call ParametersCC2420.get_cca();
     signal RadioBackoff.requestCca(m_msg);
 
-    call CC2420Transmit.send( m_msg, ccaOn );
+    call RadioTransmit.send( m_msg, ccaOn );
     return SUCCESS;
 
   }
@@ -213,7 +213,7 @@ implementation {
   
 
   /**************** Events ****************/
-  async event void CC2420Transmit.sendDone( message_t* p_msg, error_t err ) {
+  async event void RadioTransmit.sendDone( message_t* p_msg, error_t err ) {
     atomic sendErr = err;
     post sendDone_task();
   }

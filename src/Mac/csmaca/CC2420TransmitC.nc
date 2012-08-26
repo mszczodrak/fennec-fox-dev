@@ -42,7 +42,7 @@ configuration CC2420TransmitC {
 
   provides {
     interface StdControl;
-    interface CC2420Transmit;
+    interface RadioTransmit;
     interface RadioBackoff;
     interface ReceiveIndicator as EnergyIndicator;
     interface ReceiveIndicator as ByteIndicator;
@@ -53,7 +53,7 @@ implementation {
 
   components CC2420TransmitP;
   StdControl = CC2420TransmitP;
-  CC2420Transmit = CC2420TransmitP;
+  RadioTransmit = CC2420TransmitP;
   RadioBackoff = CC2420TransmitP;
   EnergyIndicator = CC2420TransmitP.EnergyIndicator;
   ByteIndicator = CC2420TransmitP.ByteIndicator;
