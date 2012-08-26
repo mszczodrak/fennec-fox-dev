@@ -63,7 +63,7 @@ interface RadioConfig {
   /**
    * Get the long address of the radio: set in hardware
    */
-  command ieee_eui64_t getExtAddr();
+//  command ieee_eui64_t getExtAddr();
 
   /**
    * Change the short address of the radio.

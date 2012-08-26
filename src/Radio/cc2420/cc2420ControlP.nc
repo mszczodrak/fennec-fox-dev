@@ -322,9 +322,9 @@ implementation {
     atomic m_channel = channel;
   }
 
-  command ieee_eui64_t RadioConfig.getExtAddr() {
-    return m_ext_addr;
-  }
+//  command ieee_eui64_t RadioConfig.getExtAddr() {
+//    return m_ext_addr;
+//  }
 
   async command uint16_t RadioConfig.getShortAddr() {
     atomic return m_short_addr;
@@ -571,5 +571,18 @@ implementation {
 
   default event void ReadRssi.readDone(error_t error, uint16_t data) {
   }
+
+  
+
+
+  default async event void RadioPower.startVRegDone() {
+  }
+
+  default event void Resource.granted() {
+  }
+
+  default async event void RadioPower.startOscillatorDone() {
+  }
+
   
 }

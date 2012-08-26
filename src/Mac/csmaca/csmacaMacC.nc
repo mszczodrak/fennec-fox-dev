@@ -49,6 +49,8 @@ configuration csmacaMacC {
   uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
 
+  uses interface RadioConfig;
+
 }
 
 implementation {
@@ -71,6 +73,8 @@ implementation {
   MacReceive = csmacaMacP.MacReceive;
   MacSnoop = csmacaMacP.MacSnoop;
   csmacaMacParams = csmacaMacP;
+
+  RadioConfig = csmacaMacP.RadioConfig;
 
   components ParametersCC2420P;
   csmacaMacP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;

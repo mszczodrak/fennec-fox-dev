@@ -52,6 +52,8 @@ module csmacaMacP @safe() {
   uses interface Packet as RadioPacket;
   uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
+
+  uses interface RadioConfig;
 }
 
 implementation {
@@ -186,6 +188,9 @@ implementation {
     return signal MacStatus.status(layer, status_flag);
   }
 
+  event void RadioConfig.syncDone(error_t error) {
+  
+  }
 
 }
 
