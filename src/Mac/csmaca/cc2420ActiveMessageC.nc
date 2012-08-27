@@ -6,7 +6,7 @@
 #error "CC2420 AM layer cannot work when IEEE 802.15.4 frames only are used"
 #endif
 
-configuration CC2420ActiveMessageC {
+configuration cc2420ActiveMessageC {
   provides {
     interface SplitControl;
     interface AMSend;
@@ -27,7 +27,7 @@ implementation {
   };
 
   components CC2420RadioC as Radio;
-  components CC2420ActiveMessageP as AM;
+  components cc2420ActiveMessageP as AM;
   components ActiveMessageAddressC;
   components CC2420CsmaC as CsmaC;
   components CC2420PacketC;

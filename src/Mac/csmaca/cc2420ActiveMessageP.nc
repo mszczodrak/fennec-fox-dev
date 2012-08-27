@@ -3,7 +3,7 @@
 #include "CC2420.h"
 #include "csmacaMac.h"
 
-module CC2420ActiveMessageP @safe() {
+module cc2420ActiveMessageP @safe() {
   provides {
     interface AMSend;
     interface Receive;

@@ -61,7 +61,7 @@ implementation {
 #ifdef TOSSIM
   components ActiveMessageC as AM;
 #else
-  components CC2420ActiveMessageC as AM;
+  components cc2420ActiveMessageC as AM;
 #endif
 
 
