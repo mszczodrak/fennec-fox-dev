@@ -53,7 +53,6 @@ implementation {
   AM.CC2420Packet -> CC2420PacketC;
   AM.CC2420PacketBody -> CC2420PacketC;
   
-  AM.SubBackoff -> CsmaC;
 
   components LedsC;
   AM.Leds -> LedsC;

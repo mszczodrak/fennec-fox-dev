@@ -10,7 +10,6 @@ module CC2420ActiveMessageP @safe() {
     interface Receive as Snoop;
     interface AMPacket;
     interface Packet;
-    interface RadioBackoff;
   }
 
   uses {
@@ -20,7 +19,6 @@ module CC2420ActiveMessageP @safe() {
     interface CC2420PacketBody;
 //    interface CC2420Config;
     interface ActiveMessageAddress;
-    interface RadioBackoff as SubBackoff;
 
     interface Resource as RadioResource;
     interface Leds;
@@ -199,52 +197,6 @@ implementation {
   async event void ActiveMessageAddress.changed() {
   }
   
-  /***************** CC2420Config Events ****************/
-//  event void CC2420Config.syncDone( error_t error ) {
-//  }
-  
-  
-  /***************** RadioBackoff ***********************/
-
-  async event void SubBackoff.requestInitialBackoff(message_t *msg) {
-    signal RadioBackoff.requestInitialBackoff(msg);
-//    signal RadioBackoff.requestInitialBackoff[(TCAST(cc2420_header_t* ONE,
-//        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
-  }
-
-  async event void SubBackoff.requestCongestionBackoff(message_t *msg) {
-    signal RadioBackoff.requestCongestionBackoff(msg);
-//    signal RadioBackoff.requestCongestionBackoff[(TCAST(cc2420_header_t* ONE,
-//        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
-  }
-  async event void SubBackoff.requestCca(message_t *msg) {
-    // Lower layers than this do not configure the CCA settings
-    signal RadioBackoff.requestCca(msg);
-//    signal RadioBackoff.requestCca[(TCAST(cc2420_header_t* ONE,
-//        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
-  }
-
-  async command void RadioBackoff.setInitialBackoff(uint16_t backoffTime) {
-    call SubBackoff.setInitialBackoff(backoffTime);
-  }
-  
-  /**
-   * Must be called within a requestCongestionBackoff event
-   * @param backoffTime the amount of time in some unspecified units to backoff
-   */
-  async command void RadioBackoff.setCongestionBackoff(uint16_t backoffTime) {
-    call SubBackoff.setCongestionBackoff(backoffTime);
-  }
-
-      
-  /**
-   * Enable CCA for the outbound packet.  Must be called within a requestCca
-   * event
-   * @param ccaOn TRUE to enable CCA, which is the default.
-   */
-  async command void RadioBackoff.setCca(bool useCca) {
-    call SubBackoff.setCca(useCca);
-  }
   
   /***************** Defaults ****************/
   default event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
@@ -259,16 +211,4 @@ implementation {
     call RadioResource.release();
   }
 
-  default async event void RadioBackoff.requestInitialBackoff(
-      message_t *msg) {
-  }
-
-  default async event void RadioBackoff.requestCongestionBackoff(
-      message_t *msg) {
-  }
-  
-  default async event void RadioBackoff.requestCca(
-      message_t *msg) {
-  }
-  
 }
