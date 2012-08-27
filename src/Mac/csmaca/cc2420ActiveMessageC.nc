@@ -12,14 +12,14 @@ configuration cc2420ActiveMessageC {
     interface AMSend;
     interface Receive;
     interface Receive as Snoop;
-    interface AMPacket;
-    interface Packet;
-    interface CC2420Packet;
     interface PacketAcknowledgements;
     interface LinkPacketMetadata;
     interface LowPowerListening;
     interface PacketLink;
   }
+
+  uses interface Packet as MacPacket;
+  uses interface AMPacket as MacAMPacket;
 }
 implementation {
   enum {
@@ -28,19 +28,16 @@ implementation {
 
   components CC2420RadioC as Radio;
   components cc2420ActiveMessageP as AM;
-  components ActiveMessageAddressC;
   components CC2420CsmaC as CsmaC;
-  components CC2420PacketC;
   
   SplitControl = Radio;
-  Packet = AM;
+  MacPacket = AM;
   AMSend = AM;
   Receive = AM.Receive;
   Snoop = AM.Snoop;
-  AMPacket = AM;
+  MacAMPacket = AM;
   PacketLink = Radio;
   LowPowerListening = Radio;
-  CC2420Packet = Radio;
   PacketAcknowledgements = Radio;
   LinkPacketMetadata = Radio;
   
@@ -49,11 +46,11 @@ implementation {
   AM.SubSend -> Radio.ActiveSend;
   AM.SubReceive -> Radio.ActiveReceive;
 
-  AM.ActiveMessageAddress -> ActiveMessageAddressC;
-  AM.CC2420Packet -> CC2420PacketC;
-  AM.CC2420PacketBody -> CC2420PacketC;
-  
-
   components LedsC;
   AM.Leds -> LedsC;
+
+  components CC2420PacketC;
+  AM.CC2420Packet -> CC2420PacketC;
+  AM.CC2420PacketBody -> CC2420PacketC;
+
 }

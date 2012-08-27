@@ -35,6 +35,9 @@ module csmacaMacP @safe() {
   provides interface Receive as MacReceive;
   provides interface Receive as MacSnoop;
 
+  provides interface Packet as MacPacket;
+  provides interface AMPacket as MacAMPacket;
+
   uses interface csmacaMacParams;
 
   uses interface SplitControl as RadioControl;
@@ -43,7 +46,6 @@ module csmacaMacP @safe() {
   uses interface AMSend;
   uses interface Receive;
   uses interface Receive as Snoop;
-  uses interface AMPacket;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -57,6 +59,11 @@ module csmacaMacP @safe() {
   uses interface RadioPower;
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
+
+  uses interface CC2420Packet;
+  uses interface CC2420PacketBody;
+
+  uses interface Send as SubSend;
 }
 
 implementation {
@@ -135,7 +142,7 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    call AMPacket.setGroup(msg, msg->conf);
+    call MacAMPacket.setGroup(msg, msg->conf);
     dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
     return call AMSend.send(addr, msg, len);
   }
@@ -157,13 +164,13 @@ implementation {
   }
 
   event message_t* Receive.receive(message_t *msg, void* payload, uint8_t len) {
-    msg->conf = call AMPacket.group(msg);
+    msg->conf = call MacAMPacket.group(msg);
     dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
     return signal MacReceive.receive(msg, payload, len);
   }
 
   event message_t* Snoop.receive(message_t *msg, void* payload, uint8_t len) {
-    msg->conf = call AMPacket.group(msg);
+    msg->conf = call MacAMPacket.group(msg);
     return signal MacSnoop.receive(msg, payload, len);
   }
 
@@ -207,6 +214,111 @@ implementation {
   event void RadioResource.granted() {
 
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /***************** AMPacket Commands ****************/
+  command am_addr_t MacAMPacket.address() {
+    return TOS_NODE_ID;
+  }
+
+  command am_addr_t MacAMPacket.destination(message_t* amsg) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader(amsg);
+    return header->dest;
+  }
+
+  command am_addr_t MacAMPacket.source(message_t* amsg) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader(amsg);
+    return header->src;
+  }
+
+  command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader(amsg);
+    header->dest = addr;
+  }
+
+  command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader(amsg);
+    header->src = addr;
+  }
+
+
+
+  command bool MacAMPacket.isForMe(message_t* amsg) {
+    return (call MacAMPacket.destination(amsg) == call MacAMPacket.address() ||
+            call MacAMPacket.destination(amsg) == AM_BROADCAST_ADDR);
+  }
+
+  command am_id_t MacAMPacket.type(message_t* amsg) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader(amsg);
+    return header->type;
+  }
+
+  command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader(amsg);
+    header->type = type;
+  }
+
+  command am_group_t MacAMPacket.group(message_t* amsg) {
+    return (call CC2420PacketBody.getHeader(amsg))->destpan;
+  }
+
+  command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+    // Overridden intentionally when we send()
+    (call CC2420PacketBody.getHeader(amsg))->destpan = grp;
+  }
+
+  command am_group_t MacAMPacket.localGroup() {
+    return 0;
+//    return call CC2420Config.getPanAddr();
+  }
+
+
+
+
+  /***************** Packet Commands ****************/
+  command void MacPacket.clear(message_t* msg) {
+    memset(call CC2420PacketBody.getHeader(msg), 0x0, sizeof(cc2420_header_t));
+    memset(call CC2420PacketBody.getMetadata(msg), 0x0, sizeof(cc2420_metadata_t));
+  }
+
+  command uint8_t MacPacket.payloadLength(message_t* msg) {
+    return (call CC2420PacketBody.getHeader(msg))->length - CC2420_SIZE;
+  }
+
+  command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
+    (call CC2420PacketBody.getHeader(msg))->length  = len + CC2420_SIZE;
+  }
+
+  command uint8_t MacPacket.maxPayloadLength() {
+    return call SubSend.maxPayloadLength();
+  }
+
+  command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
+    return call SubSend.getPayload(msg, len);
+  }
+
+
+
+  /***************** SubSend Events ****************/
+  event void SubSend.sendDone(message_t* msg, error_t result) {
+//    call RadioResource.release();
+//    signal AMSend.sendDone(msg, result);
+  }
+
+
 
 }
 

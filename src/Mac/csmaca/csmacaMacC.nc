@@ -70,12 +70,17 @@ implementation {
   MacAMSend = csmacaMacP.MacAMSend;
   MacReceive = csmacaMacP.MacReceive;
   MacSnoop = csmacaMacP.MacSnoop;
+  MacPacket = csmacaMacP.MacPacket;
+  MacAMPacket = csmacaMacP.MacAMPacket;
   csmacaMacParams = csmacaMacP;
 
   RadioConfig = csmacaMacP.RadioConfig;
   RadioPower = csmacaMacP.RadioPower;
   ReadRssi = csmacaMacP.ReadRssi;
   RadioResource = csmacaMacP.RadioResource;
+
+  AM.MacPacket -> csmacaMacP.MacPacket;
+  AM.MacAMPacket -> csmacaMacP.MacAMPacket;
 
 
   components ParametersCC2420P;
@@ -85,10 +90,7 @@ implementation {
   csmacaMacP.AMSend -> AM.AMSend;
   csmacaMacP.Receive -> AM.Receive;
   csmacaMacP.Snoop -> AM.Snoop;
-  csmacaMacP.AMPacket -> AM.AMPacket;
 
-  MacPacket = AM.Packet;
-  MacAMPacket = AM.AMPacket;
   MacPacketAcknowledgements = AM.PacketAcknowledgements;
 
   RadioAMSend = csmacaMacP.RadioAMSend;
@@ -107,6 +109,13 @@ implementation {
   components CC2420CsmaC;
   RadioPower = CC2420CsmaC.RadioPower;
   RadioResource = CC2420CsmaC.RadioResource;
+
+  components CC2420PacketC;
+  csmacaMacP.CC2420Packet -> CC2420PacketC;
+  csmacaMacP.CC2420PacketBody -> CC2420PacketC;
+
+  components CC2420RadioC as Radio;
+  csmacaMacP.SubSend -> Radio.ActiveSend;
 
 }
 
