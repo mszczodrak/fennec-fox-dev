@@ -57,10 +57,6 @@ configuration csmacaMacC {
 
 implementation {
 
-  enum {
-    U_CC_FF_PORT = unique("CC2420_CC_FF_PORT"),
-  };
-
   components csmacaMacP;
 #ifdef TOSSIM
   components ActiveMessageC as AM;
@@ -86,9 +82,9 @@ implementation {
   csmacaMacP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
   csmacaMacP.RadioControl -> AM;
 
-  csmacaMacP.AMSend -> AM.AMSend[U_CC_FF_PORT];
-  csmacaMacP.Receive -> AM.Receive[U_CC_FF_PORT];
-  csmacaMacP.Snoop -> AM.Snoop[U_CC_FF_PORT];
+  csmacaMacP.AMSend -> AM.AMSend;
+  csmacaMacP.Receive -> AM.Receive;
+  csmacaMacP.Snoop -> AM.Snoop;
   csmacaMacP.AMPacket -> AM.AMPacket;
 
   MacPacket = AM.Packet;

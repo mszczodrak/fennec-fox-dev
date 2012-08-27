@@ -1,45 +1,3 @@
-/*
- * Copyright (c) 2005 Stanford University. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * - Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the
- *   distribution.
- * - Neither the name of the copyright holder nor the names of
- *   its contributors may be used to endorse or promote products derived
- *   from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-
-/**
- * Active message implementation on top of the CC2420 radio. This
- * implementation uses the 16-bit addressing mode of 802.15.4: the
- * only additional byte it adds is the AM id byte, as the first byte
- * of the data payload.
- *
- * @author Philip Levis
- * @version $Revision: 1.22 $ $Date: 2010-06-29 22:07:44 $
- */
-
 #include <Fennec.h>
 #include <Ieee154.h> 
 #include "CC2420.h"
@@ -47,13 +5,12 @@
 
 module CC2420ActiveMessageP @safe() {
   provides {
-    interface AMSend[am_id_t id];
-    interface Receive[am_id_t id];
-    interface Receive as Snoop[am_id_t id];
+    interface AMSend;
+    interface Receive;
+    interface Receive as Snoop;
     interface AMPacket;
     interface Packet;
-    interface SendNotifier[am_id_t id];
-    interface RadioBackoff[am_id_t id];
+    interface RadioBackoff;
   }
 
   uses {
@@ -73,23 +30,19 @@ implementation {
   uint16_t pending_length;
   message_t * ONE_NOK pending_message = NULL;
 
-
-
   /***************** Resource event  ****************/
   event void RadioResource.granted() {
     uint8_t rc;
-    cc2420_header_t* header = call CC2420PacketBody.getHeader( pending_message );
 
-    signal SendNotifier.aboutToSend[header->type](header->dest, pending_message);
     rc = call SubSend.send( pending_message, pending_length );
     if (rc != SUCCESS) {
       call RadioResource.release();
-      signal AMSend.sendDone[header->type]( pending_message, rc );
+      signal AMSend.sendDone( pending_message, rc );
     }
   }
 
   /***************** AMSend Commands ****************/
-  command error_t AMSend.send[am_id_t id](am_addr_t addr,
+  command error_t AMSend.send(am_addr_t addr,
 					  message_t* msg,
 					  uint8_t len) {
     cc2420_header_t* header = call CC2420PacketBody.getHeader( msg );
@@ -101,7 +54,7 @@ implementation {
       return ESIZE;
     }
     
-    header->type = id;
+    //header->type = id;
     header->dest = addr;
     //header->destpan = call CC2420Config.getPanAddr();
     //header->destpan = signal Mgmt.currentStateId();
@@ -114,7 +67,6 @@ implementation {
     
     if (call RadioResource.immediateRequest() == SUCCESS) {
       error_t rc;
-      signal SendNotifier.aboutToSend[id](addr, msg);
       
       rc = call SubSend.send( msg, len );
       if (rc != SUCCESS) {
@@ -129,15 +81,15 @@ implementation {
     }
   }
 
-  command error_t AMSend.cancel[am_id_t id](message_t* msg) {
+  command error_t AMSend.cancel(message_t* msg) {
     return call SubSend.cancel(msg);
   }
 
-  command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
+  command uint8_t AMSend.maxPayloadLength() {
     return call Packet.maxPayloadLength();
   }
 
-  command void* AMSend.getPayload[am_id_t id](message_t* m, uint8_t len) {
+  command void* AMSend.getPayload(message_t* m, uint8_t len) {
     return call Packet.getPayload(m, len);
   }
 
@@ -222,7 +174,7 @@ implementation {
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
     call RadioResource.release();
-    signal AMSend.sendDone[call AMPacket.type(msg)](msg, result);
+    signal AMSend.sendDone(msg, result);
   }
 
   
@@ -235,10 +187,10 @@ implementation {
     msg->crc = meta->crc;
 
     if (call AMPacket.isForMe(msg)) {
-      return signal Receive.receive[call AMPacket.type(msg)](msg, payload, len);
+      return signal Receive.receive(msg, payload, len);
     }
     else {
-      return signal Snoop.receive[call AMPacket.type(msg)](msg, payload, len);
+      return signal Snoop.receive(msg, payload, len);
     }
   }
   
@@ -255,21 +207,24 @@ implementation {
   /***************** RadioBackoff ***********************/
 
   async event void SubBackoff.requestInitialBackoff(message_t *msg) {
-    signal RadioBackoff.requestInitialBackoff[(TCAST(cc2420_header_t* ONE,
-        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
+    signal RadioBackoff.requestInitialBackoff(msg);
+//    signal RadioBackoff.requestInitialBackoff[(TCAST(cc2420_header_t* ONE,
+//        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
   }
 
   async event void SubBackoff.requestCongestionBackoff(message_t *msg) {
-    signal RadioBackoff.requestCongestionBackoff[(TCAST(cc2420_header_t* ONE,
-        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
+    signal RadioBackoff.requestCongestionBackoff(msg);
+//    signal RadioBackoff.requestCongestionBackoff[(TCAST(cc2420_header_t* ONE,
+//        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
   }
   async event void SubBackoff.requestCca(message_t *msg) {
     // Lower layers than this do not configure the CCA settings
-    signal RadioBackoff.requestCca[(TCAST(cc2420_header_t* ONE,
-        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
+    signal RadioBackoff.requestCca(msg);
+//    signal RadioBackoff.requestCca[(TCAST(cc2420_header_t* ONE,
+//        (uint8_t*)msg + offsetof(message_t, data) - sizeof(cc2420_header_t)))->type](msg);
   }
 
-  async command void RadioBackoff.setInitialBackoff[am_id_t amId](uint16_t backoffTime) {
+  async command void RadioBackoff.setInitialBackoff(uint16_t backoffTime) {
     call SubBackoff.setInitialBackoff(backoffTime);
   }
   
@@ -277,7 +232,7 @@ implementation {
    * Must be called within a requestCongestionBackoff event
    * @param backoffTime the amount of time in some unspecified units to backoff
    */
-  async command void RadioBackoff.setCongestionBackoff[am_id_t amId](uint16_t backoffTime) {
+  async command void RadioBackoff.setCongestionBackoff(uint16_t backoffTime) {
     call SubBackoff.setCongestionBackoff(backoffTime);
   }
 
@@ -287,34 +242,32 @@ implementation {
    * event
    * @param ccaOn TRUE to enable CCA, which is the default.
    */
-  async command void RadioBackoff.setCca[am_id_t amId](bool useCca) {
+  async command void RadioBackoff.setCca(bool useCca) {
     call SubBackoff.setCca(useCca);
   }
   
   /***************** Defaults ****************/
-  default event message_t* Receive.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) {
+  default event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
     return msg;
   }
   
-  default event message_t* Snoop.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) {
+  default event message_t* Snoop.receive(message_t* msg, void* payload, uint8_t len) {
     return msg;
   }
 
-  default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t err) {
+  default event void AMSend.sendDone(message_t* msg, error_t err) {
     call RadioResource.release();
   }
 
-  default event void SendNotifier.aboutToSend[am_id_t amId](am_addr_t addr, message_t *msg) {
-  }
-  default async event void RadioBackoff.requestInitialBackoff[am_id_t id](
+  default async event void RadioBackoff.requestInitialBackoff(
       message_t *msg) {
   }
 
-  default async event void RadioBackoff.requestCongestionBackoff[am_id_t id](
+  default async event void RadioBackoff.requestCongestionBackoff(
       message_t *msg) {
   }
   
-  default async event void RadioBackoff.requestCca[am_id_t id](
+  default async event void RadioBackoff.requestCca(
       message_t *msg) {
   }
   
