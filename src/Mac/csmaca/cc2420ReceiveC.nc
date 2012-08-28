@@ -36,7 +36,7 @@
  * @version $Revision: 1.4 $ $Date: 2009-08-14 20:33:43 $
  */
 
-configuration CC2420ReceiveC {
+configuration cc2420ReceiveC {
 
   provides interface StdControl;
   provides interface CC2420Receive;
@@ -49,7 +49,7 @@ configuration CC2420ReceiveC {
 
 implementation {
   components MainC;
-  components CC2420ReceiveP;
+  components cc2420ReceiveP;
   components CC2420PacketC;
   components new CC2420SpiC() as Spi;
   
@@ -57,33 +57,33 @@ implementation {
   components HplCC2420InterruptsC as InterruptsC;
 
   components LedsC as Leds;
-  CC2420ReceiveP.Leds -> Leds;
+  cc2420ReceiveP.Leds -> Leds;
 
-  StdControl = CC2420ReceiveP;
-  CC2420Receive = CC2420ReceiveP;
-  Receive = CC2420ReceiveP;
-  PacketIndicator = CC2420ReceiveP.PacketIndicator;
+  StdControl = cc2420ReceiveP;
+  CC2420Receive = cc2420ReceiveP;
+  Receive = cc2420ReceiveP;
+  PacketIndicator = cc2420ReceiveP.PacketIndicator;
 
-  MainC.SoftwareInit -> CC2420ReceiveP;
+  MainC.SoftwareInit -> cc2420ReceiveP;
   
-  CC2420ReceiveP.CSN -> Pins.CSN;
-  CC2420ReceiveP.FIFO -> Pins.FIFO;
-  CC2420ReceiveP.FIFOP -> Pins.FIFOP;
-  CC2420ReceiveP.InterruptFIFOP -> InterruptsC.InterruptFIFOP;
-  CC2420ReceiveP.SpiResource -> Spi;
-  CC2420ReceiveP.RXFIFO -> Spi.RXFIFO;
-  CC2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
-  CC2420ReceiveP.SACK -> Spi.SACK;
-  CC2420ReceiveP.PacketTimeStamp -> CC2420PacketC;
-  RadioConfig = CC2420ReceiveP.RadioConfig;
+  cc2420ReceiveP.CSN -> Pins.CSN;
+  cc2420ReceiveP.FIFO -> Pins.FIFO;
+  cc2420ReceiveP.FIFOP -> Pins.FIFOP;
+  cc2420ReceiveP.InterruptFIFOP -> InterruptsC.InterruptFIFOP;
+  cc2420ReceiveP.SpiResource -> Spi;
+  cc2420ReceiveP.RXFIFO -> Spi.RXFIFO;
+  cc2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
+  cc2420ReceiveP.SACK -> Spi.SACK;
+  cc2420ReceiveP.PacketTimeStamp -> CC2420PacketC;
+  RadioConfig = cc2420ReceiveP.RadioConfig;
 
-  CC2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
-  CC2420ReceiveP.SECCTRL1 -> Spi.SECCTRL1;
-  CC2420ReceiveP.SRXDEC -> Spi.SRXDEC;
-  CC2420ReceiveP.RXNONCE -> Spi.RXNONCE;
-  CC2420ReceiveP.KEY0 -> Spi.KEY0;
-  CC2420ReceiveP.KEY1 -> Spi.KEY1;
-  CC2420ReceiveP.RXFIFO_RAM -> Spi.RXFIFO_RAM;
-  CC2420ReceiveP.SNOP -> Spi.SNOP;
+  cc2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
+  cc2420ReceiveP.SECCTRL1 -> Spi.SECCTRL1;
+  cc2420ReceiveP.SRXDEC -> Spi.SRXDEC;
+  cc2420ReceiveP.RXNONCE -> Spi.RXNONCE;
+  cc2420ReceiveP.KEY0 -> Spi.KEY0;
+  cc2420ReceiveP.KEY1 -> Spi.KEY1;
+  cc2420ReceiveP.RXFIFO_RAM -> Spi.RXFIFO_RAM;
+  cc2420ReceiveP.SNOP -> Spi.SNOP;
 
 }

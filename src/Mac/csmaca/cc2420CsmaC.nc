@@ -66,9 +66,9 @@ implementation {
   CsmaP.RadioTransmit -> cc2420TransmitC;
   CsmaP.SubBackoff -> cc2420TransmitC;
 
-  components CC2420ReceiveC;
-  Receive = CC2420ReceiveC;
-  CsmaP.SubControl -> CC2420ReceiveC;
+  components cc2420ReceiveC;
+  Receive = cc2420ReceiveC;
+  CsmaP.SubControl -> cc2420ReceiveC;
 
   components RandomC;
   CsmaP.Random -> RandomC;

@@ -42,7 +42,7 @@
 #include "message.h"
 #include "AM.h"
 
-module CC2420ReceiveP @safe() {
+module cc2420ReceiveP @safe() {
 
   provides interface Init;
   provides interface StdControl;

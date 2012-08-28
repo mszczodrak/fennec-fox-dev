@@ -91,8 +91,8 @@ implementation {
   cc2420TransmitP.KEY0 -> Spi.KEY0;
   cc2420TransmitP.KEY1 -> Spi.KEY1;
   
-  components CC2420ReceiveC;
-  cc2420TransmitP.CC2420Receive -> CC2420ReceiveC;
+  components cc2420ReceiveC;
+  cc2420TransmitP.CC2420Receive -> cc2420ReceiveC;
   
   components CC2420PacketC;
   cc2420TransmitP.PacketTimeStamp -> CC2420PacketC;
