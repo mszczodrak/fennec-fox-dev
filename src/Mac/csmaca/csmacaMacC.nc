@@ -66,6 +66,7 @@ implementation {
   MacSnoop = csmacaMacP.MacSnoop;
   MacPacket = csmacaMacP.MacPacket;
   MacAMPacket = csmacaMacP.MacAMPacket;
+  MacPacketAcknowledgements = csmacaMacP.MacPacketAcknowledgements;
   csmacaMacParams = csmacaMacP;
 
   RadioConfig = csmacaMacP.RadioConfig;
@@ -95,11 +96,9 @@ implementation {
   RadioPower = cc2420CsmaC.RadioPower;
   RadioResource = cc2420CsmaC.RadioResource;
 
-  components CC2420PacketC;
-  MacPacketAcknowledgements = CC2420PacketC.Acks;
-
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
+
 
   components UniqueSendC;
   components UniqueReceiveC;
@@ -108,6 +107,8 @@ implementation {
   csmacaMacP.SubReceive -> LplC;
 
   // SplitControl Layers
+
+  LplC.MacPacketAcknowledgements -> csmacaMacP.MacPacketAcknowledgements;
   LplC.SubControl -> cc2420CsmaC;
 
   UniqueSendC.SubSend -> LplC.Send;

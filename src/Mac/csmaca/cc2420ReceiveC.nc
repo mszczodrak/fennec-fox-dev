@@ -74,8 +74,6 @@ implementation {
   cc2420ReceiveP.RXFIFO -> Spi.RXFIFO;
   cc2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
   cc2420ReceiveP.SACK -> Spi.SACK;
-  cc2420ReceiveP.CC2420Packet -> CC2420PacketC;
-  cc2420ReceiveP.CC2420PacketBody -> CC2420PacketC;
   cc2420ReceiveP.PacketTimeStamp -> CC2420PacketC;
   RadioConfig = CC2420ReceiveP.RadioConfig;
 

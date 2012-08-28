@@ -51,6 +51,7 @@ configuration DefaultLplC {
     interface Send as SubSend;
     interface Receive as SubReceive;
     interface SplitControl as SubControl;
+    interface PacketAcknowledgements as MacPacketAcknowledgements;
   }
 }
 
@@ -60,7 +61,6 @@ implementation {
       PowerCycleC,
       cc2420CsmaC,
       cc2420TransmitC,
-      CC2420PacketC,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
@@ -72,6 +72,7 @@ implementation {
   Receive = DefaultLplP;
   SplitControl = PowerCycleC;
   SendState = SendStateC;
+  MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
   
   SubControl = DefaultLplP.SubControl;
   SubReceive = DefaultLplP.SubReceive;
@@ -88,7 +89,6 @@ implementation {
   DefaultLplP.SendDoneTimer -> SendDoneTimerC;
   DefaultLplP.PowerCycle -> PowerCycleC;
   DefaultLplP.Resend -> cc2420TransmitC;
-  DefaultLplP.PacketAcknowledgements -> CC2420PacketC;
   DefaultLplP.RadioBackoff -> cc2420CsmaC;
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;

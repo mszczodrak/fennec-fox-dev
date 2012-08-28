@@ -59,8 +59,6 @@ module cc2420ReceiveP @safe() {
   uses interface CC2420Fifo as RXFIFO;
   uses interface CC2420Strobe as SACK;
   uses interface CC2420Strobe as SFLUSHRX;
-  uses interface CC2420Packet;
-  uses interface CC2420PacketBody;
   uses interface RadioConfig;
   uses interface PacketTimeStamp<T32khz,uint32_t>;
 
@@ -146,6 +144,14 @@ implementation {
   bool passesAddressCheck(message_t * ONE msg);
 
   task void receiveDone_task();
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
+  cc2420_metadata_t* getMetadata( message_t* msg ) {
+    return (cc2420_metadata_t*)msg->metadata;
+  }
 
   /***************** Init Commands ****************/
   command error_t Init.init() {
@@ -529,7 +535,7 @@ implementation {
    */
   async event void RXFIFO.readDone( uint8_t* rx_buf, uint8_t rx_len,
                                     error_t error ) {
-    cc2420_header_t* header = call CC2420PacketBody.getHeader( m_p_rx_buf );
+    cc2420_header_t* header = getHeader( m_p_rx_buf );
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
     rxFrameLength = buf[ 0 ];
@@ -674,8 +680,8 @@ implementation {
    * get the next packet.
    */
   task void receiveDone_task() {
-    cc2420_metadata_t* metadata = call CC2420PacketBody.getMetadata( m_p_rx_buf );
-    cc2420_header_t* header = call CC2420PacketBody.getHeader( m_p_rx_buf);
+    cc2420_metadata_t* metadata = getMetadata( m_p_rx_buf );
+    cc2420_header_t* header = getHeader( m_p_rx_buf);
     uint8_t length = header->length;
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
@@ -758,7 +764,7 @@ implementation {
    */
   void receive() {
     call CSN.clr();
-    call RXFIFO.beginRead( (uint8_t*)(call CC2420PacketBody.getHeader( m_p_rx_buf )), 1 );
+    call RXFIFO.beginRead( (uint8_t*)(getHeader( m_p_rx_buf )), 1 );
   }
 
 
@@ -822,7 +828,7 @@ implementation {
    * @return TRUE if the given message passes address recognition
    */
   bool passesAddressCheck(message_t *msg) {
-    cc2420_header_t *header = call CC2420PacketBody.getHeader( msg );
+    cc2420_header_t *header = getHeader( msg );
     int mode = (header->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 3;
 //    ieee_eui64_t *ext_addr;  
 

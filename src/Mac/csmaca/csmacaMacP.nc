@@ -43,6 +43,8 @@ module csmacaMacP @safe() {
   provides interface Packet as MacPacket;
   provides interface AMPacket as MacAMPacket;
 
+  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+
   uses interface csmacaMacParams;
 
   uses interface SplitControl as RadioControl;
@@ -219,6 +221,32 @@ implementation {
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
     return call MacPacket.getPayload(msg, len);
   }
+
+  /***************** PacketAcknowledgement Commands ****************/
+  async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
+    (getHeader( p_msg ))->fcf |= 1 << IEEE154_FCF_ACK_REQ;
+    return SUCCESS;
+  }
+
+  async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
+    (getHeader( p_msg ))->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
+    return SUCCESS;
+  }
+
+  async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
+    return (getMetadata( p_msg ))->ack;
+  }
+
+
+
+
+
+
+
+
+
+
+
 
   event void csmacaMacParams.receive_status(uint16_t status_flag) {
   }
