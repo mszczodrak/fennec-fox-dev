@@ -99,14 +99,9 @@ implementation {
   csmacaMacP.CC2420Packet -> CC2420PacketC;
   csmacaMacP.CC2420PacketBody -> CC2420PacketC;
 
-  components CC2420RadioC as Radio;
-  MacPacketAcknowledgements = Radio.PacketAcknowledgements;
+//  components CC2420RadioC as Radio;
+  MacPacketAcknowledgements = CC2420PacketC.Acks;
 
-
-
-  enum {
-    CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
-  };
 
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
@@ -114,11 +109,25 @@ implementation {
   components UniqueSendC;
   components UniqueReceiveC;
 
-//  components CC2420TinyosNetworkC;
-//  csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
-//  csmacaMacP.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
-
   csmacaMacP.SubSend -> UniqueSendC;
   csmacaMacP.SubReceive -> LplC;
+
+
+//  LowPowerListening = LplC;
+//  CC2420Packet = CC2420PacketC;
+//  PacketAcknowledgements = CC2420PacketC;
+//  LinkPacketMetadata = CC2420PacketC;
+
+  // SplitControl Layers
+  LplC.SubControl -> CC2420CsmaC;
+
+  UniqueSendC.SubSend -> LplC.Send;
+  LplC.SubSend -> CC2420CsmaC;
+
+  LplC.SubReceive -> UniqueReceiveC.Receive;
+  UniqueReceiveC.SubReceive ->  CC2420CsmaC;
+
+
+
 }
 
