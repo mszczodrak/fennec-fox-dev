@@ -39,7 +39,7 @@
 #include "CC2420.h"
 #include "IEEE802154.h"
 
-configuration CC2420CsmaC {
+configuration cc2420CsmaC {
 
   provides interface SplitControl;
   provides interface Send;
@@ -53,7 +53,7 @@ configuration CC2420CsmaC {
 
 implementation {
 
-  components CC2420CsmaP as CsmaP;
+  components cc2420CsmaP as CsmaP;
   RadioBackoff = CsmaP;
   SplitControl = CsmaP;
   Send = CsmaP;
@@ -70,10 +70,6 @@ implementation {
   Receive = CC2420ReceiveC;
   CsmaP.SubControl -> CC2420ReceiveC;
 
-  components CC2420PacketC;
-  CsmaP.CC2420Packet -> CC2420PacketC;
-  CsmaP.CC2420PacketBody -> CC2420PacketC;
-  
   components RandomC;
   CsmaP.Random -> RandomC;
 

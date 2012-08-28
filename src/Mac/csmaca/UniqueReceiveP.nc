@@ -47,7 +47,6 @@ module UniqueReceiveP @safe() {
   
   uses {
     interface Receive as SubReceive;
-    interface CC2420PacketBody;
   }
 }
 
@@ -66,7 +65,11 @@ implementation {
   enum {
     INVALID_ELEMENT = 0xFF,
   };
-  
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
   /***************** Init Commands *****************/
   command error_t Init.init() {
     int i;
@@ -87,7 +90,7 @@ implementation {
       uint8_t len) {
 
     uint16_t msgSource = getSourceKey(msg);
-    uint8_t msgDsn = (call CC2420PacketBody.getHeader(msg))->dsn;
+    uint8_t msgDsn = (getHeader(msg))->dsn;
 
     if(hasSeen(msgSource, msgDsn)) {
       return signal DuplicateReceive.receive(msg, payload, len);
@@ -163,7 +166,7 @@ implementation {
    * address.
    */
   uint16_t getSourceKey(message_t * ONE msg) {
-    cc2420_header_t *hdr = call CC2420PacketBody.getHeader(msg);
+    cc2420_header_t *hdr = getHeader(msg);
     int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
     int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
     int s_offset = 2, s_len = 2;

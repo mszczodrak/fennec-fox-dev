@@ -45,7 +45,6 @@ module UniqueSendP @safe() {
     interface Send as SubSend;
     interface State;
     interface Random;
-    interface CC2420PacketBody;
   }
 }
 
@@ -57,7 +56,11 @@ implementation {
     S_IDLE,
     S_SENDING,
   };
-  
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
   /***************** Init Commands ****************/
   command error_t Init.init() {
     localSendId = call Random.rand16();
@@ -75,7 +78,7 @@ implementation {
   command error_t Send.send(message_t *msg, uint8_t len) {
     error_t error;
     if(call State.requestState(S_SENDING) == SUCCESS) {
-      (call CC2420PacketBody.getHeader(msg))->dsn = localSendId++;
+      (getHeader(msg))->dsn = localSendId++;
       
       if((error = call SubSend.send(msg, len)) != SUCCESS) {
         call State.toIdle();

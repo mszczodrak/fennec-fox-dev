@@ -50,7 +50,6 @@ configuration UniqueReceiveC {
 
 implementation {
   components UniqueReceiveP,
-      CC2420PacketC,
       MainC;
   
   Receive = UniqueReceiveP.Receive;
@@ -59,7 +58,6 @@ implementation {
       
   MainC.SoftwareInit -> UniqueReceiveP;
   
-  UniqueReceiveP.CC2420PacketBody -> CC2420PacketC;
   
 }
 

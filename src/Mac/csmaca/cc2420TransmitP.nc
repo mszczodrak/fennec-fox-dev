@@ -53,8 +53,6 @@ module cc2420TransmitP @safe() {
   provides interface ReceiveIndicator as ByteIndicator;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-  uses interface CC2420Packet;
-  uses interface CC2420PacketBody;
   uses interface PacketTimeStamp<T32khz,uint32_t>;
   uses interface PacketTimeSyncOffset;
   uses interface GpioCapture as CaptureSFD;
@@ -157,6 +155,17 @@ implementation {
   error_t acquireSpiResource();
   error_t releaseSpiResource();
   void signalDone( error_t err );
+
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
+  cc2420_metadata_t* getMetadata( message_t* msg ) {
+    return (cc2420_metadata_t*)msg->metadata;
+  }
+
+
   
   
   /***************** Init Commands *****************/
@@ -311,7 +320,7 @@ implementation {
            *timesync  += time32;
         }
 
-        if ( (call CC2420PacketBody.getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
           // This is an ack packet, don't release the chip's SPI bus lock.
           abortSpiRelease = TRUE;
         }
@@ -327,7 +336,7 @@ implementation {
         sfdHigh = FALSE;
         call CaptureSFD.captureRisingEdge();
         
-        if ( (call CC2420PacketBody.getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
           m_state = S_ACK_WAIT;
           call BackoffTimer.start( CC2420_ACK_WAIT_DELAY );
         } else {
@@ -401,13 +410,13 @@ implementation {
     uint8_t length;
 
     if ( type == IEEE154_TYPE_ACK && m_msg) {
-      ack_header = call CC2420PacketBody.getHeader( ack_msg );
-      msg_header = call CC2420PacketBody.getHeader( m_msg );
+      ack_header = getHeader( ack_msg );
+      msg_header = getHeader( m_msg );
       
       if ( m_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call BackoffTimer.stop();
         
-        msg_metadata = call CC2420PacketBody.getMetadata( m_msg );
+        msg_metadata = getMetadata( m_msg );
         ack_buf = (uint8_t *) ack_header;
         length = ack_header->length;
         
@@ -714,8 +723,8 @@ implementation {
    * the same CRC polynomial as the CC2420's AUTOCRC functionality.
    */
   void loadTXFIFO() {
-    cc2420_header_t* header = call CC2420PacketBody.getHeader( m_msg );
-    uint8_t tx_power = (call CC2420PacketBody.getMetadata( m_msg ))->tx_power;
+    cc2420_header_t* header = getHeader( m_msg );
+    uint8_t tx_power = (getMetadata( m_msg ))->tx_power;
 
     if ( !tx_power ) {
       tx_power = default_tx_power;

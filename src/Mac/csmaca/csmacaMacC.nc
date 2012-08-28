@@ -91,9 +91,9 @@ implementation {
 
   RadioConfig = CC2420ReceiveC;
 
-  components CC2420CsmaC;
-  RadioPower = CC2420CsmaC.RadioPower;
-  RadioResource = CC2420CsmaC.RadioResource;
+  components cc2420CsmaC;
+  RadioPower = cc2420CsmaC.RadioPower;
+  RadioResource = cc2420CsmaC.RadioResource;
 
   components CC2420PacketC;
   MacPacketAcknowledgements = CC2420PacketC.Acks;
@@ -108,13 +108,13 @@ implementation {
   csmacaMacP.SubReceive -> LplC;
 
   // SplitControl Layers
-  LplC.SubControl -> CC2420CsmaC;
+  LplC.SubControl -> cc2420CsmaC;
 
   UniqueSendC.SubSend -> LplC.Send;
-  LplC.SubSend -> CC2420CsmaC;
+  LplC.SubSend -> cc2420CsmaC;
 
   LplC.SubReceive -> UniqueReceiveC.Receive;
-  UniqueReceiveC.SubReceive ->  CC2420CsmaC;
+  UniqueReceiveC.SubReceive ->  cc2420CsmaC;
 
 }
 

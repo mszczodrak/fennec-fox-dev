@@ -34,7 +34,7 @@
  * @version $Revision: 1.12 $ $Date: 2009/09/17 23:36:36 $
  */
 
-module CC2420CsmaP @safe() {
+module cc2420CsmaP @safe() {
 
   provides interface SplitControl;
   provides interface Send;
@@ -46,8 +46,6 @@ module CC2420CsmaP @safe() {
   uses interface RadioBackoff as SubBackoff;
   uses interface Random;
   uses interface Leds;
-  uses interface CC2420Packet;
-  uses interface CC2420PacketBody;
   uses interface State as SplitControlState;
 
   uses interface ParametersCC2420;
@@ -80,6 +78,15 @@ implementation {
   task void sendDone_task();
   
   void shutdown();
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
+  cc2420_metadata_t* getMetadata( message_t* msg ) {
+    return (cc2420_metadata_t*)msg->metadata;
+  }
+
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
@@ -128,8 +135,8 @@ implementation {
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
     
-    cc2420_header_t* header = call CC2420PacketBody.getHeader( p_msg );
-    cc2420_metadata_t* metadata = call CC2420PacketBody.getMetadata( p_msg );
+    cc2420_header_t* header = getHeader( p_msg );
+    cc2420_metadata_t* metadata = getMetadata( p_msg );
 
     if ((!call ParametersCC2420.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);

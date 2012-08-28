@@ -58,7 +58,7 @@ implementation {
   components MainC,
       DefaultLplP,
       PowerCycleC,
-      CC2420CsmaC,
+      cc2420CsmaC,
       cc2420TransmitC,
       CC2420PacketC,
       RandomC,
@@ -89,8 +89,7 @@ implementation {
   DefaultLplP.PowerCycle -> PowerCycleC;
   DefaultLplP.Resend -> cc2420TransmitC;
   DefaultLplP.PacketAcknowledgements -> CC2420PacketC;
-  DefaultLplP.CC2420PacketBody -> CC2420PacketC;
-  DefaultLplP.RadioBackoff -> CC2420CsmaC;
+  DefaultLplP.RadioBackoff -> cc2420CsmaC;
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;
 

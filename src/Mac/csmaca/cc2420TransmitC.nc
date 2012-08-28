@@ -95,8 +95,6 @@ implementation {
   cc2420TransmitP.CC2420Receive -> CC2420ReceiveC;
   
   components CC2420PacketC;
-  cc2420TransmitP.CC2420Packet -> CC2420PacketC;
-  cc2420TransmitP.CC2420PacketBody -> CC2420PacketC;
   cc2420TransmitP.PacketTimeStamp -> CC2420PacketC;
   cc2420TransmitP.PacketTimeSyncOffset -> CC2420PacketC;
 

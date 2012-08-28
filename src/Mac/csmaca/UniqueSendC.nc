@@ -49,7 +49,6 @@ implementation {
   components UniqueSendP,
       new StateC(),
       RandomC,
-      CC2420PacketC,
       MainC;
       
   Send = UniqueSendP.Send;
@@ -59,7 +58,6 @@ implementation {
   
   UniqueSendP.State -> StateC;
   UniqueSendP.Random -> RandomC;
-  UniqueSendP.CC2420PacketBody -> CC2420PacketC;
   
 }
 

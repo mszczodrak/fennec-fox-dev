@@ -59,7 +59,6 @@ module DefaultLplP {
     interface Receive as SubReceive;
     interface SplitControl as SubControl;
     interface PowerCycle;
-    interface CC2420PacketBody;
     interface PacketAcknowledgements;
     interface State as SendState;
     interface State as RadioPowerState;
@@ -113,6 +112,16 @@ implementation {
   
   void initializeSend();
   void startOffTimer();
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
+  cc2420_metadata_t* getMetadata( message_t* msg ) {
+    return (cc2420_metadata_t*)msg->metadata;
+  }
+
+
   
   /***************** Init Commands ***************/
   command error_t Init.init() {
@@ -148,14 +157,14 @@ implementation {
    */
   command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, 
       uint16_t intervalMs) {
-    (call CC2420PacketBody.getMetadata(msg))->rxInterval = intervalMs;
+    (getMetadata(msg))->rxInterval = intervalMs;
   }
   
   /**
    * @return the destination node's wakeup interval configured in this message
    */
   command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
-    return (call CC2420PacketBody.getMetadata(msg))->rxInterval;
+    return (getMetadata(msg))->rxInterval;
   }
   
   /***************** Send Commands ***************/
@@ -217,7 +226,7 @@ implementation {
   
   /***************** RadioBackoff Events ****************/
   async event void RadioBackoff.requestInitialBackoff(message_t *msg) {
-    if((call CC2420PacketBody.getMetadata(msg))->rxInterval 
+    if((getMetadata(msg))->rxInterval 
         > ONE_MESSAGE) {
       call RadioBackoff.setInitialBackoff( call Random.rand16() 
           % (0x4 * CC2420_BACKOFF_PERIOD) + CC2420_MIN_BACKOFF);
@@ -225,7 +234,7 @@ implementation {
   }
   
   async event void RadioBackoff.requestCongestionBackoff(message_t *msg) {
-    if((call CC2420PacketBody.getMetadata(msg))->rxInterval 
+    if((getMetadata(msg))->rxInterval 
         > ONE_MESSAGE) {
       call RadioBackoff.setCongestionBackoff( call Random.rand16() 
           % (0x3 * CC2420_BACKOFF_PERIOD) + CC2420_MIN_BACKOFF);
@@ -392,7 +401,7 @@ implementation {
     if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) 
       > ONE_MESSAGE) {
     
-      if((call CC2420PacketBody.getHeader(currentSendMsg))->dest == IEEE154_BROADCAST_ADDR) {
+      if((getHeader(currentSendMsg))->dest == IEEE154_BROADCAST_ADDR) {
         call PacketAcknowledgements.noAck(currentSendMsg);
       } else {
         // Send it repetitively within our transmit window
