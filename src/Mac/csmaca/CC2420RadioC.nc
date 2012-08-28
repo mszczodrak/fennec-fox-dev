@@ -47,9 +47,6 @@ configuration CC2420RadioC {
     interface Receive as BareReceive;
     interface Packet as BarePacket;
 
-    interface Send    as ActiveSend;
-    interface Receive as ActiveReceive;
-
     interface CC2420Packet;
     interface PacketAcknowledgements;
     interface LinkPacketMetadata;
@@ -66,17 +63,9 @@ implementation {
   components CC2420TinyosNetworkC;
   components CC2420PacketC;
   
-#if defined(LOW_POWER_LISTENING) || defined(ACK_LOW_POWER_LISTENING)
   components DefaultLplC as LplC;
-#else
-  components DummyLplC as LplC;
-#endif
 
-#if defined(PACKET_LINK)
-  components PacketLinkC as LinkC;
-#else
   components PacketLinkDummyC as LinkC;
-#endif
   
   PacketLink = LinkC;
   LowPowerListening = LplC;
@@ -89,9 +78,6 @@ implementation {
   BareReceive = CC2420TinyosNetworkC.Receive;
   BarePacket = CC2420TinyosNetworkC.BarePacket;
   
-  ActiveSend = CC2420TinyosNetworkC.ActiveSend;
-  ActiveReceive = CC2420TinyosNetworkC.ActiveReceive;
-
   // SplitControl Layers
   SplitControl = LplC;
   LplC.SubControl -> CsmaC;

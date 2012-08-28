@@ -115,7 +115,8 @@ implementation {
   csmacaMacP.CC2420PacketBody -> CC2420PacketC;
 
   components CC2420RadioC as Radio;
-  csmacaMacP.SubSend -> Radio.ActiveSend;
+  components CC2420TinyosNetworkC;
+  csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
 
 }
 

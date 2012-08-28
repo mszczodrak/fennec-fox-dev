@@ -43,8 +43,10 @@ implementation {
   
   // Radio resource for the AM layer
   AM.RadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
-  AM.SubSend -> Radio.ActiveSend;
-  AM.SubReceive -> Radio.ActiveReceive;
+
+  components CC2420TinyosNetworkC;
+  AM.SubSend -> CC2420TinyosNetworkC.ActiveSend;
+  AM.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
 
   components LedsC;
   AM.Leds -> LedsC;
