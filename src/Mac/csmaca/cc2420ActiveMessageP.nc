@@ -6,13 +6,10 @@
 module cc2420ActiveMessageP @safe() {
   provides {
     interface AMSend;
-    interface Receive;
-    interface Receive as Snoop;
   }
 
   uses {
     interface Send as SubSend;
-    interface Receive as SubReceive;
 
     interface Resource as RadioResource;
     interface Leds;
@@ -100,32 +97,6 @@ implementation {
   }
 
   
-  /***************** SubReceive Events ****************/
-  event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    cc2420_metadata_t *meta = call CC2420PacketBody.getMetadata(msg);
-    msg->conf = call MacAMPacket.group(msg); 
-    msg->rssi = meta->rssi; 
-    msg->lqi = meta->lqi;
-    msg->crc = meta->crc;
-
-    if (call MacAMPacket.isForMe(msg)) {
-      return signal Receive.receive(msg, payload, len);
-    }
-    else {
-      return signal Snoop.receive(msg, payload, len);
-    }
-  }
-  
-
-  
-  /***************** Defaults ****************/
-  default event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
-    return msg;
-  }
-  
-  default event message_t* Snoop.receive(message_t* msg, void* payload, uint8_t len) {
-    return msg;
-  }
 
   default event void AMSend.sendDone(message_t* msg, error_t err) {
     call RadioResource.release();

@@ -28,6 +28,11 @@
 #include <Fennec.h>
 #include "csmacaMac.h"
 
+#include <Ieee154.h> 
+#include "CC2420.h"
+#include "csmacaMac.h"
+
+
 module csmacaMacP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as MacStatus;
@@ -44,8 +49,8 @@ module csmacaMacP @safe() {
   uses interface ParametersCC2420;
 
   uses interface AMSend;
-  uses interface Receive;
-  uses interface Receive as Snoop;
+//  uses interface Receive;
+//  uses interface Receive as Snoop;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -64,6 +69,7 @@ module csmacaMacP @safe() {
   uses interface CC2420PacketBody;
 
   uses interface Send as SubSend;
+  uses interface Receive as SubReceive;
 }
 
 implementation {
@@ -163,6 +169,7 @@ implementation {
     signal MacAMSend.sendDone(msg, error);
   }
 
+/*
   event message_t* Receive.receive(message_t *msg, void* payload, uint8_t len) {
     msg->conf = call MacAMPacket.group(msg);
     dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
@@ -173,6 +180,8 @@ implementation {
     msg->conf = call MacAMPacket.group(msg);
     return signal MacSnoop.receive(msg, payload, len);
   }
+*/
+
 
   event void csmacaMacParams.receive_status(uint16_t status_flag) {
   }
@@ -318,6 +327,27 @@ implementation {
 //    signal AMSend.sendDone(msg, result);
   }
 
+
+
+  /***************** SubReceive Events ****************/
+  event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
+    cc2420_metadata_t *meta = call CC2420PacketBody.getMetadata(msg);
+
+    msg->conf = call MacAMPacket.group(msg);
+
+    msg->conf = call MacAMPacket.group(msg);
+    msg->rssi = meta->rssi;
+    msg->lqi = meta->lqi;
+    msg->crc = meta->crc;
+
+    if (call MacAMPacket.isForMe(msg)) {
+      dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
+      return signal MacReceive.receive(msg, payload, len);
+    }
+    else {
+      return signal MacSnoop.receive(msg, payload, len);
+    }
+  }
 
 
 }

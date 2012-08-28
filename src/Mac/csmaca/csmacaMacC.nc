@@ -88,8 +88,8 @@ implementation {
   csmacaMacP.RadioControl -> AM;
 
   csmacaMacP.AMSend -> AM.AMSend;
-  csmacaMacP.Receive -> AM.Receive;
-  csmacaMacP.Snoop -> AM.Snoop;
+//  csmacaMacP.Receive -> AM.Receive;
+//  csmacaMacP.Snoop -> AM.Snoop;
 
   MacPacketAcknowledgements = AM.PacketAcknowledgements;
 
@@ -117,6 +117,7 @@ implementation {
   components CC2420RadioC as Radio;
   components CC2420TinyosNetworkC;
   csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
+  csmacaMacP.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
 
 }
 

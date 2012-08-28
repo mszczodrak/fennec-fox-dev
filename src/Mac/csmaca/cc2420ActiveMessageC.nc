@@ -10,8 +10,8 @@ configuration cc2420ActiveMessageC {
   provides {
     interface SplitControl;
     interface AMSend;
-    interface Receive;
-    interface Receive as Snoop;
+//    interface Receive;
+//    interface Receive as Snoop;
     interface PacketAcknowledgements;
     interface LinkPacketMetadata;
     interface LowPowerListening;
@@ -33,8 +33,8 @@ implementation {
   SplitControl = Radio;
   MacPacket = AM;
   AMSend = AM;
-  Receive = AM.Receive;
-  Snoop = AM.Snoop;
+//  Receive = AM.Receive;
+//  Snoop = AM.Snoop;
   MacAMPacket = AM;
   PacketLink = Radio;
   LowPowerListening = Radio;
@@ -46,7 +46,6 @@ implementation {
 
   components CC2420TinyosNetworkC;
   AM.SubSend -> CC2420TinyosNetworkC.ActiveSend;
-  AM.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
 
   components LedsC;
   AM.Leds -> LedsC;
