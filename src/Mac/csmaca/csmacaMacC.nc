@@ -96,12 +96,7 @@ implementation {
   RadioResource = CC2420CsmaC.RadioResource;
 
   components CC2420PacketC;
-  csmacaMacP.CC2420Packet -> CC2420PacketC;
-  csmacaMacP.CC2420PacketBody -> CC2420PacketC;
-
-//  components CC2420RadioC as Radio;
   MacPacketAcknowledgements = CC2420PacketC.Acks;
-
 
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
@@ -112,12 +107,6 @@ implementation {
   csmacaMacP.SubSend -> UniqueSendC;
   csmacaMacP.SubReceive -> LplC;
 
-
-//  LowPowerListening = LplC;
-//  CC2420Packet = CC2420PacketC;
-//  PacketAcknowledgements = CC2420PacketC;
-//  LinkPacketMetadata = CC2420PacketC;
-
   // SplitControl Layers
   LplC.SubControl -> CC2420CsmaC;
 
@@ -126,8 +115,6 @@ implementation {
 
   LplC.SubReceive -> UniqueReceiveC.Receive;
   UniqueReceiveC.SubReceive ->  CC2420CsmaC;
-
-
 
 }
 
