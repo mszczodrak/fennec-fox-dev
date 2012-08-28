@@ -101,7 +101,6 @@ implementation {
 
   components CC2420RadioC as Radio;
   MacPacketAcknowledgements = Radio.PacketAcknowledgements;
-  csmacaMacP.RadioControl -> Radio.SplitControl;
 
   components CC2420TinyosNetworkC;
   csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
@@ -112,7 +111,10 @@ implementation {
     CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
   };
 
-  csmacaMacP.SubRadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
+  csmacaMacP.SubRadioResource -> CC2420TinyosNetworkC.Resource[CC2420_AM_SEND_ID];
+
+  components DefaultLplC as LplC;
+  csmacaMacP.RadioControl -> LplC.SplitControl;
 
 }
 

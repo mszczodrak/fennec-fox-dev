@@ -45,13 +45,9 @@ module CC2420TinyosNetworkP @safe() {
   provides {
     interface Resource[uint8_t client];
 
-    interface Send as BareSend;
-    interface Receive as BareReceive;
-
     interface Send as ActiveSend;
     interface Receive as ActiveReceive;
 
-    interface Packet as BarePacket;
   }
   
   uses {
@@ -99,58 +95,11 @@ implementation {
       return NULL;
     }
   }
-  /***************** BarePacket Commands ****************/
-  command void BarePacket.clear(message_t *msg) {
-    memset(msg, 0, sizeof(message_t));
-  }
-
-  command uint8_t BarePacket.payloadLength(message_t *msg) {
-    cc2420_header_t *hdr = call CC2420PacketBody.getHeader(msg);
-    return hdr->length + 1 - MAC_FOOTER_SIZE;
-  }
-
-  command void BarePacket.setPayloadLength(message_t* msg, uint8_t len) {
-    cc2420_header_t *hdr = call CC2420PacketBody.getHeader(msg);
-    hdr->length = len - 1 + MAC_FOOTER_SIZE;
-  }
-
-  command uint8_t BarePacket.maxPayloadLength() {
-    return TOSH_DATA_LENGTH + sizeof(cc2420_header_t);
-  }
-
-  command void* BarePacket.getPayload(message_t* msg, uint8_t len) {
-
-  }
-  /***************** Send Commands ****************/
-  command error_t BareSend.send(message_t* msg, uint8_t len) {
-    call BarePacket.setPayloadLength(msg, len);
-    m_busy_client = CLIENT_BARE;
-    return call SubSend.send(msg, 0);
-  }
-
-  command error_t BareSend.cancel(message_t* msg) {
-    return call SubSend.cancel(msg);
-  }
-
-  command uint8_t BareSend.maxPayloadLength() {
-    return call BarePacket.maxPayloadLength();
-  }
-
-  command void* BareSend.getPayload(message_t* msg, uint8_t len) {
-#ifndef TFRAMES_ENABLED                      
-    cc2420_header_t *hdr = call CC2420PacketBody.getHeader(msg);
-    return hdr;
-#else
-    // you really can't use BareSend with TFRAMES
-#endif
-  }
   
   /***************** SubSend Events *****************/
   event void SubSend.sendDone(message_t* msg, error_t error) {
     if (m_busy_client == CLIENT_AM) {
       signal ActiveSend.sendDone(msg, error);
-    } else {
-      signal BareSend.sendDone(msg, error);
     }
   }
 
@@ -161,17 +110,7 @@ implementation {
     if((call ParametersCC2420.get_crc()) && (!(call CC2420PacketBody.getMetadata(msg))->crc)) {
       return msg;
     }
-#ifndef TFRAMES_ENABLED
-    if (network == TINYOS_6LOWPAN_NETWORK_ID) {
-      return signal ActiveReceive.receive(msg, payload, len);
-    } else {
-      return signal BareReceive.receive(msg, 
-                                        call BareSend.getPayload(msg, len), 
-                                        len + sizeof(cc2420_header_t));
-    }
-#else
     return signal ActiveReceive.receive(msg, payload, len);
-#endif
   }
 
   /***************** Resource ****************/
@@ -239,12 +178,6 @@ implementation {
   }
 
   /***************** Defaults ****************/
-  default event message_t *BareReceive.receive(message_t *msg, void *payload, uint8_t len) {
-    return msg;
-  }
-  default event void BareSend.sendDone(message_t *msg, error_t error) {
-
-  }
   default event message_t *ActiveReceive.receive(message_t *msg, void *payload, uint8_t len) {
     return msg;
   }

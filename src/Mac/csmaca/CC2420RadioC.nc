@@ -40,13 +40,6 @@
 
 configuration CC2420RadioC {
   provides {
-    interface SplitControl;
-
-    interface Resource[uint8_t clientId];
-    interface Send as BareSend;
-    interface Receive as BareReceive;
-    interface Packet as BarePacket;
-
     interface CC2420Packet;
     interface PacketAcknowledgements;
     interface LinkPacketMetadata;
@@ -73,13 +66,7 @@ implementation {
   PacketAcknowledgements = CC2420PacketC;
   LinkPacketMetadata = CC2420PacketC;
   
-  Resource = CC2420TinyosNetworkC;
-  BareSend = CC2420TinyosNetworkC.Send;
-  BareReceive = CC2420TinyosNetworkC.Receive;
-  BarePacket = CC2420TinyosNetworkC.BarePacket;
-  
   // SplitControl Layers
-  SplitControl = LplC;
   LplC.SubControl -> CsmaC;
   
   // Send Layers
