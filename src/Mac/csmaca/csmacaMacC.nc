@@ -85,13 +85,11 @@ implementation {
 
   components ParametersCC2420P;
   csmacaMacP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-  csmacaMacP.RadioControl -> AM;
 
   csmacaMacP.AMSend -> AM.AMSend;
 //  csmacaMacP.Receive -> AM.Receive;
 //  csmacaMacP.Snoop -> AM.Snoop;
 
-  MacPacketAcknowledgements = AM.PacketAcknowledgements;
 
   RadioAMSend = csmacaMacP.RadioAMSend;
   RadioReceive = csmacaMacP.RadioReceive;
@@ -115,6 +113,9 @@ implementation {
   csmacaMacP.CC2420PacketBody -> CC2420PacketC;
 
   components CC2420RadioC as Radio;
+  MacPacketAcknowledgements = Radio.PacketAcknowledgements;
+  csmacaMacP.RadioControl -> Radio.SplitControl;
+
   components CC2420TinyosNetworkC;
   csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
   csmacaMacP.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;

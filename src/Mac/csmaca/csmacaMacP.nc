@@ -154,15 +154,15 @@ implementation {
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
-    return call AMSend.cancel(msg);
+    return call SubSend.cancel(msg);
   }
 
   command uint8_t MacAMSend.maxPayloadLength() {
-    return call AMSend.maxPayloadLength();
+    return call MacPacket.maxPayloadLength();
   }
 
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-    return call AMSend.getPayload(msg, len);
+    return call MacPacket.getPayload(msg, len);
   }
 
   event void AMSend.sendDone(message_t *msg, error_t error) {
