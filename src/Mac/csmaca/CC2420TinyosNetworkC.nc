@@ -61,7 +61,6 @@
 
 configuration CC2420TinyosNetworkC {
   provides {
-    interface Resource[uint8_t clientId];
 
     interface Send as ActiveSend;
     interface Receive as ActiveReceive;
@@ -87,7 +86,6 @@ implementation {
 
   CC2420TinyosNetworkP.SubSend = SubSend;
   CC2420TinyosNetworkP.SubReceive = SubReceive;
-  CC2420TinyosNetworkP.Resource = Resource;
   CC2420TinyosNetworkP.ActiveSend = ActiveSend;
   CC2420TinyosNetworkP.ActiveReceive = ActiveReceive;
 

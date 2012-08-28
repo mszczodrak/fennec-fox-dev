@@ -43,7 +43,6 @@
 
 module CC2420TinyosNetworkP @safe() {
   provides {
-    interface Resource[uint8_t client];
 
     interface Send as ActiveSend;
     interface Receive as ActiveReceive;
@@ -67,16 +66,8 @@ implementation {
     TINYOS_N_NETWORKS = uniqueCount("RADIO_SEND_RESOURCE"),
   } state;
 
-  enum {
-    CLIENT_AM,
-    CLIENT_BARE,
-  } m_busy_client;
-
-  norace uint8_t resource_owner = OWNER_NONE, next_owner;
-
   command error_t ActiveSend.send(message_t* msg, uint8_t len) {
     call CC2420Packet.setNetwork(msg, TINYOS_6LOWPAN_NETWORK_ID);
-    m_busy_client = CLIENT_AM;
     return call SubSend.send(msg, len);
   }
 
@@ -98,9 +89,7 @@ implementation {
   
   /***************** SubSend Events *****************/
   event void SubSend.sendDone(message_t* msg, error_t error) {
-    if (m_busy_client == CLIENT_AM) {
       signal ActiveSend.sendDone(msg, error);
-    }
   }
 
   /***************** SubReceive Events ***************/
@@ -113,79 +102,12 @@ implementation {
     return signal ActiveReceive.receive(msg, payload, len);
   }
 
-  /***************** Resource ****************/
-  // SDH : 8-7-2009 : testing if there's more then one client allows
-  // the compiler to eliminate most of the logic when there's only one
-  // client.
-  task void grantTask() {
-
-
-    if (TINYOS_N_NETWORKS > 1) {
-      if (resource_owner == OWNER_NONE && !(call Queue.isEmpty())) {
-        resource_owner = call Queue.dequeue();
-
-        if (resource_owner != OWNER_NONE) {
-          signal Resource.granted[resource_owner]();
-        }
-      }
-    } else {
-      if (next_owner != resource_owner) {
-        resource_owner = next_owner;
-        signal Resource.granted[resource_owner]();
-      }
-    }
-  }
-
-  async command error_t Resource.request[uint8_t id]() {
-
-    post grantTask();
-
-    if (TINYOS_N_NETWORKS > 1) {
-      return call Queue.enqueue(id);
-    } else {
-      if (id == resource_owner) {
-        return EALREADY;
-      } else {
-        next_owner = id;
-        return SUCCESS;
-      }
-    }
-  }
-
-  async command error_t Resource.immediateRequest[uint8_t id]() {
-    if (resource_owner == id) return EALREADY;
-
-    if (TINYOS_N_NETWORKS > 1) {
-      if (resource_owner == OWNER_NONE && call Queue.isEmpty()) {
-        resource_owner = id;
-        return SUCCESS;
-      }
-      return FAIL;
-    } else {
-      resource_owner = id;
-      return SUCCESS;
-    }
-  }
-  async command error_t Resource.release[uint8_t id]() {
-    if (TINYOS_N_NETWORKS > 1) {
-      post grantTask();
-    }
-    resource_owner = OWNER_NONE;
-    return SUCCESS;
-  }
-  async command bool Resource.isOwner[uint8_t id]() {
-    return (id == resource_owner);
-  }
-
   /***************** Defaults ****************/
   default event message_t *ActiveReceive.receive(message_t *msg, void *payload, uint8_t len) {
     return msg;
   }
   default event void ActiveSend.sendDone(message_t *msg, error_t error) {
 
-  }
-  default event void Resource.granted[uint8_t client]() {
-    call Resource.release[client]();
   }
 
 }

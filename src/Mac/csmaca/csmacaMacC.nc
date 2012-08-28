@@ -111,8 +111,6 @@ implementation {
     CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
   };
 
-  csmacaMacP.SubRadioResource -> CC2420TinyosNetworkC.Resource[CC2420_AM_SEND_ID];
-
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
 

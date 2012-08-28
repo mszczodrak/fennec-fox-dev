@@ -67,7 +67,6 @@ module csmacaMacP @safe() {
   uses interface Send as SubSend;
   uses interface Receive as SubReceive;
 
-  uses interface Resource as SubRadioResource;
 }
 
 implementation {
@@ -75,17 +74,6 @@ implementation {
   uint8_t status = S_STOPPED;
   uint16_t pending_length;
   message_t * ONE_NOK pending_message = NULL;
-
-  /***************** Resource event  ****************/
-  event void SubRadioResource.granted() {
-    uint8_t rc;
-
-    rc = call SubSend.send( pending_message, pending_length );
-    if (rc != SUCCESS) {
-      call SubRadioResource.release();
-      signal MacAMSend.sendDone( pending_message, rc );
-    }
-  }
 
 
   command error_t Mgmt.start() {
@@ -184,26 +172,13 @@ implementation {
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
     header->length = len + CC2420_SIZE;
 
-    if (call SubRadioResource.immediateRequest() == SUCCESS) {
+    {
       error_t rc;
 
       rc = call SubSend.send( msg, len );
-      if (rc != SUCCESS) {
-        call SubRadioResource.release();
-      }
 
       return rc;
-    } else {
-      pending_length  = len;
-      pending_message = msg;
-      return call SubRadioResource.request();
     }
-
-
-
-
-
-
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
@@ -358,7 +333,6 @@ implementation {
 
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
-    call SubRadioResource.release();
     signal MacAMSend.sendDone(msg, result);
   }
 
