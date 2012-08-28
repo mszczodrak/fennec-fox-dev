@@ -58,12 +58,6 @@ configuration csmacaMacC {
 implementation {
 
   components csmacaMacP;
-#ifdef TOSSIM
-  components ActiveMessageC as AM;
-#else
-  components cc2420ActiveMessageC as AM;
-#endif
-
 
   Mgmt = csmacaMacP;
   MacStatus = csmacaMacP;
@@ -79,16 +73,9 @@ implementation {
   ReadRssi = csmacaMacP.ReadRssi;
   RadioResource = csmacaMacP.RadioResource;
 
-  AM.MacPacket -> csmacaMacP.MacPacket;
-  AM.MacAMPacket -> csmacaMacP.MacAMPacket;
-
 
   components ParametersCC2420P;
   csmacaMacP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-
-  csmacaMacP.AMSend -> AM.AMSend;
-//  csmacaMacP.Receive -> AM.Receive;
-//  csmacaMacP.Snoop -> AM.Snoop;
 
 
   RadioAMSend = csmacaMacP.RadioAMSend;
@@ -119,6 +106,13 @@ implementation {
   components CC2420TinyosNetworkC;
   csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
   csmacaMacP.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
+
+
+  enum {
+    CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
+  };
+
+  csmacaMacP.SubRadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
 
 }
 

@@ -48,10 +48,6 @@ module csmacaMacP @safe() {
   uses interface SplitControl as RadioControl;
   uses interface ParametersCC2420;
 
-  uses interface AMSend;
-//  uses interface Receive;
-//  uses interface Receive as Snoop;
-
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
   uses interface Receive as RadioSnoop;
@@ -70,11 +66,27 @@ module csmacaMacP @safe() {
 
   uses interface Send as SubSend;
   uses interface Receive as SubReceive;
+
+  uses interface Resource as SubRadioResource;
 }
 
 implementation {
 
   uint8_t status = S_STOPPED;
+  uint16_t pending_length;
+  message_t * ONE_NOK pending_message = NULL;
+
+  /***************** Resource event  ****************/
+  event void SubRadioResource.granted() {
+    uint8_t rc;
+
+    rc = call SubSend.send( pending_message, pending_length );
+    if (rc != SUCCESS) {
+      call SubRadioResource.release();
+      signal MacAMSend.sendDone( pending_message, rc );
+    }
+  }
+
 
   command error_t Mgmt.start() {
     if (status == S_STARTED) {
@@ -148,9 +160,50 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+    cc2420_header_t* header = call CC2420PacketBody.getHeader( msg );
+
     call MacAMPacket.setGroup(msg, msg->conf);
     dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
-    return call AMSend.send(addr, msg, len);
+
+    msg->crc = 0;
+    msg->rssi = 0;
+    msg->lqi = 0;
+
+    if (len > call MacPacket.maxPayloadLength()) {
+      return ESIZE;
+    }
+
+    //header->type = id;
+    header->dest = addr;
+    //header->destpan = call CC2420Config.getPanAddr();
+    //header->destpan = signal Mgmt.currentStateId();
+    //header->destpan = msg->conf;
+    header->src = call MacAMPacket.address();
+    header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
+      ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
+      ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
+    header->length = len + CC2420_SIZE;
+
+    if (call SubRadioResource.immediateRequest() == SUCCESS) {
+      error_t rc;
+
+      rc = call SubSend.send( msg, len );
+      if (rc != SUCCESS) {
+        call SubRadioResource.release();
+      }
+
+      return rc;
+    } else {
+      pending_length  = len;
+      pending_message = msg;
+      return call SubRadioResource.request();
+    }
+
+
+
+
+
+
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
@@ -164,24 +217,6 @@ implementation {
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
     return call MacPacket.getPayload(msg, len);
   }
-
-  event void AMSend.sendDone(message_t *msg, error_t error) {
-    signal MacAMSend.sendDone(msg, error);
-  }
-
-/*
-  event message_t* Receive.receive(message_t *msg, void* payload, uint8_t len) {
-    msg->conf = call MacAMPacket.group(msg);
-    dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
-    return signal MacReceive.receive(msg, payload, len);
-  }
-
-  event message_t* Snoop.receive(message_t *msg, void* payload, uint8_t len) {
-    msg->conf = call MacAMPacket.group(msg);
-    return signal MacSnoop.receive(msg, payload, len);
-  }
-*/
-
 
   event void csmacaMacParams.receive_status(uint16_t status_flag) {
   }
@@ -323,8 +358,8 @@ implementation {
 
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
-//    call RadioResource.release();
-//    signal AMSend.sendDone(msg, result);
+    call SubRadioResource.release();
+    signal MacAMSend.sendDone(msg, result);
   }
 
 
