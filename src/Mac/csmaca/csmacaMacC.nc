@@ -102,9 +102,6 @@ implementation {
   components CC2420RadioC as Radio;
   MacPacketAcknowledgements = Radio.PacketAcknowledgements;
 
-  components CC2420TinyosNetworkC;
-  csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
-  csmacaMacP.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
 
 
   enum {
@@ -114,5 +111,14 @@ implementation {
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
 
+  components UniqueSendC;
+  components UniqueReceiveC;
+
+//  components CC2420TinyosNetworkC;
+//  csmacaMacP.SubSend -> CC2420TinyosNetworkC.ActiveSend;
+//  csmacaMacP.SubReceive -> CC2420TinyosNetworkC.ActiveReceive;
+
+  csmacaMacP.SubSend -> UniqueSendC;
+  csmacaMacP.SubReceive -> LplC;
 }
 

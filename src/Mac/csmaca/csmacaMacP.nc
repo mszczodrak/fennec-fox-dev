@@ -326,7 +326,13 @@ implementation {
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    return call SubSend.getPayload(msg, len);
+    if (len <= call SubSend.maxPayloadLength()) {
+      return msg->data;
+    } else {
+      return NULL;
+    }
+
+    //return call SubSend.getPayload(msg, len);
   }
 
 
@@ -341,6 +347,10 @@ implementation {
   /***************** SubReceive Events ****************/
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
     cc2420_metadata_t *meta = call CC2420PacketBody.getMetadata(msg);
+
+    if((call ParametersCC2420.get_crc()) && (!(call CC2420PacketBody.getMetadata(msg))->crc)) {
+      return msg;
+    }
 
     msg->conf = call MacAMPacket.group(msg);
 
