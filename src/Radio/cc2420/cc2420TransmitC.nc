@@ -40,6 +40,8 @@
 
 configuration cc2420TransmitC {
 
+  provides interface Receive;
+
   provides {
     interface StdControl;
     interface RadioTransmit;
@@ -49,6 +51,7 @@ configuration cc2420TransmitC {
   }
 
   uses interface cc2420RadioParams;
+  uses interface Receive as SubReceive;
 }
 
 implementation {
@@ -100,5 +103,8 @@ implementation {
   
   components LedsC;
   cc2420TransmitP.Leds -> LedsC;
+
+  Receive = cc2420TransmitP.Receive;
+  SubReceive = cc2420TransmitP.SubReceive;
 
 }

@@ -80,6 +80,9 @@ module cc2420TransmitP @safe() {
   uses interface Leds;
 
   uses interface cc2420RadioParams;
+
+  provides interface Receive;
+  uses interface Receive as SubReceive;
 }
 
 implementation {
@@ -492,6 +495,14 @@ implementation {
    * If the packet we just received was an ack that we were expecting,
    * our send is complete.
    */
+
+
+  event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
+//    dbg("Mac", "Mac: CSMA/CA receive\n");
+    return signal Receive.receive(msg, payload, len);
+  }
+
+
   async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
     cc2420_header_t* ack_header;
     cc2420_header_t* msg_header;
