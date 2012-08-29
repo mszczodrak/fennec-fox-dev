@@ -407,9 +407,9 @@ implementation {
       return msg;
     }
 
-    msg->conf = call MacAMPacket.group(msg);
+//    msg->conf = call MacAMPacket.group(msg);
+//    msg->conf = call MacAMPacket.group(msg);
 
-    msg->conf = call MacAMPacket.group(msg);
     msg->rssi = meta->rssi;
     msg->lqi = meta->lqi;
     msg->crc = meta->crc;

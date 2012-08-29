@@ -717,6 +717,10 @@ implementation {
       securityOn = 0;
       authentication = 0;
 #endif
+
+      /* set conf before signaling receive */
+      m_p_rx_buf->conf = (getHeader(m_p_rx_buf))->destpan;
+
       m_p_rx_buf = signal Receive.receive( m_p_rx_buf, m_p_rx_buf->data,
 					   length - CC2420_SIZE);
     }
