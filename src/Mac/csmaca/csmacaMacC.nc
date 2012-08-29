@@ -114,5 +114,9 @@ implementation {
   LplC.SubReceive -> UniqueReceiveC.Receive;
   UniqueReceiveC.SubReceive ->  cc2420CsmaC;
 
+
+  components cc2420RadioC;
+  cc2420CsmaC.SubControl -> cc2420RadioC.StdControl;
+
 }
 

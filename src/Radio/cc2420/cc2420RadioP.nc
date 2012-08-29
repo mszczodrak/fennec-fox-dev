@@ -45,24 +45,34 @@ module cc2420RadioP @safe() {
 
   uses interface StdControl as ReceiveControl;
   uses interface StdControl as TransmitControl;
+
+  provides interface StdControl;
 }
 
 implementation {
 
   command error_t Mgmt.start() {
-    call ReceiveControl.start();
-    call TransmitControl.start();
+    call StdControl.start();
     dbg("Radio", "Radio cc2420 starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    call ReceiveControl.stop();
-    call TransmitControl.stop();
+    call StdControl.stop();
     dbg("Radio", "Radio cc2420 stops\n");
     signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;
+  }
+
+  command error_t StdControl.start() {
+    call ReceiveControl.start();
+    call TransmitControl.start();
+  }
+
+  command error_t StdControl.stop() {
+    call ReceiveControl.stop();
+    call TransmitControl.stop();
   }
 
   command error_t RadioAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
