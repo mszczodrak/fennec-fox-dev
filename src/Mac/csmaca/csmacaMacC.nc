@@ -80,7 +80,7 @@ implementation {
   RadioResource = csmacaMacP.RadioResource;
 
   RadioAMSend = csmacaMacP.RadioAMSend;
-  RadioReceive = csmacaMacP.RadioReceive;
+  //RadioReceive = csmacaMacP.RadioReceive;
   RadioSnoop = csmacaMacP.RadioSnoop;
   RadioAMPacket = csmacaMacP.RadioAMPacket;
   RadioPacket = csmacaMacP.RadioPacket;
@@ -111,7 +111,7 @@ implementation {
   LplC.SubSend -> CsmaC;
 
   LplC.SubReceive -> UniqueReceiveC.Receive;
-  UniqueReceiveC.SubReceive ->  CsmaC;
+  UniqueReceiveC.SubReceive =  RadioReceive;
 
   components cc2420RadioC;
 
