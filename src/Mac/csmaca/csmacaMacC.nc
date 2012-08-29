@@ -118,5 +118,10 @@ implementation {
   components cc2420RadioC;
   CsmaC.SubControl -> cc2420RadioC.StdControl;
 
+  components PowerCycleC;
+  PowerCycleC.PacketIndicator -> cc2420RadioC.PacketIndicator;
+  PowerCycleC.EnergyIndicator -> cc2420RadioC.EnergyIndicator;
+  PowerCycleC.ByteIndicator -> cc2420RadioC.ByteIndicator;
+
 }
 

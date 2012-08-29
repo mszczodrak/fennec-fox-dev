@@ -43,12 +43,14 @@ configuration PowerCycleC {
     interface State as SplitControlState;
     interface State as RadioPowerState;
   }
+
+  uses interface ReceiveIndicator as PacketIndicator;
+  uses interface ReceiveIndicator as EnergyIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
 }
 
 implementation {
   components PowerCycleP,
-      cc2420TransmitC,
-      cc2420ReceiveC,
       CsmaC,
       LedsC,
       new StateC() as RadioPowerStateC,
@@ -60,12 +62,14 @@ implementation {
 
   PowerCycle = PowerCycleP;
   SplitControl = PowerCycleP;
+
+  PacketIndicator = PowerCycleP.PacketIndicator;
+  EnergyIndicator = PowerCycleP.EnergyIndicator;
+  ByteIndicator = PowerCycleP.ByteIndicator;
+
   SplitControlState = SplitControlStateC;
   RadioPowerState = RadioPowerStateC;
   
-  PowerCycleP.EnergyIndicator -> cc2420TransmitC.EnergyIndicator;
-  PowerCycleP.ByteIndicator -> cc2420TransmitC.ByteIndicator;
-  PowerCycleP.PacketIndicator -> cc2420ReceiveC.PacketIndicator;
   PowerCycleP.SubControl -> CsmaC;
   PowerCycleP.SendState -> LplC;
   PowerCycleP.RadioPowerState -> RadioPowerStateC;

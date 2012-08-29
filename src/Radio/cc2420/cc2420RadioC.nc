@@ -44,6 +44,11 @@ configuration cc2420RadioC {
   provides interface Read<uint16_t> as ReadRssi;
 
   provides interface StdControl;
+
+  provides interface ReceiveIndicator as PacketIndicator;
+  provides interface ReceiveIndicator as EnergyIndicator;
+  provides interface ReceiveIndicator as ByteIndicator;
+
 }
 
 implementation {
@@ -78,10 +83,13 @@ implementation {
 
   components cc2420ReceiveC;
   cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
+  PacketIndicator = cc2420ReceiveC.PacketIndicator;
 
   cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
   components cc2420TransmitC;
   cc2420RadioP.TransmitControl -> cc2420TransmitC.StdControl;
+  EnergyIndicator = cc2420TransmitC.EnergyIndicator;
+  ByteIndicator = cc2420TransmitC.ByteIndicator;
 
 }
