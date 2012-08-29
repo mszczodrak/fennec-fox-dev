@@ -116,7 +116,9 @@ implementation {
 
 
   components cc2420RadioC;
+
   CsmaC.SubControl -> cc2420RadioC.StdControl;
+  CsmaC.RadioTransmit -> cc2420RadioC.RadioTransmit;
 
   components PowerCycleC;
   PowerCycleC.PacketIndicator -> cc2420RadioC.PacketIndicator;
@@ -127,5 +129,9 @@ implementation {
   csmacaMacParams = LplC.csmacaMacParams;
   csmacaMacParams = CsmaC.csmacaMacParams;
 
+  components RandomC;
+  csmacaMacP.Random -> RandomC;
+
+  LplC.RadioTransmit -> cc2420RadioC.RadioTransmit;
 }
 

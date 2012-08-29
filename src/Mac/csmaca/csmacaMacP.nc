@@ -66,6 +66,8 @@ module csmacaMacP @safe() {
   uses interface Send as SubSend;
   uses interface Receive as SubReceive;
 
+  uses interface Random;
+
 }
 
 implementation {
@@ -73,6 +75,14 @@ implementation {
   uint8_t status = S_STOPPED;
   uint16_t pending_length;
   message_t * ONE_NOK pending_message = NULL;
+
+  uint8_t localSendId;
+
+//  enum {
+//    S_IDLE,
+//    S_SENDING,
+//  };
+
 
   /* Functions */
 
@@ -111,6 +121,8 @@ implementation {
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
+
+    localSendId = call Random.rand16();
 
     call ParametersCC2420.set_sink_addr(call csmacaMacParams.get_sink_addr());
     call ParametersCC2420.set_channel(call csmacaMacParams.get_channel());

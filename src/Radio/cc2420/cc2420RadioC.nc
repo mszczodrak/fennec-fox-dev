@@ -45,6 +45,8 @@ configuration cc2420RadioC {
 
   provides interface StdControl;
 
+  provides interface RadioTransmit;
+
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
@@ -91,5 +93,7 @@ implementation {
   cc2420RadioP.TransmitControl -> cc2420TransmitC.StdControl;
   EnergyIndicator = cc2420TransmitC.EnergyIndicator;
   ByteIndicator = cc2420TransmitC.ByteIndicator;
+
+  RadioTransmit = cc2420TransmitC.RadioTransmit;
 
 }

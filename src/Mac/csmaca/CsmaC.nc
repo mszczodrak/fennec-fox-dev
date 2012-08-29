@@ -51,6 +51,8 @@ configuration CsmaC {
   uses interface StdControl as SubControl;
 
   uses interface csmacaMacParams;
+
+  uses interface RadioTransmit;
 }
 
 implementation {
@@ -64,9 +66,9 @@ implementation {
   csmacaMacParams = CsmaP.csmacaMacParams;
 
   SubControl = CsmaP.SubControl;
+  RadioTransmit = CsmaP.RadioTransmit;
   
   components cc2420TransmitC;
-  CsmaP.RadioTransmit -> cc2420TransmitC;
   CsmaP.SubBackoff -> cc2420TransmitC;
 
   components cc2420ReceiveC;

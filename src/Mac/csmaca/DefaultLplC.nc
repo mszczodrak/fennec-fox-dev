@@ -54,6 +54,7 @@ configuration DefaultLplC {
     interface PacketAcknowledgements as MacPacketAcknowledgements;
   }
   uses interface csmacaMacParams;
+  uses interface RadioTransmit;
 }
 
 implementation {
@@ -61,7 +62,6 @@ implementation {
       DefaultLplP,
       PowerCycleC,
       CsmaC,
-      cc2420TransmitC,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
@@ -74,6 +74,8 @@ implementation {
   SplitControl = PowerCycleC;
   SendState = SendStateC;
   MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
+
+  RadioTransmit = DefaultLplP.RadioTransmit;
 
   csmacaMacParams = DefaultLplP.csmacaMacParams;
   
@@ -91,7 +93,6 @@ implementation {
   DefaultLplP.OffTimer -> OffTimerC;
   DefaultLplP.SendDoneTimer -> SendDoneTimerC;
   DefaultLplP.PowerCycle -> PowerCycleC;
-  DefaultLplP.Resend -> cc2420TransmitC;
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;
 

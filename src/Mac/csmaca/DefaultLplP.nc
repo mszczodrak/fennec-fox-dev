@@ -54,7 +54,7 @@ module DefaultLplP {
   
   uses {
     interface Send as SubSend;
-    interface RadioTransmit as Resend;
+    interface RadioTransmit;
     interface Receive as SubReceive;
     interface SplitControl as SubControl;
     interface PowerCycle;
@@ -342,7 +342,7 @@ implementation {
    * @param p_msg message to send.
    * @param error notifaction of how the operation went.
    */
-  async event void Resend.sendDone( message_t* p_msg, error_t error ) {
+  async event void RadioTransmit.sendDone( message_t* p_msg, error_t error ) {
     // This is actually caught by SubSend.sendDone
   }
   
@@ -355,7 +355,7 @@ implementation {
   }
   
   task void resend() {
-    if(call Resend.resend(TRUE) != SUCCESS) {
+    if(call RadioTransmit.resend(TRUE) != SUCCESS) {
       post resend();
     }
   }
