@@ -79,7 +79,7 @@ module cc2420TransmitP @safe() {
   uses interface CC2420Receive;
   uses interface Leds;
 
-  uses interface ParametersCC2420;
+  uses interface cc2420RadioParams;
 }
 
 implementation {
@@ -210,7 +210,7 @@ implementation {
       m_receiving = FALSE;
       abortSpiRelease = FALSE;
       m_tx_power = 0;
-      default_tx_power = call ParametersCC2420.get_power();
+      default_tx_power = call cc2420RadioParams.get_power();
     }
     return SUCCESS;
   }
@@ -779,6 +779,10 @@ implementation {
     call ChipSpiResource.attemptRelease();
     signal RadioTransmit.sendDone( m_msg, err );
   }
+
+  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
+  }
+
 
 }
 

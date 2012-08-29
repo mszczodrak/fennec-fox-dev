@@ -96,4 +96,6 @@ implementation {
 
   RadioTransmit = cc2420TransmitC.RadioTransmit;
 
+  cc2420RadioParams = cc2420TransmitC.cc2420RadioParams;
+
 }

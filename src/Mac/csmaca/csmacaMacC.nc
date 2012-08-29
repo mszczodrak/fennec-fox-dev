@@ -74,11 +74,6 @@ implementation {
   ReadRssi = csmacaMacP.ReadRssi;
   RadioResource = csmacaMacP.RadioResource;
 
-
-  components ParametersCC2420P;
-  csmacaMacP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-
-
   RadioAMSend = csmacaMacP.RadioAMSend;
   RadioReceive = csmacaMacP.RadioReceive;
   RadioSnoop = csmacaMacP.RadioSnoop;
@@ -95,7 +90,6 @@ implementation {
 
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
-
 
   components UniqueSendC;
   components UniqueReceiveC;

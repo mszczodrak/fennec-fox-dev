@@ -47,6 +47,8 @@ configuration cc2420TransmitC {
     interface ReceiveIndicator as EnergyIndicator;
     interface ReceiveIndicator as ByteIndicator;
   }
+
+  uses interface cc2420RadioParams;
 }
 
 implementation {
@@ -57,6 +59,8 @@ implementation {
   RadioBackoff = cc2420TransmitP;
   EnergyIndicator = cc2420TransmitP.EnergyIndicator;
   ByteIndicator = cc2420TransmitP.ByteIndicator;
+
+  cc2420RadioParams = cc2420TransmitP.cc2420RadioParams;
 
   components MainC;
   MainC.SoftwareInit -> cc2420TransmitP;
@@ -96,9 +100,5 @@ implementation {
   
   components LedsC;
   cc2420TransmitP.Leds -> LedsC;
-
-  components ParametersCC2420P;
-  cc2420TransmitP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-
 
 }

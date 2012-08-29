@@ -48,7 +48,6 @@ module csmacaMacP @safe() {
   uses interface csmacaMacParams;
 
   uses interface SplitControl as RadioControl;
-  uses interface ParametersCC2420;
 
   uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
@@ -123,17 +122,6 @@ implementation {
     }
 
     localSendId = call Random.rand16();
-
-    call ParametersCC2420.set_sink_addr(call csmacaMacParams.get_sink_addr());
-    call ParametersCC2420.set_channel(call csmacaMacParams.get_channel());
-    call ParametersCC2420.set_power(call csmacaMacParams.get_power());
-    call ParametersCC2420.set_remote_wakeup(call csmacaMacParams.get_remote_wakeup());
-    call ParametersCC2420.set_delay_after_receive(call csmacaMacParams.get_delay_after_receive());
-    call ParametersCC2420.set_backoff(call csmacaMacParams.get_backoff());
-    call ParametersCC2420.set_min_backoff(call csmacaMacParams.get_min_backoff());
-    call ParametersCC2420.set_ack(call csmacaMacParams.get_ack());
-    call ParametersCC2420.set_cca(call csmacaMacParams.get_cca());
-    call ParametersCC2420.set_crc(call csmacaMacParams.get_crc());
 
     dbg("Radio", "Radio cc2420 starts\n");
 
@@ -415,7 +403,7 @@ implementation {
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
     cc2420_metadata_t *meta = getMetadata(msg);
 
-    if((call ParametersCC2420.get_crc()) && (!(getMetadata(msg))->crc)) {
+    if((call csmacaMacParams.get_crc()) && (!(getMetadata(msg))->crc)) {
       return msg;
     }
 
