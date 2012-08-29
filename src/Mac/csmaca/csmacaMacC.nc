@@ -87,8 +87,6 @@ implementation {
   RadioPacketAcknowledgements = csmacaMacP.RadioPacketAcknowledgements;
   RadioStatus = csmacaMacP.RadioStatus;
 
-  components cc2420TransmitC;
-
   components CsmaC;
   RadioPower = CsmaC.RadioPower;
   RadioResource = CsmaC.RadioResource;
@@ -113,9 +111,7 @@ implementation {
   LplC.SubReceive -> UniqueReceiveC.Receive;
   UniqueReceiveC.SubReceive =  RadioReceive;
 
-  components cc2420RadioC;
 
-  CsmaC.SubControl -> cc2420RadioC.StdControl;
   RadioTransmit = CsmaC.RadioTransmit;
 
   components PowerCycleC;
@@ -130,6 +126,8 @@ implementation {
   components RandomC;
   csmacaMacP.Random -> RandomC;
 
+  components cc2420RadioC;
+  CsmaC.SubControl -> cc2420RadioC.StdControl;
   LplC.RadioTransmit -> cc2420RadioC.RadioTransmit;
 }
 
