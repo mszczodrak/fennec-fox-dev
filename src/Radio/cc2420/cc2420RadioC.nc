@@ -75,4 +75,9 @@ implementation {
   components cc2420ReceiveC;
   cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
 
+  cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
+
+  components cc2420TransmitC;
+  cc2420RadioP.TransmitControl -> cc2420TransmitC.StdControl;
+
 }

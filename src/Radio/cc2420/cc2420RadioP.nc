@@ -42,17 +42,24 @@ module cc2420RadioP @safe() {
 
   uses interface cc2420RadioParams;
   uses interface RadioConfig;
+
+  uses interface StdControl as ReceiveControl;
+  uses interface StdControl as TransmitControl;
 }
 
 implementation {
 
   command error_t Mgmt.start() {
+    call ReceiveControl.start();
+    call TransmitControl.start();
     dbg("Radio", "Radio cc2420 starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    call ReceiveControl.stop();
+    call TransmitControl.stop();
     dbg("Radio", "Radio cc2420 stops\n");
     signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;

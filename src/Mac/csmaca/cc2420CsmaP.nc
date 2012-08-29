@@ -277,7 +277,6 @@ implementation {
   }
 
   task void startDone_task() {
-    call SubControl.start();
     call RadioPower.rxOn();
     call RadioResource.release();
     call SplitControlState.forceState(S_STARTED);
