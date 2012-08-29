@@ -49,18 +49,14 @@ implementation {
   components PowerCycleP,
       cc2420TransmitC,
       cc2420ReceiveC,
-      cc2420CsmaC,
+      CsmaC,
       LedsC,
       new StateC() as RadioPowerStateC,
       new StateC() as SplitControlStateC,
       new TimerMilliC() as OnTimerC,
       new TimerMilliC() as CheckTimerC;
 
-#if defined(LOW_POWER_LISTENING) || defined(ACK_LOW_POWER_LISTENING)
   components DefaultLplC as LplC;
-#else
-  components DummyLplC as LplC;
-#endif
 
   PowerCycle = PowerCycleP;
   SplitControl = PowerCycleP;
@@ -70,7 +66,7 @@ implementation {
   PowerCycleP.EnergyIndicator -> cc2420TransmitC.EnergyIndicator;
   PowerCycleP.ByteIndicator -> cc2420TransmitC.ByteIndicator;
   PowerCycleP.PacketIndicator -> cc2420ReceiveC.PacketIndicator;
-  PowerCycleP.SubControl -> cc2420CsmaC;
+  PowerCycleP.SubControl -> CsmaC;
   PowerCycleP.SendState -> LplC;
   PowerCycleP.RadioPowerState -> RadioPowerStateC;
   PowerCycleP.SplitControlState -> SplitControlStateC;

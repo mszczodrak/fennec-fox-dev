@@ -89,9 +89,9 @@ implementation {
 
   components cc2420TransmitC;
 
-  components cc2420CsmaC;
-  RadioPower = cc2420CsmaC.RadioPower;
-  RadioResource = cc2420CsmaC.RadioResource;
+  components CsmaC;
+  RadioPower = CsmaC.RadioPower;
+  RadioResource = CsmaC.RadioResource;
 
   components DefaultLplC as LplC;
   csmacaMacP.RadioControl -> LplC.SplitControl;
@@ -106,17 +106,17 @@ implementation {
   // SplitControl Layers
 
   LplC.MacPacketAcknowledgements -> csmacaMacP.MacPacketAcknowledgements;
-  LplC.SubControl -> cc2420CsmaC;
+  LplC.SubControl -> CsmaC;
 
   UniqueSendC.SubSend -> LplC.Send;
-  LplC.SubSend -> cc2420CsmaC;
+  LplC.SubSend -> CsmaC;
 
   LplC.SubReceive -> UniqueReceiveC.Receive;
-  UniqueReceiveC.SubReceive ->  cc2420CsmaC;
+  UniqueReceiveC.SubReceive ->  CsmaC;
 
 
   components cc2420RadioC;
-  cc2420CsmaC.SubControl -> cc2420RadioC.StdControl;
+  CsmaC.SubControl -> cc2420RadioC.StdControl;
 
 }
 

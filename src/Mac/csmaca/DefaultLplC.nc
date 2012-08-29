@@ -59,7 +59,7 @@ implementation {
   components MainC,
       DefaultLplP,
       PowerCycleC,
-      cc2420CsmaC,
+      CsmaC,
       cc2420TransmitC,
       RandomC,
       new StateC() as SendStateC,
@@ -89,7 +89,7 @@ implementation {
   DefaultLplP.SendDoneTimer -> SendDoneTimerC;
   DefaultLplP.PowerCycle -> PowerCycleC;
   DefaultLplP.Resend -> cc2420TransmitC;
-  DefaultLplP.RadioBackoff -> cc2420CsmaC;
+  DefaultLplP.RadioBackoff -> CsmaC;
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;
 

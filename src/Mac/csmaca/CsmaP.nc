@@ -34,7 +34,7 @@
  * @version $Revision: 1.12 $ $Date: 2009/09/17 23:36:36 $
  */
 
-module cc2420CsmaP @safe() {
+module CsmaP @safe() {
 
   provides interface SplitControl;
   provides interface Send;
