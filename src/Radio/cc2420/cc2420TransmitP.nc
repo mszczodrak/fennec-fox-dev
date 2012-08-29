@@ -155,6 +155,51 @@ implementation {
   void signalDone( error_t err );
 
 
+  void low_level_init() {
+    call CCA.makeInput();
+    call CSN.makeOutput();
+    call SFD.makeInput();
+  }
+
+  void low_level_start() {
+    call CaptureSFD.captureRisingEdge();
+    atomic abortSpiRelease = FALSE;
+  }
+
+
+  void low_level_stop() {
+    call CaptureSFD.disable();
+    call SpiResource.release();  // REMOVE
+    call CSN.set();
+  }
+
+
+  void low_level_load(message_t* msg) {
+    if ( acquireSpiResource() == SUCCESS ) {
+      loadTXFIFO();
+    }
+  }
+
+  void low_level_send(message_t* msg) {
+    if ( acquireSpiResource() == SUCCESS ) {
+      attemptSend();
+    }
+  }
+
+
+
+
+
+
+
+  /* -------------------------- */
+
+
+
+
+
+
+
   cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
     return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
   }
@@ -196,19 +241,16 @@ implementation {
   
   /***************** Init Commands *****************/
   command error_t Init.init() {
-    call CCA.makeInput();
-    call CSN.makeOutput();
-    call SFD.makeInput();
+    low_level_init();
     return SUCCESS;
   }
 
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
+    low_level_start();
     atomic {
-      call CaptureSFD.captureRisingEdge();
       m_state = S_STARTED;
       m_receiving = FALSE;
-      abortSpiRelease = FALSE;
       m_tx_power = 0;
       default_tx_power = call cc2420RadioParams.get_power();
     }
@@ -216,12 +258,10 @@ implementation {
   }
 
   command error_t StdControl.stop() {
+    low_level_stop();
     atomic {
       m_state = S_STOPPED;
       call BackoffTimer.stop();
-      call CaptureSFD.disable();
-      call SpiResource.release();  // REMOVE
-      call CSN.set();
     }
     return SUCCESS;
   }
@@ -253,17 +293,6 @@ implementation {
 
     return SUCCESS;
   }
-
-/*
-  async command error_t Send.modify( uint8_t offset, uint8_t* buf, 
-                                     uint8_t len ) {
-    call CSN.clr();
-    call TXFIFO_RAM.write( offset, buf, len );
-    call CSN.set();
-    return SUCCESS;
-  }
-*/  
-
 
   /***************** Indicator Commands ****************/
   command bool EnergyIndicator.isReceiving() {
@@ -559,9 +588,7 @@ implementation {
         
       case S_BEGIN_TRANSMIT:
       case S_CANCEL:
-        if ( acquireSpiResource() == SUCCESS ) {
-          attemptSend();
-        }
+        low_level_send(m_msg);
         break;
         
       case S_ACK_WAIT:
@@ -608,10 +635,8 @@ implementation {
       m_msg = p_msg;
       totalCcaChecks = 0;
     }
-    
-    if ( acquireSpiResource() == SUCCESS ) {
-      loadTXFIFO();
-    }
+
+    low_level_load(p_msg);
 
     return SUCCESS;
   }
@@ -644,8 +669,8 @@ implementation {
       } else {
         signal BackoffTimer.fired();
       }
-    } else if ( acquireSpiResource() == SUCCESS ) {
-      attemptSend();
+    } else {
+      low_level_send(m_msg);
     }
     
     return SUCCESS;
