@@ -53,6 +53,11 @@ configuration csmacaMacC {
   uses interface RadioPower;
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
+
+  uses interface RadioTransmit;
+  uses interface ReceiveIndicator as PacketIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
+  uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
@@ -108,16 +113,15 @@ implementation {
   LplC.SubReceive -> UniqueReceiveC.Receive;
   UniqueReceiveC.SubReceive ->  CsmaC;
 
-
   components cc2420RadioC;
 
   CsmaC.SubControl -> cc2420RadioC.StdControl;
-  CsmaC.RadioTransmit -> cc2420RadioC.RadioTransmit;
+  RadioTransmit = CsmaC.RadioTransmit;
 
   components PowerCycleC;
-  PowerCycleC.PacketIndicator -> cc2420RadioC.PacketIndicator;
-  PowerCycleC.EnergyIndicator -> cc2420RadioC.EnergyIndicator;
-  PowerCycleC.ByteIndicator -> cc2420RadioC.ByteIndicator;
+  PacketIndicator = PowerCycleC.PacketIndicator;
+  EnergyIndicator = PowerCycleC.EnergyIndicator;
+  ByteIndicator = PowerCycleC.ByteIndicator;
 
   csmacaMacParams = PowerCycleC.csmacaMacParams;
   csmacaMacParams = LplC.csmacaMacParams;
