@@ -44,7 +44,6 @@ configuration CsmaC {
   provides interface SplitControl;
   provides interface Send;
   provides interface Receive;
-  provides interface RadioBackoff;
 
   uses interface ParametersCC2420;
   uses interface RadioPower;
@@ -56,7 +55,6 @@ configuration CsmaC {
 implementation {
 
   components CsmaP;
-  RadioBackoff = CsmaP;
   SplitControl = CsmaP;
   Send = CsmaP;
   ParametersCC2420 = CsmaP;

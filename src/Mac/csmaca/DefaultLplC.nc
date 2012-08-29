@@ -89,7 +89,6 @@ implementation {
   DefaultLplP.SendDoneTimer -> SendDoneTimerC;
   DefaultLplP.PowerCycle -> PowerCycleC;
   DefaultLplP.Resend -> cc2420TransmitC;
-  DefaultLplP.RadioBackoff -> CsmaC;
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;
 

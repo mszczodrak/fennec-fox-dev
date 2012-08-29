@@ -55,7 +55,6 @@ module DefaultLplP {
   uses {
     interface Send as SubSend;
     interface RadioTransmit as Resend;
-    interface RadioBackoff;
     interface Receive as SubReceive;
     interface SplitControl as SubControl;
     interface PowerCycle;
@@ -224,27 +223,6 @@ implementation {
   }
   
   
-  /***************** RadioBackoff Events ****************/
-  async event void RadioBackoff.requestInitialBackoff(message_t *msg) {
-    if((getMetadata(msg))->rxInterval 
-        > ONE_MESSAGE) {
-      call RadioBackoff.setInitialBackoff( call Random.rand16() 
-          % (0x4 * CC2420_BACKOFF_PERIOD) + CC2420_MIN_BACKOFF);
-    }
-  }
-  
-  async event void RadioBackoff.requestCongestionBackoff(message_t *msg) {
-    if((getMetadata(msg))->rxInterval 
-        > ONE_MESSAGE) {
-      call RadioBackoff.setCongestionBackoff( call Random.rand16() 
-          % (0x3 * CC2420_BACKOFF_PERIOD) + CC2420_MIN_BACKOFF);
-    }
-  }
-  
-  async event void RadioBackoff.requestCca(message_t *msg) {
-  }
-  
-
   /***************** DutyCycle Events ***************/
   /**
    * A transmitter was detected.  You must now take action to
