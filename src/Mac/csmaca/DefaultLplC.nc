@@ -53,6 +53,7 @@ configuration DefaultLplC {
     interface SplitControl as SubControl;
     interface PacketAcknowledgements as MacPacketAcknowledgements;
   }
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -73,6 +74,8 @@ implementation {
   SplitControl = PowerCycleC;
   SendState = SendStateC;
   MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
+
+  csmacaMacParams = DefaultLplP.csmacaMacParams;
   
   SubControl = DefaultLplP.SubControl;
   SubReceive = DefaultLplP.SubReceive;
@@ -92,6 +95,4 @@ implementation {
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;
 
-  components ParametersCC2420P;
-  DefaultLplP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
 }

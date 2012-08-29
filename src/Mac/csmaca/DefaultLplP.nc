@@ -67,7 +67,7 @@ module DefaultLplP {
     interface Random;
     interface Leds;
   }
-  uses interface ParametersCC2420;
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -395,8 +395,12 @@ implementation {
   
   
   void startOffTimer() {
-    call OffTimer.startOneShot(call ParametersCC2420.get_delay_after_receive());
+    call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
   }
+
+  event void csmacaMacParams.receive_status(uint16_t status_flag) {
+  }
+
   
 }
 

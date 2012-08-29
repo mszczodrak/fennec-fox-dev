@@ -70,7 +70,7 @@ module PowerCycleP {
     interface ReceiveIndicator as ByteIndicator;
     interface ReceiveIndicator as PacketIndicator;
   }
-  uses interface ParametersCC2420;
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -147,10 +147,10 @@ implementation {
     // Radio was off, now has been told to turn on or duty cycle.
     call SplitControlState.forceState(S_TURNING_ON);
 
-    if (TOS_NODE_ID == call ParametersCC2420.get_sink_addr()) {
+    if (TOS_NODE_ID == call csmacaMacParams.get_sink_addr()) {
       sleepInterval = 0;
     } else {
-      sleepInterval = call ParametersCC2420.get_delay_after_receive();
+      sleepInterval = call csmacaMacParams.get_delay_after_receive();
     }
     
     if(sleepInterval > 0) {
@@ -316,6 +316,10 @@ implementation {
   
   default event void SplitControl.stopDone(error_t error) {
   }
+
+  event void csmacaMacParams.receive_status(uint16_t status_flag) {
+  }
+
 }
 
 

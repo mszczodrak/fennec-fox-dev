@@ -45,11 +45,12 @@ configuration CsmaC {
   provides interface Send;
   provides interface Receive;
 
-  uses interface ParametersCC2420;
   uses interface RadioPower;
   uses interface Resource as RadioResource;
 
   uses interface StdControl as SubControl;
+
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -57,9 +58,10 @@ implementation {
   components CsmaP;
   SplitControl = CsmaP;
   Send = CsmaP;
-  ParametersCC2420 = CsmaP;
   RadioPower = CsmaP.RadioPower;
   RadioResource = CsmaP.RadioResource;
+
+  csmacaMacParams = CsmaP.csmacaMacParams;
 
   SubControl = CsmaP.SubControl;
   
@@ -79,6 +81,4 @@ implementation {
   components LedsC as Leds;
   CsmaP.Leds -> Leds;
  
-  components ParametersCC2420P;
-  CsmaP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420; 
 }

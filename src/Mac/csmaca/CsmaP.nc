@@ -47,8 +47,9 @@ module CsmaP @safe() {
   uses interface Leds;
   uses interface State as SplitControlState;
 
-  uses interface ParametersCC2420;
   uses interface RadioPower;
+
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -89,8 +90,8 @@ implementation {
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
-    cc2420_backoff_period = call ParametersCC2420.get_backoff();
-    cc2420_min_backoff = call ParametersCC2420.get_min_backoff();
+    cc2420_backoff_period = call csmacaMacParams.get_backoff();
+    cc2420_min_backoff = call csmacaMacParams.get_min_backoff();
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
       call RadioPower.startVReg();
@@ -137,7 +138,7 @@ implementation {
     cc2420_header_t* header = getHeader( p_msg );
     cc2420_metadata_t* metadata = getMetadata( p_msg );
 
-    if ((!call ParametersCC2420.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
+    if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     }
 
@@ -164,13 +165,13 @@ implementation {
     header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
 		     ( 1 << IEEE154_FCF_INTRAPAN ) ); 
 
-    metadata->ack = !call ParametersCC2420.get_ack();
+    metadata->ack = !call csmacaMacParams.get_ack();
     metadata->rssi = 0;
     metadata->lqi = 0;
     //metadata->timesync = FALSE;
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
 
-    ccaOn = call ParametersCC2420.get_cca();
+    ccaOn = call csmacaMacParams.get_cca();
 //    signal RadioBackoff.requestCca(m_msg);
 
     call RadioTransmit.send( m_msg, ccaOn );
@@ -215,7 +216,7 @@ implementation {
   
   /***************** SubBackoff Events ****************/
   async event void SubBackoff.requestInitialBackoff(message_t *msg) {
-    if ((call ParametersCC2420.get_delay_after_receive() > 0) && 
+    if ((call csmacaMacParams.get_delay_after_receive() > 0) && 
 			      ((getMetadata(msg))->rxInterval > 0)) {
       call SubBackoff.setInitialBackoff ( call Random.rand16() 
           % (0x4 * cc2420_backoff_period) + cc2420_min_backoff);
@@ -226,7 +227,7 @@ implementation {
   }
 
   async event void SubBackoff.requestCongestionBackoff(message_t *msg) {
-    if ((call ParametersCC2420.get_delay_after_receive() > 0) && 
+    if ((call csmacaMacParams.get_delay_after_receive() > 0) && 
 			      ((getMetadata(msg))->rxInterval > 0)) {
       call SubBackoff.setCongestionBackoff( call Random.rand16() 
         % (0x3 * cc2420_backoff_period) + cc2420_min_backoff);
@@ -285,6 +286,9 @@ implementation {
   }
   
   default event void SplitControl.stopDone(error_t error) {
+  }
+
+  event void csmacaMacParams.receive_status(uint16_t status_flag) {
   }
   
   

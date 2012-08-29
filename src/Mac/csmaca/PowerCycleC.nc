@@ -47,6 +47,8 @@ configuration PowerCycleC {
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
+
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -67,6 +69,8 @@ implementation {
   EnergyIndicator = PowerCycleP.EnergyIndicator;
   ByteIndicator = PowerCycleP.ByteIndicator;
 
+  csmacaMacParams = PowerCycleP.csmacaMacParams;
+
   SplitControlState = SplitControlStateC;
   RadioPowerState = RadioPowerStateC;
   
@@ -76,10 +80,6 @@ implementation {
   PowerCycleP.SplitControlState -> SplitControlStateC;
   PowerCycleP.OnTimer -> OnTimerC;
   PowerCycleP.Leds -> LedsC;
-
-  components ParametersCC2420P;
-  PowerCycleP.ParametersCC2420 -> ParametersCC2420P.ParametersCC2420;
-
 }
 
 

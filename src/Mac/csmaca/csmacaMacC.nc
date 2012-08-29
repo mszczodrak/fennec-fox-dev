@@ -123,5 +123,9 @@ implementation {
   PowerCycleC.EnergyIndicator -> cc2420RadioC.EnergyIndicator;
   PowerCycleC.ByteIndicator -> cc2420RadioC.ByteIndicator;
 
+  csmacaMacParams = PowerCycleC.csmacaMacParams;
+  csmacaMacParams = LplC.csmacaMacParams;
+  csmacaMacParams = CsmaC.csmacaMacParams;
+
 }
 
