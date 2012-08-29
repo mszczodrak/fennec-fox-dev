@@ -258,8 +258,8 @@ implementation {
   }
 
   event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    dbg("Mac", "Mac: CSMA/CA receive\n");
-    return signal MacReceive.receive(msg, payload, len);
+//    dbg("Mac", "Mac: CSMA/CA receive\n");
+//    return signal MacReceive.receive(msg, payload, len);
   }
 
   event message_t* RadioSnoop.receive(message_t *msg, void* payload, uint8_t len) {

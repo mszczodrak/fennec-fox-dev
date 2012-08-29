@@ -33,7 +33,7 @@ module cc2420RadioP @safe() {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as RadioAMSend;
-  provides interface Receive as RadioReceive;
+//  provides interface Receive as RadioReceive;
   provides interface Receive as RadioSnoop;
   provides interface AMPacket as RadioAMPacket;
   provides interface Packet as RadioPacket;

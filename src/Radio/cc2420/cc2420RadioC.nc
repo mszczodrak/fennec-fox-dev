@@ -64,7 +64,7 @@ implementation {
   Module = cc2420RadioP;
   cc2420RadioParams = cc2420RadioP;
   RadioAMSend = cc2420RadioP.RadioAMSend;
-  RadioReceive = cc2420RadioP.RadioReceive;
+  //RadioReceive = cc2420RadioP.RadioReceive;
   RadioSnoop = cc2420RadioP.RadioSnoop;
   RadioAMPacket = cc2420RadioP.RadioAMPacket;
   RadioPacket = cc2420RadioP.RadioPacket;
@@ -87,6 +87,8 @@ implementation {
   cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
   PacketIndicator = cc2420ReceiveC.PacketIndicator;
 
+  RadioReceive = cc2420ReceiveC.Receive;
+
   cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
   components cc2420TransmitC;
@@ -97,5 +99,7 @@ implementation {
   RadioTransmit = cc2420TransmitC.RadioTransmit;
 
   cc2420RadioParams = cc2420TransmitC.cc2420RadioParams;
+
+
 
 }
