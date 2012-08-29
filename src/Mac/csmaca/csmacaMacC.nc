@@ -87,10 +87,7 @@ implementation {
   RadioPacketAcknowledgements = csmacaMacP.RadioPacketAcknowledgements;
   RadioStatus = csmacaMacP.RadioStatus;
 
-  components cc2420ReceiveC;
   components cc2420TransmitC;
-
-  RadioConfig = cc2420ReceiveC;
 
   components cc2420CsmaC;
   RadioPower = cc2420CsmaC.RadioPower;

@@ -70,4 +70,9 @@ implementation {
 
   cc2420RadioParams = cc2420ControlC;
 
+  cc2420RadioP.RadioConfig -> cc2420ControlC.RadioConfig;
+
+  components cc2420ReceiveC;
+  cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
+
 }

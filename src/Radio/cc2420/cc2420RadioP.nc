@@ -41,6 +41,7 @@ module cc2420RadioP @safe() {
   provides interface ModuleStatus as RadioStatus;
 
   uses interface cc2420RadioParams;
+  uses interface RadioConfig;
 }
 
 implementation {
@@ -144,6 +145,11 @@ implementation {
   }
 
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
+  }
+
+
+  /****************** RadioConfig Events ****************/
+  event void RadioConfig.syncDone( error_t error ) {
   }
 
 }
