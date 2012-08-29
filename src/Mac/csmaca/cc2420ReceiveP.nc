@@ -60,7 +60,6 @@ module cc2420ReceiveP @safe() {
   uses interface CC2420Strobe as SACK;
   uses interface CC2420Strobe as SFLUSHRX;
   uses interface RadioConfig;
-  uses interface PacketTimeStamp<T32khz,uint32_t>;
 
   uses interface CC2420Strobe as SRXDEC;
   uses interface CC2420Register as SECCTRL0;
@@ -152,6 +151,20 @@ implementation {
   cc2420_metadata_t* getMetadata( message_t* msg ) {
     return (cc2420_metadata_t*)msg->metadata;
   }
+
+
+
+  void PacketTimeStampclear(message_t* msg)
+  {
+    (getMetadata( msg ))->timesync = FALSE;
+    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
+  }
+
+  void PacketTimeStampset(message_t* msg, uint32_t value)
+  {
+    (getMetadata( msg ))->timestamp = value;
+  }
+
 
   /***************** Init Commands ****************/
   command error_t Init.init() {
@@ -632,16 +645,16 @@ implementation {
       if ( ( m_missed_packets && call FIFO.get() ) || !call FIFOP.get()
             || !m_timestamp_size
             || rxFrameLength <= 10) {
-        call PacketTimeStamp.clear(m_p_rx_buf);
+        PacketTimeStampclear(m_p_rx_buf);
       }
       else {
           if (m_timestamp_size==1)
-            call PacketTimeStamp.set(m_p_rx_buf, m_timestamp_queue[ m_timestamp_head ]);
+            PacketTimeStampset(m_p_rx_buf, m_timestamp_queue[ m_timestamp_head ]);
           m_timestamp_head = ( m_timestamp_head + 1 ) % TIMESTAMP_QUEUE_SIZE;
           m_timestamp_size--;
 
           if (m_timestamp_size>0) {
-            call PacketTimeStamp.clear(m_p_rx_buf);
+            PacketTimeStampclear(m_p_rx_buf);
             m_timestamp_head = 0;
             m_timestamp_size = 0;
           }

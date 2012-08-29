@@ -53,8 +53,6 @@ module cc2420TransmitP @safe() {
   provides interface ReceiveIndicator as ByteIndicator;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-  uses interface PacketTimeStamp<T32khz,uint32_t>;
-  uses interface PacketTimeSyncOffset;
   uses interface GpioCapture as CaptureSFD;
   uses interface GeneralIO as CCA;
   uses interface GeneralIO as CSN;
@@ -165,6 +163,34 @@ implementation {
     return (cc2420_metadata_t*)msg->metadata;
   }
 
+
+  void PacketTimeStampclear(message_t* msg)
+  {
+    (getMetadata( msg ))->timesync = FALSE;
+    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
+  }
+
+  void PacketTimeStampset(message_t* msg, uint32_t value)
+  {
+    (getMetadata( msg ))->timestamp = value;
+  }
+
+  bool PacketTimeSyncOffsetisSet(message_t* msg)
+  {
+    return ((getMetadata( msg ))->timesync);
+  }
+
+  //returns offset of timestamp from the beginning of cc2420 header which is
+  //          sizeof(cc2420_header_t)+datalen-sizeof(timesync_radio_t)
+  //uses packet length of the message which is
+  //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
+  uint8_t PacketTimeSyncOffsetget(message_t* msg)
+  {
+    return (getHeader(msg))->length
+            + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
+            - MAC_FOOTER_SIZE
+            - sizeof(timesync_radio_t);
+  }
 
   
   
@@ -307,9 +333,9 @@ implementation {
         // the state here since we know that we are not receiving anymore
         m_receiving = FALSE;
         call CaptureSFD.captureFallingEdge();
-        call PacketTimeStamp.set(m_msg, time32);
-        if (call PacketTimeSyncOffset.isSet(m_msg)) {
-           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+call PacketTimeSyncOffset.get(m_msg);
+        PacketTimeStampset(m_msg, time32);
+        if (PacketTimeSyncOffsetisSet(m_msg)) {
+           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(m_msg);
            timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)m_msg+absOffset);
            // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
            *timesync  -= time32;
@@ -381,7 +407,7 @@ implementation {
           if ((sfd_state == 0) && (time - m_prev_time < 10) ) {
             call CC2420Receive.sfd_dropped();
             if (m_msg)
-              call PacketTimeStamp.clear(m_msg);
+              PacketTimeStampclear(m_msg);
           }
           break;
         }

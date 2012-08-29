@@ -50,7 +50,6 @@ configuration cc2420ReceiveC {
 implementation {
   components MainC;
   components cc2420ReceiveP;
-  components CC2420PacketC;
   components new CC2420SpiC() as Spi;
   
   components HplCC2420PinsC as Pins;
@@ -74,7 +73,6 @@ implementation {
   cc2420ReceiveP.RXFIFO -> Spi.RXFIFO;
   cc2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
   cc2420ReceiveP.SACK -> Spi.SACK;
-  cc2420ReceiveP.PacketTimeStamp -> CC2420PacketC;
   RadioConfig = cc2420ReceiveP.RadioConfig;
 
   cc2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
