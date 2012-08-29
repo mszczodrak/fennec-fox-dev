@@ -146,7 +146,6 @@ implementation {
 
   /***************** Prototypes ****************/
   error_t send( message_t * ONE p_msg, bool cca );
-  error_t resend( bool cca );
   void loadTXFIFO();
   void attemptSend();
   void congestionBackoff();
@@ -186,6 +185,12 @@ implementation {
     }
   }
 
+  void low_level_something_wrong() {
+    call SFLUSHTX.strobe();
+    call CaptureSFD.captureRisingEdge();
+    releaseSpiResource();
+  }
+ 
 
 
 
@@ -272,8 +277,38 @@ implementation {
     return send( p_msg, useCca );
   }
 
+  /**
+   * Resend a packet that already exists in the outbound tx buffer on the
+   * chip
+   * @param cca TRUE if this transmit should use clear channel assessment
+   */
   async command error_t RadioTransmit.resend(bool useCca) {
-    return resend( useCca );
+    atomic {
+      if (m_state == S_CANCEL) {
+        return ECANCEL;
+      }
+
+      if ( m_state != S_STARTED ) {
+        return FAIL;
+      }
+
+      m_cca = useCca;
+      m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
+      totalCcaChecks = 0;
+    }
+
+    if(m_cca) {
+      signal RadioBackoff.requestInitialBackoff(m_msg);
+      if (myInitialBackoff) {
+        call BackoffTimer.start( myInitialBackoff );
+      } else {
+        signal BackoffTimer.fired();
+      }
+    } else {
+      low_level_send(m_msg);
+    }
+
+    return SUCCESS;
   }
 
   async command error_t RadioTransmit.cancel() {
@@ -577,7 +612,7 @@ implementation {
       case S_SAMPLE_CCA : 
         // sample CCA and wait a little longer if free, just in case we
         // sampled during the ack turn-around window
-        if ( call CCA.get() ) {
+        if ( !call EnergyIndicator.isReceiving() ) {
           m_state = S_BEGIN_TRANSMIT;
           call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );
           
@@ -598,9 +633,7 @@ implementation {
       case S_SFD:
         // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
         // jiffies. Assume something is wrong.
-        call SFLUSHTX.strobe();
-        call CaptureSFD.captureRisingEdge();
-        releaseSpiResource();
+        low_level_something_wrong();
         signalDone( ERETRY );
         break;
 
@@ -641,41 +674,6 @@ implementation {
     return SUCCESS;
   }
   
-  /**
-   * Resend a packet that already exists in the outbound tx buffer on the
-   * chip
-   * @param cca TRUE if this transmit should use clear channel assessment
-   */
-  error_t resend( bool cca ) {
-
-    atomic {
-      if (m_state == S_CANCEL) {
-        return ECANCEL;
-      }
-      
-      if ( m_state != S_STARTED ) {
-        return FAIL;
-      }
-      
-      m_cca = cca;
-      m_state = cca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
-      totalCcaChecks = 0;
-    }
-    
-    if(m_cca) {
-      signal RadioBackoff.requestInitialBackoff(m_msg);
-      if (myInitialBackoff) {
-        call BackoffTimer.start( myInitialBackoff );
-      } else {
-        signal BackoffTimer.fired();
-      }
-    } else {
-      low_level_send(m_msg);
-    }
-    
-    return SUCCESS;
-  }
-
   /**
    * Attempt to send the packet we have loaded into the tx buffer on 
    * the radio chip.  The STXONCCA will send the packet immediately if
