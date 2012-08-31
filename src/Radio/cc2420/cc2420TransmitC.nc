@@ -65,10 +65,6 @@ implementation {
 
   cc2420RadioParams = cc2420TransmitP.cc2420RadioParams;
 
-  components MainC;
-  MainC.SoftwareInit -> cc2420TransmitP;
-  MainC.SoftwareInit -> Alarm;
-  
   components AlarmMultiplexC as Alarm;
   cc2420TransmitP.BackoffTimer -> Alarm;
 

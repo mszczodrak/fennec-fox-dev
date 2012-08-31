@@ -102,4 +102,6 @@ implementation {
   RadioReceive = cc2420TransmitC.Receive;
   cc2420TransmitC.SubReceive -> cc2420ReceiveC.Receive;
 
+  components cc2420DriverC;
+
 }

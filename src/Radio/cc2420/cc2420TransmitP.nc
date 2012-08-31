@@ -45,7 +45,6 @@
 
 module cc2420TransmitP @safe() {
 
-  provides interface Init;
   provides interface StdControl;
   provides interface RadioTransmit;
   provides interface RadioBackoff;
@@ -247,12 +246,6 @@ implementation {
 
   
   
-  /***************** Init Commands *****************/
-  command error_t Init.init() {
-    low_level_init();
-    return SUCCESS;
-  }
-
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
     low_level_start();
