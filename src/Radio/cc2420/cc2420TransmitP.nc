@@ -562,7 +562,45 @@ implementation {
       break;
     }
   }
-  
+
+  void low_level_cancel() {
+    call CSN.clr();
+    call SFLUSHTX.strobe();
+    call CSN.set();
+    releaseSpiResource();
+  }
+
+
+  void load_done(message_t* msg, error_t error) {
+    if ( m_state == S_CANCEL ) {
+      atomic {
+        low_level_cancel();
+      }
+      m_state = S_STARTED;
+      signal RadioTransmit.sendDone( msg, ECANCEL );
+
+    } else if ( !m_cca ) {
+      atomic {
+        m_state = S_BEGIN_TRANSMIT;
+      }
+      attemptSend();
+
+    } else {
+      releaseSpiResource();
+      atomic {
+        m_state = S_SAMPLE_CCA;
+      }
+
+      signal RadioBackoff.requestInitialBackoff(msg);
+      if (myInitialBackoff) {
+        call BackoffTimer.start(myInitialBackoff);
+      } else {
+        signal BackoffTimer.fired();
+      }
+    }
+  }
+
+
   /***************** TXFIFO Events ****************/
   /**
    * The TXFIFO is used to load packets into the transmit buffer on the
@@ -572,35 +610,7 @@ implementation {
                                      error_t error ) {
 
     call CSN.set();
-    if ( m_state == S_CANCEL ) {
-      atomic {
-        call CSN.clr();
-        call SFLUSHTX.strobe();
-        call CSN.set();
-      }
-      releaseSpiResource();
-      m_state = S_STARTED;
-      signal RadioTransmit.sendDone( m_msg, ECANCEL );
-      
-    } else if ( !m_cca ) {
-      atomic {
-        m_state = S_BEGIN_TRANSMIT;
-      }
-      attemptSend();
-      
-    } else {
-      releaseSpiResource();
-      atomic {
-        m_state = S_SAMPLE_CCA;
-      }
-      
-      signal RadioBackoff.requestInitialBackoff(m_msg);
-      if (myInitialBackoff) {
-        call BackoffTimer.start(myInitialBackoff);
-      } else {
-        signal BackoffTimer.fired();
-      }
-    }
+    load_done(m_msg, error);
   }
 
   
