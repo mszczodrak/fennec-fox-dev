@@ -1,6 +1,7 @@
 module cc2420DriverP @safe() {
 
   provides interface Init;
+  provides interface StdControl;
   provides interface ReceiveIndicator as EnergyIndicator;
   
   uses interface GpioCapture as CaptureSFD;
@@ -40,18 +41,23 @@ implementation {
     call SFD.makeInput();
   }
 
+
+  command error_t StdControl.start() {
 /*
-  void low_level_start() {
     call CaptureSFD.captureRisingEdge();
     atomic abortSpiRelease = FALSE;
+*/
+    return SUCCESS;
   }
 
-  void low_level_stop() {
+  command error_t StdControl.stop() {
     call CaptureSFD.disable();
     call SpiResource.release();  // REMOVE
     call CSN.set();
+    return SUCCESS;
   }
 
+/*
   void low_level_load(message_t* msg) {
     if ( acquireSpiResource() == SUCCESS ) {
       loadTXFIFO();

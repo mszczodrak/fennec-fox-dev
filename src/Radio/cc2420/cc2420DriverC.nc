@@ -1,15 +1,17 @@
 #include "IEEE802154.h"
 
 configuration cc2420DriverC {
-  uses interface cc2420RadioParams;
+  provides interface StdControl;
   provides interface ReceiveIndicator as EnergyIndicator;
+  uses interface cc2420RadioParams;
 }
 
 implementation {
 
   components cc2420DriverP;
-  cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
+  StdControl = cc2420DriverP.StdControl;
   EnergyIndicator = cc2420DriverP.EnergyIndicator;
+  cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
 
   components MainC;
   MainC.SoftwareInit -> cc2420DriverP;

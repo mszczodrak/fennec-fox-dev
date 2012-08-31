@@ -81,6 +81,8 @@ module cc2420TransmitP @safe() {
   provides interface Receive;
   uses interface Receive as SubReceive;
   uses interface ReceiveIndicator as EnergyIndicator;
+
+  uses interface StdControl as RadioStdControl;
 }
 
 implementation {
@@ -158,13 +160,6 @@ implementation {
   void low_level_start() {
     call CaptureSFD.captureRisingEdge();
     atomic abortSpiRelease = FALSE;
-  }
-
-
-  void low_level_stop() {
-    call CaptureSFD.disable();
-    call SpiResource.release();  // REMOVE
-    call CSN.set();
   }
 
 
@@ -252,7 +247,7 @@ implementation {
   }
 
   command error_t StdControl.stop() {
-    low_level_stop();
+    call RadioStdControl.stop();
     atomic {
       m_state = S_STOPPED;
       call BackoffTimer.stop();

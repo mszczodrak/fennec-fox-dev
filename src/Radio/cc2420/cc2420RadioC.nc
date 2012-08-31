@@ -100,9 +100,12 @@ implementation {
 
   RadioReceive = cc2420TransmitC.Receive;
   cc2420TransmitC.SubReceive -> cc2420ReceiveC.Receive;
-  cc2420TransmitC.EnergyIndicator -> cc2420DriverC.EnergyIndicator;
 
   components cc2420DriverC;
   EnergyIndicator = cc2420DriverC.EnergyIndicator;
+
+  cc2420TransmitC.EnergyIndicator -> cc2420DriverC.EnergyIndicator;
+  cc2420TransmitC.RadioStdControl -> cc2420DriverC.StdControl;
+
 
 }

@@ -52,6 +52,8 @@ configuration cc2420TransmitC {
   uses interface cc2420RadioParams;
   uses interface Receive as SubReceive;
   uses interface ReceiveIndicator as EnergyIndicator;
+
+  uses interface StdControl as RadioStdControl;
 }
 
 implementation {
@@ -62,6 +64,8 @@ implementation {
   RadioBackoff = cc2420TransmitP;
   EnergyIndicator = cc2420TransmitP.EnergyIndicator;
   ByteIndicator = cc2420TransmitP.ByteIndicator;
+
+  RadioStdControl = cc2420TransmitP.RadioStdControl;
 
   cc2420RadioParams = cc2420TransmitP.cc2420RadioParams;
 
