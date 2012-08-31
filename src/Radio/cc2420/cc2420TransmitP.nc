@@ -48,12 +48,10 @@ module cc2420TransmitP @safe() {
   provides interface StdControl;
   provides interface RadioTransmit;
   provides interface RadioBackoff;
-  provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
   uses interface GpioCapture as CaptureSFD;
-  uses interface GeneralIO as CCA;
   uses interface GeneralIO as CSN;
   uses interface GeneralIO as SFD;
 
@@ -82,6 +80,7 @@ module cc2420TransmitP @safe() {
 
   provides interface Receive;
   uses interface Receive as SubReceive;
+  uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
@@ -155,12 +154,6 @@ implementation {
   error_t releaseSpiResource();
   void signalDone( error_t err );
 
-
-  void low_level_init() {
-    call CCA.makeInput();
-    call CSN.makeOutput();
-    call SFD.makeInput();
-  }
 
   void low_level_start() {
     call CaptureSFD.captureRisingEdge();
@@ -325,11 +318,6 @@ implementation {
     return SUCCESS;
   }
 
-  /***************** Indicator Commands ****************/
-  command bool EnergyIndicator.isReceiving() {
-    return !(call CCA.get());
-  }
-  
   command bool ByteIndicator.isReceiving() {
     bool high;
     atomic high = sfdHigh;

@@ -1,18 +1,18 @@
 #include "IEEE802154.h"
 
 configuration cc2420DriverC {
-
   uses interface cc2420RadioParams;
+  provides interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
 
   components cc2420DriverP;
   cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
+  EnergyIndicator = cc2420DriverP.EnergyIndicator;
 
   components MainC;
   MainC.SoftwareInit -> cc2420DriverP;
-//  MainC.SoftwareInit -> Alarm;
   
   components HplCC2420PinsC as Pins;
   cc2420DriverP.CCA -> Pins.CCA;

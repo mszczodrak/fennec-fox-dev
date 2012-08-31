@@ -46,12 +46,12 @@ configuration cc2420TransmitC {
     interface StdControl;
     interface RadioTransmit;
     interface RadioBackoff;
-    interface ReceiveIndicator as EnergyIndicator;
     interface ReceiveIndicator as ByteIndicator;
   }
 
   uses interface cc2420RadioParams;
   uses interface Receive as SubReceive;
+  uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
@@ -69,7 +69,6 @@ implementation {
   cc2420TransmitP.BackoffTimer -> Alarm;
 
   components HplCC2420PinsC as Pins;
-  cc2420TransmitP.CCA -> Pins.CCA;
   cc2420TransmitP.CSN -> Pins.CSN;
   cc2420TransmitP.SFD -> Pins.SFD;
 

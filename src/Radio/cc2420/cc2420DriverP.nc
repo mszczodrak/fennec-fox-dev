@@ -1,6 +1,7 @@
 module cc2420DriverP @safe() {
 
   provides interface Init;
+  provides interface ReceiveIndicator as EnergyIndicator;
   
   uses interface GpioCapture as CaptureSFD;
   uses interface GeneralIO as CCA;
@@ -88,11 +89,11 @@ implementation {
     return SUCCESS;
   }
 
-/*
   command bool EnergyIndicator.isReceiving() {
     return !(call CCA.get());
   }
   
+/*
   command bool ByteIndicator.isReceiving() {
     bool high;
     atomic high = sfdHigh;
