@@ -67,17 +67,6 @@ implementation {
     CC2420_ABORT_PERIOD = 320
   };
 
-#ifdef CC2420_HW_SECURITY
-  uint16_t startTime = 0;
-  norace uint8_t secCtrlMode = 0;
-  norace uint8_t nonceValue[16] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-  norace uint8_t skip;
-  norace uint16_t CTR_SECCTRL0, CTR_SECCTRL1;
-  uint8_t securityChecked = 0;
-  
-  void securityCheck();
-#endif
-  
   norace message_t * ONE_NOK m_msg;
   
   norace bool m_cca;
@@ -617,9 +606,6 @@ implementation {
         return FAIL;
       }
       
-#ifdef CC2420_HW_SECURITY
-      securityChecked = 0;
-#endif
       m_state = S_LOAD;
       m_cca = cca;
       m_msg = p_msg;
