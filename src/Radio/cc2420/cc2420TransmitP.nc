@@ -488,10 +488,8 @@ implementation {
       atomic {
         m_state = S_BEGIN_TRANSMIT;
       }
-      attemptSend();
-
+      low_level_send(m_msg);
     } else {
-      releaseSpiResource();
       atomic {
         m_state = S_SAMPLE_CCA;
       }
@@ -556,50 +554,6 @@ implementation {
     }
   }
       
-  /**
-   * Attempt to send the packet we have loaded into the tx buffer on 
-   * the radio chip.  The STXONCCA will send the packet immediately if
-   * the channel is clear.  If we're not concerned about whether or not
-   * the channel is clear (i.e. m_cca == FALSE), then STXON will send the
-   * packet without checking for a clear channel.
-   *
-   * If the packet didn't get sent, then congestion == TRUE.  In that case,
-   * we reset the backoff timer and try again in a moment.
-   *
-   * If the packet got sent, we should expect an SFD interrupt to take
-   * over, signifying the packet is getting sent.
-   * 
-   * If security is enabled, STXONCCA or STXON will perform inline security
-   * options before transmitting the packet.
-   */
-  void attemptSend() {
-    uint8_t status;
-    bool congestion = TRUE;
-
-    atomic {
-      call CSN.clr();
-      status = m_cca ? call STXONCCA.strobe() : call STXON.strobe();
-      if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
-        status = call SNOP.strobe();
-        if ( status & CC2420_STATUS_TX_ACTIVE ) {
-          congestion = FALSE;
-        }
-      }
-
-      m_state = congestion ? S_SAMPLE_CCA : S_SFD;
-      call CSN.set();
-    }
-
-    if ( congestion ) {
-      totalCcaChecks = 0;
-      releaseSpiResource();
-      congestionBackoff();
-    } else {
-      call BackoffTimer.start(CC2420_ABORT_PERIOD);
-    }
-  }
-  
-  
   /**  
    * Congestion Backoff
    */
@@ -635,6 +589,48 @@ implementation {
 
 
 
+  /**
+   * Attempt to send the packet we have loaded into the tx buffer on
+   * the radio chip.  The STXONCCA will send the packet immediately if
+   * the channel is clear.  If we're not concerned about whether or not
+   * the channel is clear (i.e. m_cca == FALSE), then STXON will send the
+   * packet without checking for a clear channel.
+   *
+   * If the packet didn't get sent, then congestion == TRUE.  In that case,
+   * we reset the backoff timer and try again in a moment.
+   *
+   * If the packet got sent, we should expect an SFD interrupt to take
+   * over, signifying the packet is getting sent.
+   *
+   * If security is enabled, STXONCCA or STXON will perform inline security
+   * options before transmitting the packet.
+   */
+  void attemptSend() {
+    uint8_t status;
+    bool congestion = TRUE;
+
+    atomic {
+      call CSN.clr();
+      status = m_cca ? call STXONCCA.strobe() : call STXON.strobe();
+      if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
+        status = call SNOP.strobe();
+        if ( status & CC2420_STATUS_TX_ACTIVE ) {
+          congestion = FALSE;
+        }
+      }
+
+      m_state = congestion ? S_SAMPLE_CCA : S_SFD;
+      call CSN.set();
+    }
+
+    if ( congestion ) {
+      totalCcaChecks = 0;
+      releaseSpiResource();
+      congestionBackoff();
+    } else {
+      call BackoffTimer.start(CC2420_ABORT_PERIOD);
+    }
+  }
 
 
 
@@ -747,6 +743,7 @@ implementation {
    */
   async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
     call CSN.set();
+    releaseSpiResource();
     load_done(radio_msg, error);
   }
 
