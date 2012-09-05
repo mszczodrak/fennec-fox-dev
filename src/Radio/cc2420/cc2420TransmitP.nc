@@ -72,7 +72,6 @@ implementation {
   norace bool m_cca;
   
   norace uint8_t m_tx_power;
-  norace uint8_t default_tx_power;
   
   cc2420_transmit_state_t m_state = S_STOPPED;
 
@@ -97,52 +96,20 @@ implementation {
   
 
   /***************** Prototypes ****************/
-  error_t send( message_t * ONE p_msg, bool cca );
   void loadTXFIFO();
   void attemptSend();
   void congestionBackoff();
-  error_t acquireSpiResource();
   error_t releaseSpiResource();
   void signalDone( error_t err );
 
 
-  void low_level_start() {
-    call CaptureSFD.captureRisingEdge();
-    atomic abortSpiRelease = FALSE;
-  }
-
-
-  void low_level_load(message_t* msg) {
-    if ( acquireSpiResource() == SUCCESS ) {
-      loadTXFIFO();
-    }
-  }
-
-  void low_level_send(message_t* msg) {
-    if ( acquireSpiResource() == SUCCESS ) {
-      attemptSend();
-    }
-  }
-
-  void low_level_something_wrong() {
-    call SFLUSHTX.strobe();
-    call CaptureSFD.captureRisingEdge();
-    releaseSpiResource();
-  }
+  void low_level_start();
+  error_t low_level_load(message_t* msg);
+  error_t low_level_send(message_t* msg);
+  void low_level_something_wrong();
+  void low_level_cancel();
  
-
-
-
-
-
-
   /* -------------------------- */
-
-
-
-
-
-
 
   cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
     return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
@@ -190,7 +157,6 @@ implementation {
       m_state = S_STARTED;
       m_receiving = FALSE;
       m_tx_power = 0;
-      default_tx_power = call cc2420RadioParams.get_power();
     }
     return SUCCESS;
   }
@@ -205,9 +171,32 @@ implementation {
   }
 
 
-  /**************** Send Commands ****************/
+  /***************** Functions ****************/
+  /**
+   * Set up a message to be sent. First load it into the outbound tx buffer
+   * on the chip, then attempt to send it.
+   * @param *p_msg Pointer to the message that needs to be sent
+   * @param cca TRUE if this transmit should use clear channel assessment
+   */
   async command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
-    return send( p_msg, useCca );
+    atomic {
+      if (m_state == S_CANCEL) {
+        return ECANCEL;
+      }
+
+      if ( m_state != S_STARTED ) {
+        return FAIL;
+      }
+
+      m_state = S_LOAD;
+      m_cca = useCca;
+      m_msg = p_msg;
+      totalCcaChecks = 0;
+    }
+
+    low_level_load(p_msg);
+
+    return SUCCESS;
   }
 
   /**
@@ -472,10 +461,7 @@ implementation {
       break;
       
     case S_CANCEL:
-      call CSN.clr();
-      call SFLUSHTX.strobe();
-      call CSN.set();
-      releaseSpiResource();
+      low_level_cancel();
       atomic {
         m_state = S_STARTED;
       }
@@ -488,12 +474,6 @@ implementation {
     }
   }
 
-  void low_level_cancel() {
-    call CSN.clr();
-    call SFLUSHTX.strobe();
-    call CSN.set();
-    releaseSpiResource();
-  }
 
 
   void load_done(message_t* msg, error_t error) {
@@ -526,24 +506,6 @@ implementation {
   }
 
 
-  /***************** TXFIFO Events ****************/
-  /**
-   * The TXFIFO is used to load packets into the transmit buffer on the
-   * chip
-   */
-  async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len,
-                                     error_t error ) {
-
-    call CSN.set();
-    load_done(m_msg, error);
-  }
-
-  
-  async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, 
-      error_t error ) {
-  }
-  
-  
   /***************** Timer Events ****************/
   /**
    * The backoff timer is mainly used to wait for a moment before trying
@@ -568,8 +530,13 @@ implementation {
         break;
         
       case S_BEGIN_TRANSMIT:
-      case S_CANCEL:
         low_level_send(m_msg);
+        break;
+
+      case S_CANCEL:
+        low_level_cancel();
+        m_state = S_STARTED;
+        signal RadioTransmit.sendDone( m_msg, ECANCEL );
         break;
         
       case S_ACK_WAIT:
@@ -589,34 +556,6 @@ implementation {
     }
   }
       
-  /***************** Functions ****************/
-  /**
-   * Set up a message to be sent. First load it into the outbound tx buffer
-   * on the chip, then attempt to send it.
-   * @param *p_msg Pointer to the message that needs to be sent
-   * @param cca TRUE if this transmit should use clear channel assessment
-   */
-  error_t send( message_t* ONE p_msg, bool cca ) {
-    atomic {
-      if (m_state == S_CANCEL) {
-        return ECANCEL;
-      }
-      
-      if ( m_state != S_STARTED ) {
-        return FAIL;
-      }
-      
-      m_state = S_LOAD;
-      m_cca = cca;
-      m_msg = p_msg;
-      totalCcaChecks = 0;
-    }
-
-    low_level_load(p_msg);
-
-    return SUCCESS;
-  }
-  
   /**
    * Attempt to send the packet we have loaded into the tx buffer on 
    * the radio chip.  The STXONCCA will send the packet immediately if
@@ -638,15 +577,6 @@ implementation {
     bool congestion = TRUE;
 
     atomic {
-      if (m_state == S_CANCEL) {
-        call SFLUSHTX.strobe();
-        releaseSpiResource();
-        call CSN.set();
-        m_state = S_STARTED;
-        signal RadioTransmit.sendDone( m_msg, ECANCEL );
-        return;
-      }
-
       call CSN.clr();
       status = m_cca ? call STXONCCA.strobe() : call STXON.strobe();
       if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
@@ -684,6 +614,38 @@ implementation {
     }
   }
   
+  error_t releaseSpiResource() {
+    call SpiResource.release();
+    return SUCCESS;
+  }
+
+
+  void signalDone( error_t err ) {
+    atomic m_state = S_STARTED;
+    abortSpiRelease = FALSE;
+    call ChipSpiResource.attemptRelease();
+    signal RadioTransmit.sendDone( m_msg, err );
+  }
+
+  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* low level */
+
+  norace message_t * ONE_NOK radio_msg;
+
   error_t acquireSpiResource() {
     error_t error = call SpiResource.immediateRequest();
     if ( error != SUCCESS ) {
@@ -692,15 +654,11 @@ implementation {
     return error;
   }
 
-  error_t releaseSpiResource() {
-    call SpiResource.release();
-    return SUCCESS;
-  }
 
 
-  /** 
+  /**
    * Setup the packet transmission power and load the tx fifo buffer on
-   * the chip with our outbound packet.  
+   * the chip with our outbound packet.
    *
    * Warning: the tx_power metadata might not be initialized and
    * could be a value other than 0 on boot.  Verification is needed here
@@ -715,39 +673,88 @@ implementation {
    * the same CRC polynomial as the CC2420's AUTOCRC functionality.
    */
   void loadTXFIFO() {
-    cc2420_header_t* header = getHeader( m_msg );
-    uint8_t tx_power = (getMetadata( m_msg ))->tx_power;
+    cc2420_header_t* header = getHeader( radio_msg );
+    uint8_t tx_power = (getMetadata( radio_msg ))->tx_power;
 
     if ( !tx_power ) {
-      tx_power = default_tx_power;
+      tx_power = call cc2420RadioParams.get_power();
     }
-    
+
     call CSN.clr();
-    
+
     if ( m_tx_power != tx_power ) {
       call TXCTRL.write( ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
                          ( 3 << CC2420_TXCTRL_PA_CURRENT ) |
                          ( 1 << CC2420_TXCTRL_RESERVED ) |
                          ( (tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
     }
-    
+
     m_tx_power = tx_power;
-    
+
     {
       uint8_t tmpLen __DEPUTY_UNUSED__ = header->length - 1;
       call TXFIFO.write(TCAST(uint8_t * COUNT(tmpLen), header), header->length - 1);
     }
   }
-  
-  void signalDone( error_t err ) {
-    atomic m_state = S_STARTED;
-    abortSpiRelease = FALSE;
-    call ChipSpiResource.attemptRelease();
-    signal RadioTransmit.sendDone( m_msg, err );
+
+
+
+
+  void low_level_start() {
+    call CaptureSFD.captureRisingEdge();
+    atomic abortSpiRelease = FALSE;
   }
 
-  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
+
+  error_t low_level_load(message_t* msg) {
+    radio_msg = msg;
+    if ( acquireSpiResource() == SUCCESS ) {
+      loadTXFIFO();
+    }
+    return SUCCESS;
   }
+
+  error_t low_level_send(message_t* msg) {
+    if (msg != radio_msg)
+      return FAIL;
+
+    if ( acquireSpiResource() == SUCCESS ) {
+      attemptSend();
+    }
+    return SUCCESS;
+  }
+
+  void low_level_something_wrong() {
+    call SFLUSHTX.strobe();
+    call CaptureSFD.captureRisingEdge();
+    releaseSpiResource();
+  }
+
+
+  void low_level_cancel() {
+    call CSN.clr();
+    call SFLUSHTX.strobe();
+    call CSN.set();
+    releaseSpiResource();
+  }
+
+
+
+  /***************** TXFIFO Events ****************/
+  /**
+   * The TXFIFO is used to load packets into the transmit buffer on the
+   * chip
+   */
+  async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+    call CSN.set();
+    load_done(radio_msg, error);
+  }
+
+
+  async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+  }
+
+
 
 
 }
