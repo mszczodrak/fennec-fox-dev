@@ -585,7 +585,14 @@ implementation {
   }
 
 
+  void send_done(error_t error) {
+    if (error == EBUSY) {
+      m_state = S_SAMPLE_CCA;
+      totalCcaChecks = 0;
+      congestionBackoff();
+    }
 
+  }
 
 
 
@@ -619,15 +626,14 @@ implementation {
         }
       }
 
-      m_state = congestion ? S_SAMPLE_CCA : S_SFD;
       call CSN.set();
     }
 
     if ( congestion ) {
-      totalCcaChecks = 0;
+      send_done(EBUSY);
       releaseSpiResource();
-      congestionBackoff();
     } else {
+      m_state = S_SFD;
       call BackoffTimer.start(CC2420_ABORT_PERIOD);
     }
   }
