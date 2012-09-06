@@ -335,6 +335,7 @@ implementation {
         }
         releaseSpiResource();
         call BackoffTimer.stop();
+        call RadioTimer.stop();
 
         if ( call SFD.get() ) {
           break;
@@ -506,7 +507,10 @@ implementation {
   }
 
   async event void RadioTimer.fired() {
-
+    // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
+    // jiffies. Assume something is wrong.
+    low_level_something_wrong();
+    signalDone( ERETRY );
   }
 
 
@@ -545,13 +549,6 @@ implementation {
         
       case S_ACK_WAIT:
         signalDone( SUCCESS );
-        break;
-
-      case S_SFD:
-        // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
-        // jiffies. Assume something is wrong.
-        low_level_something_wrong();
-        signalDone( ERETRY );
         break;
 
       default:
@@ -640,7 +637,8 @@ implementation {
       releaseSpiResource();
     } else {
       m_state = S_SFD;
-      call BackoffTimer.start(CC2420_ABORT_PERIOD);
+      call RadioTimer.start(CC2420_ABORT_PERIOD);
+//      call BackoffTimer.start(CC2420_ABORT_PERIOD);
     }
   }
 
