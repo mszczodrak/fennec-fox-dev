@@ -69,9 +69,11 @@ implementation {
 
   cc2420RadioParams = cc2420TransmitP.cc2420RadioParams;
 
-//  components AlarmMultiplexC as Alarm;
   components new MuxAlarm32khz32C() as Alarm;
   cc2420TransmitP.BackoffTimer -> Alarm;
+
+  components AlarmMultiplexC as RAlarm;
+  cc2420TransmitP.RadioTimer -> RAlarm;
 
   components HplCC2420PinsC as Pins;
   cc2420TransmitP.CSN -> Pins.CSN;

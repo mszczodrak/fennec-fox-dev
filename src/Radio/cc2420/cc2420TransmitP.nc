@@ -11,8 +11,7 @@ module cc2420TransmitP @safe() {
   provides interface ReceiveIndicator as ByteIndicator;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-  //uses interface Timer<TMilli> as BackoffTimer;
-
+  uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
   uses interface GpioCapture as CaptureSFD;
   uses interface GeneralIO as CSN;
@@ -504,6 +503,10 @@ implementation {
         signal BackoffTimer.fired();
       }
     }
+  }
+
+  async event void RadioTimer.fired() {
+
   }
 
 
