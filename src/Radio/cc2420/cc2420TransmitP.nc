@@ -11,6 +11,9 @@ module cc2420TransmitP @safe() {
   provides interface ReceiveIndicator as ByteIndicator;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
+  //uses interface Timer<TMilli> as BackoffTimer;
+
+
   uses interface GpioCapture as CaptureSFD;
   uses interface GeneralIO as CSN;
   uses interface GeneralIO as SFD;
