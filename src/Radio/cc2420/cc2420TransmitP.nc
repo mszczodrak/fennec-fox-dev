@@ -8,37 +8,8 @@ module cc2420TransmitP @safe() {
   provides interface StdControl;
   provides interface RadioTransmit;
   provides interface RadioBackoff;
-//  provides interface ReceiveIndicator as ByteIndicator;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-
-/*
-  uses interface Alarm<T32khz,uint32_t> as RadioTimer;
-
-  uses interface GpioCapture as CaptureSFD;
-  uses interface GeneralIO as CSN;
-  uses interface GeneralIO as SFD;
-
-  uses interface Resource as SpiResource;
-  uses interface ChipSpiResource;
-  uses interface CC2420Fifo as TXFIFO;
-  uses interface CC2420Ram as TXFIFO_RAM;
-  uses interface CC2420Register as TXCTRL;
-  uses interface CC2420Strobe as SNOP;
-  uses interface CC2420Strobe as STXON;
-  uses interface CC2420Strobe as STXONCCA;
-  uses interface CC2420Strobe as SFLUSHTX;
-  uses interface CC2420Register as MDMCTRL1;
-
-  uses interface CC2420Strobe as STXENC;
-  uses interface CC2420Register as SECCTRL0;
-  uses interface CC2420Register as SECCTRL1;
-  uses interface CC2420Ram as KEY0;
-  uses interface CC2420Ram as KEY1;
-  uses interface CC2420Ram as TXNONCE;
-*/
-//  uses interface CC2420Receive;
-  uses interface Leds;
 
   uses interface cc2420RadioParams;
 
@@ -70,9 +41,6 @@ implementation {
   norace bool m_cca;
   norace cc2420_transmit_state_t m_state = S_STOPPED;
 
-  
-  
-  
   /** Total CCA checks that showed no activity before the NoAck LPL send */
   norace int8_t totalCcaChecks;
   
@@ -83,14 +51,6 @@ implementation {
   norace uint16_t myCongestionBackoff;
   
 
-  /***************** Prototypes ****************/
-  void loadTXFIFO();
-  void attemptSend();
-  void congestionBackoff();
-  void signalDone( error_t err );
-
-
- 
   /* -------------------------- */
 
   cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
@@ -100,6 +60,19 @@ implementation {
   cc2420_metadata_t* getMetadata( message_t* msg ) {
     return (cc2420_metadata_t*)msg->metadata;
   }
+
+  /**
+   * Congestion Backoff
+   */
+  void congestionBackoff() {
+    signal RadioBackoff.requestCongestionBackoff(m_msg);
+    if (myCongestionBackoff) {
+      call BackoffTimer.start(myCongestionBackoff);
+    } else {
+      signal BackoffTimer.fired();
+    }
+  }
+
 
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
@@ -277,19 +250,6 @@ implementation {
     }
   }
       
-  /**  
-   * Congestion Backoff
-   */
-  void congestionBackoff() {
-    signal RadioBackoff.requestCongestionBackoff(m_msg);
-    if (myCongestionBackoff) {
-      call BackoffTimer.start(myCongestionBackoff);
-    } else {
-      signal BackoffTimer.fired();
-    }
-  }
-  
-
 
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
