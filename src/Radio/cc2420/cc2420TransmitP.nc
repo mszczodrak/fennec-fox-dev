@@ -61,27 +61,13 @@ implementation {
     S_CANCEL,
   } cc2420_transmit_state_t;
 
-  // This specifies how many jiffies the stack should wait after a
-  // TXACTIVE to receive an SFD interrupt before assuming something is
-  // wrong and aborting the send. There seems to be a condition
-  // on the micaZ where the SFD interrupt is never handled.
-  enum {
-    CC2420_ABORT_PERIOD = 320
-  };
 
   norace message_t * ONE_NOK m_msg;
-  
   norace bool m_cca;
-  
-  norace uint8_t m_tx_power;
-  
   norace cc2420_transmit_state_t m_state = S_STOPPED;
 
   
-  uint16_t m_prev_time;
   
-  /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
-  bool abortSpiRelease;
   
   /** Total CCA checks that showed no activity before the NoAck LPL send */
   norace int8_t totalCcaChecks;
@@ -126,7 +112,6 @@ implementation {
     low_level_start();
     atomic {
       m_state = S_STARTED;
-      m_tx_power = 0;
     }
     return SUCCESS;
   }
@@ -247,13 +232,6 @@ implementation {
 
 
 
-  /***************** ChipSpiResource Events ****************/
-  async event void ChipSpiResource.releasing() {
-    if(abortSpiRelease) {
-      call ChipSpiResource.abortRelease();
-    }
-  }
-  
   
   /***************** CC2420Receive Events ****************/
   /**
@@ -436,6 +414,21 @@ implementation {
 
   bool m_receiving = FALSE;
 
+  norace uint8_t m_tx_power;
+  uint16_t m_prev_time;
+
+  /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
+  bool abortSpiRelease;
+
+  // This specifies how many jiffies the stack should wait after a
+  // TXACTIVE to receive an SFD interrupt before assuming something is
+  // wrong and aborting the send. There seems to be a condition
+  // on the micaZ where the SFD interrupt is never handled.
+  enum {
+    CC2420_ABORT_PERIOD = 320
+  };
+
+
   void PacketTimeStampclear(message_t* msg)
   {
     (getMetadata( msg ))->timesync = FALSE;
@@ -467,9 +460,6 @@ implementation {
   }
 
 
-
-
-
   error_t acquireSpiResource() {
     error_t error = call SpiResource.immediateRequest();
     if ( error != SUCCESS ) {
@@ -477,6 +467,14 @@ implementation {
     }
     return error;
   }
+
+  /***************** ChipSpiResource Events ****************/
+  async event void ChipSpiResource.releasing() {
+    if(abortSpiRelease) {
+      call ChipSpiResource.abortRelease();
+    }
+  }
+  
 
   void signalDone( error_t err ) {
     atomic m_state = S_STARTED;
@@ -772,6 +770,7 @@ implementation {
 
   void low_level_start() {
     radio_state = S_STARTED;
+    m_tx_power = 0;
     m_receiving = FALSE;
     call CaptureSFD.captureRisingEdge();
     atomic abortSpiRelease = FALSE;
