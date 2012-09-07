@@ -91,8 +91,12 @@ implementation {
   void low_level_stop();
   error_t low_level_load(message_t* msg);
   error_t low_level_send(message_t* msg);
-  void low_level_something_wrong();
   void low_level_cancel();
+
+  void low_level_send_done( error_t err) {
+    atomic m_state = S_STARTED;
+    signal RadioTransmit.sendDone( m_msg, err );
+  }
  
   /* -------------------------- */
 
@@ -104,9 +108,6 @@ implementation {
     return (cc2420_metadata_t*)msg->metadata;
   }
 
-
-  
-  
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
     low_level_start();
@@ -230,16 +231,6 @@ implementation {
   }
   
 
-
-
-  
-  /***************** CC2420Receive Events ****************/
-  /**
-   * If the packet we just received was an ack that we were expecting,
-   * our send is complete.
-   */
-
-
   event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 //    dbg("Mac", "Mac: CSMA/CA receive\n");
     return signal Receive.receive(msg, payload, len);
@@ -277,8 +268,6 @@ implementation {
       break;
     }
   }
-
-
 
   void load_done(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
@@ -474,14 +463,16 @@ implementation {
       call ChipSpiResource.abortRelease();
     }
   }
-  
+ 
+
+
+ 
 
   void signalDone( error_t err ) {
-    atomic m_state = S_STARTED;
     atomic radio_state = S_STARTED;
     abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
-    signal RadioTransmit.sendDone( m_msg, err );
+    low_level_send_done(err);
   }
 
 
@@ -577,6 +568,12 @@ implementation {
         signalDone(SUCCESS);
       }
     }
+  }
+
+  void low_level_something_wrong() {
+    call SFLUSHTX.strobe();
+    call CaptureSFD.captureRisingEdge();
+    releaseSpiResource();
   }
 
 
@@ -798,12 +795,6 @@ implementation {
       attemptSend();
     }
     return SUCCESS;
-  }
-
-  void low_level_something_wrong() {
-    call SFLUSHTX.strobe();
-    call CaptureSFD.captureRisingEdge();
-    releaseSpiResource();
   }
 
 
