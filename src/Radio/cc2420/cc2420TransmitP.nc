@@ -45,6 +45,8 @@ module cc2420TransmitP @safe() {
   uses interface ReceiveIndicator as EnergyIndicator;
 
   uses interface StdControl as RadioStdControl;
+
+  provides interface RadioInter;
 }
 
 implementation {
@@ -87,14 +89,9 @@ implementation {
   void signalDone( error_t err );
 
 
-  void low_level_start();
-  void low_level_stop();
-  error_t low_level_load(message_t* msg);
-  error_t low_level_send(message_t* msg, bool useCca);
-  void low_level_cancel();
-
   void low_level_send_done( error_t err) {
     m_state = S_STARTED;
+    call BackoffTimer.stop();
     signal RadioTransmit.sendDone( m_msg, err );
   }
  
@@ -110,14 +107,14 @@ implementation {
 
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
-    low_level_start();
+    call RadioInter.start();
     m_state = S_STARTED;
     return SUCCESS;
   }
 
   command error_t StdControl.stop() {
     call RadioStdControl.stop();
-    low_level_stop();
+    call RadioInter.stop();
     m_state = S_STOPPED;
     call BackoffTimer.stop();
     return SUCCESS;
@@ -145,7 +142,7 @@ implementation {
     m_msg = p_msg;
     totalCcaChecks = 0;
 
-    low_level_load(p_msg);
+    call RadioInter.load(p_msg);
     return SUCCESS;
   }
 
@@ -175,7 +172,7 @@ implementation {
         signal BackoffTimer.fired();
       }
     } else {
-      low_level_send(m_msg, useCca);
+      call RadioInter.send(m_msg, useCca);
     }
 
     return SUCCESS;
@@ -228,13 +225,13 @@ implementation {
 
   void load_done(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
-      low_level_cancel();
+      call RadioInter.cancel();
       m_state = S_STARTED;
       signal RadioTransmit.sendDone( msg, ECANCEL );
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
-      low_level_send(m_msg, m_cca);
+      call RadioInter.send(m_msg, m_cca);
     } else {
       m_state = S_SAMPLE_CCA;
 
@@ -270,11 +267,11 @@ implementation {
       break;
         
     case S_BEGIN_TRANSMIT:
-      low_level_send(m_msg, m_cca);
+      call RadioInter.send(m_msg, m_cca);
       break;
 
     case S_CANCEL:
-      low_level_cancel();
+      call RadioInter.cancel();
       m_state = S_STARTED;
       signal RadioTransmit.sendDone( m_msg, ECANCEL );
       break;
@@ -712,7 +709,7 @@ implementation {
 
 
 
-  void low_level_start() {
+  command void RadioInter.start() {
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
@@ -720,13 +717,13 @@ implementation {
     abortSpiRelease = FALSE;
   }
 
-  void low_level_stop() {
+  command void RadioInter.stop() {
     radio_state = S_STOPPED;
     call RadioTimer.stop();
   }
 
 
-  error_t low_level_load(message_t* msg) {
+  command error_t RadioInter.load(message_t* msg) {
     radio_msg = msg;
     radio_state = S_LOAD;
     if ( acquireSpiResource() == SUCCESS ) {
@@ -735,7 +732,7 @@ implementation {
     return SUCCESS;
   }
 
-  error_t low_level_send(message_t* msg, bool useCca) {
+  command error_t RadioInter.send(message_t* msg, bool useCca) {
     if (msg != radio_msg)
       return FAIL;
 
@@ -749,7 +746,7 @@ implementation {
   }
 
 
-  void low_level_cancel() {
+  command void RadioInter.cancel() {
     call CSN.clr();
     call SFLUSHTX.strobe();
     call CSN.set();
