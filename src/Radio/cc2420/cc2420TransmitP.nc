@@ -76,14 +76,9 @@ implementation {
   norace uint8_t m_tx_power;
   
   norace cc2420_transmit_state_t m_state = S_STOPPED;
-  norace cc2420_transmit_state_t radio_state = S_STOPPED;
 
-  bool m_receiving = FALSE;
   
   uint16_t m_prev_time;
-  
-  /** Byte reception/transmission indicator */
-  bool sfdHigh;
   
   /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
   bool abortSpiRelease;
@@ -107,6 +102,7 @@ implementation {
 
 
   void low_level_start();
+  void low_level_stop();
   error_t low_level_load(message_t* msg);
   error_t low_level_send(message_t* msg);
   void low_level_something_wrong();
@@ -123,34 +119,6 @@ implementation {
   }
 
 
-  void PacketTimeStampclear(message_t* msg)
-  {
-    (getMetadata( msg ))->timesync = FALSE;
-    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
-  }
-
-  void PacketTimeStampset(message_t* msg, uint32_t value)
-  {
-    (getMetadata( msg ))->timestamp = value;
-  }
-
-  bool PacketTimeSyncOffsetisSet(message_t* msg)
-  {
-    return ((getMetadata( msg ))->timesync);
-  }
-
-  //returns offset of timestamp from the beginning of cc2420 header which is
-  //          sizeof(cc2420_header_t)+datalen-sizeof(timesync_radio_t)
-  //uses packet length of the message which is
-  //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
-  uint8_t PacketTimeSyncOffsetget(message_t* msg)
-  {
-    return (getHeader(msg))->length
-            + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
-            - MAC_FOOTER_SIZE
-            - sizeof(timesync_radio_t);
-  }
-
   
   
   /***************** StdControl Commands ****************/
@@ -158,8 +126,6 @@ implementation {
     low_level_start();
     atomic {
       m_state = S_STARTED;
-      radio_state = S_STARTED;
-      m_receiving = FALSE;
       m_tx_power = 0;
     }
     return SUCCESS;
@@ -167,11 +133,10 @@ implementation {
 
   command error_t StdControl.stop() {
     call RadioStdControl.stop();
+    low_level_stop();
     atomic {
       m_state = S_STOPPED;
-      radio_state = S_STOPPED;
       call BackoffTimer.stop();
-      call RadioTimer.stop();
     }
     return SUCCESS;
   }
@@ -257,11 +222,6 @@ implementation {
     return SUCCESS;
   }
 
-  command bool ByteIndicator.isReceiving() {
-    bool high;
-    atomic high = sfdHigh;
-    return high;
-  }
   
 
   /***************** RadioBackoff Commands ****************/
@@ -284,134 +244,8 @@ implementation {
   async command void RadioBackoff.setCca(bool useCca) {
   }
   
-  // this method converts a 16-bit timestamp into a 32-bit one
-  inline uint32_t getTime32(uint16_t captured_time)
-  {
-    uint32_t now = call BackoffTimer.getNow();
-
-    // the captured_time is always in the past
-    return now - (uint16_t)(now - captured_time);
-  }
 
 
-  void at_efd() {
-    if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-      radio_state = S_ACK_WAIT;
-      call BackoffTimer.start( CC2420_ACK_WAIT_DELAY );
-    } else {
-      signalDone(SUCCESS);
-    }
-  }
-
-
-  /**
-   * The CaptureSFD event is actually an interrupt from the capture pin
-   * which is connected to timing circuitry and timer modules.  This
-   * type of interrupt allows us to see what time (being some relative value)
-   * the event occurred, and lets us accurately timestamp our packets.  This
-   * allows higher levels in our system to synchronize with other nodes.
-   *
-   * Because the SFD events can occur so quickly, and the interrupts go
-   * in both directions, we set up the interrupt but check the SFD pin to
-   * determine if that interrupt condition has already been met - meaning,
-   * we should fall through and continue executing code where that interrupt
-   * would have picked up and executed had our microcontroller been fast enough.
-   */
-  async event void CaptureSFD.captured( uint16_t time ) {
-    uint32_t time32;
-    uint8_t sfd_state = 0;
-    atomic {
-      time32 = getTime32(time);
-      switch( radio_state ) {
-        
-      case S_SFD:
-        radio_state = S_EFD;
-        sfdHigh = TRUE;
-        // in case we got stuck in the receive SFD interrupts, we can reset
-        // the state here since we know that we are not receiving anymore
-        m_receiving = FALSE;
-        call CaptureSFD.captureFallingEdge();
-        PacketTimeStampset(m_msg, time32);
-        if (PacketTimeSyncOffsetisSet(m_msg)) {
-           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(m_msg);
-           timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)m_msg+absOffset);
-           // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
-           *timesync  -= time32;
-           call CSN.clr();
-           call TXFIFO_RAM.write( absOffset, (uint8_t*)timesync, sizeof(timesync_radio_t) );
-           call CSN.set();
-           //restoring the event time to the original value
-           *timesync  += time32;
-        }
-
-        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-          // This is an ack packet, don't release the chip's SPI bus lock.
-          abortSpiRelease = TRUE;
-        }
-        releaseSpiResource();
-        call RadioTimer.stop();
-
-        if ( call SFD.get() ) {
-          break;
-        }
-        /** Fall Through because the next interrupt was already received */
-
-      case S_EFD:
-        sfdHigh = FALSE;
-        call CaptureSFD.captureRisingEdge();
-  
-        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-          radio_state = S_ACK_WAIT;
-          call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
-        } else {
-          signalDone(SUCCESS);
-        }
-
-        if ( !call SFD.get() ) {
-          break;
-        }
-        /** Fall Through because the next interrupt was already received */
-        
-      default:
-        /* this is the SFD for received messages */
-        if ( !m_receiving && sfdHigh == FALSE ) {
-          sfdHigh = TRUE;
-          call CaptureSFD.captureFallingEdge();
-          // safe the SFD pin status for later use
-          sfd_state = call SFD.get();
-          call CC2420Receive.sfd( time32 );
-          m_receiving = TRUE;
-          m_prev_time = time;
-          if ( call SFD.get() ) {
-            // wait for the next interrupt before moving on
-            return;
-          }
-          // if SFD.get() = 0, then an other interrupt happened since we
-          // reconfigured CaptureSFD! Fall through
-        }
-        
-        if ( sfdHigh == TRUE ) {
-          sfdHigh = FALSE;
-          call CaptureSFD.captureRisingEdge();
-          m_receiving = FALSE;
-          /* if sfd_state is 1, then we fell through, but at the time of
-           * saving the time stamp the SFD was still high. Thus, the timestamp
-           * is valid.
-           * if the sfd_state is 0, then either we fell through and SFD
-           * was low while we safed the time stamp, or we didn't fall through.
-           * Thus, we check for the time between the two interrupts.
-           * FIXME: Why 10 tics? Seams like some magic number...
-           */
-          if ((sfd_state == 0) && (time - m_prev_time < 10) ) {
-            call CC2420Receive.sfd_dropped();
-            if (m_msg)
-              PacketTimeStampclear(m_msg);
-          }
-          break;
-        }
-      }
-    }
-  }
 
   /***************** ChipSpiResource Events ****************/
   async event void ChipSpiResource.releasing() {
@@ -434,31 +268,6 @@ implementation {
   }
 
 
-  async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
-    cc2420_header_t* ack_header;
-    cc2420_header_t* msg_header;
-    cc2420_metadata_t* msg_metadata;
-    uint8_t* ack_buf;
-    uint8_t length;
-
-    if ( type == IEEE154_TYPE_ACK && m_msg) {
-      ack_header = getHeader( ack_msg );
-      msg_header = getHeader( m_msg );
-      
-      if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
-        call RadioTimer.stop();
-        
-        msg_metadata = getMetadata( m_msg );
-        ack_buf = (uint8_t *) ack_header;
-        length = ack_header->length;
-        
-        msg_metadata->ack = TRUE;
-        msg_metadata->rssi = ack_buf[ length - 1 ];
-        msg_metadata->lqi = ack_buf[ length ] & 0x7f;
-        signalDone(SUCCESS);
-      }
-    }
-  }
 
   /***************** SpiResource Events ****************/
   event void SpiResource.granted() {
@@ -481,7 +290,6 @@ implementation {
       low_level_cancel();
       atomic {
         m_state = S_STARTED;
-        radio_state = S_STARTED;
       }
       signal RadioTransmit.sendDone( m_msg, ECANCEL );
       break;
@@ -519,28 +327,6 @@ implementation {
         signal BackoffTimer.fired();
       }
     }
-  }
-
-  async event void RadioTimer.fired() {
-    atomic {
-      switch( radio_state ) {
-
-      case S_ACK_WAIT:
-        signalDone( SUCCESS );
-        break;
-
-      case S_SFD:
-        // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
-        // jiffies. Assume something is wrong.
-        low_level_something_wrong();
-        signalDone( ERETRY );
-        break;
-
-      default:
-	break;
-      }
-    }
-
   }
 
 
@@ -603,14 +389,6 @@ implementation {
   }
 
 
-  void signalDone( error_t err ) {
-    atomic m_state = S_STARTED;
-    atomic radio_state = S_STARTED;
-    abortSpiRelease = FALSE;
-    call ChipSpiResource.attemptRelease();
-    signal RadioTransmit.sendDone( m_msg, err );
-  }
-
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
 
@@ -622,6 +400,101 @@ implementation {
       congestionBackoff();
     }
 
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* low level */
+
+  norace message_t * ONE_NOK radio_msg;
+
+  norace cc2420_transmit_state_t radio_state = S_STOPPED;
+
+  /** Byte reception/transmission indicator */
+  bool sfdHigh;
+
+  bool m_receiving = FALSE;
+
+  void PacketTimeStampclear(message_t* msg)
+  {
+    (getMetadata( msg ))->timesync = FALSE;
+    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
+  }
+
+  void PacketTimeStampset(message_t* msg, uint32_t value)
+  {
+    (getMetadata( msg ))->timestamp = value;
+  }
+
+  bool PacketTimeSyncOffsetisSet(message_t* msg)
+  {
+    return ((getMetadata( msg ))->timesync);
+  }
+
+
+
+  //returns offset of timestamp from the beginning of cc2420 header which is
+  //          sizeof(cc2420_header_t)+datalen-sizeof(timesync_radio_t)
+  //uses packet length of the message which is
+  //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
+  uint8_t PacketTimeSyncOffsetget(message_t* msg)
+  {
+    return (getHeader(msg))->length
+            + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
+            - MAC_FOOTER_SIZE
+            - sizeof(timesync_radio_t);
+  }
+
+
+
+
+
+  error_t acquireSpiResource() {
+    error_t error = call SpiResource.immediateRequest();
+    if ( error != SUCCESS ) {
+      call SpiResource.request();
+    }
+    return error;
+  }
+
+  void signalDone( error_t err ) {
+    atomic m_state = S_STARTED;
+    atomic radio_state = S_STARTED;
+    abortSpiRelease = FALSE;
+    call ChipSpiResource.attemptRelease();
+    signal RadioTransmit.sendDone( m_msg, err );
+  }
+
+
+
+  // this method converts a 16-bit timestamp into a 32-bit one
+  inline uint32_t getTime32(uint16_t captured_time)
+  {
+    uint32_t now = call BackoffTimer.getNow();
+
+    // the captured_time is always in the past
+    return now - (uint16_t)(now - captured_time);
   }
 
 
@@ -674,17 +547,182 @@ implementation {
 
 
 
-  /* low level */
-
-  norace message_t * ONE_NOK radio_msg;
-
-  error_t acquireSpiResource() {
-    error_t error = call SpiResource.immediateRequest();
-    if ( error != SUCCESS ) {
-      call SpiResource.request();
-    }
-    return error;
+  command bool ByteIndicator.isReceiving() {
+    bool high;
+    atomic high = sfdHigh;
+    return high;
   }
+
+
+
+  async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
+    cc2420_header_t* ack_header;
+    cc2420_header_t* msg_header;
+    cc2420_metadata_t* msg_metadata;
+    uint8_t* ack_buf;
+    uint8_t length;
+
+    if ( type == IEEE154_TYPE_ACK && m_msg) {
+      ack_header = getHeader( ack_msg );
+      msg_header = getHeader( m_msg );
+
+      if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
+        call RadioTimer.stop();
+
+        msg_metadata = getMetadata( m_msg );
+        ack_buf = (uint8_t *) ack_header;
+        length = ack_header->length;
+
+        msg_metadata->ack = TRUE;
+        msg_metadata->rssi = ack_buf[ length - 1 ];
+        msg_metadata->lqi = ack_buf[ length ] & 0x7f;
+        signalDone(SUCCESS);
+      }
+    }
+  }
+
+
+
+  async event void RadioTimer.fired() {
+    atomic {
+      switch( radio_state ) {
+
+      case S_ACK_WAIT:
+        signalDone( SUCCESS );
+        break;
+
+      case S_SFD:
+        // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
+        // jiffies. Assume something is wrong.
+        low_level_something_wrong();
+        signalDone( ERETRY );
+        break;
+
+      default:
+        break;
+      }
+    }
+
+  }
+
+
+
+  /**
+   * The CaptureSFD event is actually an interrupt from the capture pin
+   * which is connected to timing circuitry and timer modules.  This
+   * type of interrupt allows us to see what time (being some relative value)
+   * the event occurred, and lets us accurately timestamp our packets.  This
+   * allows higher levels in our system to synchronize with other nodes.
+   *
+   * Because the SFD events can occur so quickly, and the interrupts go
+   * in both directions, we set up the interrupt but check the SFD pin to
+   * determine if that interrupt condition has already been met - meaning,
+   * we should fall through and continue executing code where that interrupt
+   * would have picked up and executed had our microcontroller been fast enough.
+   */
+  async event void CaptureSFD.captured( uint16_t time ) {
+    uint32_t time32;
+    uint8_t sfd_state = 0;
+    atomic {
+      time32 = getTime32(time);
+      switch( radio_state ) {
+
+      case S_SFD:
+        radio_state = S_EFD;
+        sfdHigh = TRUE;
+        // in case we got stuck in the receive SFD interrupts, we can reset
+        // the state here since we know that we are not receiving anymore
+        m_receiving = FALSE;
+        call CaptureSFD.captureFallingEdge();
+        PacketTimeStampset(m_msg, time32);
+        if (PacketTimeSyncOffsetisSet(m_msg)) {
+           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(m_msg);
+           timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)m_msg+absOffset);
+           // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
+           *timesync  -= time32;
+           call CSN.clr();
+           call TXFIFO_RAM.write( absOffset, (uint8_t*)timesync, sizeof(timesync_radio_t) );
+           call CSN.set();
+           //restoring the event time to the original value
+           *timesync  += time32;
+        }
+
+        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+          // This is an ack packet, don't release the chip's SPI bus lock.
+          abortSpiRelease = TRUE;
+        }
+        releaseSpiResource();
+        call RadioTimer.stop();
+
+        if ( call SFD.get() ) {
+          break;
+        }
+        /** Fall Through because the next interrupt was already received */
+
+      case S_EFD:
+        sfdHigh = FALSE;
+        call CaptureSFD.captureRisingEdge();
+
+        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+          radio_state = S_ACK_WAIT;
+          call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
+        } else {
+          signalDone(SUCCESS);
+        }
+
+        if ( !call SFD.get() ) {
+          break;
+        }
+        /** Fall Through because the next interrupt was already received */
+
+      default:
+        /* this is the SFD for received messages */
+        if ( !m_receiving && sfdHigh == FALSE ) {
+          sfdHigh = TRUE;
+          call CaptureSFD.captureFallingEdge();
+          // safe the SFD pin status for later use
+          sfd_state = call SFD.get();
+          call CC2420Receive.sfd( time32 );
+          m_receiving = TRUE;
+          m_prev_time = time;
+          if ( call SFD.get() ) {
+            // wait for the next interrupt before moving on
+            return;
+          }
+          // if SFD.get() = 0, then an other interrupt happened since we
+          // reconfigured CaptureSFD! Fall through
+        }
+
+        if ( sfdHigh == TRUE ) {
+          sfdHigh = FALSE;
+          call CaptureSFD.captureRisingEdge();
+          m_receiving = FALSE;
+          /* if sfd_state is 1, then we fell through, but at the time of
+           * saving the time stamp the SFD was still high. Thus, the timestamp
+           * is valid.
+           * if the sfd_state is 0, then either we fell through and SFD
+           * was low while we safed the time stamp, or we didn't fall through.
+           * Thus, we check for the time between the two interrupts.
+           * FIXME: Why 10 tics? Seams like some magic number...
+           */
+          if ((sfd_state == 0) && (time - m_prev_time < 10) ) {
+            call CC2420Receive.sfd_dropped();
+            if (m_msg)
+              PacketTimeStampclear(m_msg);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+
+
+
+
+
+
+
 
 
 
@@ -733,8 +771,15 @@ implementation {
 
 
   void low_level_start() {
+    radio_state = S_STARTED;
+    m_receiving = FALSE;
     call CaptureSFD.captureRisingEdge();
     atomic abortSpiRelease = FALSE;
+  }
+
+  void low_level_stop() {
+    radio_state = S_STOPPED;
+    call RadioTimer.stop();
   }
 
 
@@ -768,6 +813,7 @@ implementation {
     call SFLUSHTX.strobe();
     call CSN.set();
     releaseSpiResource();
+    radio_state = S_STARTED;
   }
 
 
