@@ -94,7 +94,7 @@ implementation {
   void low_level_cancel();
 
   void low_level_send_done( error_t err) {
-    atomic m_state = S_STARTED;
+    m_state = S_STARTED;
     signal RadioTransmit.sendDone( m_msg, err );
   }
  
@@ -111,19 +111,15 @@ implementation {
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
     low_level_start();
-    atomic {
-      m_state = S_STARTED;
-    }
+    m_state = S_STARTED;
     return SUCCESS;
   }
 
   command error_t StdControl.stop() {
     call RadioStdControl.stop();
     low_level_stop();
-    atomic {
-      m_state = S_STOPPED;
-      call BackoffTimer.stop();
-    }
+    m_state = S_STOPPED;
+    call BackoffTimer.stop();
     return SUCCESS;
   }
 
@@ -136,23 +132,20 @@ implementation {
    * @param cca TRUE if this transmit should use clear channel assessment
    */
   async command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
-    atomic {
-      if (m_state == S_CANCEL) {
-        return ECANCEL;
-      }
-
-      if ( m_state != S_STARTED ) {
-        return FAIL;
-      }
-
-      m_state = S_LOAD;
-      m_cca = useCca;
-      m_msg = p_msg;
-      totalCcaChecks = 0;
+    if (m_state == S_CANCEL) {
+      return ECANCEL;
     }
 
-    low_level_load(p_msg);
+    if ( m_state != S_STARTED ) {
+      return FAIL;
+    }
 
+    m_state = S_LOAD;
+    m_cca = useCca;
+    m_msg = p_msg;
+    totalCcaChecks = 0;
+
+    low_level_load(p_msg);
     return SUCCESS;
   }
 
@@ -162,19 +155,17 @@ implementation {
    * @param cca TRUE if this transmit should use clear channel assessment
    */
   async command error_t RadioTransmit.resend(bool useCca) {
-    atomic {
-      if (m_state == S_CANCEL) {
-        return ECANCEL;
-      }
-
-      if ( m_state != S_STARTED ) {
-        return FAIL;
-      }
-
-      m_cca = useCca;
-      m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
-      totalCcaChecks = 0;
+    if (m_state == S_CANCEL) {
+      return ECANCEL;
     }
+
+    if ( m_state != S_STARTED ) {
+      return FAIL;
+    }
+
+    m_cca = useCca;
+    m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
+    totalCcaChecks = 0;
 
     if(m_cca) {
       signal RadioBackoff.requestInitialBackoff(m_msg);
@@ -191,18 +182,16 @@ implementation {
   }
 
   async command error_t RadioTransmit.cancel() {
-    atomic {
-      switch( m_state ) {
-      case S_LOAD:
-      case S_SAMPLE_CCA:
-      case S_BEGIN_TRANSMIT:
-        m_state = S_CANCEL;
-        break;
+    switch( m_state ) {
+    case S_LOAD:
+    case S_SAMPLE_CCA:
+    case S_BEGIN_TRANSMIT:
+      m_state = S_CANCEL;
+      break;
         
-      default:
-        // cancel not allowed while radio is busy transmitting
-        return FAIL;
-      }
+    default:
+      // cancel not allowed while radio is busy transmitting
+      return FAIL;
     }
 
     return SUCCESS;
@@ -236,31 +225,18 @@ implementation {
     return signal Receive.receive(msg, payload, len);
   }
 
-  void low_level_cancel_done() {
-      atomic {
-        m_state = S_STARTED;
-      }
-      signal RadioTransmit.sendDone( m_msg, ECANCEL );
-  }
-
 
   void load_done(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
-      atomic {
-        low_level_cancel();
-      }
+      low_level_cancel();
       m_state = S_STARTED;
       signal RadioTransmit.sendDone( msg, ECANCEL );
 
     } else if ( !m_cca ) {
-      atomic {
-        m_state = S_BEGIN_TRANSMIT;
-      }
+      m_state = S_BEGIN_TRANSMIT;
       low_level_send(m_msg, m_cca);
     } else {
-      atomic {
-        m_state = S_SAMPLE_CCA;
-      }
+      m_state = S_SAMPLE_CCA;
 
       signal RadioBackoff.requestInitialBackoff(msg);
       if (myInitialBackoff) {
@@ -280,34 +256,31 @@ implementation {
    * we should have gotten one.
    */
   async event void BackoffTimer.fired() {
-    atomic {
-      switch( m_state ) {
+    switch( m_state ) {
         
-      case S_SAMPLE_CCA : 
-        // sample CCA and wait a little longer if free, just in case we
-        // sampled during the ack turn-around window
-        if ( !call EnergyIndicator.isReceiving() ) {
-          m_state = S_BEGIN_TRANSMIT;
-          call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );
-          
-        } else {
-          congestionBackoff();
-        }
-        break;
-        
-      case S_BEGIN_TRANSMIT:
-        low_level_send(m_msg, m_cca);
-        break;
-
-      case S_CANCEL:
-        low_level_cancel();
-        m_state = S_STARTED;
-        signal RadioTransmit.sendDone( m_msg, ECANCEL );
-        break;
-        
-      default:
-        break;
+    case S_SAMPLE_CCA : 
+      // sample CCA and wait a little longer if free, just in case we
+      // sampled during the ack turn-around window
+      if ( !call EnergyIndicator.isReceiving() ) {
+        m_state = S_BEGIN_TRANSMIT;
+        call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );    
+      } else {
+        congestionBackoff();
       }
+      break;
+        
+    case S_BEGIN_TRANSMIT:
+      low_level_send(m_msg, m_cca);
+      break;
+
+    case S_CANCEL:
+      low_level_cancel();
+      m_state = S_STARTED;
+      signal RadioTransmit.sendDone( m_msg, ECANCEL );
+      break;
+        
+    default:
+      break;
     }
   }
       
@@ -315,13 +288,11 @@ implementation {
    * Congestion Backoff
    */
   void congestionBackoff() {
-    atomic {
-      signal RadioBackoff.requestCongestionBackoff(m_msg);
-      if (myCongestionBackoff) {
-        call BackoffTimer.start(myCongestionBackoff);
-      } else {
-        signal BackoffTimer.fired();
-      }
+    signal RadioBackoff.requestCongestionBackoff(m_msg);
+    if (myCongestionBackoff) {
+      call BackoffTimer.start(myCongestionBackoff);
+    } else {
+      signal BackoffTimer.fired();
     }
   }
   
@@ -336,10 +307,15 @@ implementation {
 
 
   void send_done(error_t error) {
-    if (error == EBUSY) {
-      m_state = S_SAMPLE_CCA;
-      totalCcaChecks = 0;
-      congestionBackoff();
+    if (m_state == S_CANCEL){
+      m_state = S_STARTED;
+      signal RadioTransmit.sendDone( m_msg, ECANCEL );
+    } else {
+      if (error == EBUSY) {
+        m_state = S_SAMPLE_CCA;
+        totalCcaChecks = 0;
+        congestionBackoff();
+      }
     }
 
   }
@@ -377,13 +353,13 @@ implementation {
   /** Byte reception/transmission indicator */
   bool sfdHigh;
 
-  bool m_receiving = FALSE;
+  norace bool m_receiving = FALSE;
 
   norace uint8_t m_tx_power;
   uint16_t m_prev_time;
 
   /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
-  bool abortSpiRelease;
+  norace bool abortSpiRelease;
 
   // This specifies how many jiffies the stack should wait after a
   // TXACTIVE to receive an SFD interrupt before assuming something is
@@ -445,7 +421,7 @@ implementation {
  
 
   void signalDone( error_t err ) {
-    atomic radio_state = S_STARTED;
+    radio_state = S_STARTED;
     abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
     low_level_send_done(err);
@@ -484,7 +460,6 @@ implementation {
     uint8_t status;
     bool congestion = TRUE;
 
-    atomic {
       call CSN.clr();
       status = radio_cca ? call STXONCCA.strobe() : call STXON.strobe();
       if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
@@ -495,7 +470,6 @@ implementation {
       }
 
       call CSN.set();
-    }
 
     if ( congestion ) {
       send_done(EBUSY);
@@ -514,7 +488,7 @@ implementation {
 
   command bool ByteIndicator.isReceiving() {
     bool high;
-    atomic high = sfdHigh;
+    high = sfdHigh;
     return high;
   }
 
@@ -555,7 +529,6 @@ implementation {
 
 
   async event void RadioTimer.fired() {
-    atomic {
       switch( radio_state ) {
 
       case S_ACK_WAIT:
@@ -572,8 +545,6 @@ implementation {
       default:
         break;
       }
-    }
-
   }
 
 
@@ -746,7 +717,7 @@ implementation {
     m_tx_power = 0;
     m_receiving = FALSE;
     call CaptureSFD.captureRisingEdge();
-    atomic abortSpiRelease = FALSE;
+    abortSpiRelease = FALSE;
   }
 
   void low_level_stop() {
@@ -792,9 +763,7 @@ implementation {
   event void SpiResource.granted() {
     uint8_t cur_state;
 
-    atomic {
-      cur_state = radio_state;
-    }
+    cur_state = radio_state;
 
     switch( cur_state ) {
     case S_LOAD:
@@ -803,11 +772,6 @@ implementation {
 
     case S_BEGIN_TRANSMIT:
       attemptSend();
-      break;
-
-    case S_CANCEL:
-      low_level_cancel();
-      low_level_cancel_done();
       break;
 
     default:
