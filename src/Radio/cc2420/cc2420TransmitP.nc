@@ -75,7 +75,8 @@ implementation {
   
   norace uint8_t m_tx_power;
   
-  cc2420_transmit_state_t m_state = S_STOPPED;
+  norace cc2420_transmit_state_t m_state = S_STOPPED;
+  norace cc2420_transmit_state_t radio_state = S_STOPPED;
 
   bool m_receiving = FALSE;
   
@@ -157,6 +158,7 @@ implementation {
     low_level_start();
     atomic {
       m_state = S_STARTED;
+      radio_state = S_STARTED;
       m_receiving = FALSE;
       m_tx_power = 0;
     }
@@ -167,7 +169,9 @@ implementation {
     call RadioStdControl.stop();
     atomic {
       m_state = S_STOPPED;
+      radio_state = S_STOPPED;
       call BackoffTimer.stop();
+      call RadioTimer.stop();
     }
     return SUCCESS;
   }
@@ -289,6 +293,17 @@ implementation {
     return now - (uint16_t)(now - captured_time);
   }
 
+
+  void at_efd() {
+    if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+      radio_state = S_ACK_WAIT;
+      call BackoffTimer.start( CC2420_ACK_WAIT_DELAY );
+    } else {
+      signalDone(SUCCESS);
+    }
+  }
+
+
   /**
    * The CaptureSFD event is actually an interrupt from the capture pin
    * which is connected to timing circuitry and timer modules.  This
@@ -307,10 +322,10 @@ implementation {
     uint8_t sfd_state = 0;
     atomic {
       time32 = getTime32(time);
-      switch( m_state ) {
+      switch( radio_state ) {
         
       case S_SFD:
-        m_state = S_EFD;
+        radio_state = S_EFD;
         sfdHigh = TRUE;
         // in case we got stuck in the receive SFD interrupts, we can reset
         // the state here since we know that we are not receiving anymore
@@ -334,7 +349,6 @@ implementation {
           abortSpiRelease = TRUE;
         }
         releaseSpiResource();
-        call BackoffTimer.stop();
         call RadioTimer.stop();
 
         if ( call SFD.get() ) {
@@ -345,14 +359,14 @@ implementation {
       case S_EFD:
         sfdHigh = FALSE;
         call CaptureSFD.captureRisingEdge();
-        
+  
         if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-          m_state = S_ACK_WAIT;
-          call BackoffTimer.start( CC2420_ACK_WAIT_DELAY );
+          radio_state = S_ACK_WAIT;
+          call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
         } else {
           signalDone(SUCCESS);
         }
-        
+
         if ( !call SFD.get() ) {
           break;
         }
@@ -431,8 +445,8 @@ implementation {
       ack_header = getHeader( ack_msg );
       msg_header = getHeader( m_msg );
       
-      if ( m_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
-        call BackoffTimer.stop();
+      if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
+        call RadioTimer.stop();
         
         msg_metadata = getMetadata( m_msg );
         ack_buf = (uint8_t *) ack_header;
@@ -467,6 +481,7 @@ implementation {
       low_level_cancel();
       atomic {
         m_state = S_STARTED;
+        radio_state = S_STARTED;
       }
       signal RadioTransmit.sendDone( m_msg, ECANCEL );
       break;
@@ -507,10 +522,25 @@ implementation {
   }
 
   async event void RadioTimer.fired() {
-    // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
-    // jiffies. Assume something is wrong.
-    low_level_something_wrong();
-    signalDone( ERETRY );
+    atomic {
+      switch( radio_state ) {
+
+      case S_ACK_WAIT:
+        signalDone( SUCCESS );
+        break;
+
+      case S_SFD:
+        // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
+        // jiffies. Assume something is wrong.
+        low_level_something_wrong();
+        signalDone( ERETRY );
+        break;
+
+      default:
+	break;
+      }
+    }
+
   }
 
 
@@ -547,10 +577,6 @@ implementation {
         signal RadioTransmit.sendDone( m_msg, ECANCEL );
         break;
         
-      case S_ACK_WAIT:
-        signalDone( SUCCESS );
-        break;
-
       default:
         break;
       }
@@ -579,6 +605,7 @@ implementation {
 
   void signalDone( error_t err ) {
     atomic m_state = S_STARTED;
+    atomic radio_state = S_STARTED;
     abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
     signal RadioTransmit.sendDone( m_msg, err );
@@ -636,9 +663,8 @@ implementation {
       send_done(EBUSY);
       releaseSpiResource();
     } else {
-      m_state = S_SFD;
+      radio_state = S_SFD;
       call RadioTimer.start(CC2420_ABORT_PERIOD);
-//      call BackoffTimer.start(CC2420_ABORT_PERIOD);
     }
   }
 
