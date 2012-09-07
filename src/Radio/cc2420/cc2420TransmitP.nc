@@ -90,7 +90,7 @@ implementation {
   void low_level_start();
   void low_level_stop();
   error_t low_level_load(message_t* msg);
-  error_t low_level_send(message_t* msg);
+  error_t low_level_send(message_t* msg, bool useCca);
   void low_level_cancel();
 
   void low_level_send_done( error_t err) {
@@ -184,7 +184,7 @@ implementation {
         signal BackoffTimer.fired();
       }
     } else {
-      low_level_send(m_msg);
+      low_level_send(m_msg, useCca);
     }
 
     return SUCCESS;
@@ -256,7 +256,7 @@ implementation {
       atomic {
         m_state = S_BEGIN_TRANSMIT;
       }
-      low_level_send(m_msg);
+      low_level_send(m_msg, m_cca);
     } else {
       atomic {
         m_state = S_SAMPLE_CCA;
@@ -296,7 +296,7 @@ implementation {
         break;
         
       case S_BEGIN_TRANSMIT:
-        low_level_send(m_msg);
+        low_level_send(m_msg, m_cca);
         break;
 
       case S_CANCEL:
@@ -370,6 +370,7 @@ implementation {
   /* low level */
 
   norace message_t * ONE_NOK radio_msg;
+  norace bool radio_cca;
 
   norace cc2420_transmit_state_t radio_state = S_STOPPED;
 
@@ -467,7 +468,7 @@ implementation {
    * Attempt to send the packet we have loaded into the tx buffer on
    * the radio chip.  The STXONCCA will send the packet immediately if
    * the channel is clear.  If we're not concerned about whether or not
-   * the channel is clear (i.e. m_cca == FALSE), then STXON will send the
+   * the channel is clear (i.e. radio_cca == FALSE), then STXON will send the
    * packet without checking for a clear channel.
    *
    * If the packet didn't get sent, then congestion == TRUE.  In that case,
@@ -485,7 +486,7 @@ implementation {
 
     atomic {
       call CSN.clr();
-      status = m_cca ? call STXONCCA.strobe() : call STXON.strobe();
+      status = radio_cca ? call STXONCCA.strobe() : call STXON.strobe();
       if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
         status = call SNOP.strobe();
         if ( status & CC2420_STATUS_TX_ACTIVE ) {
@@ -763,10 +764,11 @@ implementation {
     return SUCCESS;
   }
 
-  error_t low_level_send(message_t* msg) {
+  error_t low_level_send(message_t* msg, bool useCca) {
     if (msg != radio_msg)
       return FAIL;
 
+    radio_cca = useCca;
     radio_state = S_BEGIN_TRANSMIT;
 
     if ( acquireSpiResource() == SUCCESS ) {
