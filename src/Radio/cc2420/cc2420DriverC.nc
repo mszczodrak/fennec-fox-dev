@@ -3,6 +3,10 @@
 configuration cc2420DriverC {
   provides interface StdControl;
   provides interface ReceiveIndicator as EnergyIndicator;
+  provides interface ReceiveIndicator as ByteIndicator;
+
+  provides interface RadioInter;
+
   uses interface cc2420RadioParams;
 }
 
@@ -11,10 +15,16 @@ implementation {
   components cc2420DriverP;
   StdControl = cc2420DriverP.StdControl;
   EnergyIndicator = cc2420DriverP.EnergyIndicator;
+  ByteIndicator = cc2420DriverP.ByteIndicator;
   cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
+
+  RadioInter = cc2420DriverP;
 
   components MainC;
   MainC.SoftwareInit -> cc2420DriverP;
+
+  components AlarmMultiplexC as RAlarm;
+  cc2420DriverP.RadioTimer -> RAlarm;
   
   components HplCC2420PinsC as Pins;
   cc2420DriverP.CCA -> Pins.CCA;
@@ -41,5 +51,9 @@ implementation {
   cc2420DriverP.TXNONCE -> Spi.TXNONCE;
   cc2420DriverP.KEY0 -> Spi.KEY0;
   cc2420DriverP.KEY1 -> Spi.KEY1;
+
+  components cc2420ReceiveC;
+  cc2420DriverP.CC2420Receive -> cc2420ReceiveC;
+
   
 }

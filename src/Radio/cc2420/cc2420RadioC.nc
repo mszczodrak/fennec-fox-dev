@@ -92,7 +92,6 @@ implementation {
 
   components cc2420TransmitC;
   cc2420RadioP.TransmitControl -> cc2420TransmitC.StdControl;
-  ByteIndicator = cc2420TransmitC.ByteIndicator;
 
   RadioTransmit = cc2420TransmitC.RadioTransmit;
 
@@ -104,8 +103,10 @@ implementation {
   components cc2420DriverC;
   EnergyIndicator = cc2420DriverC.EnergyIndicator;
 
+  cc2420RadioParams = cc2420DriverC.cc2420RadioParams;
   cc2420TransmitC.EnergyIndicator -> cc2420DriverC.EnergyIndicator;
   cc2420TransmitC.RadioStdControl -> cc2420DriverC.StdControl;
 
+  ByteIndicator = cc2420DriverC.ByteIndicator;
 
 }

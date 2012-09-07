@@ -46,7 +46,6 @@ configuration cc2420TransmitC {
     interface StdControl;
     interface RadioTransmit;
     interface RadioBackoff;
-    interface ReceiveIndicator as ByteIndicator;
   }
 
   uses interface cc2420RadioParams;
@@ -63,7 +62,6 @@ implementation {
   RadioTransmit = cc2420TransmitP;
   RadioBackoff = cc2420TransmitP;
   EnergyIndicator = cc2420TransmitP.EnergyIndicator;
-  ByteIndicator = cc2420TransmitP.ByteIndicator;
 
   RadioStdControl = cc2420TransmitP.RadioStdControl;
 
@@ -72,6 +70,8 @@ implementation {
   components new MuxAlarm32khz32C() as Alarm;
   cc2420TransmitP.BackoffTimer -> Alarm;
 
+
+/*
   components AlarmMultiplexC as RAlarm;
   cc2420TransmitP.RadioTimer -> RAlarm;
 
@@ -99,14 +99,19 @@ implementation {
   cc2420TransmitP.TXNONCE -> Spi.TXNONCE;
   cc2420TransmitP.KEY0 -> Spi.KEY0;
   cc2420TransmitP.KEY1 -> Spi.KEY1;
+*/
+
   
-  components cc2420ReceiveC;
-  cc2420TransmitP.CC2420Receive -> cc2420ReceiveC;
+//  components cc2420ReceiveC;
+//  cc2420TransmitP.CC2420Receive -> cc2420ReceiveC;
   
   components LedsC;
   cc2420TransmitP.Leds -> LedsC;
 
   Receive = cc2420TransmitP.Receive;
   SubReceive = cc2420TransmitP.SubReceive;
+
+  components cc2420DriverC;
+  cc2420TransmitP.RadioInter -> cc2420DriverC;
 
 }
