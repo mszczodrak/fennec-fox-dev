@@ -236,38 +236,13 @@ implementation {
     return signal Receive.receive(msg, payload, len);
   }
 
-
-
-  /***************** SpiResource Events ****************/
-  event void SpiResource.granted() {
-    uint8_t cur_state;
-
-    atomic {
-      cur_state = m_state;
-    }
-
-    switch( cur_state ) {
-    case S_LOAD:
-      loadTXFIFO();
-      break;
-      
-    case S_BEGIN_TRANSMIT:
-      attemptSend();
-      break;
-      
-    case S_CANCEL:
-      low_level_cancel();
+  void low_level_cancel_done() {
       atomic {
         m_state = S_STARTED;
       }
       signal RadioTransmit.sendDone( m_msg, ECANCEL );
-      break;
-      
-    default:
-      releaseSpiResource();
-      break;
-    }
   }
+
 
   void load_done(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
@@ -781,6 +756,7 @@ implementation {
 
   error_t low_level_load(message_t* msg) {
     radio_msg = msg;
+    radio_state = S_LOAD;
     if ( acquireSpiResource() == SUCCESS ) {
       loadTXFIFO();
     }
@@ -790,6 +766,8 @@ implementation {
   error_t low_level_send(message_t* msg) {
     if (msg != radio_msg)
       return FAIL;
+
+    radio_state = S_BEGIN_TRANSMIT;
 
     if ( acquireSpiResource() == SUCCESS ) {
       attemptSend();
@@ -805,6 +783,37 @@ implementation {
     releaseSpiResource();
     radio_state = S_STARTED;
   }
+
+
+
+  /***************** SpiResource Events ****************/
+  event void SpiResource.granted() {
+    uint8_t cur_state;
+
+    atomic {
+      cur_state = radio_state;
+    }
+
+    switch( cur_state ) {
+    case S_LOAD:
+      loadTXFIFO();
+      break;
+
+    case S_BEGIN_TRANSMIT:
+      attemptSend();
+      break;
+
+    case S_CANCEL:
+      low_level_cancel();
+      low_level_cancel_done();
+      break;
+
+    default:
+      releaseSpiResource();
+      break;
+    }
+  }
+
 
 
 
