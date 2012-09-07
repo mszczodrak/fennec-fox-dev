@@ -527,14 +527,14 @@ implementation {
     uint8_t* ack_buf;
     uint8_t length;
 
-    if ( type == IEEE154_TYPE_ACK && m_msg) {
+    if ( type == IEEE154_TYPE_ACK && radio_msg) {
       ack_header = getHeader( ack_msg );
-      msg_header = getHeader( m_msg );
+      msg_header = getHeader( radio_msg );
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call RadioTimer.stop();
 
-        msg_metadata = getMetadata( m_msg );
+        msg_metadata = getMetadata( radio_msg );
         ack_buf = (uint8_t *) ack_header;
         length = ack_header->length;
 
@@ -605,10 +605,10 @@ implementation {
         // the state here since we know that we are not receiving anymore
         m_receiving = FALSE;
         call CaptureSFD.captureFallingEdge();
-        PacketTimeStampset(m_msg, time32);
-        if (PacketTimeSyncOffsetisSet(m_msg)) {
-           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(m_msg);
-           timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)m_msg+absOffset);
+        PacketTimeStampset(radio_msg, time32);
+        if (PacketTimeSyncOffsetisSet(radio_msg)) {
+           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(radio_msg);
+           timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
            // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
            *timesync  -= time32;
            call CSN.clr();
@@ -618,7 +618,7 @@ implementation {
            *timesync  += time32;
         }
 
-        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+        if ( (getHeader( radio_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
           // This is an ack packet, don't release the chip's SPI bus lock.
           abortSpiRelease = TRUE;
         }
@@ -634,7 +634,7 @@ implementation {
         sfdHigh = FALSE;
         call CaptureSFD.captureRisingEdge();
 
-        if ( (getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+        if ( (getHeader( radio_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
           radio_state = S_ACK_WAIT;
           call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
         } else {
@@ -678,8 +678,8 @@ implementation {
            */
           if ((sfd_state == 0) && (time - m_prev_time < 10) ) {
             call CC2420Receive.sfd_dropped();
-            if (m_msg)
-              PacketTimeStampclear(m_msg);
+            if (radio_msg)
+              PacketTimeStampclear(radio_msg);
           }
           break;
         }
