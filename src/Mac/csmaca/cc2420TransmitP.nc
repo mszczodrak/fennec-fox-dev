@@ -6,7 +6,7 @@
 module cc2420TransmitP @safe() {
 
   provides interface StdControl;
-  provides interface RadioTransmit;
+  provides interface MacTransmit;
   provides interface RadioBackoff;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
@@ -16,6 +16,8 @@ module cc2420TransmitP @safe() {
   uses interface StdControl as RadioStdControl;
 
   uses interface RadioInter;
+
+  uses interface RadioTransmit;
 }
 
 implementation {
@@ -93,7 +95,7 @@ implementation {
    * @param *p_msg Pointer to the message that needs to be sent
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  async command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
+  async command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }
@@ -116,7 +118,7 @@ implementation {
    * chip
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  async command error_t RadioTransmit.resend(bool useCca) {
+  async command error_t MacTransmit.resend(bool useCca) {
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }
@@ -143,7 +145,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t RadioTransmit.cancel() {
+  async command error_t MacTransmit.cancel() {
     switch( m_state ) {
     case S_LOAD:
     case S_SAMPLE_CCA:
@@ -186,7 +188,7 @@ implementation {
     if ( m_state == S_CANCEL ) {
       call RadioInter.cancel();
       m_state = S_STARTED;
-      signal RadioTransmit.sendDone( msg, ECANCEL );
+      signal MacTransmit.sendDone( msg, ECANCEL );
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
@@ -232,7 +234,7 @@ implementation {
     case S_CANCEL:
       call RadioInter.cancel();
       m_state = S_STARTED;
-      signal RadioTransmit.sendDone( m_msg, ECANCEL );
+      signal MacTransmit.sendDone( m_msg, ECANCEL );
       break;
         
     default:
@@ -243,7 +245,7 @@ implementation {
   event void RadioInter.sendDone(error_t error) {
     if (m_state == S_CANCEL){
       m_state = S_STARTED;
-      signal RadioTransmit.sendDone( m_msg, ECANCEL );
+      signal MacTransmit.sendDone( m_msg, ECANCEL );
     } else {
       if (error == EBUSY) {
         m_state = S_SAMPLE_CCA;
@@ -252,7 +254,7 @@ implementation {
       } else {
         m_state = S_STARTED;
         call BackoffTimer.stop();
-        signal RadioTransmit.sendDone( m_msg, error );
+        signal MacTransmit.sendDone( m_msg, error );
 
 
       }
@@ -261,6 +263,7 @@ implementation {
   }
 
 
+  async event void RadioTransmit.sendDone( message_t* ONE_NOK p_msg, error_t error ) {}
 
 
 

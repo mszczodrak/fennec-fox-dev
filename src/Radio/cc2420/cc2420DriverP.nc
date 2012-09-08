@@ -38,6 +38,7 @@ module cc2420DriverP @safe() {
   uses interface cc2420RadioParams;
 
   provides interface RadioInter;
+  provides interface RadioTransmit;
 
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
@@ -644,6 +645,17 @@ implementation {
 
 
 
+  async command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
+    return SUCCESS;
+  }
+
+  async command error_t RadioTransmit.resend(bool useCca) {
+    return SUCCESS;
+  }
+
+  async command error_t RadioTransmit.cancel() {
+    return SUCCESS;
+  }
 
 }
 

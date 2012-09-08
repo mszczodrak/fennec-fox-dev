@@ -111,9 +111,6 @@ implementation {
   LplC.SubReceive -> UniqueReceiveC.Receive;
   UniqueReceiveC.SubReceive =  RadioReceive;
 
-
-  RadioTransmit = CsmaC.RadioTransmit;
-
   components PowerCycleC;
   PacketIndicator = PowerCycleC.PacketIndicator;
   EnergyIndicator = PowerCycleC.EnergyIndicator;
@@ -128,6 +125,11 @@ implementation {
 
   components cc2420RadioC;
   CsmaC.SubControl -> cc2420RadioC.StdControl;
-  LplC.RadioTransmit -> cc2420RadioC.RadioTransmit;
+
+  components cc2420TransmitC;
+  CsmaC.MacTransmit -> cc2420TransmitC.MacTransmit;
+  LplC.MacTransmit -> cc2420TransmitC.MacTransmit;
+  
+  RadioTransmit = cc2420TransmitC.RadioTransmit;
 }
 

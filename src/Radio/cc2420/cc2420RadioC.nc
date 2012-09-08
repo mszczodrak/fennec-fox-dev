@@ -99,7 +99,9 @@ implementation {
   components cc2420TransmitC;
 
   cc2420RadioP.TransmitControl -> cc2420TransmitC.StdControl;
-  RadioTransmit = cc2420TransmitC.RadioTransmit;
   cc2420TransmitC.EnergyIndicator -> cc2420DriverC.EnergyIndicator;
   cc2420TransmitC.RadioStdControl -> cc2420DriverC.StdControl;
+
+  RadioTransmit = cc2420DriverC.RadioTransmit;
+  
 }
