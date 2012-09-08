@@ -2,16 +2,12 @@
 
 configuration cc2420TransmitC {
 
-  provides {
-    interface StdControl;
-    interface MacTransmit;
-    interface RadioBackoff;
-  }
+  provides interface StdControl;
+  provides interface MacTransmit;
+  provides interface RadioBackoff;
 
   uses interface ReceiveIndicator as EnergyIndicator;
-
   uses interface StdControl as RadioStdControl;
-
   uses interface RadioTransmit;
 }
 

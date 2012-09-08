@@ -129,6 +129,7 @@ implementation {
   components cc2420TransmitC;
   CsmaC.MacTransmit -> cc2420TransmitC.MacTransmit;
   LplC.MacTransmit -> cc2420TransmitC.MacTransmit;
+  CsmaC.SubControl -> cc2420TransmitC.StdControl;
   
   RadioTransmit = cc2420TransmitC.RadioTransmit;
 
