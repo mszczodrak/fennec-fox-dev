@@ -11,10 +11,6 @@ module cc2420TransmitP @safe() {
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
 
-  uses interface cc2420RadioParams;
-
-  provides interface Receive;
-  uses interface Receive as SubReceive;
   uses interface ReceiveIndicator as EnergyIndicator;
 
   uses interface StdControl as RadioStdControl;
@@ -186,12 +182,6 @@ implementation {
   }
   
 
-  event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-//    dbg("Mac", "Mac: CSMA/CA receive\n");
-    return signal Receive.receive(msg, payload, len);
-  }
-
-
   event void RadioInter.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
       call RadioInter.cancel();
@@ -250,11 +240,6 @@ implementation {
     }
   }
       
-
-  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
-  }
-
-
   event void RadioInter.sendDone(error_t error) {
     if (m_state == S_CANCEL){
       m_state = S_STARTED;

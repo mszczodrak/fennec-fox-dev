@@ -60,6 +60,12 @@ implementation {
   };
 
   components cc2420RadioP;
+  components cc2420ControlC;
+  components cc2420DriverC;
+  EnergyIndicator = cc2420DriverC.EnergyIndicator;
+  cc2420RadioParams = cc2420DriverC.cc2420RadioParams;
+  ByteIndicator = cc2420DriverC.ByteIndicator;
+
   Mgmt = cc2420RadioP;
   Module = cc2420RadioP;
   cc2420RadioParams = cc2420RadioP;
@@ -73,7 +79,6 @@ implementation {
 
   StdControl = cc2420RadioP.StdControl;
 
-  components cc2420ControlC;
   RadioResource = cc2420ControlC.RadioResource;
   RadioConfig = cc2420ControlC.RadioConfig;
   RadioPower = cc2420ControlC.RadioPower;
@@ -86,27 +91,15 @@ implementation {
   components cc2420ReceiveC;
   cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
   PacketIndicator = cc2420ReceiveC.PacketIndicator;
-
-
   cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
+
+  RadioReceive = cc2420ReceiveC.Receive;
+
   components cc2420TransmitC;
+
   cc2420RadioP.TransmitControl -> cc2420TransmitC.StdControl;
-
   RadioTransmit = cc2420TransmitC.RadioTransmit;
-
-  cc2420RadioParams = cc2420TransmitC.cc2420RadioParams;
-
-  RadioReceive = cc2420TransmitC.Receive;
-  cc2420TransmitC.SubReceive -> cc2420ReceiveC.Receive;
-
-  components cc2420DriverC;
-  EnergyIndicator = cc2420DriverC.EnergyIndicator;
-
-  cc2420RadioParams = cc2420DriverC.cc2420RadioParams;
   cc2420TransmitC.EnergyIndicator -> cc2420DriverC.EnergyIndicator;
   cc2420TransmitC.RadioStdControl -> cc2420DriverC.StdControl;
-
-  ByteIndicator = cc2420DriverC.ByteIndicator;
-
 }
