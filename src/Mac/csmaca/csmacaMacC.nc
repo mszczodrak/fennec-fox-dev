@@ -131,5 +131,7 @@ implementation {
   LplC.MacTransmit -> cc2420TransmitC.MacTransmit;
   
   RadioTransmit = cc2420TransmitC.RadioTransmit;
+
+  EnergyIndicator = cc2420TransmitC.EnergyIndicator;
 }
 

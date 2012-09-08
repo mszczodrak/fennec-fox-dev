@@ -5,8 +5,6 @@ configuration cc2420DriverC {
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
 
-  provides interface RadioInter;
-
   provides interface RadioTransmit;
 
   uses interface cc2420RadioParams;
@@ -20,7 +18,6 @@ implementation {
   ByteIndicator = cc2420DriverP.ByteIndicator;
   cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
 
-  RadioInter = cc2420DriverP;
   RadioTransmit = cc2420DriverP;
 
   components MainC;

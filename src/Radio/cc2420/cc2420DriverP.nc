@@ -37,7 +37,6 @@ module cc2420DriverP @safe() {
 
   uses interface cc2420RadioParams;
 
-  provides interface RadioInter;
   provides interface RadioTransmit;
 
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
@@ -184,7 +183,7 @@ implementation {
 
   uses interface StdControl as RadioStdControl;
 
-  provides interface RadioInter;
+  provides interface RadioTransmit;
 */
 
   typedef enum {
@@ -286,7 +285,7 @@ implementation {
     radio_state = S_STARTED;
     abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
-    signal RadioInter.sendDone(err);
+    signal RadioTransmit.sendDone(err);
   }
 
 
@@ -334,7 +333,7 @@ implementation {
       call CSN.set();
 
     if ( congestion ) {
-      signal RadioInter.sendDone(EBUSY);
+      signal RadioTransmit.sendDone(EBUSY);
       releaseSpiResource();
     } else {
       radio_state = S_SFD;
@@ -557,7 +556,7 @@ implementation {
 
 
 
-  command void RadioInter.start() {
+  command void RadioTransmit.start() {
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
@@ -565,13 +564,13 @@ implementation {
     abortSpiRelease = FALSE;
   }
 
-  command void RadioInter.stop() {
+  command void RadioTransmit.stop() {
     radio_state = S_STOPPED;
     call RadioTimer.stop();
   }
 
 
-  command error_t RadioInter.load(message_t* msg) {
+  command error_t RadioTransmit.load(message_t* msg) {
     radio_msg = msg;
     radio_state = S_LOAD;
     if ( acquireSpiResource() == SUCCESS ) {
@@ -580,7 +579,7 @@ implementation {
     return SUCCESS;
   }
 
-  command error_t RadioInter.send(message_t* msg, bool useCca) {
+  command error_t RadioTransmit.send(message_t* msg, bool useCca) {
     if (msg != radio_msg)
       return FAIL;
 
@@ -594,7 +593,7 @@ implementation {
   }
 
 
-  command void RadioInter.cancel() {
+  command void RadioTransmit.cancel() {
     call CSN.clr();
     call SFLUSHTX.strobe();
     call CSN.set();
@@ -636,34 +635,13 @@ implementation {
   async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
     call CSN.set();
     releaseSpiResource();
-    signal RadioInter.loadDone(radio_msg, error);
+    signal RadioTransmit.loadDone(radio_msg, error);
   }
 
 
   async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
   }
 
-
-
-  command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
-    return SUCCESS;
-  }
-
-  command error_t RadioTransmit.load( message_t* ONE p_msg) {
-    return SUCCESS;
-  }
-
-  command void RadioTransmit.start() {
-    //return SUCCESS;
-  }
-
-  command void RadioTransmit.stop() {
-    //return SUCCESS;
-  }
-
-  command void RadioTransmit.cancel() {
-    //return SUCCESS;
-  }
 
 
 }

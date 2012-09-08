@@ -28,9 +28,6 @@ implementation {
   components new MuxAlarm32khz32C() as Alarm;
   cc2420TransmitP.BackoffTimer -> Alarm;
 
-  components cc2420DriverC;
-  cc2420TransmitP.RadioInter -> cc2420DriverC;
-
   RadioTransmit = cc2420TransmitP.RadioTransmit;
 
 }

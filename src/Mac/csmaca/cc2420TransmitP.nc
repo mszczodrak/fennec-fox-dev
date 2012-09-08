@@ -15,8 +15,6 @@ module cc2420TransmitP @safe() {
 
   uses interface StdControl as RadioStdControl;
 
-  uses interface RadioInter;
-
   uses interface RadioTransmit;
 }
 
@@ -74,14 +72,14 @@ implementation {
 
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
-    call RadioInter.start();
+    call RadioTransmit.start();
     m_state = S_STARTED;
     return SUCCESS;
   }
 
   command error_t StdControl.stop() {
     call RadioStdControl.stop();
-    call RadioInter.stop();
+    call RadioTransmit.stop();
     m_state = S_STOPPED;
     call BackoffTimer.stop();
     return SUCCESS;
@@ -109,7 +107,7 @@ implementation {
     m_msg = p_msg;
     totalCcaChecks = 0;
 
-    call RadioInter.load(p_msg);
+    call RadioTransmit.load(p_msg);
     return SUCCESS;
   }
 
@@ -139,7 +137,7 @@ implementation {
         signal BackoffTimer.fired();
       }
     } else {
-      call RadioInter.send(m_msg, useCca);
+      call RadioTransmit.send(m_msg, useCca);
     }
 
     return SUCCESS;
@@ -184,15 +182,15 @@ implementation {
   }
   
 
-  event void RadioInter.loadDone(message_t* msg, error_t error) {
+  event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
-      call RadioInter.cancel();
+      call RadioTransmit.cancel();
       m_state = S_STARTED;
       signal MacTransmit.sendDone( msg, ECANCEL );
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
-      call RadioInter.send(m_msg, m_cca);
+      call RadioTransmit.send(m_msg, m_cca);
     } else {
       m_state = S_SAMPLE_CCA;
 
@@ -228,11 +226,11 @@ implementation {
       break;
         
     case S_BEGIN_TRANSMIT:
-      call RadioInter.send(m_msg, m_cca);
+      call RadioTransmit.send(m_msg, m_cca);
       break;
 
     case S_CANCEL:
-      call RadioInter.cancel();
+      call RadioTransmit.cancel();
       m_state = S_STARTED;
       signal MacTransmit.sendDone( m_msg, ECANCEL );
       break;
@@ -242,7 +240,7 @@ implementation {
     }
   }
       
-  event void RadioInter.sendDone(error_t error) {
+  event void RadioTransmit.sendDone(error_t error) {
     if (m_state == S_CANCEL){
       m_state = S_STARTED;
       signal MacTransmit.sendDone( m_msg, ECANCEL );
@@ -263,8 +261,6 @@ implementation {
   }
 
 
-  event void RadioTransmit.sendDone( error_t error ) {}
-  event void RadioTransmit.loadDone( message_t* ONE_NOK p_msg, error_t error ) {}
 
 
 
