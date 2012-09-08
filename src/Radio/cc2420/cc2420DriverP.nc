@@ -645,17 +645,26 @@ implementation {
 
 
 
-  async command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
+  command error_t RadioTransmit.send( message_t* ONE p_msg, bool useCca ) {
     return SUCCESS;
   }
 
-  async command error_t RadioTransmit.resend(bool useCca) {
+  command error_t RadioTransmit.load( message_t* ONE p_msg) {
     return SUCCESS;
   }
 
-  async command error_t RadioTransmit.cancel() {
-    return SUCCESS;
+  command void RadioTransmit.start() {
+    //return SUCCESS;
   }
+
+  command void RadioTransmit.stop() {
+    //return SUCCESS;
+  }
+
+  command void RadioTransmit.cancel() {
+    //return SUCCESS;
+  }
+
 
 }
 

@@ -263,7 +263,8 @@ implementation {
   }
 
 
-  async event void RadioTransmit.sendDone( message_t* ONE_NOK p_msg, error_t error ) {}
+  event void RadioTransmit.sendDone( error_t error ) {}
+  event void RadioTransmit.loadDone( message_t* ONE_NOK p_msg, error_t error ) {}
 
 
 
