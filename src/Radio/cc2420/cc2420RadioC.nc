@@ -43,7 +43,7 @@ configuration cc2420RadioC {
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
 
-  provides interface StdControl;
+  provides interface StdControl as RadioControl;
 
   provides interface RadioTransmit;
 
@@ -77,7 +77,7 @@ implementation {
   RadioPacketAcknowledgements = cc2420RadioP.RadioPacketAcknowledgements;
   RadioStatus = cc2420RadioP.RadioStatus;
 
-  StdControl = cc2420RadioP.StdControl;
+  RadioControl = cc2420RadioP.StdControl;
 
   RadioResource = cc2420ControlC.RadioResource;
   RadioConfig = cc2420ControlC.RadioConfig;
@@ -93,10 +93,8 @@ implementation {
   PacketIndicator = cc2420ReceiveC.PacketIndicator;
   cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
-
   RadioReceive = cc2420ReceiveC.Receive;
   RadioTransmit = cc2420DriverC.RadioTransmit;
-
   cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
   
 }

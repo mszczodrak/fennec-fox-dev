@@ -13,7 +13,7 @@ module cc2420TransmitP @safe() {
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
-  uses interface StdControl as SubControl;
+  uses interface StdControl as RadioControl;
 }
 
 implementation {
@@ -70,17 +70,13 @@ implementation {
 
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
-    call SubControl.start();
- //   call RadioStdControl.start();
- //   call RadioTransmit.start();
+    call RadioControl.start();
     m_state = S_STARTED;
     return SUCCESS;
   }
 
   command error_t StdControl.stop() {
-    call SubControl.stop();
- //   call RadioStdControl.stop();
- //   call RadioTransmit.stop();
+    call RadioControl.stop();
     m_state = S_STOPPED;
     call BackoffTimer.stop();
     return SUCCESS;

@@ -465,16 +465,6 @@ implementation {
     }
   }
 
-
-
-
-  command void RadioTransmit.start() {
-  }
-
-  command void RadioTransmit.stop() {
-  }
-
-
   command error_t RadioTransmit.load(message_t* msg) {
     radio_msg = msg;
     radio_state = S_LOAD;

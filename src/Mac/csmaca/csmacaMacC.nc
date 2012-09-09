@@ -54,6 +54,7 @@ configuration csmacaMacC {
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
 
+  uses interface StdControl as RadioControl;
   uses interface RadioTransmit;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
@@ -132,12 +133,7 @@ implementation {
 
   CsmaC.SubControl -> cc2420TransmitC.StdControl;
  
-
- 
-  components cc2420RadioC;
-  components cc2420DriverC;
-  cc2420TransmitC.RadioStdControl -> cc2420DriverC.StdControl;
-  cc2420TransmitC.SubControl -> cc2420RadioC.StdControl;
+  RadioControl = cc2420TransmitC.RadioControl;
 
 }
 

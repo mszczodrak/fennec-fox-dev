@@ -10,7 +10,7 @@ configuration cc2420TransmitC {
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
 
-  uses interface StdControl as SubControl;
+  uses interface StdControl as RadioControl;
 }
 
 implementation {
@@ -23,7 +23,7 @@ implementation {
 
   RadioStdControl = cc2420TransmitP.RadioStdControl;
 
-  SubControl = cc2420TransmitP.SubControl;
+  RadioControl = cc2420TransmitP.RadioControl;
 
   components new MuxAlarm32khz32C() as Alarm;
   cc2420TransmitP.BackoffTimer -> Alarm;
