@@ -2,6 +2,7 @@
 #include "CC2420TimeSyncMessage.h"
 #include "crc.h"
 #include "message.h"
+#include "Fennec.h"
 
 module cc2420DriverP @safe() {
 
@@ -34,11 +35,8 @@ module cc2420DriverP @safe() {
   uses interface CC2420Ram as TXNONCE;
 
   uses interface CC2420Receive;
-
   uses interface cc2420RadioParams;
-
   provides interface RadioTransmit;
-
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 }
@@ -46,7 +44,7 @@ module cc2420DriverP @safe() {
 implementation {
 
   norace message_t * ONE_NOK m_msg;
-
+/*
   typedef enum {
     S_STOPPED,
     S_STARTED,
@@ -58,7 +56,7 @@ implementation {
     S_ACK_WAIT,
     S_CANCEL,
   } cc2420_transmit_state_t;
-
+*/
 
 
   /* low level */
@@ -66,7 +64,7 @@ implementation {
   norace message_t * ONE_NOK radio_msg;
   norace bool radio_cca;
 
-  norace cc2420_transmit_state_t radio_state = S_STOPPED;
+  norace uint8_t radio_state = S_STOPPED;
 
   /** Byte reception/transmission indicator */
   bool sfdHigh;

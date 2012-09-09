@@ -66,8 +66,8 @@ implementation {
   
   error_t sendErr = SUCCESS;
  
-  norace uint16_t cc2420_backoff_period;
-  norace uint16_t cc2420_min_backoff;
+  norace uint16_t csmaca_backoff_period;
+  norace uint16_t csmaca_min_backoff;
  
   /** TRUE if we are to use CCA when sending the current packet */
   norace bool ccaOn;
@@ -90,8 +90,8 @@ implementation {
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
-    cc2420_backoff_period = call csmacaMacParams.get_backoff();
-    cc2420_min_backoff = call csmacaMacParams.get_min_backoff();
+    csmaca_backoff_period = call csmacaMacParams.get_backoff();
+    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
       call RadioPower.startVReg();
@@ -219,10 +219,10 @@ implementation {
     if ((call csmacaMacParams.get_delay_after_receive() > 0) && 
 			      ((getMetadata(msg))->rxInterval > 0)) {
       call SubBackoff.setInitialBackoff ( call Random.rand16() 
-          % (0x4 * cc2420_backoff_period) + cc2420_min_backoff);
+          % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
     } else {
       call SubBackoff.setInitialBackoff ( call Random.rand16() 
-          % (0x1F * cc2420_backoff_period) + cc2420_min_backoff);
+          % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
     }
   }
 
@@ -230,10 +230,10 @@ implementation {
     if ((call csmacaMacParams.get_delay_after_receive() > 0) && 
 			      ((getMetadata(msg))->rxInterval > 0)) {
       call SubBackoff.setCongestionBackoff( call Random.rand16() 
-        % (0x3 * cc2420_backoff_period) + cc2420_min_backoff);
+        % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
     } else {
       call SubBackoff.setCongestionBackoff( call Random.rand16() 
-        % (0x7 * cc2420_backoff_period) + cc2420_min_backoff);
+        % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
     }
   }
   

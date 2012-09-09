@@ -2,6 +2,7 @@
 #include "CC2420TimeSyncMessage.h"
 #include "crc.h"
 #include "message.h"
+#include "Fennec.h"
 
 module macTransmitP @safe() {
 
@@ -18,6 +19,7 @@ module macTransmitP @safe() {
 
 implementation {
 
+/*
   typedef enum {
     S_STOPPED,
     S_STARTED,
@@ -29,11 +31,11 @@ implementation {
     S_ACK_WAIT,
     S_CANCEL,
   } cc2420_transmit_state_t;
-
+*/
 
   norace message_t * ONE_NOK m_msg;
   norace bool m_cca;
-  norace cc2420_transmit_state_t m_state = S_STOPPED;
+  norace uint8_t m_state = S_STOPPED;
 
   /** Total CCA checks that showed no activity before the NoAck LPL send */
   norace int8_t totalCcaChecks;

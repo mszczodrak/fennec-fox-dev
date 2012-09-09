@@ -66,8 +66,8 @@ implementation {
     INVALID_ELEMENT = 0xFF,
   };
 
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
   }
 
   /***************** Init Commands *****************/
@@ -166,7 +166,7 @@ implementation {
    * address.
    */
   uint16_t getSourceKey(message_t * ONE msg) {
-    cc2420_header_t *hdr = getHeader(msg);
+    csmaca_header_t *hdr = getHeader(msg);
     int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
     int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
     int s_offset = 2, s_len = 2;

@@ -57,8 +57,8 @@ implementation {
     S_SENDING,
   };
 
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
   }
 
   /***************** Init Commands ****************/
