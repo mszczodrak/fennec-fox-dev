@@ -124,16 +124,16 @@ implementation {
   components RandomC;
   csmacaMacP.Random -> RandomC;
 
-  components cc2420TransmitC;
-  RadioTransmit = cc2420TransmitC.RadioTransmit;
-  EnergyIndicator = cc2420TransmitC.EnergyIndicator;
+  components macTransmitC;
+  RadioTransmit = macTransmitC.RadioTransmit;
+  EnergyIndicator = macTransmitC.EnergyIndicator;
 
-  CsmaC.MacTransmit -> cc2420TransmitC.MacTransmit;
-  LplC.MacTransmit -> cc2420TransmitC.MacTransmit;
+  CsmaC.MacTransmit -> macTransmitC.MacTransmit;
+  LplC.MacTransmit -> macTransmitC.MacTransmit;
 
-  CsmaC.SubControl -> cc2420TransmitC.StdControl;
+  CsmaC.SubControl -> macTransmitC.StdControl;
  
-  RadioControl = cc2420TransmitC.RadioControl;
+  RadioControl = macTransmitC.RadioControl;
 
 }
 

@@ -67,8 +67,8 @@ implementation {
   SubControl = CsmaP.SubControl;
   MacTransmit = CsmaP.MacTransmit;
   
-  components cc2420TransmitC;
-  CsmaP.SubBackoff -> cc2420TransmitC;
+  components macTransmitC;
+  CsmaP.SubBackoff -> macTransmitC;
 
   components RandomC;
   CsmaP.Random -> RandomC;

@@ -3,7 +3,7 @@
 #include "crc.h"
 #include "message.h"
 
-module cc2420TransmitP @safe() {
+module macTransmitP @safe() {
 
   provides interface StdControl;
   provides interface MacTransmit;
