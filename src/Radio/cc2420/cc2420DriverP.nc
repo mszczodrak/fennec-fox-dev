@@ -46,49 +46,6 @@ module cc2420DriverP @safe() {
 implementation {
 
   norace message_t * ONE_NOK m_msg;
-  
-  void low_level_init() {
-    call CCA.makeInput();
-    call CSN.makeOutput();
-    call SFD.makeInput();
-  }
-
-
-  command error_t StdControl.start() {
-    return SUCCESS;
-  }
-
-  command error_t StdControl.stop() {
-    call CaptureSFD.disable();
-    call SpiResource.release();  // REMOVE
-    call CSN.set();
-    return SUCCESS;
-  }
-
-  /* -------------------------- */
-
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
-  }
-
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
-
-
-  /***************** Init Commands *****************/
-  command error_t Init.init() {
-    low_level_init();
-    return SUCCESS;
-  }
-
-  command bool EnergyIndicator.isReceiving() {
-    return !(call CCA.get());
-  }
-  
-  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
-  }
-
 
   typedef enum {
     S_STOPPED,
@@ -129,6 +86,57 @@ implementation {
   enum {
     CC2420_ABORT_PERIOD = 320
   };
+
+  
+  void low_level_init() {
+    call CCA.makeInput();
+    call CSN.makeOutput();
+    call SFD.makeInput();
+  }
+
+
+  command error_t StdControl.start() {
+    radio_state = S_STARTED;
+    m_tx_power = 0;
+    m_receiving = FALSE;
+    call CaptureSFD.captureRisingEdge();
+    abortSpiRelease = FALSE;
+    return SUCCESS;
+  }
+
+  command error_t StdControl.stop() {
+    radio_state = S_STOPPED;
+    call RadioTimer.stop();
+    call CaptureSFD.disable();
+    call SpiResource.release();  // REMOVE
+    call CSN.set();
+    return SUCCESS;
+  }
+
+  /* -------------------------- */
+
+  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  }
+
+  cc2420_metadata_t* getMetadata( message_t* msg ) {
+    return (cc2420_metadata_t*)msg->metadata;
+  }
+
+
+  /***************** Init Commands *****************/
+  command error_t Init.init() {
+    low_level_init();
+    return SUCCESS;
+  }
+
+  command bool EnergyIndicator.isReceiving() {
+    return !(call CCA.get());
+  }
+  
+  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
+  }
+
 
 
   void PacketTimeStampclear(message_t* msg)
@@ -461,16 +469,9 @@ implementation {
 
 
   command void RadioTransmit.start() {
-    radio_state = S_STARTED;
-    m_tx_power = 0;
-    m_receiving = FALSE;
-    call CaptureSFD.captureRisingEdge();
-    abortSpiRelease = FALSE;
   }
 
   command void RadioTransmit.stop() {
-    radio_state = S_STOPPED;
-    call RadioTimer.stop();
   }
 
 
