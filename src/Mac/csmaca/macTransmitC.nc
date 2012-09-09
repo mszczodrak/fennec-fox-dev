@@ -4,13 +4,12 @@ configuration macTransmitC {
 
   provides interface StdControl;
   provides interface MacTransmit;
-  provides interface RadioBackoff;
 
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
-
   uses interface StdControl as RadioControl;
+  uses interface csmacaMacParams;
 }
 
 implementation {
@@ -18,7 +17,6 @@ implementation {
   components macTransmitP;
   StdControl = macTransmitP.StdControl;
   MacTransmit = macTransmitP;
-  RadioBackoff = macTransmitP;
   EnergyIndicator = macTransmitP.EnergyIndicator;
 
   RadioStdControl = macTransmitP.RadioStdControl;
@@ -29,5 +27,11 @@ implementation {
   macTransmitP.BackoffTimer -> Alarm;
 
   RadioTransmit = macTransmitP.RadioTransmit;
+
+  csmacaMacParams = macTransmitP.csmacaMacParams;
+
+  components RandomC;
+  macTransmitP.Random -> RandomC;
+
 
 }

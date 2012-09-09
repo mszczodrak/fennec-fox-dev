@@ -125,6 +125,7 @@ implementation {
   csmacaMacP.Random -> RandomC;
 
   components macTransmitC;
+  csmacaMacParams = macTransmitC.csmacaMacParams;
   RadioTransmit = macTransmitC.RadioTransmit;
   EnergyIndicator = macTransmitC.EnergyIndicator;
 

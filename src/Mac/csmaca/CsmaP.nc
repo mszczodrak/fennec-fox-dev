@@ -14,9 +14,6 @@ module CsmaP @safe() {
   uses interface Resource as RadioResource;
   uses interface StdControl as SubControl;
   uses interface MacTransmit;
-  uses interface RadioBackoff as SubBackoff;
-  uses interface Random;
-  uses interface Leds;
   uses interface State as SplitControlState;
 
   uses interface RadioPower;
@@ -38,9 +35,6 @@ implementation {
   
   error_t sendErr = SUCCESS;
  
-  norace uint16_t csmaca_backoff_period;
-  norace uint16_t csmaca_min_backoff;
- 
   /** TRUE if we are to use CCA when sending the current packet */
   norace bool ccaOn;
   
@@ -59,8 +53,6 @@ implementation {
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
-    csmaca_backoff_period = call csmacaMacParams.get_backoff();
-    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
       call RadioPower.startVReg();
@@ -180,30 +172,6 @@ implementation {
 
   async event void RadioPower.startOscillatorDone() {
     post startDone_task();
-  }
-  
-  /***************** SubBackoff Events ****************/
-  async event void SubBackoff.requestInitialBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
-      call SubBackoff.setInitialBackoff ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
-    } else {
-      call SubBackoff.setInitialBackoff ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
-    }
-  }
-
-  async event void SubBackoff.requestCongestionBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
-      call SubBackoff.setCongestionBackoff( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
-    } else {
-      call SubBackoff.setCongestionBackoff( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
-    }
-  }
-  
-  async event void SubBackoff.requestCca(message_t *msg) {
-    // Lower layers than this do not configure the CCA settings
-//    signal RadioBackoff.requestCca(msg);
   }
   
   

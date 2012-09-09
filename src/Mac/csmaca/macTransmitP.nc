@@ -8,13 +8,16 @@ module macTransmitP @safe() {
 
   provides interface StdControl;
   provides interface MacTransmit;
-  provides interface RadioBackoff;
 
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
   uses interface StdControl as RadioControl;
+
+  uses interface csmacaMacParams;
+  uses interface Random;
+
 }
 
 implementation {
@@ -22,6 +25,9 @@ implementation {
   norace message_t * ONE_NOK m_msg;
   norace bool m_cca;
   norace uint8_t m_state = S_STOPPED;
+  norace uint16_t csmaca_backoff_period;
+  norace uint16_t csmaca_min_backoff;
+
 
   /** Total CCA checks that showed no activity before the NoAck LPL send */
   norace int8_t totalCcaChecks;
@@ -32,14 +38,23 @@ implementation {
   /** The congestion backoff period */
   norace uint16_t myCongestionBackoff;
   
+  void requestInitialBackoff(message_t *msg) {
+    metadata_t* metadata = (metadata_t*) msg->metadata;
+    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
+      myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
+    } else {
+      myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
+    }
+  }
 
-  /* -------------------------- */
+  void congestionBackoff(message_t *msg) {
+    metadata_t* metadata = (metadata_t*) msg->metadata;
+    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
+      myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
+    } else {
+      myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
+    }
 
-  /**
-   * Congestion Backoff
-   */
-  void congestionBackoff() {
-    signal RadioBackoff.requestCongestionBackoff(m_msg);
     if (myCongestionBackoff) {
       call BackoffTimer.start(myCongestionBackoff);
     } else {
@@ -50,6 +65,9 @@ implementation {
 
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
+    csmaca_backoff_period = call csmacaMacParams.get_backoff();
+    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+
     call RadioControl.start();
     m_state = S_STARTED;
     return SUCCESS;
@@ -106,7 +124,7 @@ implementation {
     totalCcaChecks = 0;
 
     if(m_cca) {
-      signal RadioBackoff.requestInitialBackoff(m_msg);
+      requestInitialBackoff(m_msg);
       if (myInitialBackoff) {
         call BackoffTimer.start( myInitialBackoff );
       } else {
@@ -137,27 +155,6 @@ implementation {
 
   
 
-  /***************** RadioBackoff Commands ****************/
-  /**
-   * Must be called within a requestInitialBackoff event
-   * @param backoffTime the amount of time in some unspecified units to backoff
-   */
-  async command void RadioBackoff.setInitialBackoff(uint16_t backoffTime) {
-    myInitialBackoff = backoffTime;
-  }
-  
-  /**
-   * Must be called within a requestCongestionBackoff event
-   * @param backoffTime the amount of time in some unspecified units to backoff
-   */
-  async command void RadioBackoff.setCongestionBackoff(uint16_t backoffTime) {
-    myCongestionBackoff = backoffTime;
-  }
-  
-  async command void RadioBackoff.setCca(bool useCca) {
-  }
-  
-
   event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
       call RadioTransmit.cancel();
@@ -170,7 +167,7 @@ implementation {
     } else {
       m_state = S_SAMPLE_CCA;
 
-      signal RadioBackoff.requestInitialBackoff(msg);
+      requestInitialBackoff(msg);
       if (myInitialBackoff) {
         call BackoffTimer.start(myInitialBackoff);
       } else {
@@ -197,7 +194,7 @@ implementation {
         m_state = S_BEGIN_TRANSMIT;
         call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );    
       } else {
-        congestionBackoff();
+        congestionBackoff(m_msg);
       }
       break;
         
@@ -224,7 +221,7 @@ implementation {
       if (error == EBUSY) {
         m_state = S_SAMPLE_CCA;
         totalCcaChecks = 0;
-        congestionBackoff();
+        congestionBackoff(m_msg);
       } else {
         m_state = S_STARTED;
         call BackoffTimer.stop();
@@ -234,6 +231,10 @@ implementation {
       }
     }
 
+  }
+
+
+  event void csmacaMacParams.receive_status(uint16_t status_flag) {
   }
 
 }
