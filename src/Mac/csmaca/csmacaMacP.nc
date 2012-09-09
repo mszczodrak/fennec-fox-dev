@@ -94,17 +94,17 @@ implementation {
     }
   }
 
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
   }
 
   uint8_t* getPayload( message_t* msg) {
-    cc2420_header_t *hdr = getHeader( msg );
+    csmaca_header_t *hdr = getHeader( msg );
     int offset;
 
     offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
       getAddressLength((hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3) +
-      offsetof(cc2420_header_t, dest);
+      offsetof(csmaca_header_t, dest);
 
     return ((uint8_t *)hdr) + offset;
   }
@@ -177,7 +177,7 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    cc2420_header_t* header = getHeader( msg );
+    csmaca_header_t* header = getHeader( msg );
 
     call MacAMPacket.setGroup(msg, msg->conf);
     dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
@@ -309,22 +309,22 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    cc2420_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = getHeader(amsg);
     return header->dest;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    cc2420_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = getHeader(amsg);
     return header->src;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    cc2420_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = getHeader(amsg);
     header->dest = addr;
   }
 
   command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    cc2420_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = getHeader(amsg);
     header->src = addr;
   }
 
@@ -336,12 +336,12 @@ implementation {
   }
 
   command am_id_t MacAMPacket.type(message_t* amsg) {
-    cc2420_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = getHeader(amsg);
     return header->type;
   }
 
   command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
-    cc2420_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = getHeader(amsg);
     header->type = type;
   }
 
@@ -364,7 +364,7 @@ implementation {
 
   /***************** Packet Commands ****************/
   command void MacPacket.clear(message_t* msg) {
-    memset(getHeader(msg), 0x0, sizeof(cc2420_header_t));
+    memset(getHeader(msg), 0x0, sizeof(csmaca_header_t));
     memset(getMetadata(msg), 0x0, sizeof(cc2420_metadata_t));
   }
 

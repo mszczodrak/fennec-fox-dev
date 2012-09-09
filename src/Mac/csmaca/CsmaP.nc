@@ -79,8 +79,8 @@ implementation {
   
   void shutdown();
 
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
+    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
   }
 
   cc2420_metadata_t* getMetadata( message_t* msg ) {
@@ -135,7 +135,7 @@ implementation {
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
     
-    cc2420_header_t* header = getHeader( p_msg );
+    csmaca_header_t* header = getHeader( p_msg );
     cc2420_metadata_t* metadata = getMetadata( p_msg );
 
     if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
