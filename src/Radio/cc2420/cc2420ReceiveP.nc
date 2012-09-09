@@ -179,7 +179,14 @@ implementation {
   event void SpiResource.granted() {
     receive();
   }
-  
+ 
+
+  bool quick_dest_check(message_t *msg) {
+    cc2420_header_t* header = getHeader( msg );
+    return ((header->dest == call RadioConfig.getShortAddr()) || (header->dest == AM_BROADCAST_ADDR));
+  }
+
+ 
   /***************** RXFIFO Events ****************/
   /**
    * We received some bytes from the SPI bus.  Process them in the context
@@ -247,8 +254,7 @@ implementation {
        */
       if(call RadioConfig.isAutoAckEnabled() && !call RadioConfig.isHwAutoAckDefault()) {
         if (((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1)
-            && ((header->dest == call RadioConfig.getShortAddr())
-                || (header->dest == AM_BROADCAST_ADDR))
+            && (quick_dest_check( m_p_rx_buf ))
             && ((( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == IEEE154_TYPE_DATA)) {
           // CSn flippage cuts off our FIFO; SACK and begin reading again
           call CSN.set();
@@ -336,7 +342,7 @@ implementation {
     metadata->lqi = buf[ length ] & 0x7f;
     metadata->rssi = buf[ length - 1 ];
 
-    if (passesAddressCheck(m_p_rx_buf) && length >= CC2420_SIZE) {
+    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_SIZE) {
       /* set conf before signaling receive */
       m_p_rx_buf->conf = (getHeader(m_p_rx_buf))->destpan;
 
@@ -453,10 +459,6 @@ implementation {
     cc2420_header_t *header = getHeader( msg );
     int mode = (header->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 3;
 //    ieee_eui64_t *ext_addr;  
-
-    if(!(call RadioConfig.isAddressRecognitionEnabled())) {
-      return TRUE;
-    }
 
     if (mode == IEEE154_ADDR_SHORT) {
       return (header->dest == call RadioConfig.getShortAddr()
