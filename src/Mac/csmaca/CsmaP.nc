@@ -3,6 +3,9 @@
  * @version $Revision: 1.12 $ $Date: 2009/09/17 23:36:36 $
  */
 
+#include "Fennec.h"
+#include "message.h"
+
 module CsmaP @safe() {
 
   provides interface SplitControl;
@@ -52,9 +55,6 @@ implementation {
     return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
   }
 
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
 
 
   /***************** SplitControl Commands ****************/
@@ -105,7 +105,7 @@ implementation {
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
     
     csmaca_header_t* header = getHeader( p_msg );
-    cc2420_metadata_t* metadata = getMetadata( p_msg );
+    metadata_t* metadata = (metadata_t*) p_msg->metadata;
 
     if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
@@ -141,7 +141,6 @@ implementation {
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
 
     ccaOn = call csmacaMacParams.get_cca();
-//    signal RadioBackoff.requestCca(m_msg);
 
     call MacTransmit.send( m_msg, ccaOn );
     return SUCCESS;
@@ -185,24 +184,20 @@ implementation {
   
   /***************** SubBackoff Events ****************/
   async event void SubBackoff.requestInitialBackoff(message_t *msg) {
-    if ((call csmacaMacParams.get_delay_after_receive() > 0) && 
-			      ((getMetadata(msg))->rxInterval > 0)) {
-      call SubBackoff.setInitialBackoff ( call Random.rand16() 
-          % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
+    metadata_t* metadata = (metadata_t*) msg->metadata;
+    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
+      call SubBackoff.setInitialBackoff ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
     } else {
-      call SubBackoff.setInitialBackoff ( call Random.rand16() 
-          % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
+      call SubBackoff.setInitialBackoff ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
     }
   }
 
   async event void SubBackoff.requestCongestionBackoff(message_t *msg) {
-    if ((call csmacaMacParams.get_delay_after_receive() > 0) && 
-			      ((getMetadata(msg))->rxInterval > 0)) {
-      call SubBackoff.setCongestionBackoff( call Random.rand16() 
-        % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
+    metadata_t* metadata = (metadata_t*) msg->metadata;
+    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
+      call SubBackoff.setCongestionBackoff( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
     } else {
-      call SubBackoff.setCongestionBackoff( call Random.rand16() 
-        % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
+      call SubBackoff.setCongestionBackoff( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
     }
   }
   

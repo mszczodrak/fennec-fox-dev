@@ -109,10 +109,6 @@ implementation {
     return ((uint8_t *)hdr) + offset;
   }
 
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
-
 
   command error_t Mgmt.start() {
     if (status == S_STARTED) {
@@ -234,15 +230,9 @@ implementation {
   }
 
   async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
-    return (getMetadata( p_msg ))->ack;
+    metadata_t* metadata = (metadata_t*) p_msg->metadata;
+    return metadata->ack;
   }
-
-
-
-
-
-
-
 
 
 
@@ -364,8 +354,9 @@ implementation {
 
   /***************** Packet Commands ****************/
   command void MacPacket.clear(message_t* msg) {
+    metadata_t* metadata = (metadata_t*) msg->metadata;
     memset(getHeader(msg), 0x0, sizeof(csmaca_header_t));
-    memset(getMetadata(msg), 0x0, sizeof(cc2420_metadata_t));
+    memset(metadata, 0x0, sizeof(metadata_t));
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
@@ -401,18 +392,18 @@ implementation {
 
   /***************** SubReceive Events ****************/
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    cc2420_metadata_t *meta = getMetadata(msg);
+    metadata_t* metadata = (metadata_t*) msg->metadata;
 
-    if((call csmacaMacParams.get_crc()) && (!(getMetadata(msg))->crc)) {
+    if((call csmacaMacParams.get_crc()) && (!(metadata)->crc)) {
       return msg;
     }
 
 //    msg->conf = call MacAMPacket.group(msg);
 //    msg->conf = call MacAMPacket.group(msg);
 
-    msg->rssi = meta->rssi;
-    msg->lqi = meta->lqi;
-    msg->crc = meta->crc;
+    msg->rssi = metadata->rssi;
+    msg->lqi = metadata->lqi;
+    msg->crc = metadata->crc;
 
     if (call MacAMPacket.isForMe(msg)) {
       dbg("Radio", "Radio receives msg on state %d\n", msg->conf);

@@ -116,11 +116,6 @@ implementation {
     return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
   }
 
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
-
-
   
   /***************** Init Commands ***************/
   command error_t Init.init() {
@@ -156,14 +151,16 @@ implementation {
    */
   command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, 
       uint16_t intervalMs) {
-    (getMetadata(msg))->rxInterval = intervalMs;
+    metadata_t *metadata = (metadata_t*) msg->metadata;
+    metadata->rxInterval = intervalMs;
   }
   
   /**
    * @return the destination node's wakeup interval configured in this message
    */
   command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
-    return (getMetadata(msg))->rxInterval;
+    metadata_t *metadata = (metadata_t*) msg->metadata;
+    return metadata->rxInterval;
   }
   
   /***************** Send Commands ***************/
