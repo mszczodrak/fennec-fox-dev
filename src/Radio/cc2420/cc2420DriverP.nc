@@ -55,10 +55,6 @@ implementation {
 
 
   command error_t StdControl.start() {
-/*
-    call CaptureSFD.captureRisingEdge();
-    atomic abortSpiRelease = FALSE;
-*/
     return SUCCESS;
   }
 
@@ -68,27 +64,6 @@ implementation {
     call CSN.set();
     return SUCCESS;
   }
-
-/*
-  void low_level_load(message_t* msg) {
-    if ( acquireSpiResource() == SUCCESS ) {
-      loadTXFIFO();
-    }
-  }
-
-  void low_level_send(message_t* msg) {
-    if ( acquireSpiResource() == SUCCESS ) {
-      attemptSend();
-    }
-  }
-
-  void low_level_something_wrong() {
-    call SFLUSHTX.strobe();
-    call CaptureSFD.captureRisingEdge();
-    releaseSpiResource();
-  }
-*/ 
-
 
   /* -------------------------- */
 
@@ -114,77 +89,6 @@ implementation {
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-  provides interface StdControl;
-  provides interface RadioTransmit;
-  provides interface RadioBackoff;
-  provides interface ReceiveIndicator as ByteIndicator;
-  
-  uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-  uses interface Alarm<T32khz,uint32_t> as RadioTimer;
-
-  uses interface GpioCapture as CaptureSFD;
-  uses interface GeneralIO as CSN;
-  uses interface GeneralIO as SFD;
-
-  uses interface Resource as SpiResource;
-  uses interface ChipSpiResource;
-  uses interface CC2420Fifo as TXFIFO;
-  uses interface CC2420Ram as TXFIFO_RAM;
-  uses interface CC2420Register as TXCTRL;
-  uses interface CC2420Strobe as SNOP;
-  uses interface CC2420Strobe as STXON;
-  uses interface CC2420Strobe as STXONCCA;
-  uses interface CC2420Strobe as SFLUSHTX;
-  uses interface CC2420Register as MDMCTRL1;
-
-  uses interface CC2420Strobe as STXENC;
-  uses interface CC2420Register as SECCTRL0;
-  uses interface CC2420Register as SECCTRL1;
-  uses interface CC2420Ram as KEY0;
-  uses interface CC2420Ram as KEY1;
-  uses interface CC2420Ram as TXNONCE;
-
-  uses interface CC2420Receive;
-  uses interface Leds;
-
-  uses interface cc2420RadioParams;
-
-  provides interface Receive;
-  uses interface Receive as SubReceive;
-  uses interface ReceiveIndicator as EnergyIndicator;
-
-  uses interface StdControl as RadioStdControl;
-
-  provides interface RadioTransmit;
-*/
 
   typedef enum {
     S_STOPPED,

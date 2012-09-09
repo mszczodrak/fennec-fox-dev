@@ -71,6 +71,7 @@ implementation {
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
     call SubControl.start();
+    call RadioStdControl.start();
     call RadioTransmit.start();
     m_state = S_STARTED;
     return SUCCESS;
