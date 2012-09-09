@@ -97,6 +97,6 @@ implementation {
   RadioReceive = cc2420ReceiveC.Receive;
   RadioTransmit = cc2420DriverC.RadioTransmit;
 
-//  cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
+  cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
   
 }
