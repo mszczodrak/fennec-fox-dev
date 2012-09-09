@@ -71,16 +71,16 @@ implementation {
   /***************** StdControl Commands ****************/
   command error_t StdControl.start() {
     call SubControl.start();
- //   call RadioStdControl.start();
-    call RadioTransmit.start();
+    call RadioStdControl.start();
+ //   call RadioTransmit.start();
     m_state = S_STARTED;
     return SUCCESS;
   }
 
   command error_t StdControl.stop() {
     call SubControl.stop();
- //   call RadioStdControl.stop();
-    call RadioTransmit.stop();
+    call RadioStdControl.stop();
+ //   call RadioTransmit.stop();
     m_state = S_STOPPED;
     call BackoffTimer.stop();
     return SUCCESS;
