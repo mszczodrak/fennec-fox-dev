@@ -8,6 +8,8 @@ module cc2420TransmitP @safe() {
   provides interface StdControl;
   provides interface MacTransmit;
   provides interface RadioBackoff;
+
+  provides interface StdControl as RecControl;
   
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
 
@@ -16,6 +18,8 @@ module cc2420TransmitP @safe() {
   uses interface StdControl as RadioStdControl;
 
   uses interface RadioTransmit;
+
+  uses interface StdControl as SubControl;
 }
 
 implementation {
@@ -85,6 +89,13 @@ implementation {
     return SUCCESS;
   }
 
+  command error_t RecControl.start() {
+    call SubControl.start();
+  }
+
+  command error_t RecControl.stop() {
+    call SubControl.stop();
+  }
 
   /***************** Functions ****************/
   /**

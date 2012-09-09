@@ -135,8 +135,11 @@ implementation {
 
   components cc2420RadioC;
   components cc2420DriverC;
-  CsmaC.SubControl -> cc2420RadioC.StdControl;
+//  CsmaC.SubControl -> cc2420RadioC.StdControl;
   cc2420TransmitC.RadioStdControl -> cc2420DriverC.StdControl;
+
+  CsmaC.SubControl -> cc2420TransmitC.RecControl;
+  cc2420TransmitC.SubControl -> cc2420RadioC.StdControl;
 
 }
 
