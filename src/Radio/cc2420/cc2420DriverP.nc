@@ -43,27 +43,8 @@ module cc2420DriverP @safe() {
 
 implementation {
 
-  norace message_t * ONE_NOK m_msg;
-/*
-  typedef enum {
-    S_STOPPED,
-    S_STARTED,
-    S_LOAD,
-    S_SAMPLE_CCA,
-    S_BEGIN_TRANSMIT,
-    S_SFD,
-    S_EFD,
-    S_ACK_WAIT,
-    S_CANCEL,
-  } cc2420_transmit_state_t;
-*/
-
-
-  /* low level */
-
   norace message_t * ONE_NOK radio_msg;
   norace bool radio_cca;
-
   norace uint8_t radio_state = S_STOPPED;
 
   /** Byte reception/transmission indicator */
@@ -485,7 +466,6 @@ implementation {
     return SUCCESS;
   }
 
-
   command void RadioTransmit.cancel() {
     call CSN.clr();
     call SFLUSHTX.strobe();
@@ -493,8 +473,6 @@ implementation {
     releaseSpiResource();
     radio_state = S_STARTED;
   }
-
-
 
   /***************** SpiResource Events ****************/
   event void SpiResource.granted() {
@@ -517,9 +495,6 @@ implementation {
     }
   }
 
-
-
-
   /***************** TXFIFO Events ****************/
   /**
    * The TXFIFO is used to load packets into the transmit buffer on the
@@ -531,11 +506,8 @@ implementation {
     signal RadioTransmit.loadDone(radio_msg, error);
   }
 
-
   async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
   }
-
-
 
 }
 

@@ -19,20 +19,6 @@ module macTransmitP @safe() {
 
 implementation {
 
-/*
-  typedef enum {
-    S_STOPPED,
-    S_STARTED,
-    S_LOAD,
-    S_SAMPLE_CCA,
-    S_BEGIN_TRANSMIT,
-    S_SFD,
-    S_EFD,
-    S_ACK_WAIT,
-    S_CANCEL,
-  } cc2420_transmit_state_t;
-*/
-
   norace message_t * ONE_NOK m_msg;
   norace bool m_cca;
   norace uint8_t m_state = S_STOPPED;
@@ -249,11 +235,6 @@ implementation {
     }
 
   }
-
-
-
-
-
 
 }
 
