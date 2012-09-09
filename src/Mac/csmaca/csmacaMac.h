@@ -28,14 +28,6 @@
 #ifndef __H_CSMACA_MAC_H_
 #define __H_CSMACA_MAC_H_
 
-/*
-enum {
-        cc2420_MIN_MESSAGE_SIZE         = 5,
-        cc2420_MAX_MESSAGE_SIZE         = 127,
-        CC_FF_PORT = 33,
-};
-*/
-
 typedef nx_struct csmaca_header_t {
   nxle_uint8_t length;
   nxle_uint16_t fcf;

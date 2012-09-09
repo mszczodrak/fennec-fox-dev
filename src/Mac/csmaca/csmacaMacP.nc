@@ -116,14 +116,14 @@ implementation {
 
   command error_t Mgmt.start() {
     if (status == S_STARTED) {
-      dbg("Radio", "Radio cc2420 already started\n");
+      dbg("Mac", "Mac csmaca already started\n");
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
 
     localSendId = call Random.rand16();
 
-    dbg("Radio", "Radio cc2420 starts\n");
+    dbg("Mac", "Mac csmaca starts\n");
 
     if (call RadioControl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
@@ -134,12 +134,12 @@ implementation {
 
   command error_t Mgmt.stop() {
     if (status == S_STOPPED) {
-      dbg("Radio", "Radio cc2420 already stopped\n");
+      dbg("Mac", "Mac csmaca  already stopped\n");
       signal Mgmt.stopDone(SUCCESS);
       return SUCCESS;
     }
 
-    dbg("Radio", "Radio cc2420 stops\n");
+    dbg("Mac", "Mac csmaca stops\n");
 
     if (call RadioControl.stop() != SUCCESS) {
       signal Mgmt.stopDone(FAIL);
@@ -154,7 +154,7 @@ implementation {
       call RadioControl.start();
     } else {
       if (status == S_STARTING) {
-        dbg("Radio", "Radio cc2420 got RadioControl startDone\n");
+        dbg("Mac", "Mac csmaca got RadioControl startDone\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         signal Mgmt.startDone(SUCCESS);
@@ -168,7 +168,7 @@ implementation {
       call RadioControl.stop();
     } else {
       if (status == S_STOPPING) {
-        dbg("Radio", "Radio cc2420 got RadioControl stopDone\n");
+        dbg("Mac", "Mac csmaca got RadioControl stopDone\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
         signal Mgmt.stopDone(SUCCESS);
