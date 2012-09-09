@@ -6,8 +6,6 @@ configuration cc2420TransmitC {
   provides interface MacTransmit;
   provides interface RadioBackoff;
 
-  provides interface StdControl as RecControl;
-
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
@@ -26,7 +24,6 @@ implementation {
   RadioStdControl = cc2420TransmitP.RadioStdControl;
 
   SubControl = cc2420TransmitP.SubControl;
-  RecControl = cc2420TransmitP.RecControl;
 
   components new MuxAlarm32khz32C() as Alarm;
   cc2420TransmitP.BackoffTimer -> Alarm;
