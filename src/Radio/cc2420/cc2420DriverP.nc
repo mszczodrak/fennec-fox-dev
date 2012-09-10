@@ -444,7 +444,7 @@ implementation {
     }
   }
 
-  command error_t RadioTransmit.load(message_t* msg) {
+  async command error_t RadioTransmit.load(message_t* msg) {
     radio_msg = msg;
     radio_state = S_LOAD;
     if ( acquireSpiResource() == SUCCESS ) {
@@ -453,7 +453,7 @@ implementation {
     return SUCCESS;
   }
 
-  command error_t RadioTransmit.send(message_t* msg, bool useCca) {
+  async command error_t RadioTransmit.send(message_t* msg, bool useCca) {
     if (msg != radio_msg)
       return FAIL;
 
@@ -466,7 +466,7 @@ implementation {
     return SUCCESS;
   }
 
-  command void RadioTransmit.cancel() {
+  async command void RadioTransmit.cancel() {
     call CSN.clr();
     call SFLUSHTX.strobe();
     call CSN.set();

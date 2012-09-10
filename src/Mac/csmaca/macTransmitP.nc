@@ -161,7 +161,7 @@ implementation {
 
   
 
-  event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+  async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
       call RadioTransmit.cancel();
       m_state = S_STARTED;
@@ -219,7 +219,7 @@ implementation {
     }
   }
       
-  event void RadioTransmit.sendDone(error_t error) {
+  async event void RadioTransmit.sendDone(error_t error) {
     if (m_state == S_CANCEL){
       m_state = S_STARTED;
       signal MacTransmit.sendDone( m_msg, ECANCEL );
