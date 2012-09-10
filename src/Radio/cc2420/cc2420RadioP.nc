@@ -67,12 +67,12 @@ implementation {
 
   command error_t StdControl.start() {
     call ReceiveControl.start();
-    call TransmitControl.start();
+    return call TransmitControl.start();
   }
 
   command error_t StdControl.stop() {
     call ReceiveControl.stop();
-    call TransmitControl.stop();
+    return call TransmitControl.stop();
   }
 
   command error_t RadioAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
