@@ -33,6 +33,10 @@
  * Interface to obtain energy, byte, and packet receive check readings
  * @author David Moss
  */
+/**
+ * Make call async
+ * @auhor Marcin Szczodrak
+ */
  
 interface ReceiveIndicator {
   
@@ -40,7 +44,7 @@ interface ReceiveIndicator {
    * @return TRUE if the indicator is showing we are actively receiving at this
    * level
    */
-  command bool isReceiving();
+  async command bool isReceiving();
   
 }
 

@@ -109,7 +109,7 @@ implementation {
     return SUCCESS;
   }
 
-  command bool EnergyIndicator.isReceiving() {
+  async command bool EnergyIndicator.isReceiving() {
     return !(call CCA.get());
   }
   
@@ -233,7 +233,7 @@ implementation {
   }
 
 
-  command bool ByteIndicator.isReceiving() {
+  async command bool ByteIndicator.isReceiving() {
     bool high;
     high = sfdHigh;
     return high;

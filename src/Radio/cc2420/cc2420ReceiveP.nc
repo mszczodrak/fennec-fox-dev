@@ -156,7 +156,7 @@ implementation {
   }
 
   /***************** PacketIndicator Commands ****************/
-  command bool PacketIndicator.isReceiving() {
+  async command bool PacketIndicator.isReceiving() {
     bool receiving;
     atomic {
       receiving = receivingPacket;
