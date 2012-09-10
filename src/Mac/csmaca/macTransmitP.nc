@@ -89,7 +89,7 @@ implementation {
    * @param *p_msg Pointer to the message that needs to be sent
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  async command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
+  command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
     csmaca_backoff_period = call csmacaMacParams.get_backoff();
     csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
     csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
@@ -116,7 +116,7 @@ implementation {
    * chip
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  async command error_t MacTransmit.resend(bool useCca) {
+  command error_t MacTransmit.resend(bool useCca) {
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }
@@ -143,7 +143,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t MacTransmit.cancel() {
+  command error_t MacTransmit.cancel() {
     switch( m_state ) {
     case S_LOAD:
     case S_SAMPLE_CCA:

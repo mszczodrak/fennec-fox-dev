@@ -153,7 +153,7 @@ implementation {
   }
 
   /**************** Events ****************/
-  async event void MacTransmit.sendDone( message_t* p_msg, error_t err ) {
+  event void MacTransmit.sendDone( message_t* p_msg, error_t err ) {
     atomic sendErr = err;
     post sendDone_task();
   }

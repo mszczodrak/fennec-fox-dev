@@ -339,7 +339,7 @@ implementation {
    * @param p_msg message to send.
    * @param error notifaction of how the operation went.
    */
-  async event void MacTransmit.sendDone( message_t* p_msg, error_t error ) {
+  event void MacTransmit.sendDone( message_t* p_msg, error_t error ) {
     // This is actually caught by SubSend.sendDone
   }
   
