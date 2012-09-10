@@ -54,6 +54,7 @@ implementation {
 
   norace uint8_t m_tx_power;
   uint16_t m_prev_time;
+  norace uint16_t param_tx_power;
 
   /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
   norace bool abortSpiRelease;
@@ -78,6 +79,7 @@ implementation {
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
+    param_tx_power = call cc2420RadioParams.get_power();
     call CaptureSFD.captureRisingEdge();
     abortSpiRelease = FALSE;
     return SUCCESS;
@@ -167,10 +169,10 @@ implementation {
       call ChipSpiResource.abortRelease();
     }
   }
- 
 
-
- 
+  task void updateTXPower() {
+    param_tx_power = call cc2420RadioParams.get_power();
+  } 
 
   void signalDone( error_t err ) {
     radio_state = S_STARTED;
@@ -424,7 +426,7 @@ implementation {
     uint8_t tx_power = (getMetadata( radio_msg ))->tx_power;
 
     if ( !tx_power ) {
-      tx_power = call cc2420RadioParams.get_power();
+      tx_power = param_tx_power;
     }
 
     call CSN.clr();
@@ -447,6 +449,7 @@ implementation {
   async command error_t RadioTransmit.load(message_t* msg) {
     radio_msg = msg;
     radio_state = S_LOAD;
+    post updateTXPower();
     if ( acquireSpiResource() == SUCCESS ) {
       loadTXFIFO();
     }
