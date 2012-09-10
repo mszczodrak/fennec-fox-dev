@@ -130,7 +130,8 @@ bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d
 
 
   cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+//    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
+    return (cc2420_header_t*) msg->header;
   }
 
   cc2420_metadata_t* getMetadata( message_t* msg ) {
@@ -150,6 +151,7 @@ bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d
 
 
   uint8_t* getPayload( message_t* msg) {
+/*
     cc2420_header_t *hdr = getHeader( msg );
     int offset;
 
@@ -158,6 +160,8 @@ bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d
       offsetof(cc2420_header_t, dest);
 
     return ((uint8_t *)hdr) + offset;
+*/
+    return (uint8_t*) msg->data;
   }
 
 
