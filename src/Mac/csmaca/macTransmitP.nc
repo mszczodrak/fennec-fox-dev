@@ -27,6 +27,7 @@ implementation {
   norace uint8_t m_state = S_STOPPED;
   norace uint16_t csmaca_backoff_period;
   norace uint16_t csmaca_min_backoff;
+  norace uint16_t csmaca_delay_after_receive;
 
 
   /** Total CCA checks that showed no activity before the NoAck LPL send */
@@ -40,7 +41,7 @@ implementation {
   
   void requestInitialBackoff(message_t *msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
+    if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
       myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
     } else {
       myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
@@ -49,7 +50,7 @@ implementation {
 
   void congestionBackoff(message_t *msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((call csmacaMacParams.get_delay_after_receive() > 0) && (metadata->rxInterval > 0)) {
+    if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
       myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
     } else {
       myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
@@ -67,6 +68,7 @@ implementation {
   command error_t StdControl.start() {
     csmaca_backoff_period = call csmacaMacParams.get_backoff();
     csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
 
     call RadioControl.start();
     m_state = S_STARTED;
@@ -88,6 +90,10 @@ implementation {
    * @param cca TRUE if this transmit should use clear channel assessment
    */
   async command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
+    csmaca_backoff_period = call csmacaMacParams.get_backoff();
+    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }
