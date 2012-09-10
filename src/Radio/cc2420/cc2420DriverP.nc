@@ -94,17 +94,6 @@ implementation {
     return SUCCESS;
   }
 
-  /* -------------------------- */
-
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
-  }
-
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
-
-
   /***************** Init Commands *****************/
   command error_t Init.init() {
     low_level_init();

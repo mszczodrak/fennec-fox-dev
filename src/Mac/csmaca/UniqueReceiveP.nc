@@ -37,6 +37,7 @@
  */
  
 #include "CC2420.h"
+#include "csmacaMac.h"
 
 module UniqueReceiveP @safe() {
   provides {
@@ -65,10 +66,6 @@ implementation {
   enum {
     INVALID_ELEMENT = 0xFF,
   };
-
-  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
-  }
 
   /***************** Init Commands *****************/
   command error_t Init.init() {
@@ -166,7 +163,7 @@ implementation {
    * address.
    */
   uint16_t getSourceKey(message_t * ONE msg) {
-    csmaca_header_t *hdr = getHeader(msg);
+    csmaca_header_t *hdr = (csmaca_header_t*)getHeader(msg);
     int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
     int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
     int s_offset = 2, s_len = 2;

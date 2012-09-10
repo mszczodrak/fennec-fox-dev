@@ -112,11 +112,6 @@ implementation {
   void initializeSend();
   void startOffTimer();
 
-  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
-  }
-
-  
   /***************** Init Commands ***************/
   command error_t Init.init() {
     dutyCycling = FALSE;

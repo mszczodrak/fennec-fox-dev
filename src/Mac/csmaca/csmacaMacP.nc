@@ -85,31 +85,6 @@ implementation {
 
   /* Functions */
 
-  int getAddressLength(int type) {
-    switch (type) {
-    case IEEE154_ADDR_SHORT: return 2;
-    case IEEE154_ADDR_EXT: return 8;
-    case IEEE154_ADDR_NONE: return 0;
-    default: return -100;
-    }
-  }
-
-  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
-  }
-
-  uint8_t* getPayload( message_t* msg) {
-    csmaca_header_t *hdr = getHeader( msg );
-    int offset;
-
-    offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
-      getAddressLength((hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3) +
-      offsetof(csmaca_header_t, dest);
-
-    return ((uint8_t *)hdr) + offset;
-  }
-
-
   command error_t Mgmt.start() {
     if (status == S_STARTED) {
       dbg("Mac", "Mac csmaca already started\n");
@@ -173,7 +148,7 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    csmaca_header_t* header = getHeader( msg );
+    csmaca_header_t* header = (csmaca_header_t*)getHeader( msg );
 
     call MacAMPacket.setGroup(msg, msg->conf);
     dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
@@ -299,22 +274,22 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    csmaca_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
     return header->dest;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    csmaca_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
     return header->src;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    csmaca_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
     header->dest = addr;
   }
 
   command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    csmaca_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
     header->src = addr;
   }
 
@@ -326,12 +301,12 @@ implementation {
   }
 
   command am_id_t MacAMPacket.type(message_t* amsg) {
-    csmaca_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
     return header->type;
   }
 
   command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
-    csmaca_header_t* header = getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
     header->type = type;
   }
 

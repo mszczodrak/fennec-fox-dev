@@ -1,6 +1,7 @@
 #include "IEEE802154.h"
 #include "message.h"
 #include "AM.h"
+#include "Fennec.h"
 
 module cc2420ReceiveP @safe() {
 
@@ -82,15 +83,6 @@ implementation {
   bool passesAddressCheck(message_t * ONE msg);
 
   task void receiveDone_task();
-
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
-  }
-
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
-
 
   void PacketTimeStampclear(message_t* msg)
   {
