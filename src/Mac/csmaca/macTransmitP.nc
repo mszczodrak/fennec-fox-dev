@@ -29,6 +29,11 @@ implementation {
   norace uint16_t csmaca_min_backoff;
   norace uint16_t csmaca_delay_after_receive;
 
+  norace error_t sendDoneErr;
+  task void signalSendDone() {
+    m_state = S_STARTED;
+    signal MacTransmit.sendDone( m_msg, sendDoneErr );
+  }
 
   /** Total CCA checks that showed no activity before the NoAck LPL send */
   norace int8_t totalCcaChecks;
@@ -164,8 +169,8 @@ implementation {
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
       call RadioTransmit.cancel();
-      m_state = S_STARTED;
-      signal MacTransmit.sendDone( msg, ECANCEL );
+      sendDoneErr = ECANCEL;
+      post signalSendDone();
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
@@ -211,7 +216,8 @@ implementation {
     case S_CANCEL:
       call RadioTransmit.cancel();
       m_state = S_STARTED;
-      signal MacTransmit.sendDone( m_msg, ECANCEL );
+      sendDoneErr = ECANCEL;
+      post signalSendDone();
       break;
         
     default:
@@ -221,19 +227,17 @@ implementation {
       
   async event void RadioTransmit.sendDone(error_t error) {
     if (m_state == S_CANCEL){
-      m_state = S_STARTED;
-      signal MacTransmit.sendDone( m_msg, ECANCEL );
+      sendDoneErr = ECANCEL;
+      post signalSendDone();
     } else {
       if (error == EBUSY) {
         m_state = S_SAMPLE_CCA;
         totalCcaChecks = 0;
         congestionBackoff(m_msg);
       } else {
-        m_state = S_STARTED;
         call BackoffTimer.stop();
-        signal MacTransmit.sendDone( m_msg, error );
-
-
+        sendDoneErr = error;
+        post signalSendDone();
       }
     }
 
