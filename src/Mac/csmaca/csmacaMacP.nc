@@ -49,12 +49,6 @@ module csmacaMacP @safe() {
 
   uses interface SplitControl as RadioControl;
 
-  uses interface AMSend as RadioAMSend;
-//  uses interface Receive as RadioReceive;
-  uses interface Receive as RadioSnoop;
-  uses interface AMPacket as RadioAMPacket;
-  uses interface Packet as RadioPacket;
-  uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
 
   uses interface RadioConfig;
@@ -214,22 +208,6 @@ implementation {
 
 
   event void csmacaMacParams.receive_status(uint16_t status_flag) {
-  }
-
-
-  event void RadioAMSend.sendDone(message_t *msg, uint8_t len) {
-    dbg("Mac", "Mac: CSMA/CA sendDone\n");
-    signal MacAMSend.sendDone(msg, len);
-  }
-
-//  event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
-//    dbg("Mac", "Mac: CSMA/CA receive\n");
-//    return signal MacReceive.receive(msg, payload, len);
-//  }
-
-  event message_t* RadioSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    //dbg("Mac", "Mac: CSMA/CA snoop\n");
-    return signal MacSnoop.receive(msg, payload, len);
   }
 
 

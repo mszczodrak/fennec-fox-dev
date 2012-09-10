@@ -27,13 +27,7 @@
 
 configuration cc2420RadioC {
   provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as RadioAMSend;
   provides interface Receive as RadioReceive;
-  provides interface Receive as RadioSnoop;
-  provides interface AMPacket as RadioAMPacket;
-  provides interface Packet as RadioPacket;
-  provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
 
   uses interface cc2420RadioParams;
@@ -67,14 +61,7 @@ implementation {
   ByteIndicator = cc2420DriverC.ByteIndicator;
 
   Mgmt = cc2420RadioP;
-  Module = cc2420RadioP;
   cc2420RadioParams = cc2420RadioP;
-  RadioAMSend = cc2420RadioP.RadioAMSend;
-  //RadioReceive = cc2420RadioP.RadioReceive;
-  RadioSnoop = cc2420RadioP.RadioSnoop;
-  RadioAMPacket = cc2420RadioP.RadioAMPacket;
-  RadioPacket = cc2420RadioP.RadioPacket;
-  RadioPacketAcknowledgements = cc2420RadioP.RadioPacketAcknowledgements;
   RadioStatus = cc2420RadioP.RadioStatus;
 
   RadioControl = cc2420RadioP.StdControl;

@@ -41,12 +41,7 @@ configuration csmacaMacC {
 
   uses interface csmacaMacParams;
 
-  uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
-  uses interface Receive as RadioSnoop;
-  uses interface AMPacket as RadioAMPacket;
-  uses interface Packet as RadioPacket;
-  uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
 
   uses interface RadioConfig;
@@ -80,12 +75,6 @@ implementation {
   ReadRssi = csmacaMacP.ReadRssi;
   RadioResource = csmacaMacP.RadioResource;
 
-  RadioAMSend = csmacaMacP.RadioAMSend;
-  //RadioReceive = csmacaMacP.RadioReceive;
-  RadioSnoop = csmacaMacP.RadioSnoop;
-  RadioAMPacket = csmacaMacP.RadioAMPacket;
-  RadioPacket = csmacaMacP.RadioPacket;
-  RadioPacketAcknowledgements = csmacaMacP.RadioPacketAcknowledgements;
   RadioStatus = csmacaMacP.RadioStatus;
 
   components CsmaC;
