@@ -52,6 +52,8 @@ module nullRadioP @safe() {
 
 implementation {
 
+  uint8_t channel;
+
   command error_t Mgmt.start() {
     dbg("Radio", "Radio null starts\n");
     signal Mgmt.startDone(SUCCESS);
@@ -64,7 +66,125 @@ implementation {
     return SUCCESS;
   }
 
+  command error_t RadioControl.start() {
+    return SUCCESS;
+  }
+
+  command error_t RadioControl.stop() {
+    return SUCCESS;
+  }
+
   event void nullRadioParams.receive_status(uint16_t status_flag) {
+  }
+
+  async command error_t RadioPower.startVReg() {
+  }
+
+  async command error_t RadioPower.stopVReg() {
+  }
+
+  async command error_t RadioPower.startOscillator() {
+  }
+
+  async command error_t RadioPower.stopOscillator() {
+  }
+
+  async command error_t RadioPower.rxOn() {
+  }
+
+  async command error_t RadioPower.rfOff() {
+  }
+
+  command uint8_t RadioConfig.getChannel() {
+    return channel;
+  }
+
+  command void RadioConfig.setChannel( uint8_t new_channel ) {
+    atomic channel = new_channel;
+  }
+
+  async command uint16_t RadioConfig.getShortAddr() {
+    return TOS_NODE_ID;
+  }
+
+  command void RadioConfig.setShortAddr( uint16_t addr ) {
+  }
+
+  async command uint16_t RadioConfig.getPanAddr() {
+    return TOS_NODE_ID;
+  }
+
+  command void RadioConfig.setPanAddr( uint16_t pan ) {
+  }
+
+  command error_t RadioConfig.sync() {
+  }
+
+  command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
+  }
+
+  async command bool RadioConfig.isAddressRecognitionEnabled() {
+    return FALSE;
+  }
+
+  async command bool RadioConfig.isHwAddressRecognitionDefault() {
+    return FALSE;
+  }
+
+  command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
+  }
+
+  async command bool RadioConfig.isHwAutoAckDefault() {
+    return FALSE;
+  }
+
+  async command bool RadioConfig.isAutoAckEnabled() {
+    return FALSE;
+  }
+
+  command error_t ReadRssi.read() {
+    return FAIL;
+  }
+
+
+  async command bool ByteIndicator.isReceiving() {
+    return FAIL;
+  }
+
+  async command bool EnergyIndicator.isReceiving() {
+    return FAIL;
+  }
+
+  async command bool PacketIndicator.isReceiving() {
+    return FAIL;
+  }
+
+
+  async command error_t RadioTransmit.load(message_t* msg) {
+    return SUCCESS;
+  }
+
+  async command error_t RadioTransmit.send(message_t* msg, bool useCca) {
+    return SUCCESS;
+  }
+
+  async command void RadioTransmit.cancel() {
+  }
+
+  async command error_t RadioResource.immediateRequest() {
+    return SUCCESS;
+  }
+
+  async command error_t RadioResource.request() {
+    return SUCCESS;
+  }
+
+  async command bool RadioResource.isOwner() {
+    return SUCCESS;
+  }
+
+  async command error_t RadioResource.release() {
+    return SUCCESS;
   }
 
 }
