@@ -42,13 +42,19 @@ module nullMacP {
 
   uses interface nullMacParams;
 
-  uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
-  uses interface Receive as RadioSnoop;
-  uses interface AMPacket as RadioAMPacket;
-  uses interface Packet as RadioPacket;
-  uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
+  uses interface RadioConfig;
+  uses interface RadioPower;
+  uses interface Read<uint16_t> as ReadRssi;
+  uses interface Resource as RadioResource;
+  uses interface RadioTransmit;
+  uses interface StdControl as RadioControl;
+
+  uses interface ReceiveIndicator as PacketIndicator;
+  uses interface ReceiveIndicator as EnergyIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
+
 }
 
 implementation {
@@ -67,26 +73,21 @@ implementation {
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     dbg("Mac", "Mac: Null send\n");
-    return call RadioAMSend.send(addr, msg, len);
+    //return call RadioTransmit.send(addr, msg, len);
+    return call RadioTransmit.load(msg);
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
-    return call RadioAMSend.cancel(msg);
+    call RadioTransmit.cancel();
+    return SUCCESS;
   }
 
   command uint8_t MacAMSend.maxPayloadLength() {
-    //dbg("Mac", "Mac: Null maxPayloadLength\n");
-    return call RadioAMSend.maxPayloadLength();
+    return 0;
   }
 
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-    //dbg("Mac", "Mac: Null getPayload\n");
-    return call RadioAMSend.getPayload(msg, len);
-  }
-
-  event void RadioAMSend.sendDone(message_t *msg, uint8_t len) {
-    dbg("Mac", "Mac: Null sendDone\n");
-    signal MacAMSend.sendDone(msg, len);
+    return msg;
   }
 
   event message_t* RadioReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -94,85 +95,61 @@ implementation {
     return signal MacReceive.receive(msg, payload, len);
   }
 
-  event message_t* RadioSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    //dbg("Mac", "Mac: Null snoop\n");
-    return signal MacSnoop.receive(msg, payload, len);
-  }
-
   command am_addr_t MacAMPacket.address() {
-    return call RadioAMPacket.address();
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    return call RadioAMPacket.destination(amsg);
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    return call RadioAMPacket.source(amsg);
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    return call RadioAMPacket.setDestination(amsg, addr);
   }
 
   command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    return call RadioAMPacket.setSource(amsg, addr);
   }
 
   command bool MacAMPacket.isForMe(message_t* amsg) {
-    return call RadioAMPacket.isForMe(amsg);
   }
 
   command am_id_t MacAMPacket.type(message_t* amsg) {
-    return call RadioAMPacket.type(amsg);
   }
 
   command void MacAMPacket.setType(message_t* amsg, am_id_t t) {
-    return call RadioAMPacket.setType(amsg, t);
   }
 
   command am_group_t MacAMPacket.group(message_t* amsg) {
-    return call RadioAMPacket.group(amsg);
   }
 
   command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-    return call RadioAMPacket.setGroup(amsg, grp);
   }
 
   command am_group_t MacAMPacket.localGroup() {
-    return call RadioAMPacket.localGroup();
   }
 
   command void MacPacket.clear(message_t* msg) {
-    return call RadioPacket.clear(msg);
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
-    return call RadioPacket.payloadLength(msg);
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    return call RadioPacket.setPayloadLength(msg, len);
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
-    return call RadioPacket.maxPayloadLength();
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    return call RadioPacket.getPayload(msg, len);
   }
 
   async command error_t MacPacketAcknowledgements.requestAck( message_t* msg ) {
-    return call RadioPacketAcknowledgements.requestAck(msg);
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* msg ) {
-    return call RadioPacketAcknowledgements.noAck(msg);
   }
 
   async command bool MacPacketAcknowledgements.wasAcked(message_t* msg) {
-    return call RadioPacketAcknowledgements.wasAcked(msg);
   }
 
   event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
@@ -182,6 +159,29 @@ implementation {
   event void nullMacParams.receive_status(uint16_t status_flag) {
   }
 
+
+  async event void RadioPower.startVRegDone() {
+  }
+
+  async event void RadioPower.startOscillatorDone() {
+  }
+
+  event void RadioResource.granted() {
+  }
+
+  event void RadioConfig.syncDone(error_t error) {
+  }
+
+  event void ReadRssi.readDone(error_t error, uint16_t rssi) {
+  }
+
+  async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+    call RadioTransmit.send(msg, 0);
+  }
+
+  async event void RadioTransmit.sendDone(error_t error) {
+    signal MacAMSend.sendDone(NULL, error);
+  }
 
 }
 

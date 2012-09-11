@@ -38,13 +38,19 @@ configuration nullMacC {
 
   uses interface nullMacParams;
 
-  uses interface AMSend as RadioAMSend;
   uses interface Receive as RadioReceive;
-  uses interface Receive as RadioSnoop;
-  uses interface AMPacket as RadioAMPacket;
-  uses interface Packet as RadioPacket;
-  uses interface PacketAcknowledgements as RadioPacketAcknowledgements;
   uses interface ModuleStatus as RadioStatus;
+
+  uses interface RadioConfig;
+  uses interface RadioPower;
+  uses interface Read<uint16_t> as ReadRssi;
+  uses interface Resource as RadioResource;
+
+  uses interface StdControl as RadioControl;
+  uses interface RadioTransmit;
+  uses interface ReceiveIndicator as PacketIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
+  uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
@@ -59,12 +65,17 @@ implementation {
   MacPacket = nullMacP.MacPacket;
   MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
   MacStatus = nullMacP.MacStatus;
-  RadioAMSend = nullMacP.RadioAMSend;
   RadioReceive = nullMacP.RadioReceive;
-  RadioSnoop = nullMacP.RadioSnoop;
-  RadioAMPacket = nullMacP.RadioAMPacket;
-  RadioPacket = nullMacP.RadioPacket;
-  RadioPacketAcknowledgements = nullMacP.RadioPacketAcknowledgements;
   RadioStatus = nullMacP.RadioStatus;
+
+  RadioConfig = nullMacP.RadioConfig;
+  RadioPower = nullMacP.RadioPower;
+  ReadRssi = nullMacP.ReadRssi;
+  RadioResource = nullMacP.RadioResource;
+  PacketIndicator = nullMacP.PacketIndicator;
+  EnergyIndicator = nullMacP.EnergyIndicator;
+  ByteIndicator = nullMacP.ByteIndicator;
+  RadioTransmit = nullMacP.RadioTransmit;
+  RadioControl = nullMacP.RadioControl;
 }
 
