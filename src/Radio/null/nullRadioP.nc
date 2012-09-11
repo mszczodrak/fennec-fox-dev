@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  Null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: Null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -31,16 +31,23 @@
 
 module nullRadioP @safe() {
   provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as RadioAMSend;
   provides interface Receive as RadioReceive;
-  provides interface Receive as RadioSnoop;
-  provides interface AMPacket as RadioAMPacket;
-  provides interface Packet as RadioPacket;
-  provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
 
   uses interface nullRadioParams;
+
+  provides interface Resource as RadioResource;
+  provides interface RadioConfig;
+  provides interface RadioPower;
+  provides interface Read<uint16_t> as ReadRssi;
+
+  provides interface StdControl as RadioControl;
+
+  provides interface RadioTransmit;
+
+  provides interface ReceiveIndicator as PacketIndicator;
+  provides interface ReceiveIndicator as EnergyIndicator;
+  provides interface ReceiveIndicator as ByteIndicator;
 }
 
 implementation {
@@ -55,92 +62,6 @@ implementation {
     dbg("Radio", "Radio null stops\n");
     signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;
-  }
-
-  command error_t RadioAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    return SUCCESS;
-  }
-
-  command error_t RadioAMSend.cancel(message_t* msg) {
-    return SUCCESS;
-  }
-
-  command uint8_t RadioAMSend.maxPayloadLength() {
-    return 0;
-  }
-
-  command void* RadioAMSend.getPayload(message_t* msg, uint8_t len) {
-    return NULL;
-  }
-
-  command am_addr_t RadioAMPacket.address() {
-    return TOS_NODE_ID;
-  }
-
-  command am_addr_t RadioAMPacket.destination(message_t* amsg) {
-    return TOS_NODE_ID;
-  }
-
-  command am_addr_t RadioAMPacket.source(message_t* amsg) {
-    return TOS_NODE_ID;
-  }
-
-  command void RadioAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-  }
-
-  command void RadioAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-  }
-
-  command bool RadioAMPacket.isForMe(message_t* amsg) {
-    return FALSE;
-  }
-
-  command am_id_t RadioAMPacket.type(message_t* amsg) {
-    return 0;
-  }
-
-  command void RadioAMPacket.setType(message_t* amsg, am_id_t t) {
-  }
-
-  command am_group_t RadioAMPacket.group(message_t* amsg) {
-    return 0;
-  }
-
-  command void RadioAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-  }
-
-  command am_group_t RadioAMPacket.localGroup() {
-    return 0;
-  }
-
-  command void RadioPacket.clear(message_t* msg) {
-  }
-
-  command uint8_t RadioPacket.payloadLength(message_t* msg) {
-    return 0;
-  }
-
-  command void RadioPacket.setPayloadLength(message_t* msg, uint8_t len) {
-  }
-
-  command uint8_t RadioPacket.maxPayloadLength() {
-    return 128;
-  }
-
-  command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-    return (void*)msg;
-  }
-
-  async command error_t RadioPacketAcknowledgements.requestAck( message_t* msg ) {
-    return SUCCESS;
-  }
-
-  async command error_t RadioPacketAcknowledgements.noAck( message_t* msg ) {
-    return SUCCESS;
-  }
-
-  async command bool RadioPacketAcknowledgements.wasAcked(message_t* msg) {
-    return 1;
   }
 
   event void nullRadioParams.receive_status(uint16_t status_flag) {

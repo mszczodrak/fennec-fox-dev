@@ -27,33 +27,44 @@
 
 configuration nullRadioC {
   provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as RadioAMSend;
   provides interface Receive as RadioReceive;
-  provides interface Receive as RadioSnoop;
-  provides interface AMPacket as RadioAMPacket;
-  provides interface Packet as RadioPacket;
-  provides interface PacketAcknowledgements as RadioPacketAcknowledgements;
   provides interface ModuleStatus as RadioStatus;
 
   uses interface nullRadioParams;
+
+  provides interface Resource as RadioResource;
+  provides interface RadioConfig;
+  provides interface RadioPower;
+  provides interface Read<uint16_t> as ReadRssi;
+
+  provides interface StdControl as RadioControl;
+
+  provides interface RadioTransmit;
+
+  provides interface ReceiveIndicator as PacketIndicator;
+  provides interface ReceiveIndicator as EnergyIndicator;
+  provides interface ReceiveIndicator as ByteIndicator;
+
 }
 
 implementation {
 
-  enum {
-    CC_FF_PORT = 114,
-  };
-
   components nullRadioP;
   Mgmt = nullRadioP;
-  Module = nullRadioP;
   nullRadioParams = nullRadioP;
-  RadioAMSend = nullRadioP.RadioAMSend;
   RadioReceive = nullRadioP.RadioReceive;
-  RadioSnoop = nullRadioP.RadioSnoop;
-  RadioAMPacket = nullRadioP.RadioAMPacket;
-  RadioPacket = nullRadioP.RadioPacket;
-  RadioPacketAcknowledgements = nullRadioP.RadioPacketAcknowledgements;
   RadioStatus = nullRadioP.RadioStatus;
+
+  PacketIndicator = nullRadioP.PacketIndicator;
+  EnergyIndicator = nullRadioP.EnergyIndicator;
+  ByteIndicator = nullRadioP.ByteIndicator;
+
+  RadioResource = nullRadioP.RadioResource;
+  RadioConfig = nullRadioP.RadioConfig;
+  RadioPower = nullRadioP.RadioPower;
+  ReadRssi = nullRadioP.ReadRssi;
+
+  RadioTransmit = nullRadioP.RadioTransmit;
+  RadioControl = nullRadioP.RadioControl;
+
 }
