@@ -125,6 +125,4 @@ interface Packet {
    */
   command void* getPayload(message_t* msg, uint8_t len);
 
-
-
 }
