@@ -4,6 +4,7 @@ SYSTEM_CORE_FREQUENCY := 104
 SYSTEM_BUS_FREQUENCY := 104
 PFLAGS+=-DTOSH_DATA_LENGTH=127
 CFLAGS += -DMSP430XSPEED8
+CFLAGS += -I$(CAPE_FOX_LIB)
 
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 include $(FENNEC_FOX_LIB)/support/make/Makerules
