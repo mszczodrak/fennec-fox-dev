@@ -67,4 +67,6 @@ implementation {
   RadioTransmit = capeRadioP.RadioTransmit;
   RadioControl = capeRadioP.RadioControl;
 
+  components capeSimRadioC;
+
 }
