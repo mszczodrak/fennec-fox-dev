@@ -21,11 +21,6 @@ typedef nx_struct metadata_t {
   nx_uint32_t timestamp;
   nx_uint16_t rxInterval;
 
-  /** Packet Link Metadata */
-#ifdef PACKET_LINK
-  nx_uint16_t maxRetries;
-  nx_uint16_t retryDelay;
-#endif
 } metadata_t;
 
 
@@ -41,12 +36,5 @@ typedef nx_struct message_t {
   nx_uint8_t ack;
   nx_uint16_t rxInterval;
 } message_t;
-
-/*
- * This resource is used to arbitrate access between ActiveMessageC,
- * Ieee154MessageC and possibly future MessageC components to the 
- * underlying radio driver.
- */
-#define RADIO_SEND_RESOURCE "RADIO_SEND_RESOURCE"
 
 #endif

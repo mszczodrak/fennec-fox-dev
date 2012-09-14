@@ -49,6 +49,7 @@ configuration capeRadioC {
 
 implementation {
 
+#ifndef CAPE_FOX_LIB
   components capeRadioP;
   Mgmt = capeRadioP;
   capeRadioParams = capeRadioP;
@@ -67,6 +68,25 @@ implementation {
   RadioTransmit = capeRadioP.RadioTransmit;
   RadioControl = capeRadioP.RadioControl;
 
+#else
   components capeSimRadioC;
+  Mgmt = capeSimRadioP;
+  capeRadioParams = capeSimRadioP;
+  RadioReceive = capeSimRadioP.RadioReceive;
+  RadioStatus = capeSimRadioP.RadioStatus;
+
+  PacketIndicator = capeSimRadioP.PacketIndicator;
+  EnergyIndicator = capeSimRadioP.EnergyIndicator;
+  ByteIndicator = capeSimRadioP.ByteIndicator;
+
+  RadioResource = capeSimRadioP.RadioResource;
+  RadioConfig = capeSimRadioP.RadioConfig;
+  RadioPower = capeSimRadioP.RadioPower;
+  ReadRssi = capeSimRadioP.ReadRssi;
+
+  RadioTransmit = capeSimRadioP.RadioTransmit;
+  RadioControl = capeSimRadioP.RadioControl;
+
+#endif
 
 }
