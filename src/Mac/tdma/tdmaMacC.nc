@@ -1,5 +1,5 @@
 /*
- *  null mac module for Fennec Fox platform.
+ *  tdma mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,13 +19,13 @@
  */
 
 /*
- * Module: null Mac Protocol
+ * Module: tdma Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-configuration nullMacC {
+configuration tdmaMacC {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as MacAMSend;
@@ -36,7 +36,7 @@ configuration nullMacC {
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
 
-  uses interface nullMacParams;
+  uses interface tdmaMacParams;
 
   uses interface Receive as RadioReceive;
   uses interface ModuleStatus as RadioStatus;
@@ -54,28 +54,28 @@ configuration nullMacC {
 }
 
 implementation {
-  components nullMacP;
-  Mgmt = nullMacP;
-  Module = nullMacP;
-  nullMacParams = nullMacP;
-  MacAMSend = nullMacP.MacAMSend;
-  MacReceive = nullMacP.MacReceive;
-  MacSnoop = nullMacP.MacSnoop;
-  MacAMPacket = nullMacP.MacAMPacket;
-  MacPacket = nullMacP.MacPacket;
-  MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
-  MacStatus = nullMacP.MacStatus;
-  RadioReceive = nullMacP.RadioReceive;
-  RadioStatus = nullMacP.RadioStatus;
+  components tdmaMacP;
+  Mgmt = tdmaMacP;
+  Module = tdmaMacP;
+  tdmaMacParams = tdmaMacP;
+  MacAMSend = tdmaMacP.MacAMSend;
+  MacReceive = tdmaMacP.MacReceive;
+  MacSnoop = tdmaMacP.MacSnoop;
+  MacAMPacket = tdmaMacP.MacAMPacket;
+  MacPacket = tdmaMacP.MacPacket;
+  MacPacketAcknowledgements = tdmaMacP.MacPacketAcknowledgements;
+  MacStatus = tdmaMacP.MacStatus;
+  RadioReceive = tdmaMacP.RadioReceive;
+  RadioStatus = tdmaMacP.RadioStatus;
 
-  RadioConfig = nullMacP.RadioConfig;
-  RadioPower = nullMacP.RadioPower;
-  ReadRssi = nullMacP.ReadRssi;
-  RadioResource = nullMacP.RadioResource;
-  PacketIndicator = nullMacP.PacketIndicator;
-  EnergyIndicator = nullMacP.EnergyIndicator;
-  ByteIndicator = nullMacP.ByteIndicator;
-  RadioTransmit = nullMacP.RadioTransmit;
-  RadioControl = nullMacP.RadioControl;
+  RadioConfig = tdmaMacP.RadioConfig;
+  RadioPower = tdmaMacP.RadioPower;
+  ReadRssi = tdmaMacP.ReadRssi;
+  RadioResource = tdmaMacP.RadioResource;
+  PacketIndicator = tdmaMacP.PacketIndicator;
+  EnergyIndicator = tdmaMacP.EnergyIndicator;
+  ByteIndicator = tdmaMacP.ByteIndicator;
+  RadioTransmit = tdmaMacP.RadioTransmit;
+  RadioControl = tdmaMacP.RadioControl;
 }
 

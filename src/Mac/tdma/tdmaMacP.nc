@@ -1,5 +1,5 @@
 /*
- *  null mac module for Fennec Fox platform.
+ *  tdma mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Module: null Mac Protocol
+ * Module: tdma Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
-#include "nullMac.h"
+#include "tdmaMac.h"
 
-module nullMacP {
+module tdmaMacP {
 
   provides interface Mgmt;
   provides interface Module;
@@ -40,7 +40,7 @@ module nullMacP {
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
 
-  uses interface nullMacParams;
+  uses interface tdmaMacParams;
 
   uses interface Receive as RadioReceive;
   uses interface ModuleStatus as RadioStatus;
@@ -60,13 +60,13 @@ module nullMacP {
 implementation {
 
   command error_t Mgmt.start() {
-    dbg("Mac", "Mac null starts\n");
+    dbg("Mac", "Mac tdma starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    dbg("Mac", "Mac null stops\n");
+    dbg("Mac", "Mac tdma stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -96,15 +96,12 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.address() {
-    return TOS_NODE_ID;
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    return 0;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    return 0;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
@@ -135,37 +132,31 @@ implementation {
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
-    return 0;
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
-    return 128;
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    return (void*) getHeader(msg);
   }
 
   async command error_t MacPacketAcknowledgements.requestAck( message_t* msg ) {
-    return SUCCESS;
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* msg ) {
-    return SUCCESS;
   }
 
   async command bool MacPacketAcknowledgements.wasAcked(message_t* msg) {
-    return FALSE;
   }
 
   event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
     return signal MacStatus.status(layer, status_flag);
   }
 
-  event void nullMacParams.receive_status(uint16_t status_flag) {
+  event void tdmaMacParams.receive_status(uint16_t status_flag) {
   }
 
 

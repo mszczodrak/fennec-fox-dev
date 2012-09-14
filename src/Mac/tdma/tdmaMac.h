@@ -1,5 +1,5 @@
 /*
- *  null mac module for Fennec Fox platform.
+ *  Null mac module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,17 +19,17 @@
  */
 
 /*
- * Module: null Mac Protocol
+ * Network: Null Mac Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#ifndef __null_MAC_H__
-#define __null_MAC_H__
+#ifndef __tdma_MAC_H__
+#define __tdma_MAC_H__
 
 
-nx_struct null_mac_footer {
+nx_struct tdma_mac_footer {
   nx_uint16_t footer;
 };
 

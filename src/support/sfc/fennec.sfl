@@ -20,6 +20,9 @@ use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (uint16_t sink_addr,
 	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
 	uint8_t ack, uint8_t cca, uint8_t crc)
 
+use mac tdma /home/marcin/github/fennec-fox-dev/src/Mac/tdma ()
+
+
 use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
 use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (uint16_t sink_addr,
 	uint8_t channel, uint8_t power, uint16_t remote_wakeup, 
