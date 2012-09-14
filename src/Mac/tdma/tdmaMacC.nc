@@ -77,5 +77,7 @@ implementation {
   ByteIndicator = tdmaMacP.ByteIndicator;
   RadioTransmit = tdmaMacP.RadioTransmit;
   RadioControl = tdmaMacP.RadioControl;
+
+  components FtspC;
 }
 
