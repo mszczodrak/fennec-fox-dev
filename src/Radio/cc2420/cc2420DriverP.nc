@@ -107,22 +107,23 @@ implementation {
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
 
-
-
   void PacketTimeStampclear(message_t* msg)
   {
-    (getMetadata( msg ))->timesync = FALSE;
-    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    meta->timesync = FALSE;
+    meta->timestamp = CC2420_INVALID_TIMESTAMP;
   }
 
   void PacketTimeStampset(message_t* msg, uint32_t value)
   {
-    (getMetadata( msg ))->timestamp = value;
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    meta->timestamp = value;
   }
 
   bool PacketTimeSyncOffsetisSet(message_t* msg)
   {
-    return ((getMetadata( msg ))->timesync);
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    return (meta->timesync);
   }
 
 
@@ -133,7 +134,8 @@ implementation {
   //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
   uint8_t PacketTimeSyncOffsetget(message_t* msg)
   {
-    return (getHeader(msg))->length
+    cc2420_header_t *header = (cc2420_header_t*) getHeader(msg);
+    return header->length
             + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
             - MAC_FOOTER_SIZE
             - sizeof(timesync_radio_t);
@@ -238,13 +240,13 @@ implementation {
     uint8_t length;
 
     if ( type == IEEE154_TYPE_ACK && radio_msg) {
-      ack_header = getHeader( ack_msg );
-      msg_header = getHeader( radio_msg );
+      ack_header = (cc2420_header_t*) getHeader(ack_msg);
+      msg_header = (cc2420_header_t*) getHeader(radio_msg);
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call RadioTimer.stop();
 
-        msg_metadata = getMetadata( radio_msg );
+        msg_metadata = (cc2420_metadata_t*)getMetadata( radio_msg );
         ack_buf = (uint8_t *) ack_header;
         length = ack_header->length;
 
@@ -299,6 +301,8 @@ implementation {
   async event void CaptureSFD.captured( uint16_t time ) {
     uint32_t time32;
     uint8_t sfd_state = 0;
+    cc2420_header_t* header = (cc2420_header_t*) getHeader( radio_msg );
+
     atomic {
       time32 = getTime32(time);
       switch( radio_state ) {
@@ -323,7 +327,7 @@ implementation {
            *timesync  += time32;
         }
 
-        if ( (getHeader( radio_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+        if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
           // This is an ack packet, don't release the chip's SPI bus lock.
           abortSpiRelease = TRUE;
         }
@@ -339,7 +343,7 @@ implementation {
         sfdHigh = FALSE;
         call CaptureSFD.captureRisingEdge();
 
-        if ( (getHeader( radio_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+        if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
           radio_state = S_ACK_WAIT;
           call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
         } else {
@@ -411,8 +415,9 @@ implementation {
    * the same CRC polynomial as the CC2420's AUTOCRC functionality.
    */
   void loadTXFIFO() {
-    cc2420_header_t* header = getHeader( radio_msg );
-    uint8_t tx_power = (getMetadata( radio_msg ))->tx_power;
+    cc2420_header_t* header = (cc2420_header_t*) getHeader( radio_msg );
+    cc2420_metadata_t* meta = (cc2420_metadata_t*) getMetadata( radio_msg );
+    uint8_t tx_power = meta->tx_power;
 
     if ( !tx_power ) {
       tx_power = param_tx_power;

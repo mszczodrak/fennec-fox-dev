@@ -45,11 +45,6 @@ implementation {
   
   void shutdown();
 
-  csmaca_header_t* ONE getHeader( message_t* ONE msg ) {
-    return TCAST(csmaca_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( csmaca_header_t ));
-  }
-
-
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
@@ -96,7 +91,7 @@ implementation {
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
     
-    csmaca_header_t* header = getHeader( p_msg );
+    csmaca_header_t* header = (csmaca_header_t*) getHeader( p_msg );
     metadata_t* metadata = (metadata_t*) p_msg->metadata;
 
     if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {

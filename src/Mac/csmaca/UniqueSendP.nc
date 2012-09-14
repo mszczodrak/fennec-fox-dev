@@ -74,7 +74,8 @@ implementation {
   command error_t Send.send(message_t *msg, uint8_t len) {
     error_t error;
     if(call State.requestState(S_SENDING) == SUCCESS) {
-      (getHeader(msg))->dsn = localSendId++;
+      csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+      header->dsn = localSendId++;
       
       if((error = call SubSend.send(msg, len)) != SUCCESS) {
         call State.toIdle();

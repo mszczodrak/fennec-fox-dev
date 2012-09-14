@@ -87,7 +87,8 @@ implementation {
       uint8_t len) {
 
     uint16_t msgSource = getSourceKey(msg);
-    uint8_t msgDsn = (getHeader(msg))->dsn;
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    uint8_t msgDsn = header->dsn;
 
     if(hasSeen(msgSource, msgDsn)) {
       return signal DuplicateReceive.receive(msg, payload, len);

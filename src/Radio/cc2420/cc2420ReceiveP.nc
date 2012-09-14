@@ -86,13 +86,15 @@ implementation {
 
   void PacketTimeStampclear(message_t* msg)
   {
-    (getMetadata( msg ))->timesync = FALSE;
-    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata(msg);
+    meta->timesync = FALSE;
+    meta->timestamp = CC2420_INVALID_TIMESTAMP;
   }
 
   void PacketTimeStampset(message_t* msg, uint32_t value)
   {
-    (getMetadata( msg ))->timestamp = value;
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata(msg);
+    meta->timestamp = value;
   }
 
 
@@ -174,7 +176,7 @@ implementation {
  
 
   bool quick_dest_check(message_t *msg) {
-    cc2420_header_t* header = getHeader( msg );
+    cc2420_header_t* header = (cc2420_header_t*) getHeader( msg );
     return ((header->dest == call RadioConfig.getShortAddr()) || (header->dest == AM_BROADCAST_ADDR));
   }
 
@@ -186,7 +188,7 @@ implementation {
    */
   async event void RXFIFO.readDone( uint8_t* rx_buf, uint8_t rx_len,
                                     error_t error ) {
-    cc2420_header_t* header = getHeader( m_p_rx_buf );
+    cc2420_header_t* header = (cc2420_header_t*)getHeader( m_p_rx_buf );
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
     rxFrameLength = buf[ 0 ];
@@ -324,8 +326,8 @@ implementation {
    * get the next packet.
    */
   task void receiveDone_task() {
-    cc2420_metadata_t* metadata = getMetadata( m_p_rx_buf );
-    cc2420_header_t* header = getHeader( m_p_rx_buf);
+    cc2420_metadata_t* metadata = (cc2420_metadata_t*)getMetadata( m_p_rx_buf );
+    cc2420_header_t* header = (cc2420_header_t*)getHeader( m_p_rx_buf);
     uint8_t length = header->length;
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
@@ -336,7 +338,7 @@ implementation {
 
     if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_SIZE) {
       /* set conf before signaling receive */
-      m_p_rx_buf->conf = (getHeader(m_p_rx_buf))->destpan;
+      m_p_rx_buf->conf = header->destpan;
 
       m_p_rx_buf = signal Receive.receive( m_p_rx_buf, m_p_rx_buf->data,
 					   length - CC2420_SIZE);
@@ -448,7 +450,7 @@ implementation {
    * @return TRUE if the given message passes address recognition
    */
   bool passesAddressCheck(message_t *msg) {
-    cc2420_header_t *header = getHeader( msg );
+    cc2420_header_t *header = (cc2420_header_t*)getHeader( msg );
     int mode = (header->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 3;
 //    ieee_eui64_t *ext_addr;  
 

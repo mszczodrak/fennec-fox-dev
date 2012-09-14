@@ -15,9 +15,15 @@ typedef nx_struct metadata_t {
   nx_uint8_t rssi;
   nx_uint8_t lqi;
   nx_uint8_t tx_power;
+#ifndef TOSSIM
   nx_bool crc;
   nx_bool ack;
   nx_bool timesync;
+#else
+  nx_uint8_t crc;
+  nx_uint8_t ack;
+  nx_uint8_t timesync;
+#endif
   nx_uint32_t timestamp;
   nx_uint16_t rxInterval;
 

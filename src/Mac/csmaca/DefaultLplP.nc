@@ -370,8 +370,8 @@ implementation {
   void initializeSend() {
     if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) 
       > ONE_MESSAGE) {
-    
-      if((getHeader(currentSendMsg))->dest == IEEE154_BROADCAST_ADDR) {
+      csmaca_header_t* header = (csmaca_header_t*)getHeader(currentSendMsg); 
+      if(header->dest == IEEE154_BROADCAST_ADDR) {
         call PacketAcknowledgements.noAck(currentSendMsg);
       } else {
         // Send it repetitively within our transmit window

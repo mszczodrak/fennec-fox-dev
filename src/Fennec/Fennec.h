@@ -124,45 +124,22 @@ bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-#include "CC2420.h"
+//#include "CC2420.h"
 #include "message.h"
 #include <Ieee154.h>
 
 
-  cc2420_header_t* ONE getHeader( message_t* ONE msg ) {
-//    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
-    return (cc2420_header_t*) msg->header;
-  }
+uint8_t* ONE getHeader( message_t* ONE msg ) {
+  return (uint8_t*) msg->header;
+}
 
-  cc2420_metadata_t* getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
-  }
+uint8_t* getMetadata( message_t* msg ) {
+  return (uint8_t*)msg->metadata;
+}
 
-
-  int getAddressLength(int type) {
-    switch (type) {
-    case IEEE154_ADDR_SHORT: return 2;
-    case IEEE154_ADDR_EXT: return 8;
-    case IEEE154_ADDR_NONE: return 0;
-    default: return -100;
-    }
-  }
-
-
-
-  uint8_t* getPayload( message_t* msg) {
-/*
-    cc2420_header_t *hdr = getHeader( msg );
-    int offset;
-
-    offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
-      getAddressLength((hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3) +
-      offsetof(cc2420_header_t, dest);
-
-    return ((uint8_t *)hdr) + offset;
-*/
-    return (uint8_t*) msg->data;
-  }
+uint8_t* getPayload( message_t* msg) {
+ return (uint8_t*) msg->data;
+}
 
 
 

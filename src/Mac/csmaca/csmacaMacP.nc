@@ -189,12 +189,14 @@ implementation {
 
   /***************** PacketAcknowledgement Commands ****************/
   async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-    (getHeader( p_msg ))->fcf |= 1 << IEEE154_FCF_ACK_REQ;
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(p_msg);
+    header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
     return SUCCESS;
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-    (getHeader( p_msg ))->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(p_msg);
+    header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     return SUCCESS;
   }
 
@@ -289,12 +291,14 @@ implementation {
   }
 
   command am_group_t MacAMPacket.group(message_t* amsg) {
-    return (getHeader(amsg))->destpan;
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    return header->destpan;
   }
 
   command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
     // Overridden intentionally when we send()
-    (getHeader(amsg))->destpan = grp;
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    header->destpan = grp;
   }
 
   command am_group_t MacAMPacket.localGroup() {
@@ -308,16 +312,19 @@ implementation {
   /***************** Packet Commands ****************/
   command void MacPacket.clear(message_t* msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
-    memset(getHeader(msg), 0x0, sizeof(csmaca_header_t));
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    memset(header, 0x0, sizeof(csmaca_header_t));
     memset(metadata, 0x0, sizeof(metadata_t));
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
-    return (getHeader(msg))->length - CC2420_SIZE;
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    return header->length - CC2420_SIZE;
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    (getHeader(msg))->length  = len + CC2420_SIZE;
+    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    header->length  = len + CC2420_SIZE;
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
