@@ -49,7 +49,7 @@ configuration capeRadioC {
 
 implementation {
 
-#ifndef CAPE_FOX_LIB
+#ifndef TOSSIM
   components capeRadioP;
   Mgmt = capeRadioP;
   capeRadioParams = capeRadioP;
