@@ -96,12 +96,15 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.address() {
+    return TOS_NODE_ID;
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
+    return 0;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
+    return 0;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
@@ -132,24 +135,30 @@ implementation {
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
+    return 0;
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
+    return 128;
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
+    return (void*) getHeader(msg);
   }
 
   async command error_t MacPacketAcknowledgements.requestAck( message_t* msg ) {
+    return SUCCESS;
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* msg ) {
+    return SUCCESS;
   }
 
   async command bool MacPacketAcknowledgements.wasAcked(message_t* msg) {
+    return FALSE;
   }
 
   event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
