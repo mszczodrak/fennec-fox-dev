@@ -49,44 +49,22 @@ configuration capeRadioC {
 
 implementation {
 
-#ifndef TOSSIM
-  components capeRadioP;
-  Mgmt = capeRadioP;
-  capeRadioParams = capeRadioP;
-  RadioReceive = capeRadioP.RadioReceive;
-  RadioStatus = capeRadioP.RadioStatus;
-
-  PacketIndicator = capeRadioP.PacketIndicator;
-  EnergyIndicator = capeRadioP.EnergyIndicator;
-  ByteIndicator = capeRadioP.ByteIndicator;
-
-  RadioResource = capeRadioP.RadioResource;
-  RadioConfig = capeRadioP.RadioConfig;
-  RadioPower = capeRadioP.RadioPower;
-  ReadRssi = capeRadioP.ReadRssi;
-
-  RadioTransmit = capeRadioP.RadioTransmit;
-  RadioControl = capeRadioP.RadioControl;
-
-#else
   components capeSimRadioC;
-  Mgmt = capeSimRadioP;
-  capeRadioParams = capeSimRadioP;
-  RadioReceive = capeSimRadioP.RadioReceive;
-  RadioStatus = capeSimRadioP.RadioStatus;
+  Mgmt = capeSimRadioC;
+  capeRadioParams = capeSimRadioC;
+  RadioReceive = capeSimRadioC.RadioReceive;
+  RadioStatus = capeSimRadioC.RadioStatus;
 
-  PacketIndicator = capeSimRadioP.PacketIndicator;
-  EnergyIndicator = capeSimRadioP.EnergyIndicator;
-  ByteIndicator = capeSimRadioP.ByteIndicator;
+  PacketIndicator = capeSimRadioC.PacketIndicator;
+  EnergyIndicator = capeSimRadioC.EnergyIndicator;
+  ByteIndicator = capeSimRadioC.ByteIndicator;
 
-  RadioResource = capeSimRadioP.RadioResource;
-  RadioConfig = capeSimRadioP.RadioConfig;
-  RadioPower = capeSimRadioP.RadioPower;
-  ReadRssi = capeSimRadioP.ReadRssi;
+  RadioResource = capeSimRadioC.RadioResource;
+  RadioConfig = capeSimRadioC.RadioConfig;
+  RadioPower = capeSimRadioC.RadioPower;
+  ReadRssi = capeSimRadioC.ReadRssi;
 
-  RadioTransmit = capeSimRadioP.RadioTransmit;
-  RadioControl = capeSimRadioP.RadioControl;
-
-#endif
+  RadioTransmit = capeSimRadioC.RadioTransmit;
+  RadioControl = capeSimRadioC.RadioControl;
 
 }
