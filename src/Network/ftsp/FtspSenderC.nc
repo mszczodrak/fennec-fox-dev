@@ -44,7 +44,7 @@
 
 #include "AM.h"
 
-generic configuration FtspAMSenderC(am_id_t AMId) {
+generic configuration FtspSenderC(am_id_t AMId) {
   provides {
     interface AMSend;
     interface Packet;
@@ -58,7 +58,7 @@ implementation {
 #if defined(LOW_POWER_LISTENING)
   components new LplAMSenderC(AMId) as SenderC;
 #else
-  components new DirectAMSenderC(AMId) as SenderC;
+  components new FtspDirectAMSenderC(AMId) as SenderC;
 #endif
 
   AMSend = SenderC;

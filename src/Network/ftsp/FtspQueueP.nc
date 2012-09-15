@@ -1,6 +1,6 @@
-// $Id: FtspDirectAMSenderC.nc,v 1.2 2010-06-29 22:07:56 scipio Exp $
+// $Id: FtspQueueP.nc,v 1.5 2010-06-29 22:07:56 scipio Exp $
 /*
- * Copyright (c) 2006 Stanford University. All rights reserved.
+ * Copyright (c) 2005 Stanford University. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,37 +31,29 @@
  */
 
 /**
- * The virtualized active message send abstraction. Each instantiation
- * of AMSenderC has its own queue of depth one. Therefore, it does not
- * have to contend with other AMSenderC instantiations for queue space.
- * The underlying implementation schedules the packets in these queues
- * using some form of fair-share queueing.
+ * The fair-share send queue for AM radio communication.
  *
  * @author Philip Levis
  * @date   Jan 16 2006
- * @see    TEP 116: Packet Protocols
  */ 
 
 #include "AM.h"
 
-generic configuration FtspDirectAMSenderC(am_id_t AMId) {
-  provides {
-    interface AMSend;
-    interface Packet;
-    interface AMPacket;
-    interface PacketAcknowledgements as Acks;
-  }
+configuration FtspQueueP {
+  provides interface Send[uint8_t client];
 }
 
 implementation {
-  components new FtspQueueEntryP(AMId) as FtspQueueEntryP;
-  components FtspQueueP, FtspActiveMessageC;
-
-  FtspQueueEntryP.Send -> FtspQueueP.Send[unique(UQ_AMQUEUE_SEND)];
-  FtspQueueEntryP.AMPacket -> FtspActiveMessageC;
+  enum {
+    NUM_CLIENTS = uniqueCount(UQ_AMQUEUE_SEND)
+  };
   
-  AMSend = FtspQueueEntryP;
-  Packet = FtspActiveMessageC;
-  AMPacket = FtspActiveMessageC;
-  Acks = FtspActiveMessageC;
+  components new FtspQueueImplP(NUM_CLIENTS), FtspActiveMessageC;
+
+  Send = FtspQueueImplP;
+  FtspQueueImplP.AMSend -> FtspActiveMessageC;
+  FtspQueueImplP.AMPacket -> FtspActiveMessageC;
+  FtspQueueImplP.Packet -> FtspActiveMessageC;
+  
 }
+

@@ -1,6 +1,6 @@
-// $Id: FtspDirectAMSenderC.nc,v 1.2 2010-06-29 22:07:56 scipio Exp $
+// $Id: FtspQueueEntryP.nc,v 1.7 2010-06-29 22:07:56 scipio Exp $
 /*
- * Copyright (c) 2006 Stanford University. All rights reserved.
+ * Copyright (c) 2005 Stanford University. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,37 +31,47 @@
  */
 
 /**
- * The virtualized active message send abstraction. Each instantiation
- * of AMSenderC has its own queue of depth one. Therefore, it does not
- * have to contend with other AMSenderC instantiations for queue space.
- * The underlying implementation schedules the packets in these queues
- * using some form of fair-share queueing.
+ * Internal AM component that fills in needed packet fields for the 
+ * AMSend -> Send transformation.
  *
  * @author Philip Levis
  * @date   Jan 16 2006
- * @see    TEP 116: Packet Protocols
  */ 
 
 #include "AM.h"
 
-generic configuration FtspDirectAMSenderC(am_id_t AMId) {
-  provides {
-    interface AMSend;
-    interface Packet;
+generic module FtspQueueEntryP(am_id_t amId) @safe() {
+  provides interface AMSend;
+  uses{
+    interface Send;
     interface AMPacket;
-    interface PacketAcknowledgements as Acks;
   }
 }
 
 implementation {
-  components new FtspQueueEntryP(AMId) as FtspQueueEntryP;
-  components FtspQueueP, FtspActiveMessageC;
 
-  FtspQueueEntryP.Send -> FtspQueueP.Send[unique(UQ_AMQUEUE_SEND)];
-  FtspQueueEntryP.AMPacket -> FtspActiveMessageC;
+  command error_t AMSend.send(am_addr_t dest,
+			      message_t* msg,
+			      uint8_t len) {
+    call AMPacket.setDestination(msg, dest);
+    call AMPacket.setType(msg, amId);
+    return call Send.send(msg, len);
+  }
+
+  command error_t AMSend.cancel(message_t* msg) {
+    return call Send.cancel(msg);
+  }
+
+  event void Send.sendDone(message_t* m, error_t err) {
+    signal AMSend.sendDone(m, err);
+  }
   
-  AMSend = FtspQueueEntryP;
-  Packet = FtspActiveMessageC;
-  AMPacket = FtspActiveMessageC;
-  Acks = FtspActiveMessageC;
+  command uint8_t AMSend.maxPayloadLength() {
+    return call Send.maxPayloadLength();
+  }
+
+  command void* AMSend.getPayload(message_t* m, uint8_t len) {
+    return call Send.getPayload(m, len);
+  }
+  
 }
