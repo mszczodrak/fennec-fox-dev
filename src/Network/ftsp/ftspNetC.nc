@@ -63,11 +63,20 @@ implementation {
   NetworkPacketAcknowledgements = ftspNetP.NetworkPacketAcknowledgements;
   NetworkStatus = ftspNetP.NetworkStatus;
 
-  MacAMSend = ftspNetP;
-  MacReceive = ftspNetP.MacReceive;
-  MacSnoop = ftspNetP.MacSnoop;
-  MacAMPacket = ftspNetP.MacAMPacket;
-  MacPacket = ftspNetP.MacPacket;
-  MacPacketAcknowledgements = ftspNetP.MacPacketAcknowledgements;
-  MacStatus = ftspNetP.MacStatus;
+  components FtspActiveMessageC;
+
+  MacAMSend = FtspActiveMessageC;
+  MacReceive = FtspActiveMessageC.MacReceive;
+  MacSnoop = FtspActiveMessageC.MacSnoop;
+  MacAMPacket = FtspActiveMessageC.MacAMPacket;
+  MacPacket = FtspActiveMessageC.MacPacket;
+  MacPacketAcknowledgements = FtspActiveMessageC.MacPacketAcknowledgements;
+  MacStatus = FtspActiveMessageC.MacStatus;
+
+
+  components MainC, TimeSyncC;
+
+  MainC.SoftwareInit -> TimeSyncC;
+  TimeSyncC.Boot -> MainC;
+
 }
