@@ -11,6 +11,7 @@ use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 
 use network nullNet $(FENNEC_FOX_LIB)/Network/null ()
 use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
+use network ftsp /home/marcin/github/fennec-fox-dev/src/Network/ftsp ()
 
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
 use mac broadcast $(FENNEC_FOX_LIB)/Mac/tests/broadcast ()

@@ -29,9 +29,10 @@ cp -R $BASE_EXAMPLE $NEW_MODULE
 cd $NEW_MODULE
 
 
-awk '{sub(/null/,"'"$NEW_MODULE"'")}1' $OLD_C > $NEW_C 
-awk '{sub(/null/,"'"$NEW_MODULE"'")}1' $OLD_P > $NEW_P 
-awk '{sub(/null/,"'"$NEW_MODULE"'")}1' $OLD_H > $NEW_H
+sed "s/null/$NEW_MODULE/g" $OLD_C > $NEW_C
+sed "s/null/$NEW_MODULE/g" $OLD_P > $NEW_P
+sed "s/null/$NEW_MODULE/g" $OLD_H > $NEW_H
+
 
 rm $BASE_EXAMPLE*
 

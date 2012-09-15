@@ -2,7 +2,7 @@
 # Author: Marcin Szczodrak
 # msz@cs.columbia.edu
 
-BASE_EXAMPLE="dummy"
+BASE_EXAMPLE="null"
 NEW_MODULE=$1
 
 PP="_"
@@ -28,10 +28,9 @@ fi
 cp -R $BASE_EXAMPLE $NEW_MODULE
 cd $NEW_MODULE
 
-
-awk '{sub(/dummy/,"'"$NEW_MODULE"'")}1' $OLD_C > $NEW_C 
-awk '{sub(/dummy/,"'"$NEW_MODULE"'")}1' $OLD_P > $NEW_P 
-awk '{sub(/dummy/,"'"$NEW_MODULE"'")}1' $OLD_H > $NEW_H
+sed "s/null/$NEW_MODULE/g" $OLD_C > $NEW_C
+sed "s/null/$NEW_MODULE/g" $OLD_P > $NEW_P
+sed "s/null/$NEW_MODULE/g" $OLD_H > $NEW_H
 
 rm $BASE_EXAMPLE*
 
