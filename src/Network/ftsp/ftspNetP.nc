@@ -65,107 +65,126 @@ implementation {
   }
 
   command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    return call MacAMSend.send(addr, msg, len);
+    //return call MacAMSend.send(addr, msg, len);
+    return FAIL;
   }
 
   command error_t NetworkAMSend.cancel(message_t* msg) {
-    return call MacAMSend.cancel(msg);
+    //return call MacAMSend.cancel(msg);
+    return FAIL;
   }
 
   command uint8_t NetworkAMSend.maxPayloadLength() {
-    return call MacAMSend.maxPayloadLength();
+    //return call MacAMSend.maxPayloadLength();
+    return 0;
   }
 
   command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
-    return call MacAMSend.getPayload(msg, len);
+    //return call MacAMSend.getPayload(msg, len);
+    return msg;
   }
 
   event void MacAMSend.sendDone(message_t *msg, error_t error) {
-    signal NetworkAMSend.sendDone(msg, error);
+    //signal NetworkAMSend.sendDone(msg, error);
   }
 
   event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    return signal NetworkReceive.receive(msg, payload, len);
+    //return signal NetworkReceive.receive(msg, payload, len);
+    return msg;
   }
 
   event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return signal NetworkSnoop.receive(msg, payload, len);
+    //return signal NetworkSnoop.receive(msg, payload, len);
+    return msg;
   }
 
   command am_addr_t NetworkAMPacket.address() {
-    return call MacAMPacket.address();
+    //return call MacAMPacket.address();
+    return 0;
   }
 
   command am_addr_t NetworkAMPacket.destination(message_t* amsg) {
-    return call MacAMPacket.destination(amsg);
+    //return call MacAMPacket.destination(amsg);
+    return 0;
   }
 
   command am_addr_t NetworkAMPacket.source(message_t* amsg) {
-    return call MacAMPacket.source(amsg);
+    //return call MacAMPacket.source(amsg);
+    return 0;
   }
 
   command void NetworkAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    return call MacAMPacket.setDestination(amsg, addr);
+    //return call MacAMPacket.setDestination(amsg, addr);
   }
 
   command void NetworkAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    return call MacAMPacket.setSource(amsg, addr);
+    //return call MacAMPacket.setSource(amsg, addr);
   }
 
   command bool NetworkAMPacket.isForMe(message_t* amsg) {
-    return call MacAMPacket.isForMe(amsg);
+    //return call MacAMPacket.isForMe(amsg);
+    return 0;
   }
 
   command am_id_t NetworkAMPacket.type(message_t* amsg) {
-    return call MacAMPacket.type(amsg);
+    //return call MacAMPacket.type(amsg);
+    return 0;
   }
 
   command void NetworkAMPacket.setType(message_t* amsg, am_id_t t) {
-    return call MacAMPacket.setType(amsg, t);
+    //return call MacAMPacket.setType(amsg, t);
   }
 
   command am_group_t NetworkAMPacket.group(message_t* amsg) {
-    return call MacAMPacket.group(amsg);
+    //return call MacAMPacket.group(amsg);
+    return 0;
   }
 
   command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-    return call MacAMPacket.setGroup(amsg, grp);
+    //return call MacAMPacket.setGroup(amsg, grp);
   }
 
   command am_group_t NetworkAMPacket.localGroup() {
-    return call MacAMPacket.localGroup();
+    //return call MacAMPacket.localGroup();
+    return 0;
   }
 
   command void NetworkPacket.clear(message_t* msg) {
-    return call MacPacket.clear(msg);
+    //return call MacPacket.clear(msg);
   }
 
   command uint8_t NetworkPacket.payloadLength(message_t* msg) {
-    return call MacPacket.payloadLength(msg);
+    //return call MacPacket.payloadLength(msg);
+    return 0;
   }
 
   command void NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    return call MacPacket.setPayloadLength(msg, len);
+    //return call MacPacket.setPayloadLength(msg, len);
   }
 
   command uint8_t NetworkPacket.maxPayloadLength() {
-    return call MacPacket.maxPayloadLength();
+    //return call MacPacket.maxPayloadLength();
+    return 0;
   }
 
   command void* NetworkPacket.getPayload(message_t* msg, uint8_t len) {
-    return call MacPacket.getPayload(msg, len);
+    //return call MacPacket.getPayload(msg, len);
+    return msg;
   }
 
   async command error_t NetworkPacketAcknowledgements.requestAck( message_t* msg ) {
-    return call MacPacketAcknowledgements.requestAck(msg);
+    //return call MacPacketAcknowledgements.requestAck(msg);
+    return FAIL;
   }
 
   async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
-    return call MacPacketAcknowledgements.noAck(msg);
+    //return call MacPacketAcknowledgements.noAck(msg);
+    return FAIL;
   }
 
   async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
-    return call MacPacketAcknowledgements.wasAcked(msg);
+    //return call MacPacketAcknowledgements.wasAcked(msg);
+    return 0;
   }
 
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
