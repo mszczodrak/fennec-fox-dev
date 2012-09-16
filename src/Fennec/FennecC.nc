@@ -32,5 +32,7 @@ implementation {
   components PrintfC;
   components SerialStartC;
 #endif
+
+  components FennecPacketC;
 }
 
