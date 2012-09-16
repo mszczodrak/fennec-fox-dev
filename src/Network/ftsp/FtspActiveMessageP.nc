@@ -1,4 +1,4 @@
-#include "CC2420TimeSyncMessage.h"
+#include "TimeSyncMessage.h"
 
 generic module FtspActiveMessageP() {
   provides interface SplitControl;

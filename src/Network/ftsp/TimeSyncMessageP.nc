@@ -1,6 +1,6 @@
-#include "CC2420TimeSyncMessage.h"
+#include "TimeSyncMessage.h"
 
-module CC2420TimeSyncMessageP
+module TimeSyncMessageP
 {
     provides
     {
