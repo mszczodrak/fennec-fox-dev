@@ -313,6 +313,8 @@ implementation
         addNewEntry(msg);
         calculateConversion();
         signal TimeSyncNotify.msg_received();
+	printf("received\n");
+	printfflush();
 
     exit:
         state &= ~STATE_PROCESSING;
@@ -320,6 +322,7 @@ implementation
 
     event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len)
     {
+
 #ifdef TIMESYNC_DEBUG   // this code can be used to simulate multiple hopsf
         uint8_t incomingID = (uint8_t)((TimeSyncMsg*)payload)->nodeID;
         int8_t diff = (incomingID & 0x0F) - (TOS_NODE_ID & 0x0F);

@@ -1,3 +1,5 @@
+#include "CC2420TimeSyncMessage.h"
+
 generic module FtspActiveMessageP() {
   provides interface SplitControl;
   provides interface AMSend[am_id_t id];
@@ -19,11 +21,14 @@ generic module FtspActiveMessageP() {
 implementation {
 
   uint8_t getFtspType(message_t* msg) {
-    uint8_t t;
-    uint8_t *ptr = (uint8_t*)call MacAMSend.getPayload(msg, sizeof(2));
-    ptr++;
-    t = *ptr;
-    return t;
+    return call MacAMPacket.type(msg);
+
+//    returncall AMPacket.type(msg);
+//    uint8_t t;
+//    uint8_t *ptr = (uint8_t*)call MacAMSend.getPayload(msg, sizeof(2));
+//    ptr++;
+//    t = *ptr;
+//    return t;
   }
 
   void do_sendDone(message_t *msg, error_t error) {
@@ -86,11 +91,12 @@ implementation {
   }
 
   command am_id_t AMPacket.type(message_t* amsg) {
-    return getFtspType(amsg);
+//    return getFtspType(amsg);
+    return call MacAMPacket.type(amsg);
   }
 
   command void AMPacket.setType(message_t* amsg, am_id_t t) {
-//    return call MacAMPacket.setType(amsg, t);
+    return call MacAMPacket.setType(amsg, t);
   }
 
   command am_group_t AMPacket.group(message_t* amsg) {
