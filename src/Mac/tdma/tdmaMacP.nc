@@ -1,5 +1,5 @@
 /*
- *  TDMA MAC module for Fennec Fox platform.
+ *  CSMA/CA MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,13 +19,15 @@
  */
 
 /*
- * Module: TDMA MAC Protocol
+ * Module: CSMA/CA MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
+#include "tdmaMac.h"
+
 #include <Ieee154.h> 
 #include "CC2420.h"
 #include "tdmaMac.h"

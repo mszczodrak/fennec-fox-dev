@@ -1,5 +1,5 @@
 /*
- *  TDMA MAC module for Fennec Fox platform.
+ *  Dummy radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,14 @@
  */
 
 /*
- * Module: TDMA MAC Protocol
+ * Network: Dummy Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-
-#ifndef __TDMA_MAC_H_
-#define __TDMA_MAC_H_
-
+#ifndef __H_CSMACA_MAC_H_
+#define __H_CSMACA_MAC_H_
 
 typedef nx_struct tdma_header_t {
   nxle_uint8_t length;
@@ -45,3 +43,4 @@ typedef nx_struct tdma_header_t {
 
 
 #endif
+

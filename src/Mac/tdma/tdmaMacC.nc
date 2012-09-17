@@ -1,5 +1,5 @@
 /*
- *  tdma mac module for Fennec Fox platform.
+ *  csma/ca MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,15 +19,18 @@
  */
 
 /*
- * Module: tdma Mac Protocol
+ * Module: CSMA/CA MAC Protocol
  * Author: Marcin Szczodrak
- * Date: 8/20/2010
- * Last Modified: 1/5/2012
+ * Date: 2/18/2012
+ * Last Modified: 8/29/2012
  */
+
+#include "tdmaMac.h"
+
+//#define LOW_POWER_LISTENING
 
 configuration tdmaMacC {
   provides interface Mgmt;
-  provides interface Module;
   provides interface AMSend as MacAMSend;
   provides interface Receive as MacReceive;
   provides interface Receive as MacSnoop;
@@ -54,44 +57,73 @@ configuration tdmaMacC {
 }
 
 implementation {
+
   components tdmaMacP;
+
   Mgmt = tdmaMacP;
-  Module = tdmaMacP;
-  tdmaMacParams = tdmaMacP;
+  MacStatus = tdmaMacP;
   MacAMSend = tdmaMacP.MacAMSend;
   MacReceive = tdmaMacP.MacReceive;
   MacSnoop = tdmaMacP.MacSnoop;
-  MacAMPacket = tdmaMacP.MacAMPacket;
   MacPacket = tdmaMacP.MacPacket;
+  MacAMPacket = tdmaMacP.MacAMPacket;
   MacPacketAcknowledgements = tdmaMacP.MacPacketAcknowledgements;
-  MacStatus = tdmaMacP.MacStatus;
-  RadioReceive = tdmaMacP.RadioReceive;
-  RadioStatus = tdmaMacP.RadioStatus;
+  tdmaMacParams = tdmaMacP;
 
   RadioConfig = tdmaMacP.RadioConfig;
   RadioPower = tdmaMacP.RadioPower;
   ReadRssi = tdmaMacP.ReadRssi;
   RadioResource = tdmaMacP.RadioResource;
-  PacketIndicator = tdmaMacP.PacketIndicator;
-  EnergyIndicator = tdmaMacP.EnergyIndicator;
-  ByteIndicator = tdmaMacP.ByteIndicator;
-  RadioTransmit = tdmaMacP.RadioTransmit;
-  RadioControl = tdmaMacP.RadioControl;
 
-  components FtspActiveMessageC;
+  RadioStatus = tdmaMacP.RadioStatus;
 
-  FtspActiveMessageC.MacAMSend -> tdmaMacP.MacAMSend;
-  FtspActiveMessageC.MacReceive -> tdmaMacP.MacReceive;
-  FtspActiveMessageC.MacSnoop -> tdmaMacP.MacSnoop;
-  FtspActiveMessageC.MacAMPacket -> tdmaMacP.MacAMPacket;
-  FtspActiveMessageC.MacPacket -> tdmaMacP.MacPacket;
-  FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
-  FtspActiveMessageC.MacStatus -> tdmaMacP.MacStatus;
+  components CsmaC;
+  RadioPower = CsmaC.RadioPower;
+  RadioResource = CsmaC.RadioResource;
 
-  components MainC, TimeSyncC;
+  components DefaultLplC as LplC;
+  tdmaMacP.RadioControl -> LplC.SplitControl;
 
-  MainC.SoftwareInit -> TimeSyncC;
-  TimeSyncC.Boot -> MainC;
+  components UniqueSendC;
+  components UniqueReceiveC;
+
+  tdmaMacP.SubSend -> UniqueSendC;
+  tdmaMacP.SubReceive -> LplC;
+
+  // SplitControl Layers
+
+  LplC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
+  LplC.SubControl -> CsmaC;
+
+  UniqueSendC.SubSend -> LplC.Send;
+  LplC.SubSend -> CsmaC;
+
+  LplC.SubReceive -> UniqueReceiveC.Receive;
+  UniqueReceiveC.SubReceive =  RadioReceive;
+
+  components PowerCycleC;
+  PacketIndicator = PowerCycleC.PacketIndicator;
+  EnergyIndicator = PowerCycleC.EnergyIndicator;
+  ByteIndicator = PowerCycleC.ByteIndicator;
+
+  tdmaMacParams = PowerCycleC.tdmaMacParams;
+  tdmaMacParams = LplC.tdmaMacParams;
+  tdmaMacParams = CsmaC.tdmaMacParams;
+
+  components RandomC;
+  tdmaMacP.Random -> RandomC;
+
+  components macTransmitC;
+  tdmaMacParams = macTransmitC.tdmaMacParams;
+  RadioTransmit = macTransmitC.RadioTransmit;
+  EnergyIndicator = macTransmitC.EnergyIndicator;
+
+  CsmaC.MacTransmit -> macTransmitC.MacTransmit;
+  LplC.MacTransmit -> macTransmitC.MacTransmit;
+
+  CsmaC.SubControl -> macTransmitC.StdControl;
+ 
+  RadioControl = macTransmitC.RadioControl;
 
 }
 
