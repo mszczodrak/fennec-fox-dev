@@ -70,6 +70,7 @@ implementation
 {
 #ifndef TIMESYNC_RATE
 #define TIMESYNC_RATE   10
+//#define TIMESYNC_RATE   2
 #endif
 
     enum {
