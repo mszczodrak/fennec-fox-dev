@@ -140,5 +140,11 @@ implementation {
 
   MainC.SoftwareInit -> TimeSyncC;
   TimeSyncC.Boot -> MainC;
+
+
+  components FennecPacketC;
+  tdmaMacP.PacketTimeStamp -> FennecPacketC;
+  tdmaMacP.GlobalTime -> TimeSyncC;
+  tdmaMacP.TimeSyncInfo -> TimeSyncC;
 }
 
