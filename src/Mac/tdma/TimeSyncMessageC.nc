@@ -35,7 +35,7 @@ configuration TimeSyncMessageC
 implementation
 {
         components TimeSyncMessageP, FennecPacketC, LedsC;
-        components FtspActiveMessageC;
+        components FtspActiveMessageC, tdmaMacP;
 
         TimeSyncAMSend32khz = TimeSyncMessageP;
         TimeSyncPacket32khz = TimeSyncMessageP;
@@ -60,7 +60,7 @@ implementation
         TimeSyncMessageP.Leds -> LedsC;
 
         SplitControl = FtspActiveMessageC;
-        PacketAcknowledgements = FtspActiveMessageC;
+        PacketAcknowledgements = tdmaMacP.MacPacketAcknowledgements;
         
         Receive = TimeSyncMessageP.Receive;
         AMPacket = TimeSyncMessageP;

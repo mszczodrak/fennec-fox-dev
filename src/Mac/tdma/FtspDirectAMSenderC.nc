@@ -55,13 +55,13 @@ generic configuration FtspDirectAMSenderC(am_id_t AMId) {
 
 implementation {
   components new FtspQueueEntryP(AMId) as FtspQueueEntryP;
-  components FtspQueueP, FtspActiveMessageC;
+  components FtspQueueP, tdmaMacP;
 
   FtspQueueEntryP.Send -> FtspQueueP.Send[unique(UQ_AMQUEUE_SEND)];
-  FtspQueueEntryP.AMPacket -> FtspActiveMessageC;
+  FtspQueueEntryP.AMPacket -> tdmaMacP.MacAMPacket;
   
   AMSend = FtspQueueEntryP;
-  Packet = FtspActiveMessageC;
-  AMPacket = FtspActiveMessageC;
-  Acks = FtspActiveMessageC;
+  Packet = tdmaMacP.MacPacket;
+  AMPacket = tdmaMacP.MacAMPacket;
+  Acks = tdmaMacP.MacPacketAcknowledgements;
 }

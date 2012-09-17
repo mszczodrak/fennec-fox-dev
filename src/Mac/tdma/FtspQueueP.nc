@@ -48,12 +48,12 @@ implementation {
     NUM_CLIENTS = uniqueCount(UQ_AMQUEUE_SEND)
   };
   
-  components new FtspQueueImplP(NUM_CLIENTS), FtspActiveMessageC;
+  components new FtspQueueImplP(NUM_CLIENTS), FtspActiveMessageC, tdmaMacP;
 
   Send = FtspQueueImplP;
   FtspQueueImplP.AMSend -> FtspActiveMessageC;
-  FtspQueueImplP.AMPacket -> FtspActiveMessageC;
-  FtspQueueImplP.Packet -> FtspActiveMessageC;
+  FtspQueueImplP.AMPacket -> tdmaMacP.MacAMPacket;
+  FtspQueueImplP.Packet -> tdmaMacP.MacPacket;
   
 }
 
