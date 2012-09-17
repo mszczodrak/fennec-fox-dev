@@ -1,6 +1,6 @@
-#include "CC2420TimeSyncMessage.h"
+#include "TimeSyncMessage.h"
 
-module CC2420TimeSyncMessageP
+module TimeSyncMessageP
 {
     provides
     {
@@ -18,7 +18,7 @@ module CC2420TimeSyncMessageP
 
     uses
     {
-          interface AMSend as SubSend;
+        interface AMSend as SubSend;
         interface Packet as SubPacket;
         interface AMPacket as SubAMPacket;
 

@@ -45,6 +45,8 @@ module CounterAppP {
 
   uses interface Leds;
   uses interface Timer<TMilli>;
+
+  uses interface PacketTimeStamp<TMilli,uint32_t>;
 }
 
 implementation {
@@ -118,10 +120,14 @@ implementation {
 
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+    uint32_t rxTimestamp = call PacketTimeStamp.timestamp(msg);
+    uint16_t *t1 = (uint16_t*) &rxTimestamp;
+    uint16_t *t2 = ++t1;
     CounterMsg* cm = (CounterMsg*)payload;
 
     dbg("Application", "Application Counter receive %d %d\n", cm->seqno, cm->source); 
     dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+    dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, *t1, *t2);
     call Leds.set(cm->seqno);
     return msg;
   }

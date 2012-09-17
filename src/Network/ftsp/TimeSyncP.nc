@@ -320,7 +320,7 @@ implementation
 
     event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len)
     {
-
+/*
 {
         uint32_t time;
         time = call GlobalTime.getGlobalTime(&time);
@@ -331,9 +331,8 @@ implementation
                 call TimeSyncInfo.getNumEntries()
         );
         printfflush();
-
 }
-
+*/
 
 
 #ifdef TIMESYNC_DEBUG   // this code can be used to simulate multiple hopsf

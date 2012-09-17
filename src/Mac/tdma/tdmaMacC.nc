@@ -78,6 +78,20 @@ implementation {
   RadioTransmit = tdmaMacP.RadioTransmit;
   RadioControl = tdmaMacP.RadioControl;
 
-  components FtspC;
+  components FtspActiveMessageC;
+
+  FtspActiveMessageC.MacAMSend -> tdmaMacP.MacAMSend;
+  FtspActiveMessageC.MacReceive -> tdmaMacP.MacReceive;
+  FtspActiveMessageC.MacSnoop -> tdmaMacP.MacSnoop;
+  FtspActiveMessageC.MacAMPacket -> tdmaMacP.MacAMPacket;
+  FtspActiveMessageC.MacPacket -> tdmaMacP.MacPacket;
+  FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
+  FtspActiveMessageC.MacStatus -> tdmaMacP.MacStatus;
+
+  components MainC, TimeSyncC;
+
+  MainC.SoftwareInit -> TimeSyncC;
+  TimeSyncC.Boot -> MainC;
+
 }
 

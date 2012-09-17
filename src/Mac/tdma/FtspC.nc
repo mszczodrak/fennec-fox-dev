@@ -12,7 +12,7 @@ implementation {
   components FtspP;
   FtspP.Boot -> MainC;
 
-  components FtspActiveMessageC;
+  components ActiveMessageC;
   FtspP.RadioControl -> ActiveMessageC;
   FtspP.Receive -> ActiveMessageC.Receive[111];
   FtspP.AMSend -> ActiveMessageC.AMSend[111];

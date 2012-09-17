@@ -60,4 +60,7 @@ implementation {
 
   CounterAppP.Leds -> LedsC;
   CounterAppP.Timer -> TimerMilliC;
+
+  components FennecPacketC;
+  CounterAppP.PacketTimeStamp -> FennecPacketC;
 }
