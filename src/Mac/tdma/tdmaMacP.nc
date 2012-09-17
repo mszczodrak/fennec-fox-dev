@@ -155,7 +155,7 @@ implementation {
       return ESIZE;
     }
 
-    //header->type = id;
+    header->type = TDMA_APPLICATION_PAYLOAD;
     header->dest = addr;
     //header->destpan = call CC2420Config.getPanAddr();
     //header->destpan = signal Mgmt.currentStateId();

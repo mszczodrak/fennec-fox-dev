@@ -64,8 +64,8 @@ implementation
 
   components TimeSyncMessageC as ActiveMessageC;
   TimeSyncP.RadioControl    ->  ActiveMessageC;
-  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSend32khz[TIMESYNC_AM_FTSP];
-  TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
+  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSend32khz[TDMA_TIMESYNC_FTSP];
+  TimeSyncP.Receive         ->  ActiveMessageC.Receive[TDMA_TIMESYNC_FTSP];
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
 
   components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
