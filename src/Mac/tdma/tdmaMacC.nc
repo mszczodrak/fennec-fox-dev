@@ -125,5 +125,7 @@ implementation {
  
   RadioControl = macTransmitC.RadioControl;
 
+
+  components ftspNetC;
 }
 
