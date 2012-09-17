@@ -129,9 +129,9 @@ implementation {
   /* FTSP */
   components FtspActiveMessageC;
 
-  FtspActiveMessageC.MacAMSend -> tdmaMacP.MacAMSend;
-  FtspActiveMessageC.MacReceive -> tdmaMacP.MacReceive;
-  FtspActiveMessageC.MacSnoop -> tdmaMacP.MacSnoop;
+  FtspActiveMessageC.MacAMSend -> tdmaMacP.FtspMacAMSend;
+  FtspActiveMessageC.MacReceive -> tdmaMacP.FtspMacReceive;
+  FtspActiveMessageC.MacSnoop -> tdmaMacP.FtspMacSnoop;
   FtspActiveMessageC.MacAMPacket -> tdmaMacP.MacAMPacket;
   FtspActiveMessageC.MacPacket -> tdmaMacP.MacPacket;
   FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;

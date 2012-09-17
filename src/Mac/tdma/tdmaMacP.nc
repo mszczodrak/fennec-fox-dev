@@ -45,6 +45,10 @@ module tdmaMacP @safe() {
 
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
+  provides interface AMSend as FtspMacAMSend;
+  provides interface Receive as FtspMacReceive;
+  provides interface Receive as FtspMacSnoop;
+
   uses interface tdmaMacParams;
 
   uses interface SplitControl as RadioControl;
@@ -141,6 +145,10 @@ implementation {
     }
   }
 
+  command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+    return call MacAMSend.send(addr, msg, len);
+  }
+
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     tdma_header_t* header = (tdma_header_t*)getHeader( msg );
 
@@ -175,12 +183,24 @@ implementation {
     }
   }
 
+  command error_t FtspMacAMSend.cancel(message_t* msg) {
+    return call MacAMSend.cancel(msg);
+  }
+
   command error_t MacAMSend.cancel(message_t* msg) {
     return call SubSend.cancel(msg);
   }
 
+  command uint8_t FtspMacAMSend.maxPayloadLength() {
+    return call MacAMSend.maxPayloadLength();
+  }
+
   command uint8_t MacAMSend.maxPayloadLength() {
     return call MacPacket.maxPayloadLength();
+  }
+
+  command void* FtspMacAMSend.getPayload(message_t* msg, uint8_t len) {
+    return call MacAMSend.getPayload(msg, len);
   }
 
   command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
@@ -345,6 +365,7 @@ implementation {
 
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
+    signal FtspMacAMSend.sendDone(msg, result);
     signal MacAMSend.sendDone(msg, result);
   }
 
@@ -367,9 +388,11 @@ implementation {
 
     if (call MacAMPacket.isForMe(msg)) {
       dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
+      signal FtspMacReceive.receive(msg, payload, len);
       return signal MacReceive.receive(msg, payload, len);
     }
     else {
+      signal FtspMacSnoop.receive(msg, payload, len);
       return signal MacSnoop.receive(msg, payload, len);
     }
   }
