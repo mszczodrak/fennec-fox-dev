@@ -145,7 +145,6 @@ implementation {
   }
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    printf("ftsp send\n");
     return call MacAMSend.send(addr, msg, len);
   }
 
@@ -367,7 +366,7 @@ implementation {
   event void SubSend.sendDone(message_t* msg, error_t result) {
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
     if (header->type == AM_TIMESYNCMSG) {
-      printf("ftsp send done\n");
+      //printf("ftsp send done\n");
       signal FtspMacAMSend.sendDone(msg, result);
     } else {
       signal MacAMSend.sendDone(msg, result);
@@ -379,6 +378,7 @@ implementation {
   /***************** SubReceive Events ****************/
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
+    tdma_header_t* header = (tdma_header_t*)getHeader(msg);
 
     if((call tdmaMacParams.get_crc()) && (!(metadata)->crc)) {
       return msg;
@@ -393,10 +393,15 @@ implementation {
 
     if (call MacAMPacket.isForMe(msg)) {
       dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
-      signal FtspMacReceive.receive(msg, payload, len);
-      return signal MacReceive.receive(msg, payload, len);
+      if (header->type == AM_TIMESYNCMSG) {
+        return signal FtspMacReceive.receive(msg, payload, len);
+      } else {
+        return signal MacReceive.receive(msg, payload, len);
+      }
     }
     else {
+      printf("receive not me\n");
+	printfflush();
       return signal MacSnoop.receive(msg, payload, len);
     }
   }

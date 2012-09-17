@@ -369,9 +369,6 @@ implementation
         globalTime = localTime = call GlobalTime.getLocalTime();
         call GlobalTime.local2Global(&globalTime);
 
-        printf("sending\n");
-        printfflush();
-
         // we need to periodically update the reference point for the root
         // to avoid wrapping the 32-bit (localTime - localAverage) value
         if( outgoingMsg->rootID == TOS_NODE_ID ) {
@@ -407,9 +404,6 @@ implementation
 
     event void Send.sendDone(message_t* ptr, error_t error)
     {
-	printf("send done\n");
-	printfflush();
-
         if (ptr != &outgoingMsgBuffer)
           return;
 
