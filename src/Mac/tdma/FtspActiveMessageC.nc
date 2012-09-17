@@ -2,7 +2,6 @@
 
 configuration FtspActiveMessageC {
   provides {
-    interface SplitControl;
     interface AMSend[am_id_t id];
     interface Receive[am_id_t id];
     interface AMPacket;
@@ -19,7 +18,6 @@ configuration FtspActiveMessageC {
 }
 implementation {
   components new FtspActiveMessageP();
-  SplitControl = FtspActiveMessageP;
   AMSend = FtspActiveMessageP;
   Receive = FtspActiveMessageP.Receive;
   AMPacket = FtspActiveMessageP.AMPacket;

@@ -1,7 +1,6 @@
 #include "TimeSyncMessage.h"
 
 generic module FtspActiveMessageP() {
-  provides interface SplitControl;
   provides interface AMSend[am_id_t id];
   provides interface Receive[am_id_t id];
   provides interface AMPacket;
@@ -38,9 +37,6 @@ implementation {
     dbg("Network", "Network CTP receive %d\n", getFtspType(msg));
     return signal Receive.receive[getFtspType(msg)](msg, (void*)(((uint8_t*)payload)), len);
   }
-
-  command error_t SplitControl.start() { return SUCCESS; }
-  command error_t SplitControl.stop() { return SUCCESS; }
 
 
   command void* AMSend.getPayload[am_id_t id](message_t *msg, uint8_t len) {
@@ -148,10 +144,6 @@ implementation {
 
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
     dbg("Network", "Network CTPAM receive status %d\n", status_flag);
-    if (layer == F_RADIO) {
-      if (status_flag == ON) signal SplitControl.startDone(SUCCESS);
-      if (status_flag == OFF) signal SplitControl.stopDone(SUCCESS);
-    }
   }
 
   default event message_t* Receive.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {

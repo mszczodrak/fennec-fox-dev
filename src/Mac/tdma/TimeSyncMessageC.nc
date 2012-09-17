@@ -15,7 +15,6 @@ configuration TimeSyncMessageC
 {
     provides
     {
-        interface SplitControl;
         interface Receive[am_id_t id];
         interface Packet;
         interface AMPacket;
@@ -59,7 +58,6 @@ implementation
         TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
         TimeSyncMessageP.Leds -> LedsC;
 
-        SplitControl = FtspActiveMessageC;
         PacketAcknowledgements = tdmaMacP.MacPacketAcknowledgements;
         
         Receive = TimeSyncMessageP.Receive;

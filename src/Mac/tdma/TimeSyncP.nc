@@ -50,7 +50,6 @@ generic module TimeSyncP(typedef precision_tag)
     uses
     {
         interface Boot;
-        interface SplitControl as RadioControl;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
         interface Timer<TMilli>;
@@ -486,7 +485,6 @@ implementation
 
     event void Boot.booted()
     {
-      call RadioControl.start();
       call StdControl.start();
     }
 
@@ -516,6 +514,4 @@ implementation
     default event void TimeSyncNotify.msg_received(){}
     default event void TimeSyncNotify.msg_sent(){}
 
-    event void RadioControl.startDone(error_t error){}
-    event void RadioControl.stopDone(error_t error){}
 }
