@@ -63,4 +63,7 @@ implementation {
 
   components FennecPacketC;
   CounterAppP.PacketTimeStamp -> FennecPacketC;
+
+  components TimeSyncC;
+  CounterAppP.GlobalTime -> TimeSyncC;
 }
