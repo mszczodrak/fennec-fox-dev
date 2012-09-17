@@ -1,5 +1,5 @@
 /*
- *  CSMA/CA MAC module for Fennec Fox platform.
+ *  TDMA MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Module: CSMA/CA MAC Protocol
+ * Module: TDMA MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -155,7 +155,7 @@ implementation {
       return ESIZE;
     }
 
-    header->type = TDMA_APPLICATION_PAYLOAD;
+    //header->type = id;
     header->dest = addr;
     //header->destpan = call CC2420Config.getPanAddr();
     //header->destpan = signal Mgmt.currentStateId();
