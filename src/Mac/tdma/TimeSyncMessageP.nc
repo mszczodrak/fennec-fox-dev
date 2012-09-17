@@ -13,7 +13,6 @@ module TimeSyncMessageP
         interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
         
         interface Receive[am_id_t id];
-        interface Receive as Snoop[am_id_t id];
     }
 
     uses
@@ -23,7 +22,6 @@ module TimeSyncMessageP
         interface AMPacket as SubAMPacket;
 
         interface Receive as SubReceive;
-        interface Receive as SubSnoop;
 
         interface PacketTimeStamp<T32khz,uint32_t> as PacketTimeStamp32khz;
         interface PacketTimeStamp<TMilli,uint32_t> as PacketTimeStampMilli;
@@ -193,16 +191,6 @@ implementation
     }
 
     default event message_t* Receive.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) { return msg; }
-
-/*----------------- SubSnoop -------------------*/
-
-    event message_t* SubSnoop.receive(message_t* msg, void* payload, uint8_t len)
-    {
-        am_id_t id = call AMPacket.type(msg);
-        return signal Snoop.receive[id](msg, payload, len - sizeof(timesync_footer_t));
-    }
-
-    default event message_t* Snoop.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) { return msg; }
 
 /*----------------- SubSend.sendDone -------------------*/
     event void SubSend.sendDone(message_t* msg, error_t error)

@@ -131,7 +131,6 @@ implementation {
 
   FtspActiveMessageC.MacAMSend -> tdmaMacP.FtspMacAMSend;
   FtspActiveMessageC.MacReceive -> tdmaMacP.FtspMacReceive;
-  FtspActiveMessageC.MacSnoop -> tdmaMacP.FtspMacSnoop;
   FtspActiveMessageC.MacAMPacket -> tdmaMacP.MacAMPacket;
   FtspActiveMessageC.MacPacket -> tdmaMacP.MacPacket;
   FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;

@@ -31,7 +31,7 @@
 #include <Ieee154.h> 
 #include "CC2420.h"
 #include "tdmaMac.h"
-
+#include "TimeSyncMessage.h"
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -47,7 +47,6 @@ module tdmaMacP @safe() {
 
   provides interface AMSend as FtspMacAMSend;
   provides interface Receive as FtspMacReceive;
-  provides interface Receive as FtspMacSnoop;
 
   uses interface tdmaMacParams;
 
@@ -146,6 +145,7 @@ implementation {
   }
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+    printf("ftsp send\n");
     return call MacAMSend.send(addr, msg, len);
   }
 
@@ -365,8 +365,13 @@ implementation {
 
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
-    signal FtspMacAMSend.sendDone(msg, result);
-    signal MacAMSend.sendDone(msg, result);
+    tdma_header_t* header = (tdma_header_t*)getHeader(msg);
+    if (header->type == AM_TIMESYNCMSG) {
+      printf("ftsp send done\n");
+      signal FtspMacAMSend.sendDone(msg, result);
+    } else {
+      signal MacAMSend.sendDone(msg, result);
+    }
   }
 
 
@@ -392,7 +397,6 @@ implementation {
       return signal MacReceive.receive(msg, payload, len);
     }
     else {
-      signal FtspMacSnoop.receive(msg, payload, len);
       return signal MacSnoop.receive(msg, payload, len);
     }
   }

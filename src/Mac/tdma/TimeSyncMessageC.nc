@@ -17,7 +17,6 @@ configuration TimeSyncMessageC
     {
         interface SplitControl;
         interface Receive[am_id_t id];
-        interface Receive as Snoop[am_id_t id];
         interface Packet;
         interface AMPacket;
         interface PacketAcknowledgements;
@@ -64,10 +63,8 @@ implementation
         PacketAcknowledgements = FtspActiveMessageC;
         
         Receive = TimeSyncMessageP.Receive;
-        Snoop = TimeSyncMessageP.Snoop;
         AMPacket = TimeSyncMessageP;
         TimeSyncMessageP.SubReceive -> FtspActiveMessageC.Receive[AM_TIMESYNCMSG];
-        TimeSyncMessageP.SubSnoop -> FtspActiveMessageC.Snoop[AM_TIMESYNCMSG];
 
   	PacketTimeStamp32khz = FennecPacketC;
   	PacketTimeStampMilli = FennecPacketC;

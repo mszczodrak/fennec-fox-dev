@@ -4,14 +4,12 @@ generic module FtspActiveMessageP() {
   provides interface SplitControl;
   provides interface AMSend[am_id_t id];
   provides interface Receive[am_id_t id];
-  provides interface Receive as Snoop[am_id_t id];
   provides interface AMPacket;
   provides interface Packet;
   provides interface PacketAcknowledgements;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
-  uses interface Receive as MacSnoop;
   uses interface ModuleStatus as MacStatus;
   uses interface AMPacket as MacAMPacket;
   uses interface Packet as MacPacket;
@@ -39,11 +37,6 @@ implementation {
   message_t* do_receive(message_t *msg, void *payload, uint8_t len) {
     dbg("Network", "Network CTP receive %d\n", getFtspType(msg));
     return signal Receive.receive[getFtspType(msg)](msg, (void*)(((uint8_t*)payload)), len);
-  }
-
-  message_t* do_snoop(message_t *msg, void *payload, uint8_t len) {
-    dbg("Network", "Network CTP snoop %d\n", getFtspType(msg));
-    return signal Snoop.receive[getFtspType(msg)](msg, (void*)(((uint8_t*)payload)), len);
   }
 
   command error_t SplitControl.start() { return SUCCESS; }
@@ -152,9 +145,6 @@ implementation {
     return do_receive(msg, payload, len);
   }
 
-  event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return do_snoop(msg, payload, len);
-  }
 
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
     dbg("Network", "Network CTPAM receive status %d\n", status_flag);
@@ -165,10 +155,6 @@ implementation {
   }
 
   default event message_t* Receive.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {
-    return msg;
-  }
-
-  default event message_t* Snoop.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {
     return msg;
   }
 
