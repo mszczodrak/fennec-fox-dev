@@ -128,6 +128,8 @@ implementation {
     dbg("Application", "Application Counter receive %d %d\n", cm->seqno, cm->source); 
     dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
     dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, *t1, *t2);
+    printf("rec from %d seq %d at %d %d\n", cm->source, cm->seqno, *t1, *t2);
+    printfflush();
     call Leds.set(cm->seqno);
     return msg;
   }
