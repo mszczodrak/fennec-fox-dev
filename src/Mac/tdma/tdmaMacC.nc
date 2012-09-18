@@ -153,18 +153,6 @@ implementation {
   tdmaMacP.GlobalTime -> TimeSyncC;
   tdmaMacP.TimeSyncInfo -> TimeSyncC;
 
-  /* additional timer */
-  components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
-  LocalTime32khzC.Counter -> Counter32khz32C;
-
-#ifdef SYNC_PREC_32K
-  tdmaMacP.LocalTime -> LocalTime32khzC;
-#endif
-
-#ifdef SYNC_PREC_TMILLI
-  tdmaMacP.LocalTime -> LocalTimeMilliC;
-#endif
-
   components new TimerMilliC() as TimerC;
   tdmaMacP.PeriodTimer ->  TimerC;
 

@@ -72,14 +72,6 @@ module tdmaMacP @safe() {
 
   uses interface Timer<TMilli> as PeriodTimer;
 
-#ifdef SYNC_PREC_TMILLI
-  uses interface LocalTime<TMilli> as LocalTime;
-#endif
-
-#ifdef SYNC_PREC_32K
-  uses interface LocalTime<T32khz> as LocalTime;
-#endif
-
 }
 
 implementation {
@@ -450,23 +442,40 @@ implementation {
   }
 
 
+  /* Test Function:
+   * Story: Our goal is to send a message over the serial port every TDMA_PERIOD
+   *        	where TDMA_PERIOD is defined as 30000, so we aim to send a message
+   * 	    	every 30,000ms so close to 30seconds.
+   * 
+   * Protocol: At rundome time (after TDMA_PERIOD since booted) nodes check
+   *		if their clock is synchronized, if not, they wait another TDMA_PERIOD.
+   *		If a node's clock is synchronized
+   *
+   */
+
   event void PeriodTimer.fired() {
-    uint32_t local = call LocalTime.get();
-    uint32_t global = local;
-    uint8_t sync = call GlobalTime.local2Global(&global);
+    /* t has local time */
+    uint32_t t = call GlobalTime.getLocalTime();
+
+    /* t has global time */
+    uint8_t sync = call GlobalTime.local2Global(&t);
 
     /* check if we are synced */
     if (!sync) {
+      /* if not synced, skip */
       call PeriodTimer.startOneShot(TDMA_PERIOD);
       return;
     }
 
-    dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), call TimeSyncInfo.getSeqNum());
+    /* First time we are here this may be not synced, but 
+     * at the second time it should be synchronized with others */
+    dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), 
+					call TimeSyncInfo.getSeqNum());
 
-    global = (global + TDMA_PERIOD) % TDMA_PERIOD;
+    /* t has global time difference to next period */
+    t = (t + TDMA_PERIOD) % TDMA_PERIOD;
 
-    call PeriodTimer.startOneShot(global);
-
+    call PeriodTimer.startOneShot(t);
   }
 
 }
