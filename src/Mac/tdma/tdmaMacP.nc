@@ -449,13 +449,14 @@ implementation {
    * 
    * Protocol: At rundome time (after TDMA_PERIOD since booted) nodes check
    *		if their clock is synchronized, if not, they wait another TDMA_PERIOD.
-   *		If a node's clock is synchronized
-   *
+   *		If a node's clock is synchronized, the node estimates when next global
+   *		period will start and will set its local timer to fired at the future
+   *		estimate.
    */
-
   event void PeriodTimer.fired() {
     /* t has local time */
     uint32_t t = call GlobalTime.getLocalTime();
+    uint32_t delta;
 
     /* t has global time */
     uint8_t sync = call GlobalTime.local2Global(&t);
@@ -472,10 +473,21 @@ implementation {
     dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), 
 					call TimeSyncInfo.getSeqNum());
 
-    /* t has global time difference to next period */
-    t = (t + TDMA_PERIOD) % TDMA_PERIOD;
+    /* delta has global time difference to next period */
+    delta = TDMA_PERIOD - ((t + TDMA_PERIOD) % TDMA_PERIOD);
 
-    call PeriodTimer.startOneShot(t);
+    /* t has next global time when period starts */
+    //t += delta;
+
+    /* just a check to avoid a situation when this timer keeps 
+     * firing constantly, needs at least 10% of TDMA_PERIOD difference
+     */
+    if (delta < TDMA_PERIOD / 10)
+      delta += TDMA_PERIOD;
+
+    //call GlobalTime.global2Local(&t);
+
+    call PeriodTimer.startOneShot(delta);
   }
 
 }
