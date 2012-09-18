@@ -476,16 +476,11 @@ implementation {
     /* delta has global time difference to next period */
     delta = TDMA_PERIOD - ((t + TDMA_PERIOD) % TDMA_PERIOD);
 
-    /* t has next global time when period starts */
-    //t += delta;
-
     /* just a check to avoid a situation when this timer keeps 
      * firing constantly, needs at least 10% of TDMA_PERIOD difference
      */
     if (delta < TDMA_PERIOD / 10)
       delta += TDMA_PERIOD;
-
-    //call GlobalTime.global2Local(&t);
 
     call PeriodTimer.startOneShot(delta);
   }
