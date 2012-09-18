@@ -165,5 +165,8 @@ implementation {
   tdmaMacP.LocalTime -> LocalTimeMilliC;
 #endif
 
+  components new TimerMilliC() as TimerC;
+  tdmaMacP.PeriodTimer ->  TimerC;
+
 }
 

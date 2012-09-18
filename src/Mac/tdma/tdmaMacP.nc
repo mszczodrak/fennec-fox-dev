@@ -33,6 +33,8 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
+#define TDMA_PERIOD 30000
+
 module tdmaMacP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as MacStatus;
@@ -68,6 +70,8 @@ module tdmaMacP @safe() {
   uses interface GlobalTime<TMilli>;
   uses interface TimeSyncInfo;
 
+  uses interface Timer<TMilli> as PeriodTimer;
+
 #ifdef SYNC_PREC_TMILLI
   uses interface LocalTime<TMilli> as LocalTime;
 #endif
@@ -86,12 +90,6 @@ implementation {
 
   uint8_t localSendId;
 
-//  enum {
-//    S_IDLE,
-//    S_SENDING,
-//  };
-
-
   /* Functions */
 
   command error_t Mgmt.start() {
@@ -108,11 +106,15 @@ implementation {
     if (call RadioControl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
     }
+
+    call PeriodTimer.startOneShot(TDMA_PERIOD);
+
     status = S_STARTING;
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    call PeriodTimer.stop();
     if (status == S_STOPPED) {
       dbg("Mac", "Mac tdma  already stopped\n");
       signal Mgmt.stopDone(SUCCESS);
@@ -447,6 +449,25 @@ implementation {
     }
   }
 
+
+  event void PeriodTimer.fired() {
+    uint32_t local = call LocalTime.get();
+    uint32_t global = local;
+    uint8_t sync = call GlobalTime.local2Global(&global);
+
+    /* check if we are synced */
+    if (!sync) {
+      call PeriodTimer.startOneShot(TDMA_PERIOD);
+      return;
+    }
+
+    dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), call TimeSyncInfo.getSeqNum());
+
+    local += TDMA_PERIOD;   
+    call GlobalTime.global2Local(&local);
+    call PeriodTimer.startOneShot(local);
+
+  }
 
 }
 
