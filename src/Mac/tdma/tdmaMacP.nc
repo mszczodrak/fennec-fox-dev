@@ -404,6 +404,7 @@ implementation {
 
 	/* add info about new message */
 
+/*
     uint32_t rxTimestamp = call PacketTimeStamp.timestamp(msg);
     uint16_t *t1 = (uint16_t*) &rxTimestamp;
     uint16_t *t2 = ++t1;
@@ -429,14 +430,12 @@ implementation {
 
     printf("rec at %d %d\n", *t1, *t2);
     printfflush();
-
+*/
 
         return signal MacReceive.receive(msg, payload, len);
       }
     }
     else {
-      printf("receive not me\n");
-	printfflush();
       return signal MacSnoop.receive(msg, payload, len);
     }
   }

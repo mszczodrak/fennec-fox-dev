@@ -70,9 +70,9 @@ implementation
   TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
 
-  components CounterRadio32C, new CounterToLocalTimeC(TRadio) as LocalTimeC;
-  LocalTimeC.Counter -> CounterRadio32C;
-  TimeSyncP.LocalTime     -> LocalTimeC;
+//  components CounterRadio32C, new CounterToLocalTimeC(TRadio) as LocalTimeC;
+//  LocalTimeC.Counter -> CounterRadio32C;
+//  TimeSyncP.LocalTime     -> LocalTimeC;
 
   components new TimerMilliC() as TimerC;
   TimeSyncP.Timer ->  TimerC;
