@@ -28,6 +28,9 @@
 #ifndef __H_TDMA_MAC_H_
 #define __H_TDMA_MAC_H_
 
+#define SYNC_PREC_TMILLI
+//#define SYNC_PREC_32K
+
 typedef nx_struct tdma_header_t {
   nxle_uint8_t length;
   nxle_uint16_t fcf;

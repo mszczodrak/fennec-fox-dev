@@ -136,15 +136,34 @@ implementation {
   FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
   FtspActiveMessageC.MacStatus -> tdmaMacP.MacStatus;
 
-  components MainC, TimeSyncC;
+  components MainC;
+#ifdef SYNC_PREC_TMILLI
+  components TimeSyncC as TimeSyncC;
+#endif
+
+#ifdef SYNC_PREC_32K
+  components TimeSyncC as TimeSync32kC;
+#endif
 
   MainC.SoftwareInit -> TimeSyncC;
   TimeSyncC.Boot -> MainC;
-
 
   components FennecPacketC;
   tdmaMacP.PacketTimeStamp -> FennecPacketC;
   tdmaMacP.GlobalTime -> TimeSyncC;
   tdmaMacP.TimeSyncInfo -> TimeSyncC;
+
+  /* additional timer */
+  components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
+  LocalTime32khzC.Counter -> Counter32khz32C;
+
+#ifdef SYNC_PREC_32K
+  tdmaMacP.LocalTime -> LocalTime32khzC;
+#endif
+
+#ifdef SYNC_PREC_TMILLI
+  tdmaMacP.LocalTime -> LocalTimeMilliC;
+#endif
+
 }
 

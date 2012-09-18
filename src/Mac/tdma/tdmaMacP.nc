@@ -68,6 +68,13 @@ module tdmaMacP @safe() {
   uses interface GlobalTime<TMilli>;
   uses interface TimeSyncInfo;
 
+#ifdef SYNC_PREC_TMILLI
+  uses interface LocalTime<TMilli> as LocalTime;
+#endif
+
+#ifdef SYNC_PREC_32K
+  uses interface LocalTime<T32khz> as LocalTime;
+#endif
 
 }
 
