@@ -463,9 +463,9 @@ implementation {
 
     dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), call TimeSyncInfo.getSeqNum());
 
-    local += TDMA_PERIOD;   
-    call GlobalTime.global2Local(&local);
-    call PeriodTimer.startOneShot(local);
+    global = (global + TDMA_PERIOD) % TDMA_PERIOD;
+
+    call PeriodTimer.startOneShot(global);
 
   }
 
