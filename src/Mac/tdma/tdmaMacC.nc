@@ -156,5 +156,8 @@ implementation {
   components new TimerMilliC() as TimerC;
   tdmaMacP.PeriodTimer ->  TimerC;
 
+  components LedsC;
+  tdmaMacP.Leds -> LedsC;
+
 }
 

@@ -68,7 +68,7 @@ generic module TimeSyncP(typedef precision_tag)
 implementation
 {
 #ifndef TIMESYNC_RATE
-#define TIMESYNC_RATE   10
+#define TIMESYNC_RATE   3
 #endif
 
     enum {
@@ -313,6 +313,14 @@ implementation
         calculateConversion();
         signal TimeSyncNotify.msg_received();
 
+/*
+	{
+		uint32_t globalTime = call GlobalTime.getLocalTime();
+        	call GlobalTime.local2Global(&globalTime);
+	        printf("re_g:%lu sync%d\n", globalTime, is_synced());
+		printfflush();
+	}
+*/
     exit:
         state &= ~STATE_PROCESSING;
     }
@@ -417,6 +425,13 @@ implementation
 
         state &= ~STATE_SENDING;
         signal TimeSyncNotify.msg_sent();
+
+//        {
+//                uint32_t globalTime = call GlobalTime.getLocalTime();
+//                call GlobalTime.local2Global(&globalTime);
+//                printf("sd_g:%lu\n", globalTime);
+//                printfflush();
+//        }
     }
 
     void timeSyncMsgSend()

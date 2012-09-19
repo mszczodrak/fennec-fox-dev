@@ -33,7 +33,7 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_PERIOD 30000
+#define TDMA_PERIOD 1000
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -71,7 +71,7 @@ module tdmaMacP @safe() {
   uses interface TimeSyncInfo;
 
   uses interface Timer<TMilli> as PeriodTimer;
-
+  uses interface Leds;
 }
 
 implementation {
@@ -91,6 +91,8 @@ implementation {
       return SUCCESS;
     }
 
+    call PeriodTimer.startOneShot(TDMA_PERIOD);
+
     localSendId = call Random.rand16();
 
     dbg("Mac", "Mac tdma starts\n");
@@ -99,7 +101,6 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
-    call PeriodTimer.startOneShot(TDMA_PERIOD);
 
     status = S_STARTING;
     return SUCCESS;
@@ -372,7 +373,7 @@ implementation {
   event void SubSend.sendDone(message_t* msg, error_t result) {
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
     if (header->type == AM_TIMESYNCMSG) {
-      //printf("ftsp send done\n");
+      printf("ftsp send done\n");
       signal FtspMacAMSend.sendDone(msg, result);
     } else {
       signal MacAMSend.sendDone(msg, result);
@@ -455,34 +456,41 @@ implementation {
    */
   event void PeriodTimer.fired() {
     /* t has local time */
-    uint32_t t = call GlobalTime.getLocalTime();
+    uint32_t localTime, globalTime;
     uint32_t delta;
+    uint8_t sync;
+    localTime = globalTime = call GlobalTime.getLocalTime();
 
     /* t has global time */
-    uint8_t sync = call GlobalTime.local2Global(&t);
+    sync = call GlobalTime.local2Global(&globalTime);
 
     /* check if we are synced */
     if (!sync) {
       /* if not synced, skip */
       call PeriodTimer.startOneShot(TDMA_PERIOD);
+      call Leds.led1Off();
       return;
     }
+
+
+    /* delta has global time difference to next period */
+    delta = TDMA_PERIOD - ((globalTime + TDMA_PERIOD) % TDMA_PERIOD);
+    call PeriodTimer.startOneShot(delta);
+
+    /* set LEDs to blink the value of the last 3bits of the TimeSync sequence */
+    call Leds.led1Toggle(); 
 
     /* First time we are here this may be not synced, but 
      * at the second time it should be synchronized with others */
     dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), 
 					call TimeSyncInfo.getSeqNum());
 
-    /* delta has global time difference to next period */
-    delta = TDMA_PERIOD - ((t + TDMA_PERIOD) % TDMA_PERIOD);
-
     /* just a check to avoid a situation when this timer keeps 
-     * firing constantly, needs at least 10% of TDMA_PERIOD difference
+     * firing constantly, needs at least 25% of TDMA_PERIOD difference
      */
-    if (delta < TDMA_PERIOD / 10)
-      delta += TDMA_PERIOD;
+//    if (delta < TDMA_PERIOD / 4)
+//      delta += TDMA_PERIOD;
 
-    call PeriodTimer.startOneShot(delta);
   }
 
 }
