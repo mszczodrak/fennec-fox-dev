@@ -33,7 +33,7 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_PERIOD 1000
+#define TDMA_PERIOD 5000
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -85,13 +85,14 @@ implementation {
   /* Functions */
 
   command error_t Mgmt.start() {
+    call PeriodTimer.startOneShot(TDMA_PERIOD);
+    call Leds.set(4);
     if (status == S_STARTED) {
       dbg("Mac", "Mac tdma already started\n");
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
 
-    call PeriodTimer.startOneShot(TDMA_PERIOD);
 
     localSendId = call Random.rand16();
 
@@ -373,7 +374,7 @@ implementation {
   event void SubSend.sendDone(message_t* msg, error_t result) {
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
     if (header->type == AM_TIMESYNCMSG) {
-      printf("ftsp send done\n");
+      //printf("ftsp send done\n");
       signal FtspMacAMSend.sendDone(msg, result);
     } else {
       signal MacAMSend.sendDone(msg, result);
@@ -458,23 +459,24 @@ implementation {
     /* t has local time */
     uint32_t localTime, globalTime;
     uint32_t delta;
-    uint8_t sync;
+    //uint8_t sync;
     localTime = globalTime = call GlobalTime.getLocalTime();
+    call Leds.led0Toggle(); 
 
     /* t has global time */
-    sync = call GlobalTime.local2Global(&globalTime);
-
-    /* check if we are synced */
-    if (!sync) {
-      /* if not synced, skip */
+    if (call GlobalTime.local2Global(&globalTime) != SUCCESS) {
+      /* check if we are synced */
       call PeriodTimer.startOneShot(TDMA_PERIOD);
+      /* if not synced, skip */
       call Leds.led1Off();
-      return;
-    }
 
+      goto exit;
+    }
 
     /* delta has global time difference to next period */
     delta = TDMA_PERIOD - ((globalTime + TDMA_PERIOD) % TDMA_PERIOD);
+    if (delta < TDMA_PERIOD / 2)
+      delta += TDMA_PERIOD;
     call PeriodTimer.startOneShot(delta);
 
     /* set LEDs to blink the value of the last 3bits of the TimeSync sequence */
@@ -484,12 +486,11 @@ implementation {
      * at the second time it should be synchronized with others */
     dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), 
 					call TimeSyncInfo.getSeqNum());
-
-    /* just a check to avoid a situation when this timer keeps 
-     * firing constantly, needs at least 25% of TDMA_PERIOD difference
-     */
-//    if (delta < TDMA_PERIOD / 4)
-//      delta += TDMA_PERIOD;
+exit:
+    printf("\n\nlocalTime: %lu\n", localTime);
+    printf("globalTime: %lu\n", globalTime);
+    printf("delta: %lu\n", delta);
+    printfflush();
 
   }
 
