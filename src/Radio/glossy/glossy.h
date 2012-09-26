@@ -43,10 +43,12 @@
 //#include "contiki.h"
 #include "rtimer.h"
 #include "watchdog.h"
-//#include "cc2420_const.h"
+#include "CC2420.h"
 #include "leds.h"
 #include "spi.h"
 #include <legacymsp430.h>
+#include "contiki-conf.h"
+#include "energest.h"
 
 /**
  * If not zero, nodes print additional debug information (disabled by default).

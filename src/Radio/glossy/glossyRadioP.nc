@@ -76,6 +76,24 @@ static uint8_t relay_cnt, t_ref_l_updated;
 
 /* */
 
+/* --------------------------- Radio functions ---------------------- */
+static inline void radio_flush_tx(void) {
+        FASTSPI_STROBE(CC2420_SFLUSHTX);
+}
+
+static inline uint8_t radio_status(void) {
+        uint8_t status;
+        FASTSPI_UPD_STATUS(status);
+        return status;
+}
+
+static inline void radio_on(void) {
+        FASTSPI_STROBE(CC2420_SRXON);
+        while(!(radio_status() & (BV(CC2420_XOSC16M_STABLE))));
+        ENERGEST_ON(ENERGEST_TYPE_LISTEN);
+}
+
+
 
   command error_t Mgmt.start() {
     dbg("Radio", "Radio glossy starts\n");
