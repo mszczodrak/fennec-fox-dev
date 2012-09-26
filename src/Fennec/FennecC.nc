@@ -33,6 +33,6 @@ implementation {
   components SerialStartC;
 #endif
 
-  //components FennecPacketC;
+  components FennecPacketC;
 }
 
