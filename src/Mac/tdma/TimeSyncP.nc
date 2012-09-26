@@ -18,9 +18,9 @@ generic module TimeSyncP(typedef precision_tag)
         interface Boot;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
-        interface Timer<TMilli>;
         interface Random;
         interface Leds;
+	interface Timer<TMilli>;
         interface TimeSyncPacket<precision_tag,uint32_t>;
         interface LocalTime<precision_tag> as LocalTime;
     }
@@ -405,22 +405,7 @@ implementation
         }
     }
 
-    event void Timer.fired()
-    {
-      if (mode == TS_TIMER_MODE) {
-        timeSyncMsgSend();
-      }
-      else
-        call Timer.stop();
-    }
-
     command error_t TimeSyncMode.setMode(uint8_t mode_){
-        if (mode_ == TS_TIMER_MODE){
-            call Timer.startPeriodic((uint32_t)(896U+(call Random.rand16()&0xFF)) * BEACON_RATE);
-        }
-        else
-            call Timer.stop();
-
         mode = mode_;
         return SUCCESS;
     }
@@ -472,7 +457,6 @@ implementation
 
     command error_t StdControl.stop()
     {
-        call Timer.stop();
         return SUCCESS;
     }
 
@@ -490,5 +474,9 @@ implementation
   event void tdmaMacParams.receive_status(uint16_t status_flag) {
   }
 
+
+  event void Timer.fired() {
+
+  }
 
 }
