@@ -27,8 +27,6 @@
 
 #include "tdmaMac.h"
 
-//#define LOW_POWER_LISTENING
-
 configuration tdmaMacC {
   provides interface Mgmt;
   provides interface AMSend as MacAMSend;
@@ -137,27 +135,23 @@ implementation {
   FtspActiveMessageC.MacStatus -> tdmaMacP.MacStatus;
 
   components MainC;
-#ifdef SYNC_PREC_TMILLI
-  components TimeSyncC as TimeSyncC;
-#endif
+  components TimeSync32kC;
 
-#ifdef SYNC_PREC_32K
-  components TimeSyncC as TimeSync32kC;
-#endif
-
-  MainC.SoftwareInit -> TimeSyncC;
-  TimeSyncC.Boot -> MainC;
+  MainC.SoftwareInit -> TimeSync32kC;
+  TimeSync32kC.Boot -> MainC;
 
   components FennecPacketC;
   tdmaMacP.PacketTimeStamp -> FennecPacketC;
-  tdmaMacP.GlobalTime -> TimeSyncC;
-  tdmaMacP.TimeSyncInfo -> TimeSyncC;
+  tdmaMacP.GlobalTime -> TimeSync32kC;
+  tdmaMacP.TimeSyncInfo -> TimeSync32kC;
 
   components new TimerMilliC() as TimerC;
   tdmaMacP.PeriodTimer ->  TimerC;
 
   components LedsC;
   tdmaMacP.Leds -> LedsC;
+
+  tdmaMacParams = TimeSync32kC;
 
 }
 

@@ -66,8 +66,8 @@ module tdmaMacP @safe() {
 
   uses interface Random;
 
-  uses interface PacketTimeStamp<TMilli,uint32_t>;
-  uses interface GlobalTime<TMilli>;
+  uses interface PacketTimeStamp<T32khz,uint32_t>;
+  uses interface GlobalTime<T32khz>;
   uses interface TimeSyncInfo;
 
   uses interface Timer<TMilli> as PeriodTimer;

@@ -40,6 +40,7 @@
 configuration TimeSync32kC
 {
   uses interface Boot;
+  uses interface tdmaMacParams;
   provides interface Init;
   provides interface StdControl;
   provides interface GlobalTime<T32khz>;
@@ -53,6 +54,7 @@ configuration TimeSync32kC
 implementation
 {
   components new TimeSyncP(T32khz) as TimeSyncP;
+  tdmaMacParams = TimeSyncP;
 
   GlobalTime      =   TimeSyncP;
   StdControl      =   TimeSyncP;
@@ -63,7 +65,6 @@ implementation
   TimeSyncNotify  =   TimeSyncP;
 
   components TimeSyncMessageC as ActiveMessageC;
-  TimeSyncP.RadioControl    ->  ActiveMessageC;
   TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSend32khz[TIMESYNC_AM_FTSP];
   TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
