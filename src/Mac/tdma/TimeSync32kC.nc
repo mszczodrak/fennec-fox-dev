@@ -86,9 +86,4 @@ implementation
 #endif
   TimeSyncP.Leds  ->  LedsC;
 
-#ifdef LOW_POWER_LISTENING
-  TimeSyncP.LowPowerListening -> ActiveMessageC;
-#endif
-
-
 }
