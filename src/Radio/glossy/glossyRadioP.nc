@@ -76,6 +76,30 @@ static uint8_t relay_cnt, t_ref_l_updated;
 
 /* */
 
+
+/*---------------------------------------------------------------------------*/
+/**
+ * Delay the CPU for a multiple of 2.83 us.
+ */
+void
+clock_delay(unsigned int i)
+{
+  asm("add #-1, r15");
+  asm("jnz $-2");
+  /*
+   * This means that delay(i) will delay the CPU for CONST + 3x
+   * cycles. On a 2.4756 CPU, this means that each i adds 1.22us of
+   * delay.
+   *
+   * do {
+   *   --i;
+   * } while(i > 0);
+   */
+}
+
+
+
+
 /* --------------------------- Radio functions ---------------------- */
 static inline void radio_flush_tx(void) {
         FASTSPI_STROBE(CC2420_SFLUSHTX);
@@ -92,6 +116,202 @@ static inline void radio_on(void) {
         while(!(radio_status() & (BV(CC2420_XOSC16M_STABLE))));
         ENERGEST_ON(ENERGEST_TYPE_LISTEN);
 }
+
+static inline void radio_off(void) {
+#if ENERGEST_CONF_ON
+        if (energest_current_mode[ENERGEST_TYPE_TRANSMIT]) {
+                ENERGEST_OFF(ENERGEST_TYPE_TRANSMIT);
+        }
+        if (energest_current_mode[ENERGEST_TYPE_LISTEN]) {
+                ENERGEST_OFF(ENERGEST_TYPE_LISTEN);
+        }
+#endif /* ENERGEST_CONF_ON */
+        FASTSPI_STROBE(CC2420_SRFOFF);
+}
+
+static inline void radio_flush_rx(void) {
+        uint8_t dummy;
+        FASTSPI_READ_FIFO_BYTE(dummy);
+        FASTSPI_STROBE(CC2420_SFLUSHRX);
+        FASTSPI_STROBE(CC2420_SFLUSHRX);
+}
+
+static inline void radio_abort_rx(void) {
+        state = GLOSSY_STATE_ABORTED;
+        radio_flush_rx();
+}
+
+static inline void radio_abort_tx(void) {
+        FASTSPI_STROBE(CC2420_SRXON);
+#if ENERGEST_CONF_ON
+        if (energest_current_mode[ENERGEST_TYPE_TRANSMIT]) {
+                ENERGEST_OFF(ENERGEST_TYPE_TRANSMIT);
+                ENERGEST_ON(ENERGEST_TYPE_LISTEN);
+        }
+#endif /* ENERGEST_CONF_ON */
+        radio_flush_rx();
+}
+
+static inline void radio_start_tx(void) {
+        FASTSPI_STROBE(CC2420_STXON);
+#if ENERGEST_CONF_ON
+        ENERGEST_OFF(ENERGEST_TYPE_LISTEN);
+        ENERGEST_ON(ENERGEST_TYPE_TRANSMIT);
+#endif /* ENERGEST_CONF_ON */
+}
+
+static inline void radio_write_tx(void) {
+        FASTSPI_WRITE_FIFO(packet, packet_len - 1);
+}
+
+/* --------------------------- SFD interrupt ------------------------ */
+interrupt(TIMERB1_VECTOR)
+timerb1_interrupt(void)
+{
+        // compute the variable part of the delay with which the interrupt has been served
+        T_irq = ((RTIMER_NOW_DCO() - TBCCR1) - 24) << 1;
+
+        if (state == GLOSSY_STATE_RECEIVING && !SFD_IS_1) {
+                // packet reception has finished
+                // T_irq in [0,...,8]
+                if (T_irq <= 8) {
+                        // NOPs (variable number) to compensate for the interrupt service delay (sec. 5.2)
+                        asm volatile("add %[d], r0" : : [d] "m" (T_irq));
+                        asm volatile("nop");                                            // irq_delay = 0
+                        asm volatile("nop");                                            // irq_delay = 2
+                        asm volatile("nop");                                            // irq_delay = 4
+                        asm volatile("nop");                                            // irq_delay = 6
+                        asm volatile("nop");                                            // irq_delay = 8
+                        // NOPs (fixed number) to compensate for HW variations (sec. 5.3)
+                        // (asynchronous MCU and radio clocks)
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        // relay the packet
+                        radio_start_tx();
+                        // read TBIV to clear IFG
+                        tbiv = TBIV;
+                        glossy_end_rx();
+                } else {
+                        // interrupt service delay is too high: do not relay the packet
+                        radio_flush_rx();
+                        state = GLOSSY_STATE_WAITING;
+                        // read TBIV to clear IFG
+   tbiv = TBIV;
+                }
+        } else {
+                // read TBIV to clear IFG
+                tbiv = TBIV;
+                if (state == GLOSSY_STATE_WAITING && SFD_IS_1) {
+                        // packet reception has started
+                        glossy_begin_rx();
+                } else {
+                        if (state == GLOSSY_STATE_RECEIVED && SFD_IS_1) {
+                                // packet transmission has started
+                                glossy_begin_tx();
+                        } else {
+                                if (state == GLOSSY_STATE_TRANSMITTING && !SFD_IS_1) {
+                                        // packet transmission has finished
+                                        glossy_end_tx();
+                                } else {
+                                        if (state == GLOSSY_STATE_ABORTED) {
+                                                // packet reception has been aborted
+                                                state = GLOSSY_STATE_WAITING;
+                                        } else {
+                                                if ((state == GLOSSY_STATE_WAITING) && (tbiv == TBIV_CCR4)) {
+                                                        // initiator timeout
+                                                        if (rx_cnt == 0) {
+                                                                // no packets received so far: send the packet again
+                                                                tx_cnt = 0;
+                                                                // set the packet length field to the appropriate value
+                                                                GLOSSY_LEN_FIELD = packet_len;
+                                                                // set the header field
+                                                                GLOSSY_HEADER_FIELD = GLOSSY_HEADER;
+                                                                if (sync) {
+                                                                        // do not use this packet for synchronization
+                                                                        GLOSSY_RELAY_CNT_FIELD = MAX_VALID_RELAY_CNT;
+                                                                }
+                                                                // copy the application data to the data field
+                                                                memcpy(&GLOSSY_DATA_FIELD, data, data_len);
+                                                                // set Glossy state
+                                                                state = GLOSSY_STATE_RECEIVED;
+                                                                // write the packet to the TXFIFO
+                                                                radio_write_tx();
+                                                                // start another transmission
+                                                                radio_start_tx();
+                                                                // schedule the timeout again
+                                                                glossy_schedule_initiator_timeout();
+                                                        } else {
+                                                                // at least one packet has been received: just stop the timeout
+                                                                glossy_stop_initiator_timeout();
+                                                        }
+                                                } else {
+                                                        if (tbiv == TBIV_CCR5) {
+                                                                // rx timeout
+                                                                if (state == GLOSSY_STATE_RECEIVING) {
+                                                                        // we are still trying to receive a packet: abort the reception
+                                                                        radio_abort_rx();
+#if GLOSSY_DEBUG
+                                                                        rx_timeout++;
+#endif /* GLOSSY_DEBUG */
+                                                                }
+                                                                // stop the timeout
+                                                                glossy_stop_rx_timeout();
+                                                        } else {
+                                                                if (state != GLOSSY_STATE_OFF) {
+                                                                        // something strange is going on: go back to the waiting state
+                                                                        radio_flush_rx();
+                                                                        state = GLOSSY_STATE_WAITING;
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+/* --------------------------- Glossy process ----------------------- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

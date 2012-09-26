@@ -49,6 +49,10 @@
 #include <legacymsp430.h>
 #include "contiki-conf.h"
 #include "energest.h"
+#include "msp430hardware.h"
+
+#define TBIV_CCR4 0x08
+#define TBIV_CCR5 0x0A
 
 /**
  * If not zero, nodes print additional debug information (disabled by default).
