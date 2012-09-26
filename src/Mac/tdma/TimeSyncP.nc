@@ -4,7 +4,6 @@ generic module TimeSyncP(typedef precision_tag)
 {
     provides
     {
-        interface Init;
         interface StdControl;
         interface GlobalTime<precision_tag>;
 
@@ -15,7 +14,6 @@ generic module TimeSyncP(typedef precision_tag)
     }
     uses
     {
-        interface Boot;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
         interface Random;
@@ -64,8 +62,6 @@ implementation
         STATE_INIT = 0x04,
     };
 
-    uint8_t state, mode;
-
 /*
     We do linear regression from localTime to timeOffset (globalTime - localTime).
     This way we can keep the slope close to zero (ideally) and represent it
@@ -80,6 +76,8 @@ implementation
     uint32_t    localAverage;
     int32_t     offsetAverage;
     uint8_t     numEntries; // the number of full entries in the table
+
+    uint8_t state;
 
     message_t processedMsgBuffer;
     message_t* processedMsg;
@@ -406,23 +404,19 @@ implementation
     }
 
     command error_t TimeSyncMode.setMode(uint8_t mode_){
-        mode = mode_;
         return SUCCESS;
     }
 
     command uint8_t TimeSyncMode.getMode(){
-        return mode;
+        return 0;
     }
 
     command error_t TimeSyncMode.send(){
-        if (mode == TS_USER_MODE){
-            timeSyncMsgSend();
-            return SUCCESS;
-        }
-        return FAIL;
+      timeSyncMsgSend();
+      return SUCCESS;
     }
 
-    command error_t Init.init()
+    void init()
     {
         atomic{
             skew = 0.0;
@@ -437,21 +431,13 @@ implementation
 
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
-
-        return SUCCESS;
-    }
-
-    event void Boot.booted()
-    {
-      call StdControl.start();
     }
 
     command error_t StdControl.start()
     {
+        init();
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
-        call TimeSyncMode.setMode(TS_TIMER_MODE);
-
         return SUCCESS;
     }
 

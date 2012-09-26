@@ -70,6 +70,8 @@ module tdmaMacP @safe() {
   uses interface GlobalTime<T32khz>;
   uses interface TimeSyncInfo;
 
+  uses interface StdControl as TimeControl;
+
   uses interface Timer<TMilli> as PeriodTimer;
   uses interface Leds;
 }
@@ -102,6 +104,7 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
+    call TimeControl.start();
 
     status = S_STARTING;
     return SUCCESS;
@@ -120,6 +123,7 @@ implementation {
     if (call RadioControl.stop() != SUCCESS) {
       signal Mgmt.stopDone(FAIL);
     }
+    call TimeControl.stop();
     status = S_STOPPING;
     return SUCCESS;
   }

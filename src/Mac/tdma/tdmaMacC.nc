@@ -134,11 +134,7 @@ implementation {
   FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
   FtspActiveMessageC.MacStatus -> tdmaMacP.MacStatus;
 
-  components MainC;
   components TimeSync32kC;
-
-  MainC.SoftwareInit -> TimeSync32kC;
-  TimeSync32kC.Boot -> MainC;
 
   components FennecPacketC;
   tdmaMacP.PacketTimeStamp -> FennecPacketC;
@@ -152,6 +148,8 @@ implementation {
   tdmaMacP.Leds -> LedsC;
 
   tdmaMacParams = TimeSync32kC;
+
+  tdmaMacP.TimeControl -> TimeSync32kC;
 
 }
 
