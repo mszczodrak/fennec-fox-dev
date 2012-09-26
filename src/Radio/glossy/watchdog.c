@@ -28,100 +28,113 @@
  *
  * This file is part of the Contiki operating system.
  *
- * @(#)$Id: leds.c,v 1.7 2009/02/24 21:30:20 adamdunkels Exp $
+ * @(#)$Id: watchdog.c,v 1.8 2010/04/04 12:30:10 adamdunkels Exp $
  */
+#include <msp430.h>
+#include <legacymsp430.h>
+#include "watchdog.h"
 
-#include "leds.h"
-#include "clock.h"
-#include "energest.h"
-
-static unsigned char leds, invert;
+static int stopped = 0;
 /*---------------------------------------------------------------------------*/
 static void
-show_leds(unsigned char changed)
+printchar(char c)
 {
-  if(changed & LEDS_GREEN) {
-    /* Green did change */
-    if((invert ^ leds) & LEDS_GREEN) {
-      ENERGEST_ON(ENERGEST_TYPE_LED_GREEN);
-    } else {
-      ENERGEST_OFF(ENERGEST_TYPE_LED_GREEN);
-    }
-  }
-  if(changed & LEDS_YELLOW) {
-    if((invert ^ leds) & LEDS_YELLOW) {
-      ENERGEST_ON(ENERGEST_TYPE_LED_YELLOW);
-    } else {
-      ENERGEST_OFF(ENERGEST_TYPE_LED_YELLOW);
-    }
-  }
-  if(changed & LEDS_RED) {
-    if((invert ^ leds) & LEDS_RED) {
-      ENERGEST_ON(ENERGEST_TYPE_LED_RED);
-    } else {
-      ENERGEST_OFF(ENERGEST_TYPE_LED_RED);
-    }
-  }
-  leds_arch_set(leds ^ invert);
-}
-/*---------------------------------------------------------------------------*/
-void
-leds_init(void)
-{
-  leds_arch_init();
-  leds = invert = 0;
-}
-/*---------------------------------------------------------------------------*/
-void
-leds_blink(void)
-{
-  /* Blink all leds. */
-  unsigned char inv;
-  inv = ~(leds ^ invert);
-  leds_invert(inv);
+  /* Transmit the data. */
+  TXBUF1 = c;
 
-  clock_delay(400);
+  /* Loop until the transmission buffer is available. */
+  while((IFG2 & UTXIFG1) == 0);
 
-  leds_invert(inv);
 }
 /*---------------------------------------------------------------------------*/
-unsigned char
-leds_get(void) {
-  return leds_arch_get();
-}
-/*---------------------------------------------------------------------------*/
-void
-leds_on(unsigned char ledv)
+static void
+hexprint(uint8_t v)
 {
-  unsigned char changed;
-  changed = (~leds) & ledv;
-  leds |= ledv;
-  show_leds(changed);
+  const char hexconv[] = "0123456789abcdef";
+  printchar(hexconv[v >> 4]);
+  printchar(hexconv[v & 0x0f]);
 }
 /*---------------------------------------------------------------------------*/
-void
-leds_off(unsigned char ledv)
+static void
+printstring(char *s)
 {
-  unsigned char changed;
-  changed = leds & ledv;
-  leds &= ~ledv;
-  show_leds(changed);
+  while(*s) {
+    printchar(*s++);
+  }
 }
 /*---------------------------------------------------------------------------*/
-void
-leds_toggle(unsigned char ledv)
+interrupt(WDT_VECTOR)
+watchdog_interrupt(void)
 {
-  leds_invert(ledv);
+  uint8_t dummy;
+  static uint8_t *ptr;
+  static int i;
+
+  ptr = &dummy;
+
+  printstring("Watchdog reset");
+  /*  printstring("Watchdog reset at PC $");
+  hexprint(ptr[3]);
+  hexprint(ptr[2]);*/
+  printstring("\nStack at $");
+  hexprint(((int)ptr) >> 8);
+  hexprint(((int)ptr) & 0xff);
+  printstring(":\n");
+  
+  for(i = 0; i < 64; ++i) {
+    hexprint(ptr[i]);
+    printchar(' ');
+    if((i & 0x0f) == 0x0f) {
+      printchar('\n');
+    }
+  }
+  printchar('\n');
+  watchdog_reboot();
 }
 /*---------------------------------------------------------------------------*/
-/*   invert the invert register using the leds parameter */
 void
-leds_invert(unsigned char ledv) {
-  invert = invert ^ ledv;
-  show_leds(ledv);
+watchdog_init(void)
+{
+  /* The MSP430 watchdog is enabled at boot-up, so we stop it during
+     initialization. */
+  stopped = 0;
+  watchdog_stop();
+
+  IFG1 &= ~WDTIFG;
+  IE1 |= WDTIE;
 }
 /*---------------------------------------------------------------------------*/
-void leds_green(int o) { o?leds_on(LEDS_GREEN):leds_off(LEDS_GREEN); }
-void leds_yellow(int o) { o?leds_on(LEDS_YELLOW):leds_off(LEDS_YELLOW); }
-void leds_red(int o) { o?leds_on(LEDS_RED):leds_off(LEDS_RED); }
+void
+watchdog_start(void)
+{
+  /* We setup the watchdog to reset the device after one second,
+     unless watchdog_periodic() is called. */
+  stopped--;
+  if(!stopped) {
+    WDTCTL = WDTPW | WDTCNTCL | WDT_ARST_1000 | WDTTMSEL;
+  }
+}
+/*---------------------------------------------------------------------------*/
+void
+watchdog_periodic(void)
+{
+  /* This function is called periodically to restart the watchdog
+     timer. */
+  if(!stopped) {
+    WDTCTL = (WDTCTL & 0xff) | WDTPW | WDTCNTCL | WDTTMSEL;;
+  }
+}
+/*---------------------------------------------------------------------------*/
+void
+watchdog_stop(void)
+{
+  WDTCTL = WDTPW | WDTHOLD;
+  stopped++;
+}
+/*---------------------------------------------------------------------------*/
+void
+watchdog_reboot(void)
+{
+  WDTCTL = 0;
+}
 /*---------------------------------------------------------------------------*/

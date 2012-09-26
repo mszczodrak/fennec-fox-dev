@@ -50,9 +50,12 @@
 #include "contiki-conf.h"
 #include "energest.h"
 #include "msp430hardware.h"
+//#include "timera.h"
+//#include "timerb.h"
+#include <msp430.h>
 
-#define TBIV_CCR4 0x08
-#define TBIV_CCR5 0x0A
+//#define TBIV_CCR4 0x08
+//#define TBIV_CCR5 0x0A
 
 /**
  * If not zero, nodes print additional debug information (disabled by default).

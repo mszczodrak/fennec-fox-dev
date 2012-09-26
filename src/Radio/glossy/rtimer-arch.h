@@ -41,7 +41,7 @@
 #ifndef __RTIMER_ARCH_H__
 #define __RTIMER_ARCH_H__
 
-//#include <io.h>
+#include <msp430.h>
 #include "rtimer.h"
 
 #define RTIMER_ARCH_SECOND (32768U)

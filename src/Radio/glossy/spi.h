@@ -56,9 +56,9 @@ void spi_init(void);
 
 #define FASTSPI_TX_MANY(p,c)\
 	do {\
-        u8_t spiCnt;\
+        uint8_t spiCnt;\
         for (spiCnt = 0; spiCnt < (c); spiCnt++) {\
-			FASTSPI_TX(((u8_t*)(p))[spiCnt]);\
+			FASTSPI_TX(((uint8_t*)(p))[spiCnt]);\
 		}\
         SPI_WAITFORTx_ENDED();\
 	} while(0)
@@ -106,8 +106,8 @@ void spi_init(void);
 	 do {\
 		  SPI_ENABLE();\
 		  FASTSPI_TX_ADDR(a);\
-		  FASTSPI_TX((u8_t) ((v) >> 8));\
-		  FASTSPI_TX((u8_t) (v));\
+		  FASTSPI_TX((uint8_t) ((v) >> 8));\
+		  FASTSPI_TX((uint8_t) (v));\
                   SPI_WAITFORTx_ENDED();\
 		  SPI_DISABLE();\
 	 } while (0)
@@ -117,7 +117,7 @@ void spi_init(void);
 	 do {\
 		  SPI_ENABLE();\
 		  FASTSPI_RX_ADDR(a);\
-		  v= (u8_t)SPI_RXBUF;\
+		  v= (uint8_t)SPI_RXBUF;\
 		  FASTSPI_RX_WORD(v);\
 		  clock_delay(1);\
 		  SPI_DISABLE();\
@@ -144,10 +144,10 @@ void spi_init(void);
 #define FASTSPI_WRITE_FIFO(p,c)\
 	do {\
 	    SPI_ENABLE();\
-		u8_t i;\
+		uint8_t i;\
 		FASTSPI_TX_ADDR(CC2420_TXFIFO);\
 		for (i = 0; i < (c); i++) {\
-		    FASTSPI_TX(((u8_t*)(p))[i]);\
+		    FASTSPI_TX(((uint8_t*)(p))[i]);\
 		}\
                 SPI_WAITFORTx_ENDED();\
 		SPI_DISABLE();\
@@ -156,8 +156,8 @@ void spi_init(void);
 #define FASTSPI_WRITE_FIFO_NOCE(p,c)\
 	do {\
 		FASTSPI_TX_ADDR(CC2420_TXFIFO);\
-		for (u8_t spiCnt = 0; spiCnt < (c); spiCnt++) {\
-		    FASTSPI_TX(((u8_t*)(p))[spiCnt]);\
+		for (uint8_t spiCnt = 0; spiCnt < (c); spiCnt++) {\
+		    FASTSPI_TX(((uint8_t*)(p))[spiCnt]);\
 		}\
                 SPI_WAITFORTx_ENDED();\
     } while (0)
@@ -175,12 +175,12 @@ void spi_init(void);
 
 #define FASTSPI_READ_FIFO_NO_WAIT(p,c)\
 	 do {\
-		  u8_t spiCnt;\
+		  uint8_t spiCnt;\
 		  SPI_ENABLE();\
 		  FASTSPI_RX_ADDR(CC2420_RXFIFO);\
 		  (void)SPI_RXBUF;\
 		  for (spiCnt = 0; spiCnt < (c); spiCnt++) {\
-				FASTSPI_RX(((u8_t*)(p))[spiCnt]);\
+				FASTSPI_RX(((uint8_t*)(p))[spiCnt]);\
 		  }\
 		  clock_delay(1);\
 		  SPI_DISABLE();\
@@ -190,7 +190,7 @@ void spi_init(void);
 
 #define FASTSPI_READ_FIFO_GARBAGE(c)\
 	 do {\
-		  u8_t spiCnt;\
+		  uint8_t spiCnt;\
 		  SPI_ENABLE();\
 		  FASTSPI_RX_ADDR(CC2420_RXFIFO);\
 		  (void)SPI_RXBUF;\
@@ -210,10 +210,10 @@ void spi_init(void);
 // 	  p = pointer to the variable to be written
 // 	  a = the CC2420 RAM address
 // 	  c = the number of bytes to write
-// 	  n = counter variable which is used in for/while loops (u8_t)
+// 	  n = counter variable which is used in for/while loops (uint8_t)
 //
 //  Example of usage:
-// 	  u8_t n;
+// 	  uint8_t n;
 // 	  u16_t shortAddress = 0xBEEF;
 // 	  FASTSPI_WRITE_RAM_LE(&shortAddress, CC2420RAM_SHORTADDR, 2);
 
@@ -224,7 +224,7 @@ void spi_init(void);
 		  FASTSPI_TX(0x80 | (a & 0x7F));\
 		  FASTSPI_TX((a >> 1) & 0xC0);\
 		  for (n = 0; n < (c); n++) {\
-				FASTSPI_TX(((u8_t*)(p))[n]);\
+				FASTSPI_TX(((uint8_t*)(p))[n]);\
 		  }\
                   SPI_WAITFORTx_ENDED();\
 		  SPI_DISABLE();\
@@ -250,7 +250,7 @@ void spi_init(void);
                   SPI_WAITFORTx_ENDED();\
 		  SPI_RXBUF;\
 		  for (n = 0; n < (c); n++) {\
-				FASTSPI_RX(((u8_t*)(p))[n]);\
+				FASTSPI_RX(((uint8_t*)(p))[n]);\
 		  }\
 		  SPI_DISABLE();\
 	 } while (0)
