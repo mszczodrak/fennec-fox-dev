@@ -117,10 +117,8 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
-//    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      call Leds.led2Toggle();
-      call PeriodTimer.startOneShot(tdma_period);
-//    }
+    call Leds.led2Toggle();
+    call PeriodTimer.startOneShot(tdma_period);
 
     status = S_STARTING;
     return SUCCESS;
@@ -284,17 +282,6 @@ implementation {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
   /***************** AMPacket Commands ****************/
   command am_addr_t MacAMPacket.address() {
     return TOS_NODE_ID;
@@ -388,8 +375,6 @@ implementation {
     //return call SubSend.getPayload(msg, len);
   }
 
-
-
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
@@ -399,8 +384,6 @@ implementation {
       signal MacAMSend.sendDone(msg, result);
     }
   }
-
-
 
   /***************** SubReceive Events ****************/
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
@@ -436,9 +419,10 @@ implementation {
 
 
   event void PeriodTimer.fired() {
-
     uint32_t delta;
     error_t sync;
+
+    call Leds.led0On();
 
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&delta);
@@ -456,15 +440,10 @@ implementation {
 
       call PeriodTimer.startOneShot(delta);
     } else {
+      /* if the clock is not synced, continue without adjusting the period */
       call PeriodTimer.startOneShot(tdma_period);
     }
 
-//    printf("period: %lu, s: %d   delta %lu\n", tdma_period, sync, delta);
-//	printfflush();
-
-//    call Leds.led2Toggle();
-
-    //call PeriodTimer.startOneShot(delta);
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call TimeSyncMode.send();
     }
