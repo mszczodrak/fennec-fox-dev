@@ -74,6 +74,7 @@ module tdmaMacP @safe() {
   uses interface GlobalTime<TMilli>;
   uses interface TimeSyncInfo;
   uses interface TimeSyncMode;
+  uses interface TimeSyncNotify;
 
   uses interface Timer<TMilli> as PeriodTimer;
 
@@ -437,6 +438,31 @@ implementation {
   event void PeriodTimer.fired() {
     call Leds.led2Toggle();
     call TimeSyncMode.send();
+  }
+
+
+  event void TimeSyncNotify.msg_received() {
+    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+
+/*
+      uint32_t local, global;
+      error_t sync;
+
+	call Leds.led0Toggle();
+
+      local = global = call GlobalTime.getLocalTime();
+      sync = call GlobalTime.getGlobalTime(&global);
+
+	printf("localTime: %lu  globalTime: %lu, sync %d, offset: %lu\n",
+		local, global, sync, call TimeSyncInfo.getOffset());
+	printfflush();
+*/
+
+    }
+  }
+
+  event void TimeSyncNotify.msg_sent() {
+
   }
 
 }

@@ -136,6 +136,7 @@ implementation {
   tdmaMacP.GlobalTime -> TimeSyncC;
   tdmaMacP.TimeSyncInfo -> TimeSyncC;
   tdmaMacP.TimeSyncMode -> TimeSyncC;
+  tdmaMacP.TimeSyncNotify -> TimeSyncC;
 
   components new TimerMilliC() as TimerC;
   tdmaMacP.PeriodTimer ->  TimerC;
