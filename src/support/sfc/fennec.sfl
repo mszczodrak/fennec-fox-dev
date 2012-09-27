@@ -22,7 +22,7 @@ use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (uint16_t sink_addr,
 	uint8_t ack, uint8_t cca, uint8_t crc)
 use mac tdma $(FENNEC_FOX_LIB)/Mac/tdma (uint16_t root_addr,
 	uint16_t frame_size, uint16_t sync_time, 
-	uint16_t node_time, uint16_t radio_off,
+	uint16_t node_time, uint16_t radio_off_time,
 	uint16_t backoff, uint16_t min_backoff,
 	uint8_t ack, uint8_t cca, uint8_t crc)
 

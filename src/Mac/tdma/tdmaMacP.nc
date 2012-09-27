@@ -33,8 +33,6 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_PERIOD 3000
-
 module tdmaMacP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as MacStatus;
@@ -88,6 +86,7 @@ implementation {
   uint8_t status = S_STOPPED;
   uint16_t pending_length;
   message_t * ONE_NOK pending_message = NULL;
+  uint32_t tdma_period;
 
   uint8_t localSendId;
 
@@ -95,6 +94,11 @@ implementation {
 
   command error_t Mgmt.start() {
     call Leds.led1On();
+
+    tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
+				call tdmaMacParams.get_sync_time() + 
+				call tdmaMacParams.get_node_time() + 
+				call tdmaMacParams.get_radio_off_time() );
 
     if (status == S_STARTED) {
       dbg("Mac", "Mac tdma already started\n");
@@ -114,7 +118,7 @@ implementation {
 
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call Leds.led2Toggle();
-      call PeriodTimer.startPeriodic(TDMA_PERIOD);
+      call PeriodTimer.startPeriodic(tdma_period);
     }
 
     status = S_STARTING;
