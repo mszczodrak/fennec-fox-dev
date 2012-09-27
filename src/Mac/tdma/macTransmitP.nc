@@ -27,7 +27,6 @@ implementation {
   norace uint8_t m_state = S_STOPPED;
   norace uint16_t tdma_backoff_period;
   norace uint16_t tdma_min_backoff;
-  norace uint16_t tdma_delay_after_receive;
 
   norace error_t sendDoneErr;
   task void signalSendDone() {
@@ -45,21 +44,11 @@ implementation {
   norace uint16_t myCongestionBackoff;
   
   void requestInitialBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((tdma_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myInitialBackoff = ( call Random.rand16() % (0x4 * tdma_backoff_period) + tdma_min_backoff);
-    } else {
-      myInitialBackoff = ( call Random.rand16() % (0x1F * tdma_backoff_period) + tdma_min_backoff);
-    }
+    myInitialBackoff = ( call Random.rand16() % (0x1F * tdma_backoff_period) + tdma_min_backoff);
   }
 
   void congestionBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((tdma_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myCongestionBackoff = ( call Random.rand16() % (0x3 * tdma_backoff_period) + tdma_min_backoff);
-    } else {
-      myCongestionBackoff = ( call Random.rand16() % (0x7 * tdma_backoff_period) + tdma_min_backoff);
-    }
+    myCongestionBackoff = ( call Random.rand16() % (0x7 * tdma_backoff_period) + tdma_min_backoff);
 
     if (myCongestionBackoff) {
       call BackoffTimer.start(myCongestionBackoff);
@@ -73,7 +62,6 @@ implementation {
   command error_t StdControl.start() {
     tdma_backoff_period = call tdmaMacParams.get_backoff();
     tdma_min_backoff = call tdmaMacParams.get_min_backoff();
-    tdma_delay_after_receive = call tdmaMacParams.get_delay_after_receive();
 
     call RadioControl.start();
     m_state = S_STARTED;
@@ -97,7 +85,6 @@ implementation {
   command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
     tdma_backoff_period = call tdmaMacParams.get_backoff();
     tdma_min_backoff = call tdmaMacParams.get_min_backoff();
-    tdma_delay_after_receive = call tdmaMacParams.get_delay_after_receive();
 
     if (m_state == S_CANCEL) {
       return ECANCEL;
