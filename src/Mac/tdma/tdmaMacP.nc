@@ -446,11 +446,11 @@ implementation {
       uint32_t local, global;
       error_t sync;
       call Leds.led0Toggle();
+      local = global = call GlobalTime.getLocalTime();
 
 /*
 
 
-      local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
 
 	printf("localTime: %lu  globalTime: %lu, sync %d, offset: %lu\n",

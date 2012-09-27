@@ -202,20 +202,6 @@ implementation
         uint32_t age, oldestTime = 0;
         int32_t timeError;
 
-{
-        printf("time %lu %lu %d %d %d\n",
-		msg->localTime,
-                msg->globalTime,
-                call TimeSyncInfo.getRootID(),
-                call TimeSyncInfo.getSeqNum(),
-                call TimeSyncInfo.getNumEntries()
-        );
-        printfflush();
-}
-
-
-
-
         // clear table if the received entry's been inconsistent for some time
         timeError = msg->localTime;
         call GlobalTime.local2Global((uint32_t*)(&timeError));
