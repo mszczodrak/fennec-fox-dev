@@ -38,8 +38,6 @@
 
 configuration TimeSyncC
 {
-  uses interface Boot;
-  provides interface Init;
   provides interface StdControl;
   provides interface GlobalTime<TMilli>;
 
@@ -55,8 +53,6 @@ implementation
 
   GlobalTime      =   TimeSyncP;
   StdControl      =   TimeSyncP;
-  Init            =   TimeSyncP;
-  Boot            =   TimeSyncP;
   TimeSyncInfo    =   TimeSyncP;
   TimeSyncMode    =   TimeSyncP;
   TimeSyncNotify  =   TimeSyncP;

@@ -90,6 +90,9 @@ implementation {
   tdmaMacP.SubSend -> UniqueSendC;
   tdmaMacP.SubReceive -> LplC;
 
+  components LedsC;
+  tdmaMacP.Leds -> LedsC;
+
   // SplitControl Layers
 
   LplC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
@@ -136,17 +139,8 @@ implementation {
   FtspActiveMessageC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
   FtspActiveMessageC.MacStatus -> tdmaMacP.MacStatus;
 
-  components MainC;
-#ifdef SYNC_PREC_TMILLI
   components TimeSyncC as TimeSyncC;
-#endif
-
-#ifdef SYNC_PREC_32K
-  components TimeSyncC as TimeSync32kC;
-#endif
-
-  MainC.SoftwareInit -> TimeSyncC;
-  TimeSyncC.Boot -> MainC;
+//  components TimeSync32kC as TimeSyncC;
 
   components FennecPacketC;
   tdmaMacP.PacketTimeStamp -> FennecPacketC;
@@ -156,6 +150,8 @@ implementation {
 
   components new TimerMilliC() as TimerC;
   tdmaMacP.PeriodTimer ->  TimerC;
+
+  tdmaMacP.TimerControl -> TimeSyncC;
 
 }
 

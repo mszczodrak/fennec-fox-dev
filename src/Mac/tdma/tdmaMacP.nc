@@ -33,7 +33,7 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_PERIOD 10000
+#define TDMA_PERIOD 3000
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -65,6 +65,7 @@ module tdmaMacP @safe() {
   uses interface Receive as SubReceive;
 
   uses interface Random;
+  uses interface Leds;
 
   uses interface PacketTimeStamp<TMilli,uint32_t>;
   uses interface GlobalTime<TMilli>;
@@ -72,6 +73,8 @@ module tdmaMacP @safe() {
   uses interface TimeSyncMode;
 
   uses interface Timer<TMilli> as PeriodTimer;
+
+  uses interface StdControl as TimerControl;
 
 }
 
@@ -86,6 +89,8 @@ implementation {
   /* Functions */
 
   command error_t Mgmt.start() {
+    call Leds.led1On();
+
     if (status == S_STARTED) {
       dbg("Mac", "Mac tdma already started\n");
       signal Mgmt.startDone(SUCCESS);
@@ -94,6 +99,8 @@ implementation {
 
     localSendId = call Random.rand16();
 
+    call TimerControl.start();
+
     dbg("Mac", "Mac tdma starts\n");
 
     if (call RadioControl.start() != SUCCESS) {
@@ -101,6 +108,7 @@ implementation {
     }
 
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+      call Leds.led2Toggle();
       call PeriodTimer.startPeriodic(TDMA_PERIOD);
     }
 
@@ -110,6 +118,7 @@ implementation {
 
   command error_t Mgmt.stop() {
     call PeriodTimer.stop();
+    call TimerControl.stop();
     if (status == S_STOPPED) {
       dbg("Mac", "Mac tdma  already stopped\n");
       signal Mgmt.stopDone(SUCCESS);
@@ -417,8 +426,7 @@ implementation {
 
 
   event void PeriodTimer.fired() {
-    printf("root fired\n");
-    printfflush();
+    call Leds.led2Toggle();
     call TimeSyncMode.send();
   }
 

@@ -4,7 +4,6 @@ generic module TimeSyncP(typedef precision_tag)
 {
     provides
     {
-        interface Init;
         interface StdControl;
         interface GlobalTime<precision_tag>;
 
@@ -15,7 +14,6 @@ generic module TimeSyncP(typedef precision_tag)
     }
     uses
     {
-        interface Boot;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
         interface Timer<TMilli>;
@@ -23,9 +21,6 @@ generic module TimeSyncP(typedef precision_tag)
         interface Leds;
         interface TimeSyncPacket<precision_tag,uint32_t>;
         interface LocalTime<precision_tag> as LocalTime;
-
-
-
     }
 }
 implementation
@@ -66,7 +61,7 @@ implementation
         STATE_INIT = 0x04,
     };
 
-    uint8_t state, mode;
+    uint8_t state;
 
 /*
     We do linear regression from localTime to timeOffset (globalTime - localTime).
@@ -389,12 +384,11 @@ implementation
     }
 
     command error_t TimeSyncMode.setMode(uint8_t mode_){
-        mode = mode_;
         return SUCCESS;
     }
 
     command uint8_t TimeSyncMode.getMode(){
-        return mode;
+        return TS_USER_MODE;
     }
 
     command error_t TimeSyncMode.send(){
@@ -403,35 +397,29 @@ implementation
         return SUCCESS;
     }
 
-    command error_t Init.init()
-    {
-        atomic{
-            skew = 0.0;
-            localAverage = 0;
-            offsetAverage = 0;
-        };
 
+    command error_t StdControl.start()
+    {
         clearTable();
 
-        atomic outgoingMsg = (TimeSyncMsg*)call Send.getPayload(&outgoingMsgBuffer, sizeof(TimeSyncMsg));
-        outgoingMsg->rootID = 0xFFFF;
+        atomic {
+	   skew = 0.0;
+           localAverage = 0;
+	   offsetAverage = 0;
+           outgoingMsg = (TimeSyncMsg*)call Send.getPayload(&outgoingMsgBuffer, sizeof(TimeSyncMsg));
+        }
+
+	if (outgoingMsg == NULL) {
+		return FAIL;
+	}
+
+	outgoingMsg->rootID = 0xFFFF;
 
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
 
-        return SUCCESS;
-    }
-
-    event void Boot.booted()
-    {
-      call StdControl.start();
-    }
-
-    command error_t StdControl.start()
-    {
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
-        call TimeSyncMode.setMode(TS_USER_MODE);
 
         return SUCCESS;
     }
