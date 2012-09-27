@@ -297,8 +297,6 @@ implementation
     event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len)
     {
 
-
-
         if( (state & STATE_PROCESSING) == 0
             && call TimeSyncPacket.isValid(msg)) {
             message_t* old = processedMsg;
@@ -400,6 +398,7 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
+        outgoingMsg->rootID = TOS_NODE_ID;
         timeSyncMsgSend();
         return SUCCESS;
     }

@@ -375,7 +375,6 @@ implementation {
   event void SubSend.sendDone(message_t* msg, error_t result) {
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
     if (header->type == AM_TIMESYNCMSG) {
-      //printf("ftsp send done\n");
       signal FtspMacAMSend.sendDone(msg, result);
     } else {
       signal MacAMSend.sendDone(msg, result);
@@ -408,34 +407,6 @@ implementation {
 
 	/* add info about new message */
 
-/*
-    uint32_t rxTimestamp = call PacketTimeStamp.timestamp(msg);
-    uint16_t *t1 = (uint16_t*) &rxTimestamp;
-    uint16_t *t2 = ++t1;
-
-    uint32_t skew;
-    uint16_t root;
-    uint16_t seq;
-    uint16_t tab_size;
-    uint32_t loc_to_glob;
-
-    printf("pack timestamp: %d\n", call GlobalTime.local2Global(&rxTimestamp));
-    printf("rec at %d %d\n", *t1, *t2);
-
-    skew = (uint32_t)call TimeSyncInfo.getSkew()*1000000UL;
-    root = call TimeSyncInfo.getRootID();
-    seq  = call TimeSyncInfo.getSeqNum();
-    tab_size = call TimeSyncInfo.getNumEntries();
-    loc_to_glob = call GlobalTime.local2Global(&rxTimestamp);
-
-    printf("valid: %d\n", call PacketTimeStamp.isValid(msg));
-    printf("is_synced: %d\n", call GlobalTime.local2Global(&rxTimestamp));
-    printf("skew %lu   root %d   seq %d    tab %d    loc %lu\n", skew, root, seq, tab_size, loc_to_glob);
-
-    printf("rec at %d %d\n", *t1, *t2);
-    printfflush();
-*/
-
         return signal MacReceive.receive(msg, payload, len);
       }
     }
@@ -447,6 +418,7 @@ implementation {
 
   event void PeriodTimer.fired() {
     printf("root fired\n");
+    printfflush();
     call TimeSyncMode.send();
   }
 
