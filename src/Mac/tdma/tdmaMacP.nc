@@ -443,13 +443,17 @@ implementation {
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&delta);
 
-    /* compute the time that passed from the last global period */
-    delta = delta % tdma_period;
+    if (sync == SUCCESS) {
+      /* compute the time that passed from the last global period */
+      delta = delta % tdma_period;
 
-    /* compute the time that is left till the global period fires */
-    delta = tdma_period - delta;
+      /* compute the time that is left till the global period fires */
+      delta = tdma_period - delta;
 
-    call PeriodTimer.startOneShot(delta);
+      call PeriodTimer.startOneShot(delta);
+    } else {
+      call PeriodTimer.startOneShot(tdma_period);
+    }
 
     printf("period: %lu, s: %d   delta %lu\n", tdma_period, sync, delta);
 	printfflush();
