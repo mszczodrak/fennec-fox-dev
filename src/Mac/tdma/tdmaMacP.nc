@@ -455,12 +455,10 @@ implementation {
       call PeriodTimer.startOneShot(tdma_period);
     }
 
-    printf("period: %lu, s: %d   delta %lu\n", tdma_period, sync, delta);
-	printfflush();
+//    printf("period: %lu, s: %d   delta %lu\n", tdma_period, sync, delta);
+//	printfflush();
 
-   
-
-    call Leds.led2Toggle();
+//    call Leds.led2Toggle();
 
     //call PeriodTimer.startOneShot(delta);
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
@@ -473,20 +471,17 @@ implementation {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
       uint32_t local, global;
       error_t sync;
-      call Leds.led0Toggle();
+      call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
-
-/*
-	printf("localTime: %lu  globalTime: %lu, sync %d, offset: %lu\n",
-		local, global, sync, call TimeSyncInfo.getOffset());
-	printfflush();
-*/
 
     }
   }
 
   event void TimeSyncNotify.msg_sent() {
+    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+      call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
+    }
 
   }
 
