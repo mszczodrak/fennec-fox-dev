@@ -117,10 +117,10 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
-    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+//    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call Leds.led2Toggle();
-      call PeriodTimer.startPeriodic(tdma_period);
-    }
+      call PeriodTimer.startOneShot(tdma_period);
+//    }
 
     status = S_STARTING;
     return SUCCESS;
@@ -436,8 +436,32 @@ implementation {
 
 
   event void PeriodTimer.fired() {
+
+    uint32_t delta;
+    error_t sync;
+
+    /* get global time */
+    sync = call GlobalTime.getGlobalTime(&delta);
+
+    /* compute the time that passed from the last global period */
+    delta = delta % tdma_period;
+
+    /* compute the time that is left till the global period fires */
+    delta = tdma_period - delta;
+
+    call PeriodTimer.startOneShot(delta);
+
+    printf("period: %lu, s: %d   delta %lu\n", tdma_period, sync, delta);
+	printfflush();
+
+   
+
     call Leds.led2Toggle();
-    call TimeSyncMode.send();
+
+    //call PeriodTimer.startOneShot(delta);
+    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+      call TimeSyncMode.send();
+    }
   }
 
 
