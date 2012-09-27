@@ -33,7 +33,7 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_PERIOD 10000
+#define TDMA_PERIOD 5000
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -66,13 +66,15 @@ module tdmaMacP @safe() {
 
   uses interface Random;
 
-  uses interface PacketTimeStamp<TMilli,uint32_t>;
-  uses interface GlobalTime<TMilli>;
+  uses interface PacketTimeStamp<T32khz,uint32_t>;
+  uses interface GlobalTime<T32khz>;
   uses interface TimeSyncInfo;
   uses interface TimeSyncMode;
 
-  uses interface Timer<TMilli> as PeriodTimer;
+  uses interface StdControl as TimeControl;
 
+  uses interface Timer<TMilli> as PeriodTimer;
+  uses interface Leds;
 }
 
 implementation {
@@ -86,11 +88,18 @@ implementation {
   /* Functions */
 
   command error_t Mgmt.start() {
+    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+      call PeriodTimer.startPeriodic(TDMA_PERIOD);
+      printf("I'm the root\n");
+      printfflush();
+    }
+    call Leds.led0Toggle();
     if (status == S_STARTED) {
       dbg("Mac", "Mac tdma already started\n");
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
+
 
     localSendId = call Random.rand16();
 
@@ -100,9 +109,7 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
-    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      call PeriodTimer.startPeriodic(TDMA_PERIOD);
-    }
+    call TimeControl.start();
 
     status = S_STARTING;
     return SUCCESS;
@@ -121,6 +128,7 @@ implementation {
     if (call RadioControl.stop() != SUCCESS) {
       signal Mgmt.stopDone(FAIL);
     }
+    call TimeControl.stop();
     status = S_STOPPING;
     return SUCCESS;
   }
@@ -408,34 +416,6 @@ implementation {
 
 	/* add info about new message */
 
-/*
-    uint32_t rxTimestamp = call PacketTimeStamp.timestamp(msg);
-    uint16_t *t1 = (uint16_t*) &rxTimestamp;
-    uint16_t *t2 = ++t1;
-
-    uint32_t skew;
-    uint16_t root;
-    uint16_t seq;
-    uint16_t tab_size;
-    uint32_t loc_to_glob;
-
-    printf("pack timestamp: %d\n", call GlobalTime.local2Global(&rxTimestamp));
-    printf("rec at %d %d\n", *t1, *t2);
-
-    skew = (uint32_t)call TimeSyncInfo.getSkew()*1000000UL;
-    root = call TimeSyncInfo.getRootID();
-    seq  = call TimeSyncInfo.getSeqNum();
-    tab_size = call TimeSyncInfo.getNumEntries();
-    loc_to_glob = call GlobalTime.local2Global(&rxTimestamp);
-
-    printf("valid: %d\n", call PacketTimeStamp.isValid(msg));
-    printf("is_synced: %d\n", call GlobalTime.local2Global(&rxTimestamp));
-    printf("skew %lu   root %d   seq %d    tab %d    loc %lu\n", skew, root, seq, tab_size, loc_to_glob);
-
-    printf("rec at %d %d\n", *t1, *t2);
-    printfflush();
-*/
-
         return signal MacReceive.receive(msg, payload, len);
       }
     }
@@ -446,7 +426,7 @@ implementation {
 
 
   event void PeriodTimer.fired() {
-    printf("root fired\n");
+    call Leds.led0Toggle();
     call TimeSyncMode.send();
   }
 

@@ -29,65 +29,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Miklos Maroti, Brano Kusy, Janos Sallai
- * Date last modified: 3/17/03
+ * @author: Miklos Maroti, Brano Kusy (kusy@isis.vanderbilt.edu)
  * Ported to T2: 3/17/08 by Brano Kusy (branislav.kusy@gmail.com)
- * Adapted for 32kHz and LPL: 6/16/09 by Thomas Schmid (thomas.schmid@ucla.edu)
  */
 
-#include "TimeSyncMsg.h"
-
-configuration TimeSync32kC
-{
-  uses interface Boot;
-  provides interface Init;
-  provides interface StdControl;
-  provides interface GlobalTime<T32khz>;
-
-  //interfaces for extra functionality: need not to be wired
-  provides interface TimeSyncInfo;
-  provides interface TimeSyncMode;
-  provides interface TimeSyncNotify;
-}
-
-implementation
-{
-  components new TimeSyncP(T32khz) as TimeSyncP;
-
-  GlobalTime      =   TimeSyncP;
-  StdControl      =   TimeSyncP;
-  Init            =   TimeSyncP;
-  Boot            =   TimeSyncP;
-  TimeSyncInfo    =   TimeSyncP;
-  TimeSyncMode    =   TimeSyncP;
-  TimeSyncNotify  =   TimeSyncP;
-
-  components TimeSyncMessageC as ActiveMessageC;
-  TimeSyncP.RadioControl    ->  ActiveMessageC;
-  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSend32khz[TIMESYNC_AM_FTSP];
-  TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
-  TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
-
-  components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
-  LocalTime32khzC.Counter -> Counter32khz32C;
-  TimeSyncP.LocalTime     -> LocalTime32khzC;
-
-  components new TimerMilliC() as TimerC;
-  TimeSyncP.Timer ->  TimerC;
-
-  components RandomC;
-  TimeSyncP.Random -> RandomC;
-  
-#if defined(TIMESYNC_LEDS)
-  components LedsC;
+#if defined(TIMESYNCMSG_H)
 #else
-  components NoLedsC as LedsC;
+#define TIMESYNCMSG_H
+
+typedef nx_struct TimeSyncMsg
+{
+	nx_uint16_t	rootID;		// the node id of the synchronization root
+	nx_uint16_t	nodeID;		// the node if of the sender
+	nx_uint8_t	seqNum;		// sequence number for the root
+
+	/*
+	* After TEP 133, the message timestamp contains the difference between
+	* event time and the time the message was actually sent out. TimeSyncP
+	* sends the local time associated with this globalTime to the
+	* TimeStamping mechanism, which then calculates the difference.
+	*
+	* On the receiving side, the difference is applied to the local
+	* timestamp. The receiving timestamp thus represents the time on the
+	* receiving clock when the remote globalTime was taken.
+	*/
+	nx_uint32_t	globalTime;
+
+	//just for convenience
+	nx_uint32_t 	localTime;
+} TimeSyncMsg;
+
+enum {
+    TIMESYNC_AM_FTSP = 0x3E,
+    TIMESYNCMSG_LEN = sizeof(TimeSyncMsg) - sizeof(nx_uint32_t),
+    TS_TIMER_MODE = 0,      // see TimeSyncMode interface
+    TS_USER_MODE = 1,       // see TimeSyncMode interface
+};
+
 #endif
-  TimeSyncP.Leds  ->  LedsC;
-
-#ifdef LOW_POWER_LISTENING
-  TimeSyncP.LowPowerListening -> ActiveMessageC;
-#endif
-
-
-}

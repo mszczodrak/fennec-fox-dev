@@ -32,19 +32,18 @@
  * Author: Miklos Maroti, Brano Kusy, Janos Sallai
  * Date last modified: 3/17/03
  * Ported to T2: 3/17/08 by Brano Kusy (branislav.kusy@gmail.com)
- * Adapted for 32kHz and LPL: 6/16/09 by Thomas Schmid (thomas.schmid@ucla.edu)
  */
 
 #include "TimeSyncMsg.h"
 
-configuration TimeSync32kC
+configuration TimeSyncC
 {
   uses interface Boot;
   provides interface Init;
   provides interface StdControl;
-  provides interface GlobalTime<T32khz>;
+  provides interface GlobalTime<TMilli>;
 
-  //interfaces for extra functionality: need not to be wired
+  //interfaces for extra fcionality: need not to be wired
   provides interface TimeSyncInfo;
   provides interface TimeSyncMode;
   provides interface TimeSyncNotify;
@@ -52,7 +51,7 @@ configuration TimeSync32kC
 
 implementation
 {
-  components new TimeSyncP(T32khz) as TimeSyncP;
+  components new TimeSyncP(TMilli);
 
   GlobalTime      =   TimeSyncP;
   StdControl      =   TimeSyncP;
@@ -63,21 +62,19 @@ implementation
   TimeSyncNotify  =   TimeSyncP;
 
   components TimeSyncMessageC as ActiveMessageC;
-  TimeSyncP.RadioControl    ->  ActiveMessageC;
-  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSend32khz[TIMESYNC_AM_FTSP];
+  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli[TIMESYNC_AM_FTSP];
   TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
 
-  components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
-  LocalTime32khzC.Counter -> Counter32khz32C;
-  TimeSyncP.LocalTime     -> LocalTime32khzC;
+  components LocalTimeMilliC;
+  TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 
   components new TimerMilliC() as TimerC;
   TimeSyncP.Timer ->  TimerC;
 
   components RandomC;
   TimeSyncP.Random -> RandomC;
-  
+
 #if defined(TIMESYNC_LEDS)
   components LedsC;
 #else
@@ -88,6 +85,5 @@ implementation
 #ifdef LOW_POWER_LISTENING
   TimeSyncP.LowPowerListening -> ActiveMessageC;
 #endif
-
 
 }

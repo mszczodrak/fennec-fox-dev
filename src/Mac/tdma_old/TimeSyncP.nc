@@ -4,7 +4,6 @@ generic module TimeSyncP(typedef precision_tag)
 {
     provides
     {
-        interface Init;
         interface StdControl;
         interface GlobalTime<precision_tag>;
 
@@ -15,23 +14,20 @@ generic module TimeSyncP(typedef precision_tag)
     }
     uses
     {
-        interface Boot;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
-        interface Timer<TMilli>;
         interface Random;
         interface Leds;
+	interface Timer<TMilli>;
         interface TimeSyncPacket<precision_tag,uint32_t>;
         interface LocalTime<precision_tag> as LocalTime;
-
-
-
     }
+    uses interface tdmaMacParams;
 }
 implementation
 {
 #ifndef TIMESYNC_RATE
-#define TIMESYNC_RATE   10
+#define TIMESYNC_RATE   3
 #endif
 
     enum {
@@ -66,8 +62,6 @@ implementation
         STATE_INIT = 0x04,
     };
 
-    uint8_t state, mode;
-
 /*
     We do linear regression from localTime to timeOffset (globalTime - localTime).
     This way we can keep the slope close to zero (ideally) and represent it
@@ -82,6 +76,8 @@ implementation
     uint32_t    localAverage;
     int32_t     offsetAverage;
     uint8_t     numEntries; // the number of full entries in the table
+
+    uint8_t state;
 
     message_t processedMsgBuffer;
     message_t* processedMsg;
@@ -207,24 +203,14 @@ implementation
         uint32_t age, oldestTime = 0;
         int32_t timeError;
 
-{
-        printf("time %lu %lu %d %d %d\n",
-		msg->localTime,
-                msg->globalTime,
-                call TimeSyncInfo.getRootID(),
-                call TimeSyncInfo.getSeqNum(),
-                call TimeSyncInfo.getNumEntries()
-        );
-        printfflush();
-}
-
-
-
-
         // clear table if the received entry's been inconsistent for some time
         timeError = msg->localTime;
         call GlobalTime.local2Global((uint32_t*)(&timeError));
         timeError -= msg->globalTime;
+
+	printf("%lu %lu\n", msg->localTime, msg->globalTime);
+	printfflush();
+
         if( (is_synced() == SUCCESS) &&
             (timeError > ENTRY_THROWOUT_LIMIT || timeError < -ENTRY_THROWOUT_LIMIT))
         {
@@ -290,6 +276,14 @@ implementation
         calculateConversion();
         signal TimeSyncNotify.msg_received();
 
+/*
+	{
+		uint32_t globalTime = call GlobalTime.getLocalTime();
+        	call GlobalTime.local2Global(&globalTime);
+	        printf("re_g:%lu sync%d\n", globalTime, is_synced());
+		printfflush();
+	}
+*/
     exit:
         state &= ~STATE_PROCESSING;
     }
@@ -297,7 +291,30 @@ implementation
     event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len)
     {
 
+/*
+{
+        uint32_t time;
+        time = call GlobalTime.getGlobalTime(&time);
+        printf("time %lu %d %d %d\n",
+                time,
+                call TimeSyncInfo.getRootID(),
+                call TimeSyncInfo.getSeqNum(),
+                call TimeSyncInfo.getNumEntries()
+        );
+        printfflush();
+}
+*/
 
+
+#ifdef TIMESYNC_DEBUG   // this code can be used to simulate multiple hopsf
+        uint8_t incomingID = (uint8_t)((TimeSyncMsg*)payload)->nodeID;
+        int8_t diff = (incomingID & 0x0F) - (TOS_NODE_ID & 0x0F);
+        if( diff < -1 || diff > 1 )
+            return msg;
+        diff = (incomingID & 0xF0) - (TOS_NODE_ID & 0xF0);
+        if( diff < -16 || diff > 16 )
+            return msg;
+#endif
 
         if( (state & STATE_PROCESSING) == 0
             && call TimeSyncPacket.isValid(msg)) {
@@ -341,9 +358,6 @@ implementation
         }
 
         outgoingMsg->globalTime = globalTime;
-#ifdef LOW_POWER_LISTENING
-        call LowPowerListening.setRemoteWakeupInterval(&outgoingMsgBuffer, LPL_INTERVAL);
-#endif
         // we don't send time sync msg, if we don't have enough data
         if( numEntries < ENTRY_SEND_LIMIT && outgoingMsg->rootID != TOS_NODE_ID ){
             ++heartBeats;
@@ -357,6 +371,9 @@ implementation
 
     event void Send.sendDone(message_t* ptr, error_t error)
     {
+	printf("sendDone\n");
+	printfflush();
+
         if (ptr != &outgoingMsgBuffer)
           return;
 
@@ -371,6 +388,13 @@ implementation
 
         state &= ~STATE_SENDING;
         signal TimeSyncNotify.msg_sent();
+
+//        {
+//                uint32_t globalTime = call GlobalTime.getLocalTime();
+//                call GlobalTime.local2Global(&globalTime);
+//                printf("sd_g:%lu\n", globalTime);
+//                printfflush();
+//        }
     }
 
     void timeSyncMsgSend()
@@ -386,25 +410,22 @@ implementation
         }
     }
 
-    event void Timer.fired()
-    {
-    }
-
     command error_t TimeSyncMode.setMode(uint8_t mode_){
-        mode = mode_;
         return SUCCESS;
     }
 
     command uint8_t TimeSyncMode.getMode(){
-        return mode;
+        return 0;
     }
 
     command error_t TimeSyncMode.send(){
-        timeSyncMsgSend();
-        return SUCCESS;
+      timeSyncMsgSend();
+      printf("TimeSyncMode.send()\n");
+      printfflush();
+      return SUCCESS;
     }
 
-    command error_t Init.init()
+    void init()
     {
         atomic{
             skew = 0.0;
@@ -419,27 +440,18 @@ implementation
 
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
-
-        return SUCCESS;
-    }
-
-    event void Boot.booted()
-    {
-      call StdControl.start();
     }
 
     command error_t StdControl.start()
     {
+        init();
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
-        call TimeSyncMode.setMode(TS_USER_MODE);
-
         return SUCCESS;
     }
 
     command error_t StdControl.stop()
     {
-        call Timer.stop();
         return SUCCESS;
     }
 
@@ -453,5 +465,13 @@ implementation
 
     default event void TimeSyncNotify.msg_received(){}
     default event void TimeSyncNotify.msg_sent(){}
+
+  event void tdmaMacParams.receive_status(uint16_t status_flag) {
+  }
+
+
+  event void Timer.fired() {
+
+  }
 
 }

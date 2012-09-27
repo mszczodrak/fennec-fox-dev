@@ -152,7 +152,6 @@ implementation {
   tdmaMacP.PacketTimeStamp -> FennecPacketC;
   tdmaMacP.GlobalTime -> TimeSyncC;
   tdmaMacP.TimeSyncInfo -> TimeSyncC;
-  tdmaMacP.TimeSyncMode -> TimeSyncC;
 
   components new TimerMilliC() as TimerC;
   tdmaMacP.PeriodTimer ->  TimerC;

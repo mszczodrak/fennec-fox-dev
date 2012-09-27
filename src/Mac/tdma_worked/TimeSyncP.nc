@@ -1,3 +1,37 @@
+/*
+ * Copyright (c) 2002, Vanderbilt University
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holders nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @author: Miklos Maroti, Brano Kusy (kusy@isis.vanderbilt.edu), Janos Sallai
+ * Ported to T2: 3/17/08 by Brano Kusy (branislav.kusy@gmail.com)
+ */
 #include "TimeSyncMsg.h"
 
 generic module TimeSyncP(typedef precision_tag)
@@ -25,6 +59,9 @@ generic module TimeSyncP(typedef precision_tag)
         interface LocalTime<precision_tag> as LocalTime;
 
 
+#ifdef LOW_POWER_LISTENING
+        interface LowPowerListening;
+#endif
 
     }
 }
@@ -388,9 +425,20 @@ implementation
 
     event void Timer.fired()
     {
+      if (mode == TS_TIMER_MODE) {
+        timeSyncMsgSend();
+      }
+      else
+        call Timer.stop();
     }
 
     command error_t TimeSyncMode.setMode(uint8_t mode_){
+        if (mode_ == TS_TIMER_MODE){
+            call Timer.startPeriodic((uint32_t)(896U+(call Random.rand16()&0xFF)) * BEACON_RATE);
+        }
+        else
+            call Timer.stop();
+
         mode = mode_;
         return SUCCESS;
     }
@@ -400,8 +448,11 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
-        timeSyncMsgSend();
-        return SUCCESS;
+        if (mode == TS_USER_MODE){
+            timeSyncMsgSend();
+            return SUCCESS;
+        }
+        return FAIL;
     }
 
     command error_t Init.init()
@@ -432,7 +483,7 @@ implementation
     {
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
-        call TimeSyncMode.setMode(TS_USER_MODE);
+        call TimeSyncMode.setMode(TS_TIMER_MODE);
 
         return SUCCESS;
     }

@@ -33,7 +33,7 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_PERIOD 10000
+#define TDMA_PERIOD 30000
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -69,7 +69,6 @@ module tdmaMacP @safe() {
   uses interface PacketTimeStamp<TMilli,uint32_t>;
   uses interface GlobalTime<TMilli>;
   uses interface TimeSyncInfo;
-  uses interface TimeSyncMode;
 
   uses interface Timer<TMilli> as PeriodTimer;
 
@@ -100,9 +99,7 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
-    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      call PeriodTimer.startPeriodic(TDMA_PERIOD);
-    }
+    call PeriodTimer.startOneShot(TDMA_PERIOD);
 
     status = S_STARTING;
     return SUCCESS;
@@ -445,9 +442,52 @@ implementation {
   }
 
 
+  /* Test Function:
+   * Story: Our goal is to send a message over the serial port every TDMA_PERIOD
+   *        	where TDMA_PERIOD is defined as 30000, so we aim to send a message
+   * 	    	every 30,000ms so close to 30seconds.
+   * 
+   * Protocol: At rundome time (after TDMA_PERIOD since booted) nodes check
+   *		if their clock is synchronized, if not, they wait another TDMA_PERIOD.
+   *		If a node's clock is synchronized, the node estimates when next global
+   *		period will start and will set its local timer to fired at the future
+   *		estimate.
+   */
   event void PeriodTimer.fired() {
-    printf("root fired\n");
-    call TimeSyncMode.send();
+    /* t has local time */
+    uint32_t t = call GlobalTime.getLocalTime();
+    uint32_t delta;
+
+    /* t has global time */
+    uint8_t sync = call GlobalTime.local2Global(&t);
+
+    /* check if we are synced */
+    if (!sync) {
+      /* if not synced, skip */
+      call PeriodTimer.startOneShot(TDMA_PERIOD);
+      return;
+    }
+
+    /* First time we are here this may be not synced, but 
+     * at the second time it should be synchronized with others */
+    dbgs(F_MAC, S_NONE, DBGS_SYNC_PARAMS, call TimeSyncInfo.getRootID(), 
+					call TimeSyncInfo.getSeqNum());
+
+    /* delta has global time difference to next period */
+    delta = TDMA_PERIOD - ((t + TDMA_PERIOD) % TDMA_PERIOD);
+
+    /* t has next global time when period starts */
+    //t += delta;
+
+    /* just a check to avoid a situation when this timer keeps 
+     * firing constantly, needs at least 10% of TDMA_PERIOD difference
+     */
+    if (delta < TDMA_PERIOD / 10)
+      delta += TDMA_PERIOD;
+
+    //call GlobalTime.global2Local(&t);
+
+    call PeriodTimer.startOneShot(delta);
   }
 
 }
