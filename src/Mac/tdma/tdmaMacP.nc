@@ -118,6 +118,14 @@ implementation {
     return !is_synchronizing() && !is_radio_off();
   }
 
+  void turn_on_radio() {
+
+  }
+
+  void turn_off_radio() {
+
+  }
+
   command error_t Mgmt.start() {
     call Leds.led1On();
     frame_counter = 0;
@@ -475,6 +483,9 @@ implementation {
     /* reset frame delimeter */
     call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
 
+    /* turn of radio */
+    turn_on_radio();
+
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call TimeSyncMode.send();
     }
@@ -482,6 +493,12 @@ implementation {
 
   event void FrameTimer.fired() {
     frame_counter++;
+
+    /* check when to turn off the radio */
+    if (frame_counter == (call tdmaMacParams.get_sync_time() +
+                                        call tdmaMacParams.get_node_time())) {
+      turn_off_radio();
+    }
   }
 
   event void TimeSyncNotify.msg_received() {
@@ -491,7 +508,6 @@ implementation {
       call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
-
     }
   }
 
