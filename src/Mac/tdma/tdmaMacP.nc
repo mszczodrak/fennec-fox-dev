@@ -77,6 +77,7 @@ module tdmaMacP @safe() {
   uses interface TimeSyncNotify;
 
   uses interface Timer<TMilli> as PeriodTimer;
+  uses interface Timer<TMilli> as FrameTimer;
 
   uses interface StdControl as TimerControl;
 
@@ -126,6 +127,7 @@ implementation {
 
   command error_t Mgmt.stop() {
     call PeriodTimer.stop();
+    call FrameTimer.stop();
     call TimerControl.stop();
     if (status == S_STOPPED) {
       dbg("Mac", "Mac tdma  already stopped\n");
@@ -444,11 +446,17 @@ implementation {
       call PeriodTimer.startOneShot(tdma_period);
     }
 
+    /* reset frame delimeter */
+    call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
+
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call TimeSyncMode.send();
     }
   }
 
+  event void FrameTimer.fired() {
+
+  }
 
   event void TimeSyncNotify.msg_received() {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {

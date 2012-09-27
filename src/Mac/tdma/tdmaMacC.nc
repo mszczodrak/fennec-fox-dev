@@ -138,8 +138,11 @@ implementation {
   tdmaMacP.TimeSyncMode -> TimeSyncC;
   tdmaMacP.TimeSyncNotify -> TimeSyncC;
 
-  components new TimerMilliC() as TimerC;
-  tdmaMacP.PeriodTimer ->  TimerC;
+  components new TimerMilliC() as PeriodTimerC;
+  tdmaMacP.PeriodTimer ->  PeriodTimerC;
+
+  components new TimerMilliC() as FrameTimerC;
+  tdmaMacP.FrameTimer ->  FrameTimerC;
 
   tdmaMacP.TimerControl -> TimeSyncC;
 
