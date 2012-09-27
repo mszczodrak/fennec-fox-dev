@@ -92,10 +92,35 @@ implementation {
 
   uint8_t localSendId;
 
+  uint16_t frame_counter;
+
   /* Functions */
+
+
+  bool is_synchronizing() {
+    if (frame_counter < call tdmaMacParams.get_sync_time()) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
+  bool is_radio_off() {
+    if (frame_counter >= (call tdmaMacParams.get_sync_time() + 
+                                        call tdmaMacParams.get_node_time())) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
+  bool is_networking() {
+    return !is_synchronizing() && !is_radio_off();
+  }
 
   command error_t Mgmt.start() {
     call Leds.led1On();
+    frame_counter = 0;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
 				call tdmaMacParams.get_sync_time() + 
@@ -423,6 +448,7 @@ implementation {
   event void PeriodTimer.fired() {
     uint32_t delta;
     error_t sync;
+    frame_counter = 0;
 
     call Leds.led0On();
 
@@ -455,7 +481,7 @@ implementation {
   }
 
   event void FrameTimer.fired() {
-
+    frame_counter++;
   }
 
   event void TimeSyncNotify.msg_received() {
