@@ -443,12 +443,12 @@ implementation {
 
   event void TimeSyncNotify.msg_received() {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-
-/*
       uint32_t local, global;
       error_t sync;
+      call Leds.led0Toggle();
 
-	call Leds.led0Toggle();
+/*
+
 
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
