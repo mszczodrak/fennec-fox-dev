@@ -450,6 +450,10 @@ implementation {
       /* compute the time that is left till the global period fires */
       delta = tdma_period - delta;
 
+      /* check if delta is suuper small */
+      if (delta < ((tdma_period / 4) + 5))
+        delta = delta + tdma_period;
+
       call PeriodTimer.startOneShot(delta);
     } else {
       call PeriodTimer.startOneShot(tdma_period);
