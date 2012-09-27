@@ -334,9 +334,6 @@ implementation
         }
 
         outgoingMsg->globalTime = globalTime;
-#ifdef LOW_POWER_LISTENING
-        call LowPowerListening.setRemoteWakeupInterval(&outgoingMsgBuffer, LPL_INTERVAL);
-#endif
         // we don't send time sync msg, if we don't have enough data
         if( numEntries < ENTRY_SEND_LIMIT && outgoingMsg->rootID != TOS_NODE_ID ){
             ++heartBeats;
