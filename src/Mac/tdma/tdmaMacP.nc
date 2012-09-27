@@ -67,6 +67,11 @@ module tdmaMacP @safe() {
   uses interface Random;
   uses interface Leds;
 
+  uses interface ReceiveIndicator as EnergyIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
+  uses interface ReceiveIndicator as PacketIndicator;
+
+
   uses interface PacketTimeStamp<TMilli,uint32_t>;
   uses interface GlobalTime<TMilli>;
   uses interface TimeSyncInfo;

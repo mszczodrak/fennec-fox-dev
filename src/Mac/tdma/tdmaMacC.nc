@@ -81,7 +81,7 @@ implementation {
   RadioPower = CsmaC.RadioPower;
   RadioResource = CsmaC.RadioResource;
 
-  components DefaultLplC as LplC;
+  components DummyLplC as LplC;
   tdmaMacP.RadioControl -> LplC.SplitControl;
 
   components UniqueSendC;
@@ -95,7 +95,7 @@ implementation {
 
   // SplitControl Layers
 
-  LplC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
+  //LplC.MacPacketAcknowledgements -> tdmaMacP.MacPacketAcknowledgements;
   LplC.SubControl -> CsmaC;
 
   UniqueSendC.SubSend -> LplC.Send;
@@ -104,13 +104,13 @@ implementation {
   LplC.SubReceive -> UniqueReceiveC.Receive;
   UniqueReceiveC.SubReceive =  RadioReceive;
 
-  components PowerCycleC;
-  PacketIndicator = PowerCycleC.PacketIndicator;
-  EnergyIndicator = PowerCycleC.EnergyIndicator;
-  ByteIndicator = PowerCycleC.ByteIndicator;
+//  components PowerCycleC;
+  EnergyIndicator = tdmaMacP.EnergyIndicator;
+  ByteIndicator = tdmaMacP.ByteIndicator;
+  PacketIndicator = tdmaMacP.PacketIndicator;
 
-  tdmaMacParams = PowerCycleC.tdmaMacParams;
-  tdmaMacParams = LplC.tdmaMacParams;
+//  tdmaMacParams = PowerCycleC.tdmaMacParams;
+  //tdmaMacParams = LplC.tdmaMacParams;
   tdmaMacParams = CsmaC.tdmaMacParams;
 
   components RandomC;
@@ -122,7 +122,7 @@ implementation {
   EnergyIndicator = macTransmitC.EnergyIndicator;
 
   CsmaC.MacTransmit -> macTransmitC.MacTransmit;
-  LplC.MacTransmit -> macTransmitC.MacTransmit;
+  //LplC.MacTransmit -> macTransmitC.MacTransmit;
 
   CsmaC.SubControl -> macTransmitC.StdControl;
  
