@@ -62,8 +62,7 @@ implementation {
   }
 
   command error_t StdControl.start() {
-    call ReceiveControl.start();
-    return call TransmitControl.start();
+    return SUCCESS;
   }
 
   command error_t StdControl.stop() {
@@ -89,8 +88,17 @@ implementation {
     post resource_request();
   }
 
+  task void start_done() {
+
+    call RadioPower.rxOn();
+    call RadioResource.release();
+
+    call ReceiveControl.start();
+    call TransmitControl.start();
+  }
+
   async event void RadioPower.startOscillatorDone() {
-//    post startDone_task();
+    post start_done();
   }
 
   event void RadioResource.granted() {

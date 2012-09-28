@@ -84,6 +84,7 @@ implementation {
   command error_t SplitControl.start() {
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
+      //call RadioControl.start();
       call RadioPower.startVReg();
       return SUCCESS;
 
@@ -234,12 +235,11 @@ implementation {
     csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
     csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
 
-    call RadioControl.start();
     m_state = S_STARTED;
 
 
-    call RadioPower.rxOn();
-    call RadioResource.release();
+//    call RadioPower.rxOn();
+//    call RadioResource.release();
     call SplitControlState.forceState(S_STARTED);
     signal SplitControl.startDone( SUCCESS );
   }
