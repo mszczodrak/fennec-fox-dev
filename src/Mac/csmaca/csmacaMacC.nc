@@ -27,8 +27,6 @@
 
 #include "csmacaMac.h"
 
-//#define LOW_POWER_LISTENING
-
 configuration csmacaMacC {
   provides interface Mgmt;
   provides interface AMSend as MacAMSend;
@@ -113,16 +111,9 @@ implementation {
   components RandomC;
   csmacaMacP.Random -> RandomC;
 
-  //csmacaMacParams = macTransmitC.csmacaMacParams;
   RadioTransmit = macTransmitC.RadioTransmit;
   EnergyIndicator = macTransmitC.EnergyIndicator;
-
-  //CsmaC.MacTransmit -> macTransmitC.MacTransmit;
   LplC.MacTransmit -> macTransmitC.MacTransmit;
-
-  //CsmaC.SubControl -> macTransmitC.StdControl;
- 
   RadioControl = macTransmitC.RadioControl;
-
 }
 
