@@ -42,6 +42,7 @@ configuration UniqueReceiveC {
     interface Receive;
     interface Receive as DuplicateReceive;
   }
+  provides interface StdControl;
   
   uses {
     interface Receive as SubReceive;
@@ -49,15 +50,11 @@ configuration UniqueReceiveC {
 }
 
 implementation {
-  components UniqueReceiveP,
-      MainC;
+  components UniqueReceiveP;
   
   Receive = UniqueReceiveP.Receive;
   DuplicateReceive = UniqueReceiveP.DuplicateReceive;
   SubReceive = UniqueReceiveP.SubReceive;
-      
-  MainC.SoftwareInit -> UniqueReceiveP;
-  
-  
+  StdControl = UniqueReceiveP;
 }
 

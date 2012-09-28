@@ -39,6 +39,7 @@ configuration UniqueSendC {
   provides {
     interface Send;
   }
+  provides interface StdControl;
   
   uses {
     interface Send as SubSend;
@@ -48,13 +49,11 @@ configuration UniqueSendC {
 implementation {
   components UniqueSendP,
       new StateC(),
-      RandomC,
-      MainC;
-      
+      RandomC;
+     
+  StdControl = UniqueSendP.StdControl; 
   Send = UniqueSendP.Send;
   SubSend = UniqueSendP.SubSend;
-  
-  MainC.SoftwareInit -> UniqueSendP;
   
   UniqueSendP.State -> StateC;
   UniqueSendP.Random -> RandomC;

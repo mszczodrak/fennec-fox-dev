@@ -157,10 +157,14 @@ implementation {
   error_t err;
 
   task void start_done() {
+    printf("signal Mgmt.startDone(%d)\n", err);
+    printfflush();
     signal Mgmt.startDone(err);
   }
 
   task void stop_done() {
+    printf("signal Mgmt.stopDone(%d)\n", err);
+    printfflush();
     signal Mgmt.stopDone(err);
   }
 

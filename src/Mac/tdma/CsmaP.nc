@@ -19,6 +19,9 @@ module CsmaP @safe() {
   uses interface RadioPower;
 
   uses interface tdmaMacParams;
+
+  uses interface StdControl as UniqueSendControl;
+  uses interface StdControl as UniqueReceiveControl;
 }
 
 implementation {
@@ -51,6 +54,8 @@ implementation {
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
       call RadioPower.startVReg();
+      call UniqueSendControl.start();
+      call UniqueReceiveControl.start();
       return SUCCESS;
     
     } else if(call SplitControlState.isState(S_STARTED)) {
@@ -67,6 +72,8 @@ implementation {
     if (call SplitControlState.isState(S_STARTED)) {
       call SplitControlState.forceState(S_STOPPING);
       shutdown();
+      call UniqueSendControl.stop();
+      call UniqueReceiveControl.stop();
       return SUCCESS;
       
     } else if(call SplitControlState.isState(S_STOPPED)) {

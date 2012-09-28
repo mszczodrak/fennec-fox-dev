@@ -37,8 +37,8 @@
  
 module UniqueSendP @safe() {
   provides {
+    interface StdControl;
     interface Send;
-    interface Init;
   }
   
   uses {
@@ -57,9 +57,12 @@ implementation {
     S_SENDING,
   };
 
-  /***************** Init Commands ****************/
-  command error_t Init.init() {
+  command error_t StdControl.start() {
     localSendId = call Random.rand16();
+    return SUCCESS;
+  }
+
+  command error_t StdControl.stop() {
     return SUCCESS;
   }
 

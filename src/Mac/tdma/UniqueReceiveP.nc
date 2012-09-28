@@ -43,8 +43,8 @@ module UniqueReceiveP @safe() {
   provides {
     interface Receive;
     interface Receive as DuplicateReceive;
-    interface Init;
   }
+  provides interface StdControl;
   
   uses {
     interface Receive as SubReceive;
@@ -67,13 +67,16 @@ implementation {
     INVALID_ELEMENT = 0xFF,
   };
 
-  /***************** Init Commands *****************/
-  command error_t Init.init() {
+  command error_t StdControl.start() {
     int i;
     for(i = 0; i < RECEIVE_HISTORY_SIZE; i++) {
       receivedMessages[i].source = (am_addr_t) 0xFFFF;
       receivedMessages[i].dsn = 0;
     }
+    return SUCCESS;
+  }
+
+  command error_t StdControl.stop() {
     return SUCCESS;
   }
   

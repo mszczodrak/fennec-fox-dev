@@ -30,5 +30,12 @@ implementation {
   
   components new StateC();
   CsmaP.SplitControlState -> StateC;
+
+  components UniqueSendC;
+  components UniqueReceiveC;
+
+  CsmaP.UniqueSendControl -> UniqueSendC;
+  CsmaP.UniqueReceiveControl -> UniqueReceiveC;
+
   
 }
