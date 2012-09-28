@@ -120,7 +120,17 @@ implementation {
 
   /***************** Send Commands ****************/
   command error_t Send.cancel( message_t* p_msg ) {
-    return call MacTransmit.cancel();
+    switch( m_state ) {
+    case S_LOAD:
+    case S_SAMPLE_CCA:
+    case S_BEGIN_TRANSMIT:
+      m_state = S_CANCEL;
+      break;
+
+    default:
+      // cancel not allowed while radio is busy transmitting
+      return FAIL;
+    }
   }
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
@@ -161,11 +171,27 @@ implementation {
     //metadata->timesync = FALSE;
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
 
-    ccaOn = call csmacaMacParams.get_cca();
+//    ccaOn = call csmacaMacParams.get_cca();
 
-    call MacTransmit.send( m_msg, ccaOn );
+    csmaca_backoff_period = call csmacaMacParams.get_backoff();
+    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+
+    if (m_state == S_CANCEL) {
+      return ECANCEL;
+    }
+
+    if ( m_state != S_STARTED ) {
+      return FAIL;
+    }
+
+    m_state = S_LOAD;
+    m_cca = call csmacaMacParams.get_cca();
+    m_msg = m_msg;
+    totalCcaChecks = 0;
+
+    call RadioTransmit.load(m_msg);
     return SUCCESS;
-
   }
 
   command void* Send.getPayload(message_t* m, uint8_t len) {
@@ -281,25 +307,6 @@ implementation {
    * @param cca TRUE if this transmit should use clear channel assessment
    */
   command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
-    csmaca_backoff_period = call csmacaMacParams.get_backoff();
-    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
-    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
-
-    if (m_state == S_CANCEL) {
-      return ECANCEL;
-    }
-
-    if ( m_state != S_STARTED ) {
-      return FAIL;
-    }
-
-    m_state = S_LOAD;
-    m_cca = useCca;
-    m_msg = p_msg;
-    totalCcaChecks = 0;
-
-    call RadioTransmit.load(p_msg);
-    return SUCCESS;
   }
 
   /**
@@ -335,17 +342,6 @@ implementation {
   }
 
   command error_t MacTransmit.cancel() {
-    switch( m_state ) {
-    case S_LOAD:
-    case S_SAMPLE_CCA:
-    case S_BEGIN_TRANSMIT:
-      m_state = S_CANCEL;
-      break;
-        
-    default:
-      // cancel not allowed while radio is busy transmitting
-      return FAIL;
-    }
 
     return SUCCESS;
   }
