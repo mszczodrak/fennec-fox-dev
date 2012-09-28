@@ -154,6 +154,16 @@ implementation {
     }
   }
 
+  error_t err;
+
+  task void start_done() {
+    signal Mgmt.startDone(err);
+  }
+
+  task void stop_done() {
+    signal Mgmt.stopDone(err);
+  }
+
   command error_t Mgmt.start() {
     printf("Mgmt.start\n");
     printfflush();
@@ -165,8 +175,8 @@ implementation {
 				call tdmaMacParams.get_radio_off_time() );
 
     if (status == S_STARTED) {
-      dbg("Mac", "Mac tdma already started\n");
-      signal Mgmt.startDone(SUCCESS);
+      err = SUCCESS;
+      post start_done();
       return SUCCESS;
     }
 
@@ -174,7 +184,9 @@ implementation {
 
     if (call RadioControl.start() != SUCCESS) {
       printf("RadioControl.start != SUCCESS\n");
-      signal Mgmt.startDone(FAIL);
+      err = FAIL;
+      post start_done();
+      return FAIL;
     }
 
     call TimerControl.start();
@@ -197,14 +209,17 @@ implementation {
     printfflush();
 
     if (status == S_STOPPED) {
-      dbg("Mac", "Mac tdma  already stopped\n");
-      signal Mgmt.stopDone(SUCCESS);
+      printf("Mgmt.stop - already stopped\n");
+      printfflush();
+      err = SUCCESS;
+      post stop_done();
       return SUCCESS;
     }
 
     if (call RadioControl.stop() != SUCCESS) {
       printf("RadioControl.stop != SUCCESS\n");
-      signal Mgmt.stopDone(FAIL);
+      err = FAIL;
+      post stop_done();
     }
     status = S_STOPPING;
     printf("RadioControl.stop == SUCCESS\n");
@@ -213,15 +228,16 @@ implementation {
   }
 
 
-  event void RadioControl.startDone(error_t err) {
-    switch(err){
+  event void RadioControl.startDone(error_t error) {
+    switch(error){
     case EALREADY:
       printf("RadioControl.startDone EALREADY\n");
       if (status == S_STARTING) {
         printf("RadioControl.startDone EALREADY signal Mgmt\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
-        signal Mgmt.startDone(SUCCESS);
+        err = SUCCESS;
+        post start_done();
       }
       break;
 
@@ -231,7 +247,8 @@ implementation {
         printf("RadioControl.startDone SUCCESS signal Mgmt\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
-        signal Mgmt.startDone(SUCCESS);
+        err = SUCCESS;
+        post start_done();
       }
       break;
 
@@ -242,14 +259,15 @@ implementation {
   }
 
 
-  event void RadioControl.stopDone(error_t err) {
-    switch(err){
+  event void RadioControl.stopDone(error_t error) {
+    switch(error){
     case EALREADY:
       if (status == S_STOPPING) {
         printf("RadioControl.stopDone EALREADY signal Mgmt\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
-        signal Mgmt.stopDone(SUCCESS);
+        err = SUCCESS;
+        post stop_done();
       }
       break;
 
@@ -258,8 +276,9 @@ implementation {
       if (status == S_STOPPING) {
         printf("RadioControl.stopDone SUCCESS signal Mgmt\n");
         status = S_STOPPED;
-        signal MacStatus.status(F_RADIO, OFF);
-        signal Mgmt.stopDone(SUCCESS);
+        signal MacStatus.status(F_RADIO, OFF);  
+        err = SUCCESS;
+        post stop_done();
       }
       break;
 

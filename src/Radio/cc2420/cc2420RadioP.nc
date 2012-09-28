@@ -47,12 +47,14 @@ implementation {
   command error_t Mgmt.start() {
     call StdControl.start();
     dbg("Radio", "Radio cc2420 starts\n");
+    printf("Radio Mgmt.start\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
     call StdControl.stop();
+    printf("Radio Mgmt.stop\n");
     dbg("Radio", "Radio cc2420 stops\n");
     signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;
