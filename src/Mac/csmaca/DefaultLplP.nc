@@ -327,17 +327,6 @@ implementation {
     }
   }
   
-  /***************** Resend Events ****************/
-  /**
-   * Signal that a message has been sent
-   *
-   * @param p_msg message to send.
-   * @param error notifaction of how the operation went.
-   */
-  event void MacTransmit.sendDone( message_t* p_msg, error_t error ) {
-    // This is actually caught by SubSend.sendDone
-  }
-  
   
   /***************** Tasks ***************/
   task void send() {
