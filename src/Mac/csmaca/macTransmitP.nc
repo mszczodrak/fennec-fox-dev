@@ -207,17 +207,9 @@ implementation {
     return TOSH_DATA_LENGTH;
   }
 
-  task void resource_request() {
-    call RadioResource.request();
-  }
+  async event void RadioPower.startVRegDone() {}
 
-  async event void RadioPower.startVRegDone() {
-    post resource_request();
-  }
-
-  event void RadioResource.granted() {
-    call RadioPower.startOscillator();
-  }
+  event void RadioResource.granted() {}
 
   async event void RadioPower.startOscillatorDone() {
     post startDone_task();

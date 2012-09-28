@@ -86,16 +86,15 @@ implementation {
   }
 
   async event void RadioPower.startVRegDone() {
-//    post resource_request();
+    post resource_request();
   }
 
   async event void RadioPower.startOscillatorDone() {
 //    post startDone_task();
   }
 
-
   event void RadioResource.granted() {
-//    call RadioPower.startOscillator();
+    call RadioPower.startOscillator();
   }
 
 
