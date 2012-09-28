@@ -6,7 +6,6 @@
 
 module macTransmitP @safe() {
 
-  provides interface StdControl;
   provides interface MacTransmit;
 
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
@@ -25,11 +24,6 @@ module macTransmitP @safe() {
 
   uses interface RadioPower;
   uses interface Resource as RadioResource;
-
-//  uses interface StdControl as SubControl;
-//  uses interface MacTransmit;
-
-
 }
 
 implementation {
@@ -187,12 +181,6 @@ implementation {
     return TOSH_DATA_LENGTH;
   }
 
-  /**************** Events ****************/
-//  event void MacTransmit.sendDone( message_t* p_msg, error_t err ) {
-//    atomic sendErr = err;
-//    post sendDone_task();
-//  }
-
   task void resource_request() {
     call RadioResource.request();
   }
@@ -224,7 +212,14 @@ implementation {
   }
 
   task void startDone_task() {
-    call StdControl.start();
+    csmaca_backoff_period = call csmacaMacParams.get_backoff();
+    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+
+    call RadioControl.start();
+    m_state = S_STARTED;
+
+
     call RadioPower.rxOn();
     call RadioResource.release();
     call SplitControlState.forceState(S_STARTED);
@@ -242,23 +237,17 @@ implementation {
    * Shut down all sub-components and turn off the radio
    */
   void shutdown() {
-    call StdControl.stop();
+    call RadioControl.stop();
+    m_state = S_STOPPED;
+    call BackoffTimer.stop();
     call RadioPower.stopVReg();
     post stopDone_task();
   }
 
-  /***************** Defaults ***************/
-//  default event void SplitControl.startDone(error_t error) {
-//  }
-
-//  default event void SplitControl.stopDone(error_t error) {
-//  }
 
   event void csmacaMacParams.receive_status(uint16_t status_flag) {
   }
 
-
-  
   void requestInitialBackoff(message_t *msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
     if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
@@ -283,24 +272,6 @@ implementation {
     }
   }
 
-
-  /***************** StdControl Commands ****************/
-  command error_t StdControl.start() {
-    csmaca_backoff_period = call csmacaMacParams.get_backoff();
-    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
-    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
-
-    call RadioControl.start();
-    m_state = S_STARTED;
-    return SUCCESS;
-  }
-
-  command error_t StdControl.stop() {
-    call RadioControl.stop();
-    m_state = S_STOPPED;
-    call BackoffTimer.stop();
-    return SUCCESS;
-  }
 
   /***************** Functions ****************/
   /**

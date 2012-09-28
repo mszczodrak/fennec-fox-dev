@@ -2,8 +2,6 @@
 #include "IEEE802154.h"
 
 configuration macTransmitC {
-
-  provides interface StdControl;
   provides interface MacTransmit;
 
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -17,21 +15,15 @@ configuration macTransmitC {
 
   uses interface RadioPower;
   uses interface Resource as RadioResource;
-
-//  uses interface StdControl as SubControl;
-//  uses interface MacTransmit;
-
 }
 
 implementation {
 
   components macTransmitP;
-  StdControl = macTransmitP.StdControl;
   MacTransmit = macTransmitP;
   EnergyIndicator = macTransmitP.EnergyIndicator;
 
   RadioStdControl = macTransmitP.RadioStdControl;
-
   RadioControl = macTransmitP.RadioControl;
 
   components new MuxAlarm32khz32C() as Alarm;
@@ -44,8 +36,6 @@ implementation {
   components RandomC;
   macTransmitP.Random -> RandomC;
 
-
-
   SplitControl = macTransmitP;
   Send = macTransmitP;
   RadioPower = macTransmitP.RadioPower;
@@ -53,6 +43,4 @@ implementation {
 
   components new StateC();
   macTransmitP.SplitControlState -> StateC;
-
-
 }
