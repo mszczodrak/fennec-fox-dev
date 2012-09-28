@@ -263,10 +263,10 @@ implementation {
    * Shut down all sub-components and turn off the radio
    */
   void shutdown() {
-    call RadioControl.stop();
     m_state = S_STOPPED;
     call BackoffTimer.stop();
-    call RadioPower.stopVReg();
+    call RadioControl.stop();
+    //call RadioPower.stopVReg();
     post stopDone_task();
   }
 

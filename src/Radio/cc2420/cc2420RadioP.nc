@@ -66,9 +66,10 @@ implementation {
   }
 
   command error_t StdControl.stop() {
-//    call RadioPower.stopVReg();
     call ReceiveControl.stop();
-    return call TransmitControl.stop();
+    call TransmitControl.stop();
+    call RadioPower.stopVReg();
+    return SUCCESS;
   }
 
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
