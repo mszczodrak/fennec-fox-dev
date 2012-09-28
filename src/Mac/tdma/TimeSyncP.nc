@@ -263,7 +263,7 @@ implementation
         else
             goto exit;
 
-        call Leds.led0Toggle();
+        //call Leds.led0Toggle();
         if( outgoingMsg->rootID < TOS_NODE_ID )
             heartBeats = 0;
 
@@ -339,7 +339,7 @@ implementation
         if(error == SUCCESS)
         {
             ++heartBeats;
-            call Leds.led1Toggle();
+            //call Leds.led1Toggle();
 
             if( outgoingMsg->rootID == TOS_NODE_ID )
                 ++(outgoingMsg->seqNum);

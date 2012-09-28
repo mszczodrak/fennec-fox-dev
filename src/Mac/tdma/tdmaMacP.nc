@@ -131,18 +131,24 @@ implementation {
   }
 
   void turn_on_radio() {
-
-  }
-
-  void turn_off_radio() {
-    /* turn off radio only when timer is synced */
-    if (sync == SUCCESS) {
-
+    //printf("turn on\n");
+    //printfflush();
+    if (call RadioControl.start() == EALREADY) {
+      signal RadioControl.startDone(SUCCESS);
     }
   }
 
+  void turn_off_radio() {
+    //printf("turn off\n");
+    /* turn off radio only when timer is synced */
+    if (sync == SUCCESS) {
+      //printf("really\n");
+      call RadioControl.stop();
+    } 
+    //printfflush();
+  }
+
   command error_t Mgmt.start() {
-    call Leds.led1On();
     frame_counter = 0;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
@@ -166,7 +172,6 @@ implementation {
       signal Mgmt.startDone(FAIL);
     }
 
-    call Leds.led2Toggle();
     call PeriodTimer.startOneShot(tdma_period);
 
     status = S_STARTING;
@@ -197,12 +202,21 @@ implementation {
     if (err != SUCCESS) {
       call RadioControl.start();
     } else {
+      if (status == S_STARTED) {
+        if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+          //printf("call time sync send\n");
+          //printfflush();
+          call TimeSyncMode.send();
+        }
+      }
+
       if (status == S_STARTING) {
         dbg("Mac", "Mac tdma got RadioControl startDone\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         signal Mgmt.startDone(SUCCESS);
       }
+
     }
   }
 
@@ -471,8 +485,6 @@ implementation {
   event void PeriodTimer.fired() {
     frame_counter = 0;
 
-    call Leds.led0On();
-
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&global);
 
@@ -499,23 +511,31 @@ implementation {
     /* turn of radio */
     turn_on_radio();
 
-    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      call TimeSyncMode.send();
-    }
   }
 
   event void FrameTimer.fired() {
     frame_counter++;
 
+    if (is_synchronizing()) {
+      //call Leds.set(1);
+    }
+
+    if (is_networking()) {
+      //call Leds.set(2);
+    }
+
     /* check when to turn off the radio */
     if (frame_counter == (call tdmaMacParams.get_sync_time() +
                                         call tdmaMacParams.get_node_time())) {
+      //call Leds.set(4);
       turn_off_radio();
     }
   }
 
   event void TimeSyncNotify.msg_received() {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+      //printf("msg_rece\n");
+      //printfflush();
       call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
