@@ -5,7 +5,6 @@
 #include "Fennec.h"
 
 module macTransmitP @safe() {
-
   provides interface MacTransmit;
 
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
@@ -45,13 +44,10 @@ implementation {
     S_TRANSMITTING,
   };
 
-//  message_t* ONE_NOK m_msg;
-
   error_t sendErr = SUCCESS;
 
   /** TRUE if we are to use CCA when sending the current packet */
   norace bool ccaOn;
-
 
   /****************** Prototypes ****************/
   task void startDone_task();
@@ -59,8 +55,6 @@ implementation {
   task void sendDone_task();
 
   void shutdown();
-
-
 
   task void signalSendDone() {
     m_state = S_STARTED;
@@ -78,13 +72,10 @@ implementation {
   norace uint16_t myCongestionBackoff;
 
 
-
-
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      //call RadioControl.start();
       call RadioPower.startVReg();
       return SUCCESS;
 
@@ -172,8 +163,6 @@ implementation {
     //metadata->timesync = FALSE;
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
 
-//    ccaOn = call csmacaMacParams.get_cca();
-
     csmaca_backoff_period = call csmacaMacParams.get_backoff();
     csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
     csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
@@ -237,9 +226,6 @@ implementation {
 
     m_state = S_STARTED;
 
-
-//    call RadioPower.rxOn();
-//    call RadioResource.release();
     call SplitControlState.forceState(S_STARTED);
     signal SplitControl.startDone( SUCCESS );
   }
@@ -290,17 +276,6 @@ implementation {
     }
   }
 
-
-  /***************** Functions ****************/
-  /**
-   * Set up a message to be sent. First load it into the outbound tx buffer
-   * on the chip, then attempt to send it.
-   * @param *p_msg Pointer to the message that needs to be sent
-   * @param cca TRUE if this transmit should use clear channel assessment
-   */
-  command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
-  }
-
   /**
    * Resend a packet that already exists in the outbound tx buffer on the
    * chip
@@ -329,16 +304,8 @@ implementation {
     } else {
       call RadioTransmit.send(m_msg, useCca);
     }
-
     return SUCCESS;
   }
-
-  command error_t MacTransmit.cancel() {
-
-    return SUCCESS;
-  }
-
-  
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
@@ -414,10 +381,7 @@ implementation {
         post signalSendDone();
       }
     }
-
   }
-
-
 
 }
 
