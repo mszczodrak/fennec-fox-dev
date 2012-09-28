@@ -61,7 +61,6 @@ implementation {
   components MainC,
       DefaultLplP,
       PowerCycleC,
-      CsmaC,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,

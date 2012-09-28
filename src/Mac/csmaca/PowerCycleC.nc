@@ -53,7 +53,7 @@ configuration PowerCycleC {
 
 implementation {
   components PowerCycleP,
-      CsmaC,
+      macTransmitC,
       LedsC,
       new StateC() as RadioPowerStateC,
       new StateC() as SplitControlStateC,
@@ -74,7 +74,7 @@ implementation {
   SplitControlState = SplitControlStateC;
   RadioPowerState = RadioPowerStateC;
   
-  PowerCycleP.SubControl -> CsmaC;
+  PowerCycleP.SubControl -> macTransmitC;
   PowerCycleP.SendState -> LplC;
   PowerCycleP.RadioPowerState -> RadioPowerStateC;
   PowerCycleP.SplitControlState -> SplitControlStateC;

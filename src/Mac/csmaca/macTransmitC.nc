@@ -1,3 +1,4 @@
+#include "CC2420.h"
 #include "IEEE802154.h"
 
 configuration macTransmitC {
@@ -10,6 +11,16 @@ configuration macTransmitC {
   uses interface RadioTransmit;
   uses interface StdControl as RadioControl;
   uses interface csmacaMacParams;
+
+  provides interface SplitControl;
+  provides interface Send;
+
+  uses interface RadioPower;
+  uses interface Resource as RadioResource;
+
+//  uses interface StdControl as SubControl;
+//  uses interface MacTransmit;
+
 }
 
 implementation {
@@ -32,6 +43,16 @@ implementation {
 
   components RandomC;
   macTransmitP.Random -> RandomC;
+
+
+
+  SplitControl = macTransmitP;
+  Send = macTransmitP;
+  RadioPower = macTransmitP.RadioPower;
+  RadioResource = macTransmitP.RadioResource;
+
+  components new StateC();
+  macTransmitP.SplitControlState -> StateC;
 
 
 }
