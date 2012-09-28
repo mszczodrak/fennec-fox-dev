@@ -233,6 +233,7 @@ implementation {
 
 
   event void RadioControl.startDone(error_t error) {
+    printf("RadioControl.startDone\n");
     switch(error){
     case EALREADY:
       printf("RadioControl.startDone EALREADY\n");
