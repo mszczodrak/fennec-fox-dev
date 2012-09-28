@@ -40,6 +40,7 @@ module cc2420RadioP @safe() {
   uses interface StdControl as TransmitControl;
 
   uses interface RadioPower;
+  uses interface Resource as RadioResource;
 
   provides interface StdControl;
 }
@@ -80,12 +81,21 @@ implementation {
   event void RadioConfig.syncDone( error_t error ) {
   }
 
+  task void resource_request() {
+    call RadioResource.request();
+  }
+
   async event void RadioPower.startVRegDone() {
 //    post resource_request();
   }
 
   async event void RadioPower.startOscillatorDone() {
 //    post startDone_task();
+  }
+
+
+  event void RadioResource.granted() {
+//    call RadioPower.startOscillator();
   }
 
 
