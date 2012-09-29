@@ -42,34 +42,71 @@ module cc2420RadioP @safe() {
   uses interface RadioPower;
   uses interface Resource as RadioResource;
 
+  uses interface State as RadioState;
+
   provides interface StdControl;
 }
 
 implementation {
 
+  uint8_t mgmt;
+
+
   command error_t Mgmt.start() {
+    mgmt = TRUE;
     call StdControl.start();
-    dbg("Radio", "Radio cc2420 starts\n");
-    signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    mgmt = TRUE;
     call StdControl.stop();
-    dbg("Radio", "Radio cc2420 stops\n");
     signal Mgmt.stopDone( SUCCESS );
     return SUCCESS;
   }
 
   command error_t StdControl.start() {
-    return SUCCESS;
+    if (call RadioState.requestState(S_STARTING) == SUCCESS) {
+      call RadioPower.startVReg();
+      return SUCCESS;
+
+    } else if(call RadioState.isState(S_STARTED)) {
+      return EALREADY;
+
+    } else if(call RadioState.isState(S_STARTING)) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
   }
 
-  command error_t StdControl.stop() {
+  task void stop_done() {
     call ReceiveControl.stop();
     call TransmitControl.stop();
     call RadioPower.stopVReg();
-    return SUCCESS;
+
+    call RadioState.forceState(S_STOPPED);
+    if (mgmt == TRUE) {
+      signal Mgmt.stopDone(SUCCESS);
+      mgmt = FALSE;
+    }
+  }
+
+
+  command error_t StdControl.stop() {
+    if (call RadioState.isState(S_STARTED)) {
+      call RadioState.forceState(S_STOPPING);
+      post stop_done();
+      return SUCCESS;
+
+    } else if(call RadioState.isState(S_STOPPED)) {
+      return EALREADY;
+
+    } else if(call RadioState.isState(S_STOPPING)) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
   }
 
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
@@ -89,12 +126,18 @@ implementation {
   }
 
   task void start_done() {
-
     call RadioPower.rxOn();
     call RadioResource.release();
 
     call ReceiveControl.start();
     call TransmitControl.start();
+
+    call RadioState.forceState(S_STARTED);
+
+    if (mgmt == TRUE) {
+      signal Mgmt.startDone(SUCCESS);
+      mgmt = FALSE;
+    }
   }
 
   async event void RadioPower.startOscillatorDone() {

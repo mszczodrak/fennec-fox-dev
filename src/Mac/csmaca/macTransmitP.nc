@@ -76,7 +76,7 @@ implementation {
   command error_t SplitControl.start() {
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      call RadioPower.startVReg();
+      call RadioControl.start();
       return SUCCESS;
 
     } else if(call SplitControlState.isState(S_STARTED)) {
