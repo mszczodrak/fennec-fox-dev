@@ -1,1 +1,0 @@
-../simpleCC2420/simpleCC2420Radio.h
