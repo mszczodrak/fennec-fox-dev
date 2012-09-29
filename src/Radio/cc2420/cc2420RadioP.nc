@@ -52,8 +52,8 @@ implementation {
 
   task void start_done() {
     state = S_STARTED;
-    printf("Radio task start done\n");
-    printfflush();
+    //printf("Radio task start done\n");
+    //printfflush();
 
     signal SplitControl.startDone(SUCCESS);
     if (mgmt == TRUE) {
@@ -73,8 +73,8 @@ implementation {
 
   task void stop_done() {
     state = S_STOPPED;
-    printf("Radio task stop done\n");
-    printfflush();
+    //printf("Radio task stop done\n");
+    //printfflush();
     signal SplitControl.stopDone(SUCCESS);
     if (mgmt == TRUE) {
       signal Mgmt.stopDone(SUCCESS);
@@ -83,14 +83,14 @@ implementation {
   }
 
   command error_t Mgmt.start() {
-    printf("Radio mgmt start\n");
+    //printf("Radio mgmt start\n");
     mgmt = TRUE;
     call SplitControl.start();
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    printf("Radio mgmt stop\n");
+    //printf("Radio mgmt stop\n");
     mgmt = TRUE;
     call SplitControl.stop();
     return SUCCESS;
@@ -99,24 +99,24 @@ implementation {
   command error_t SplitControl.start() {
     if (state == S_STOPPED) {
       state = S_STARTING;
-      printf("Radio split start 1\n");
-      printfflush();
+      //printf("Radio split start 1\n");
+      //printfflush();
       call RadioPower.startVReg();
       return SUCCESS;
 
     } else if(state == S_STARTED) {
-      printf("Radio split start 2\n");
-      printfflush();
+      //printf("Radio split start 2\n");
+      //printfflush();
       post start_done();
       return EALREADY;
 
     } else if(state == S_STARTING) {
-      printf("Radio split start 3\n");
-      printfflush();
+      //printf("Radio split start 3\n");
+      //printfflush();
       return SUCCESS;
     }
-    printf("Radio split start 4\n");
-    printfflush();
+    //printf("Radio split start 4\n");
+    //printfflush();
 
     return EBUSY;
   }
