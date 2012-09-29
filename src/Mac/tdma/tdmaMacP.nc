@@ -33,6 +33,8 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
+#define TDMA_MAX_SYNCS_MISSED 3
+
 module tdmaMacP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as MacStatus;
@@ -91,9 +93,11 @@ implementation {
 
   uint8_t localSendId;
 
+  /* keeps track of the frame # within the given period */
   uint16_t frame_counter;
 
-  uint8_t sync_delay = 2;
+  /* keeps tract of the number of periods when sync message was missed */
+  uint8_t syncs_missed = 0;
 
   /**
    * Radio Power, Check State, and Duty Cycling State
@@ -165,16 +169,17 @@ implementation {
     }
   }
 
-
   void turn_on_radio() {
-    printf("turn on\n");
+    //printf("turn on\n");
+    //printfflush();
     call RadioControl.start();
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
-    if (sync == SUCCESS) {
+    if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
       printf("turn off radio\n");
+      printfflush();
       call RadioControl.stop();
     } 
   }
@@ -197,6 +202,7 @@ implementation {
 
   command error_t Mgmt.start() {
     frame_counter = 0;
+    syncs_missed = 0;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
 				call tdmaMacParams.get_sync_time() + 
@@ -218,11 +224,8 @@ implementation {
     }
 
     call TimerControl.start();
-
     call PeriodTimer.startOneShot(tdma_period);
-
     status = S_STARTING;
-
     return SUCCESS;
   }
 
@@ -551,7 +554,7 @@ implementation {
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&global);
 
-    if (sync == SUCCESS) {
+    if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
       /* compute the time that passed from the last global period */
       global = global % tdma_period;
 
@@ -568,46 +571,56 @@ implementation {
       call PeriodTimer.startOneShot(tdma_period);
     }
 
+    syncs_missed++;
+
     /* reset frame delimeter */
     call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
 
     /* turn of radio */
     turn_on_radio();
 
+    local = global = call GlobalTime.getLocalTime();
+    sync = call GlobalTime.getGlobalTime(&global);
+
+    printf("Period %lu %lu %d\n", local, global, sync);
+    printfflush();
   }
 
   event void FrameTimer.fired() {
     frame_counter++;
 
     if (should_start_synchronizing()) {
-      printf("start sync\n");
       start_synchronization();
     }
 
     if (should_start_networking()) {
-      //printf("start routing\n");
     }
 
     /* check when to turn off the radio */
     if (should_stop_radio()) {
-      //printf("stop radio\n");
       turn_off_radio();
     }
   }
 
   event void TimeSyncNotify.msg_received() {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-      printf("msg_rece\n");
-      printfflush();
+      syncs_missed = 0;
       call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
+
+      printf("Received: %lu %lu %d\n", local, global, sync);
+      printfflush();
     }
   }
 
   event void TimeSyncNotify.msg_sent() {
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
+      local = global = call GlobalTime.getLocalTime();
+      sync = call GlobalTime.getGlobalTime(&global);
+      printf("Send: %lu %lu %d\n", local, global, sync);
+      printfflush();
     }
 
   }

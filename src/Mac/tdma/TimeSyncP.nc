@@ -385,9 +385,6 @@ implementation
     {
         clearTable();
 
-        printf("FTSP start\n");
-        printfflush();
-
         atomic {
 	   skew = 0.0;
            localAverage = 0;
@@ -412,8 +409,6 @@ implementation
 
     command error_t StdControl.stop()
     {
-        printf("FTSP stop\n");
-        printfflush();
         call Timer.stop();
         return SUCCESS;
     }
