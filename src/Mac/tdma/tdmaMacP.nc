@@ -177,13 +177,10 @@ implementation {
       printf("turn off radio\n");
       call RadioControl.stop();
     } 
-    //printfflush();
   }
 
   void start_synchronization() {
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      //printf("call time sync send\n");
-      //printfflush();
       call TimeSyncMode.send();
     }
   }
@@ -191,20 +188,14 @@ implementation {
   error_t err;
 
   task void start_done() {
-    printf("signal Mgmt.startDone(%d)\n", err);
-    printfflush();
     signal Mgmt.startDone(err);
   }
 
   task void stop_done() {
-    printf("signal Mgmt.stopDone(%d)\n", err);
-    printfflush();
     signal Mgmt.stopDone(err);
   }
 
   command error_t Mgmt.start() {
-    printf("Mgmt.start\n");
-    printfflush();
     frame_counter = 0;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
@@ -221,7 +212,6 @@ implementation {
     localSendId = call Random.rand16();
 
     if (call RadioControl.start() != SUCCESS) {
-      printf("RadioControl.start != SUCCESS\n");
       err = FAIL;
       post start_done();
       return FAIL;
@@ -230,11 +220,9 @@ implementation {
     call TimerControl.start();
 
     call PeriodTimer.startOneShot(tdma_period);
-    printf("RadioControl.start == SUCCESS\n");
 
     status = S_STARTING;
 
-    printfflush();
     return SUCCESS;
   }
 
@@ -243,36 +231,25 @@ implementation {
     call FrameTimer.stop();
     call TimerControl.stop();
 
-    printf("Mgmt.stop\n");
-    printfflush();
-
     if (status == S_STOPPED) {
-      printf("Mgmt.stop - already stopped\n");
-      printfflush();
       err = SUCCESS;
       post stop_done();
       return SUCCESS;
     }
 
     if (call RadioControl.stop() != SUCCESS) {
-      printf("RadioControl.stop != SUCCESS\n");
       err = FAIL;
       post stop_done();
     }
     status = S_STOPPING;
-    printf("RadioControl.stop == SUCCESS\n");
-    printfflush();
     return SUCCESS;
   }
 
 
   event void RadioControl.startDone(error_t error) {
-    printf("RadioControl.startDone\n");
     switch(error){
     case EALREADY:
-      printf("RadioControl.startDone EALREADY\n");
       if (status == S_STARTING) {
-        printf("RadioControl.startDone EALREADY signal Mgmt\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         err = SUCCESS;
@@ -281,9 +258,7 @@ implementation {
       break;
 
     case SUCCESS:
-      printf("RadioControl.startDone SUCCESS\n");
       if (status == S_STARTING) {
-        printf("RadioControl.startDone SUCCESS signal Mgmt\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         err = SUCCESS;
@@ -292,7 +267,6 @@ implementation {
       break;
 
     default:
-      printf("RadioControl.start -- again\n");
       call RadioControl.start();
     }
   }
@@ -302,7 +276,6 @@ implementation {
     switch(error){
     case EALREADY:
       if (status == S_STOPPING) {
-        printf("RadioControl.stopDone EALREADY signal Mgmt\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
         err = SUCCESS;
@@ -311,9 +284,7 @@ implementation {
       break;
 
     case SUCCESS:
-      printf("RadioControl.stopDone SUCCESS\n");
       if (status == S_STOPPING) {
-        printf("RadioControl.stopDone SUCCESS signal Mgmt\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);  
         err = SUCCESS;
@@ -322,7 +293,6 @@ implementation {
       break;
 
     default:
-      printf("RadioControl.stop -- again\n");
       call RadioControl.stop();
     }
   }
@@ -609,30 +579,26 @@ implementation {
   event void FrameTimer.fired() {
     frame_counter++;
 
-    if (frame_counter == sync_delay) {
+    if (should_start_synchronizing()) {
+      printf("start sync\n");
       start_synchronization();
     }
 
-    if (is_synchronizing()) {
-      //call Leds.set(1);
-    }
-
-    if (is_networking()) {
-      //call Leds.set(2);
+    if (should_start_networking()) {
+      //printf("start routing\n");
     }
 
     /* check when to turn off the radio */
-    if (frame_counter == (call tdmaMacParams.get_sync_time() +
-                                        call tdmaMacParams.get_node_time())) {
-      //call Leds.set(4);
+    if (should_stop_radio()) {
+      //printf("stop radio\n");
       turn_off_radio();
     }
   }
 
   event void TimeSyncNotify.msg_received() {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-      //printf("msg_rece\n");
-      //printfflush();
+      printf("msg_rece\n");
+      printfflush();
       call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
