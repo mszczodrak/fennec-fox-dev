@@ -110,18 +110,33 @@ implementation {
 
   /* Functions */
 
+  bool should_start_synchronizing() {
+    return (frame_counter == (call tdmaMacParams.get_init_slack()));
+  }
 
-  bool is_synchronizing() {
-    if (frame_counter < call tdmaMacParams.get_sync_time()) {
+  bool should_start_networking() {
+    return (frame_counter == (call tdmaMacParams.get_init_slack() + 
+				call tdmaMacParams.get_sync_time()));
+  }
+
+  bool should_stop_radio() {
+    return (frame_counter == (call tdmaMacParams.get_init_slack() + 
+				call tdmaMacParams.get_sync_time() +
+				call tdmaMacParams.get_node_time()));
+  }
+
+  bool is_init() {
+    if (frame_counter < call tdmaMacParams.get_init_slack()) {
       return 1;
     } else {
       return 0;
     }
   }
 
-  bool is_radio_off() {
-    if (frame_counter >= (call tdmaMacParams.get_sync_time() + 
-                                        call tdmaMacParams.get_node_time())) {
+  bool is_synchronizing() {
+    if ((frame_counter >= call tdmaMacParams.get_init_slack()) && 
+	(frame_counter < (call tdmaMacParams.get_init_slack() 
+			+ call tdmaMacParams.get_sync_time()))) {
       return 1;
     } else {
       return 0;
@@ -129,8 +144,27 @@ implementation {
   }
 
   bool is_networking() {
-    return !is_synchronizing() && !is_radio_off();
+    if ((frame_counter >= (call tdmaMacParams.get_init_slack() + 
+			call tdmaMacParams.get_sync_time())) && 
+	(frame_counter < (call tdmaMacParams.get_init_slack() 
+			+ call tdmaMacParams.get_sync_time()
+			+ call tdmaMacParams.get_node_time()))) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
+
+  bool is_radio_off() {
+    if (frame_counter >= (call tdmaMacParams.get_init_slack() + 
+				call tdmaMacParams.get_sync_time() + 
+				call tdmaMacParams.get_node_time())) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
 
   void turn_on_radio() {
     printf("turn on\n");
