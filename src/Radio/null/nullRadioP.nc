@@ -1,5 +1,5 @@
 /*
- *  Null radio module for Fennec Fox platform.
+ *  null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Null Radio Protocol
+ * Network: null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -41,7 +41,7 @@ module nullRadioP @safe() {
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
 
-  provides interface StdControl as RadioControl;
+  provides interface SplitControl as RadioControl;
 
   provides interface RadioTransmit;
 
@@ -53,24 +53,45 @@ module nullRadioP @safe() {
 implementation {
 
   uint8_t channel;
+  uint8_t mgmt = FALSE;
+
+  task void start_done() {
+    signal RadioControl.startDone(SUCCESS);
+    if (mgmt == TRUE) {
+      mgmt = FALSE;
+      signal Mgmt.startDone(SUCCESS);
+    }
+  }
+
+  task void stop_done() {
+    signal RadioControl.stopDone(SUCCESS);
+    if (mgmt == TRUE) {
+      mgmt = FALSE;
+      signal Mgmt.stopDone(SUCCESS);
+    }
+  }
 
   command error_t Mgmt.start() {
+    mgmt = TRUE;
     dbg("Radio", "Radio null starts\n");
-    signal Mgmt.startDone(SUCCESS);
+    call RadioControl.start();
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    mgmt = TRUE;
     dbg("Radio", "Radio null stops\n");
-    signal Mgmt.stopDone( SUCCESS );
+    call RadioControl.stop();
     return SUCCESS;
   }
 
   command error_t RadioControl.start() {
+    post start_done();
     return SUCCESS;
   }
 
   command error_t RadioControl.stop() {
+    post stop_done();
     return SUCCESS;
   }
 

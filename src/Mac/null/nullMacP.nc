@@ -49,7 +49,7 @@ module nullMacP {
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
   uses interface RadioTransmit;
-  uses interface StdControl as RadioControl;
+  uses interface SplitControl as RadioControl;
 
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -69,6 +69,14 @@ implementation {
     dbg("Mac", "Mac null stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
+  }
+
+  event void RadioControl.startDone(error_t err) {
+
+  }
+
+  event void RadioControl.stopDone(error_t err) {
+
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {

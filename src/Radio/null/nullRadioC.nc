@@ -1,5 +1,5 @@
 /*
- *  Null radio module for Fennec Fox platform.
+ *  null radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Null Radio Protocol
+ * Network: null Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -37,7 +37,7 @@ configuration nullRadioC {
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
 
-  provides interface StdControl as RadioControl;
+  provides interface SplitControl as RadioControl;
 
   provides interface RadioTransmit;
 
