@@ -27,8 +27,6 @@
 
 #include "tdmaMac.h"
 
-//#define LOW_POWER_LISTENING
-
 configuration tdmaMacC {
   provides interface Mgmt;
   provides interface AMSend as MacAMSend;
@@ -49,7 +47,7 @@ configuration tdmaMacC {
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
 
-  uses interface StdControl as RadioControl;
+  uses interface SplitControl as RadioControl;
   uses interface RadioTransmit;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
@@ -77,11 +75,11 @@ implementation {
 
   RadioStatus = tdmaMacP.RadioStatus;
 
-  components CsmaC;
-  RadioPower = CsmaC.RadioPower;
-  RadioResource = CsmaC.RadioResource;
+  components macTransmitC;
+  RadioPower = macTransmitC.RadioPower;
+  RadioResource = macTransmitC.RadioResource;
 
-  tdmaMacP.RadioControl -> CsmaC;
+  tdmaMacP.RadioControl -> macTransmitC;
 
   components UniqueSendC;
   components UniqueReceiveC;
@@ -94,27 +92,20 @@ implementation {
 
   // SplitControl Layers
 
-  UniqueSendC.SubSend -> CsmaC;
+  UniqueSendC.SubSend -> macTransmitC;
   UniqueReceiveC.SubReceive =  RadioReceive;
 
   EnergyIndicator = tdmaMacP.EnergyIndicator;
   ByteIndicator = tdmaMacP.ByteIndicator;
   PacketIndicator = tdmaMacP.PacketIndicator;
 
-  tdmaMacParams = CsmaC.tdmaMacParams;
+  tdmaMacParams = macTransmitC.tdmaMacParams;
 
   components RandomC;
   tdmaMacP.Random -> RandomC;
 
-  components macTransmitC;
-  tdmaMacParams = macTransmitC.tdmaMacParams;
   RadioTransmit = macTransmitC.RadioTransmit;
   EnergyIndicator = macTransmitC.EnergyIndicator;
-
-  CsmaC.MacTransmit -> macTransmitC.MacTransmit;
-
-  CsmaC.SubControl -> macTransmitC.StdControl;
- 
   RadioControl = macTransmitC.RadioControl;
 
 

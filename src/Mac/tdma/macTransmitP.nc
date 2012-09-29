@@ -5,19 +5,24 @@
 #include "Fennec.h"
 
 module macTransmitP @safe() {
-
-  provides interface StdControl;
   provides interface MacTransmit;
 
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
-  uses interface StdControl as RadioControl;
+  uses interface SplitControl as RadioControl;
 
   uses interface tdmaMacParams;
   uses interface Random;
 
+  uses interface State as SplitControlState;
+
+  provides interface SplitControl;
+  provides interface Send;
+
+  uses interface RadioPower;
+  uses interface Resource as RadioResource;
 }
 
 implementation {
@@ -29,9 +34,31 @@ implementation {
   norace uint16_t tdma_min_backoff;
 
   norace error_t sendDoneErr;
+
+  enum {
+    S_STOPPED,
+    S_STARTING,
+    S_STARTED,
+    S_STOPPING,
+    S_TRANSMITTING,
+  };
+
+  error_t sendErr = SUCCESS;
+
+  /** TRUE if we are to use CCA when sending the current packet */
+  norace bool ccaOn;
+
+  /****************** Prototypes ****************/
+  task void startDone_task();
+  task void stopDone_task();
+  task void sendDone_task();
+
+  void shutdown();
+
   task void signalSendDone() {
     m_state = S_STARTED;
-    signal MacTransmit.sendDone( m_msg, sendDoneErr );
+    atomic sendErr = sendDoneErr;
+    post sendDone_task();
   }
 
   /** Total CCA checks that showed no activity before the NoAck LPL send */
@@ -42,47 +69,99 @@ implementation {
   
   /** The congestion backoff period */
   norace uint16_t myCongestionBackoff;
-  
-  void requestInitialBackoff(message_t *msg) {
-    myInitialBackoff = ( call Random.rand16() % (0x1F * tdma_backoff_period) + tdma_min_backoff);
+
+
+  /***************** SplitControl Commands ****************/
+  command error_t SplitControl.start() {
+
+    if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
+      call RadioControl.start();
+      return SUCCESS;
+
+    } else if(call SplitControlState.isState(S_STARTED)) {
+      return EALREADY;
+
+    } else if(call SplitControlState.isState(S_STARTING)) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
   }
 
-  void congestionBackoff(message_t *msg) {
-    myCongestionBackoff = ( call Random.rand16() % (0x7 * tdma_backoff_period) + tdma_min_backoff);
+  command error_t SplitControl.stop() {
+    if (call SplitControlState.isState(S_STARTED)) {
+      call SplitControlState.forceState(S_STOPPING);
+      call RadioControl.stop();
+      return SUCCESS;
 
-    if (myCongestionBackoff) {
-      call BackoffTimer.start(myCongestionBackoff);
-    } else {
-      signal BackoffTimer.fired();
+    } else if(call SplitControlState.isState(S_STOPPED)) {
+      return EALREADY;
+
+    } else if(call SplitControlState.isState(S_TRANSMITTING)) {
+      call SplitControlState.forceState(S_STOPPING);
+      // At sendDone, the radio will shut down
+      return SUCCESS;
+
+    } else if(call SplitControlState.isState(S_STOPPING)) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
+  }
+
+  /***************** Send Commands ****************/
+  command error_t Send.cancel( message_t* p_msg ) {
+    switch( m_state ) {
+    case S_LOAD:
+    case S_SAMPLE_CCA:
+    case S_BEGIN_TRANSMIT:
+      m_state = S_CANCEL;
+      break;
+
+    default:
+      // cancel not allowed while radio is busy transmitting
+      return FAIL;
     }
   }
 
+  command error_t Send.send( message_t* p_msg, uint8_t len ) {
 
-  /***************** StdControl Commands ****************/
-  command error_t StdControl.start() {
-    tdma_backoff_period = call tdmaMacParams.get_backoff();
-    tdma_min_backoff = call tdmaMacParams.get_min_backoff();
+    tdma_header_t* header = (tdma_header_t*) getHeader( p_msg );
+    metadata_t* metadata = (metadata_t*) p_msg->metadata;
 
-    call RadioControl.start();
-    m_state = S_STARTED;
-    return SUCCESS;
-  }
+    if ((!call tdmaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
+      header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
+    }
 
-  command error_t StdControl.stop() {
-    call RadioControl.stop();
-    m_state = S_STOPPED;
-    call BackoffTimer.stop();
-    return SUCCESS;
-  }
+    atomic {
+      if (!call SplitControlState.isState(S_STARTED)) {
+        return FAIL;
+      }
 
-  /***************** Functions ****************/
-  /**
-   * Set up a message to be sent. First load it into the outbound tx buffer
-   * on the chip, then attempt to send it.
-   * @param *p_msg Pointer to the message that needs to be sent
-   * @param cca TRUE if this transmit should use clear channel assessment
-   */
-  command error_t MacTransmit.send( message_t* ONE p_msg, bool useCca ) {
+      call SplitControlState.forceState(S_TRANSMITTING);
+      m_msg = p_msg;
+    }
+
+    // header->length = len + CC2420_SIZE;
+#ifdef CC2420_HW_SECURITY
+    header->fcf &= ((1 << IEEE154_FCF_ACK_REQ)|
+                    (1 << IEEE154_FCF_SECURITY_ENABLED)|
+                    (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
+                    (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
+#else
+    header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
+                    (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
+                    (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
+#endif
+    header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
+                     ( 1 << IEEE154_FCF_INTRAPAN ) );
+
+    metadata->ack = !call tdmaMacParams.get_ack();
+    metadata->rssi = 0;
+    metadata->lqi = 0;
+    //metadata->timesync = FALSE;
+    metadata->timestamp = CC2420_INVALID_TIMESTAMP;
+
     tdma_backoff_period = call tdmaMacParams.get_backoff();
     tdma_min_backoff = call tdmaMacParams.get_min_backoff();
 
@@ -95,12 +174,89 @@ implementation {
     }
 
     m_state = S_LOAD;
-    m_cca = useCca;
-    m_msg = p_msg;
+    m_cca = call tdmaMacParams.get_cca();
+    m_msg = m_msg;
     totalCcaChecks = 0;
 
-    call RadioTransmit.load(p_msg);
+    call RadioTransmit.load(m_msg);
     return SUCCESS;
+  }
+
+  command void* Send.getPayload(message_t* m, uint8_t len) {
+    if (len <= call Send.maxPayloadLength()) {
+      return (void* COUNT_NOK(len ))(m->data);
+    }
+    else {
+      return NULL;
+    }
+  }
+
+  command uint8_t Send.maxPayloadLength() {
+    return TOSH_DATA_LENGTH;
+  }
+
+  async event void RadioPower.startVRegDone() {}
+
+  event void RadioResource.granted() {}
+
+  async event void RadioPower.startOscillatorDone() {}
+
+  /***************** Tasks ****************/
+  task void sendDone_task() {
+    error_t packetErr;
+    atomic packetErr = sendErr;
+    if(call SplitControlState.isState(S_STOPPING)) {
+      shutdown();
+
+    } else {
+      call SplitControlState.forceState(S_STARTED);
+    }
+
+    signal Send.sendDone( m_msg, packetErr );
+  }
+
+  task void startDone_task() {
+    tdma_backoff_period = call tdmaMacParams.get_backoff();
+    tdma_min_backoff = call tdmaMacParams.get_min_backoff();
+
+    m_state = S_STARTED;
+
+    call SplitControlState.forceState(S_STARTED);
+    signal SplitControl.startDone( SUCCESS );
+  }
+
+  task void stopDone_task() {
+    call SplitControlState.forceState(S_STOPPED);
+    signal SplitControl.stopDone( SUCCESS );
+  }
+
+
+  /***************** Functions ****************/
+  /**
+   * Shut down all sub-components and turn off the radio
+   */
+  void shutdown() {
+    m_state = S_STOPPED;
+    call BackoffTimer.stop();
+    post stopDone_task();
+  }
+
+
+  event void tdmaMacParams.receive_status(uint16_t status_flag) {
+  }
+
+  void requestInitialBackoff(message_t *msg) {
+    myInitialBackoff = ( call Random.rand16() % (0x1F * tdma_backoff_period) + tdma_min_backoff);
+  }
+
+  void congestionBackoff(message_t *msg) {
+    myCongestionBackoff = ( call Random.rand16() % (0x7 * tdma_backoff_period) + tdma_min_backoff);
+
+    if (myCongestionBackoff) {
+      call BackoffTimer.start(myCongestionBackoff);
+    } else {
+      signal BackoffTimer.fired();
+    }
   }
 
   /**
@@ -131,27 +287,8 @@ implementation {
     } else {
       call RadioTransmit.send(m_msg, useCca);
     }
-
     return SUCCESS;
   }
-
-  command error_t MacTransmit.cancel() {
-    switch( m_state ) {
-    case S_LOAD:
-    case S_SAMPLE_CCA:
-    case S_BEGIN_TRANSMIT:
-      m_state = S_CANCEL;
-      break;
-        
-    default:
-      // cancel not allowed while radio is busy transmitting
-      return FAIL;
-    }
-
-    return SUCCESS;
-  }
-
-  
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
@@ -227,11 +364,22 @@ implementation {
         post signalSendDone();
       }
     }
-
   }
 
+  event void RadioControl.startDone( error_t err) {
+    if (call SplitControlState.isState(S_STARTING)) {
+      //printf("Mac startDone - task\n");
+      //printfflush();
+      post startDone_task();
+    }
+  }
 
-  event void tdmaMacParams.receive_status(uint16_t status_flag) {
+  event void RadioControl.stopDone( error_t err) {
+    if (call SplitControlState.isState(S_STOPPING)) {
+      //printf("Mac stopDone - shutdown\n");
+      //printfflush();
+      shutdown();
+    }
   }
 
 }
