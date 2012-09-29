@@ -37,7 +37,7 @@ configuration cc2420RadioC {
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
 
-  provides interface StdControl as RadioControl;
+  provides interface SplitControl as RadioControl;
 
   provides interface RadioTransmit;
 
@@ -48,10 +48,6 @@ configuration cc2420RadioC {
 }
 
 implementation {
-
-  enum {
-    CC_FF_PORT = 114,
-  };
 
   components cc2420RadioP;
   components cc2420ControlC;
@@ -67,7 +63,7 @@ implementation {
   cc2420RadioParams = cc2420RadioP;
   RadioStatus = cc2420RadioP.RadioStatus;
 
-  RadioControl = cc2420RadioP.StdControl;
+  RadioControl = cc2420RadioP.SplitControl;
 
   RadioResource = cc2420ControlC.RadioResource;
   RadioConfig = cc2420ControlC.RadioConfig;
@@ -87,7 +83,4 @@ implementation {
   RadioTransmit = cc2420DriverC.RadioTransmit;
   cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
 
-  components new StateC();
-  cc2420RadioP.RadioState -> StateC;
-  
 }

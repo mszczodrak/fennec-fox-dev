@@ -47,7 +47,7 @@ configuration csmacaMacC {
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
 
-  uses interface StdControl as RadioControl;
+  uses interface SplitControl as RadioControl;
   uses interface RadioTransmit;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;

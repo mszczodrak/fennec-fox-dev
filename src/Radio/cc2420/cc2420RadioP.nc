@@ -42,67 +42,99 @@ module cc2420RadioP @safe() {
   uses interface RadioPower;
   uses interface Resource as RadioResource;
 
-  uses interface State as RadioState;
-
-  provides interface StdControl;
+  provides interface SplitControl;
 }
 
 implementation {
 
-  uint8_t mgmt;
+  norace uint8_t state = S_STOPPED;
+  uint8_t mgmt = FALSE;
 
+  task void start_done() {
+    state = S_STARTED;
+    printf("Radio task start done\n");
+    printfflush();
 
-  command error_t Mgmt.start() {
-    mgmt = TRUE;
-    call StdControl.start();
-    return SUCCESS;
-  }
-
-  command error_t Mgmt.stop() {
-    mgmt = TRUE;
-    call StdControl.stop();
-    signal Mgmt.stopDone( SUCCESS );
-    return SUCCESS;
-  }
-
-  command error_t StdControl.start() {
-    if (call RadioState.requestState(S_STARTING) == SUCCESS) {
-      call RadioPower.startVReg();
-      return SUCCESS;
-
-    } else if(call RadioState.isState(S_STARTED)) {
-      return EALREADY;
-
-    } else if(call RadioState.isState(S_STARTING)) {
-      return SUCCESS;
+    signal SplitControl.startDone(SUCCESS);
+    if (mgmt == TRUE) {
+      signal Mgmt.startDone(SUCCESS);
+      mgmt = FALSE;
     }
-
-    return EBUSY;
   }
+
+  task void finish_starting_radio() {
+    call RadioPower.rxOn();
+    call RadioResource.release();
+    call ReceiveControl.start();
+    call TransmitControl.start();
+    post start_done();
+  }
+
 
   task void stop_done() {
-    call ReceiveControl.stop();
-    call TransmitControl.stop();
-    call RadioPower.stopVReg();
-
-    call RadioState.forceState(S_STOPPED);
+    state = S_STOPPED;
+    printf("Radio task stop done\n");
+    printfflush();
+    signal SplitControl.stopDone(SUCCESS);
     if (mgmt == TRUE) {
       signal Mgmt.stopDone(SUCCESS);
       mgmt = FALSE;
     }
   }
 
+  command error_t Mgmt.start() {
+    printf("Radio mgmt start\n");
+    mgmt = TRUE;
+    call SplitControl.start();
+    return SUCCESS;
+  }
 
-  command error_t StdControl.stop() {
-    if (call RadioState.isState(S_STARTED)) {
-      call RadioState.forceState(S_STOPPING);
+  command error_t Mgmt.stop() {
+    printf("Radio mgmt stop\n");
+    mgmt = TRUE;
+    call SplitControl.stop();
+    return SUCCESS;
+  }
+
+  command error_t SplitControl.start() {
+    if (state == S_STOPPED) {
+      state = S_STARTING;
+      printf("Radio split start 1\n");
+      printfflush();
+      call RadioPower.startVReg();
+      return SUCCESS;
+
+    } else if(state == S_STARTED) {
+      printf("Radio split start 2\n");
+      printfflush();
+      post start_done();
+      return EALREADY;
+
+    } else if(state == S_STARTING) {
+      printf("Radio split start 3\n");
+      printfflush();
+      return SUCCESS;
+    }
+    printf("Radio split start 4\n");
+    printfflush();
+
+    return EBUSY;
+  }
+
+  command error_t SplitControl.stop() {
+    if (state == S_STARTED) {
+      state = S_STOPPING;
+      call ReceiveControl.stop();
+      call TransmitControl.stop();
+      call RadioPower.stopVReg();
       post stop_done();
       return SUCCESS;
 
-    } else if(call RadioState.isState(S_STOPPED)) {
+    } else if(state == S_STOPPED) {
+      post stop_done();
       return EALREADY;
 
-    } else if(call RadioState.isState(S_STOPPING)) {
+    } else if(state == S_STOPPING) {
       return SUCCESS;
     }
 
@@ -125,23 +157,9 @@ implementation {
     post resource_request();
   }
 
-  task void start_done() {
-    call RadioPower.rxOn();
-    call RadioResource.release();
-
-    call ReceiveControl.start();
-    call TransmitControl.start();
-
-    call RadioState.forceState(S_STARTED);
-
-    if (mgmt == TRUE) {
-      signal Mgmt.startDone(SUCCESS);
-      mgmt = FALSE;
-    }
-  }
 
   async event void RadioPower.startOscillatorDone() {
-    post start_done();
+    post finish_starting_radio();
   }
 
   event void RadioResource.granted() {

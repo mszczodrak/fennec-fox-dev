@@ -7,7 +7,7 @@ configuration macTransmitC {
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
-  uses interface StdControl as RadioControl;
+  uses interface SplitControl as RadioControl;
   uses interface csmacaMacParams;
 
   provides interface SplitControl;

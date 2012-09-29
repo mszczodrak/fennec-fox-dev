@@ -11,7 +11,7 @@ module macTransmitP @safe() {
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
-  uses interface StdControl as RadioControl;
+  uses interface SplitControl as RadioControl;
 
   uses interface csmacaMacParams;
   uses interface Random;
@@ -92,7 +92,7 @@ implementation {
   command error_t SplitControl.stop() {
     if (call SplitControlState.isState(S_STARTED)) {
       call SplitControlState.forceState(S_STOPPING);
-      shutdown();
+      call RadioControl.stop();
       return SUCCESS;
 
     } else if(call SplitControlState.isState(S_STOPPED)) {
@@ -201,9 +201,7 @@ implementation {
 
   event void RadioResource.granted() {}
 
-  async event void RadioPower.startOscillatorDone() {
-    post startDone_task();
-  }
+  async event void RadioPower.startOscillatorDone() {}
 
   /***************** Tasks ****************/
   task void sendDone_task() {
@@ -243,8 +241,6 @@ implementation {
   void shutdown() {
     m_state = S_STOPPED;
     call BackoffTimer.stop();
-    call RadioControl.stop();
-    //call RadioPower.stopVReg();
     post stopDone_task();
   }
 
@@ -380,6 +376,22 @@ implementation {
         sendDoneErr = error;
         post signalSendDone();
       }
+    }
+  }
+
+  event void RadioControl.startDone( error_t err) {
+    if (call SplitControlState.isState(S_STARTING)) {
+      printf("Mac startDone - task\n");
+      printfflush();
+      post startDone_task();
+    }
+  }
+
+  event void RadioControl.stopDone( error_t err) {
+    if (call SplitControlState.isState(S_STOPPING)) {
+      printf("Mac stopDone - shutdown\n");
+      printfflush();
+      shutdown();
     }
   }
 
