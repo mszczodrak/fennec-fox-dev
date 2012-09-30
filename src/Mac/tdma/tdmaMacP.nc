@@ -172,7 +172,7 @@ implementation {
   void turn_on_radio() {
     //printf("turn on\n");
     //printfflush();
-    //call RadioControl.start();
+    call RadioControl.start();
   }
 
   void turn_off_radio() {
@@ -180,7 +180,7 @@ implementation {
     if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
       //printf("turn off radio\n");
       //printfflush();
-      //call RadioControl.stop();
+      call RadioControl.stop();
     } 
   }
 
