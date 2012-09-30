@@ -590,14 +590,17 @@ implementation {
     frame_counter++;
 
     if (should_start_synchronizing()) {
+      call Leds.set(1);
       start_synchronization();
     }
 
     if (should_start_networking()) {
+      call Leds.set(2);
     }
 
     /* check when to turn off the radio */
     if (should_stop_radio()) {
+      call Leds.set(4);
       turn_off_radio();
     }
   }
@@ -605,7 +608,7 @@ implementation {
   event void TimeSyncNotify.msg_received() {
     if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
       syncs_missed = 0;
-      call Leds.set(call TimeSyncInfo.getSeqNum());
+      //call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
 
@@ -616,7 +619,7 @@ implementation {
 
   event void TimeSyncNotify.msg_sent() {
     if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
+      //call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
       //printf("Send: %lu %lu %d\n", local, global, sync);
