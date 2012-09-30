@@ -172,15 +172,15 @@ implementation {
   void turn_on_radio() {
     //printf("turn on\n");
     //printfflush();
-    call RadioControl.start();
+    //call RadioControl.start();
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
-      printf("turn off radio\n");
-      printfflush();
-      call RadioControl.stop();
+      //printf("turn off radio\n");
+      //printfflush();
+      //call RadioControl.stop();
     } 
   }
 
@@ -583,7 +583,7 @@ implementation {
     sync = call GlobalTime.getGlobalTime(&global);
 
     printf("Period %lu %lu %d\n", local, global, sync);
-    printfflush();
+    //printfflush();
   }
 
   event void FrameTimer.fired() {
@@ -610,7 +610,7 @@ implementation {
       sync = call GlobalTime.getGlobalTime(&global);
 
       printf("Received: %lu %lu %d\n", local, global, sync);
-      printfflush();
+      //printfflush();
     }
   }
 

@@ -29,6 +29,30 @@ implementation
 #define TIMESYNC_RATE   10
 #endif
 
+   void printfFloat(float toBePrinted) {
+     uint32_t fi, f0, f1, f2;
+     char c;
+     float f = toBePrinted;
+
+     if (f<0){
+       c = '-'; f = -f;
+     } else {
+       c = ' ';
+     }
+
+     // integer portion.
+     fi = (uint32_t) f;
+
+     // decimal portion...get index for up to 3 decimal places.
+     f = f - ((float) fi);
+     f0 = f*10;   f0 %= 10;
+     f1 = f*100;  f1 %= 10;
+     f2 = f*1000; f2 %= 10;
+     printf("%c%ld.%d%d%d", c, fi, (uint8_t) f0, (uint8_t) f1,  
+(uint8_t) f2);
+   }
+
+
     enum {
         MAX_ENTRIES           = 8,              // number of entries in the table
         BEACON_RATE           = TIMESYNC_RATE,  // how often send the beacon msg (in seconds)
@@ -131,13 +155,26 @@ implementation
         int64_t localSum;
         int64_t offsetSum;
 
+        //uint64_t s_a_a = 0;
+
         int8_t i;
+        int8_t j;
+
+	printf("\ncalculateConversion()\n");
 
         for(i = 0; i < MAX_ENTRIES && table[i].state != ENTRY_FULL; ++i)
             ;
 
         if( i >= MAX_ENTRIES )  // table is empty
             return;
+
+        for(j = 0; j < MAX_ENTRIES; ++j) {
+	    if (table[j].state == ENTRY_FULL) {
+              //printf("table[%u].state = %u\n", j, table[j].state);
+              printf("table[%u].localTime = %lu\n", j, table[j].localTime);
+              printf("table[%u].timeOffset = %ld\n", j, table[j].timeOffset);
+            }
+	}
 /*
         We use a rough approximation first to avoid time overflow errors. The idea
         is that all times in the table should be relatively close to each other.
@@ -164,18 +201,35 @@ implementation
         newLocalAverage += localSum + localAverageRest / tableEntries;
         newOffsetAverage += offsetSum + offsetAverageRest / tableEntries;
 
+	printf("newLocalAverage %ld     newOffsetAverage %ld\n", newLocalAverage, newOffsetAverage);
+	printfflush();
+
+	/* up to here is good */
+
         localSum = offsetSum = 0;
         for(i = 0; i < MAX_ENTRIES; ++i)
             if( table[i].state == ENTRY_FULL ) {
-                int32_t a = table[i].localTime - newLocalAverage;
-                int32_t b = table[i].timeOffset - newOffsetAverage;
+                int32_t a = table[i].localTime - newLocalAverage;         // a is (xi - x)
+                int32_t b = table[i].timeOffset - newOffsetAverage;	  // b is (yi - y)
 
-                localSum += (int64_t)a * a;
-                offsetSum += (int64_t)a * b;
+		printf("\na = %ld\n", a);
+		printf("b = %ld\n", b);
+		printf("a * a = %lld\n", (int64_t)a * a);
+		printf("a * b = %lld\n", (int64_t)a * b);
+
+                localSum += (int64_t)a * a;				// E (xi -x)^2
+                offsetSum += (int64_t)a * b;				// E (xi - x)(yi - y)
             }
+	/* up to here is good */
 
-        if( localSum != 0 )
-            newSkew = (float)offsetSum / (float)localSum;
+	printf("\noffsetSum %lld    localSum %lld\n", offsetSum, localSum);
+	printfflush();
+
+        if( localSum != 0 ) {
+	    newSkew = (float)offsetSum / (float)localSum;
+//	    printf("\newSkew = \n");
+//	    printfFloat(newSkew);
+	}
 
         atomic
         {
@@ -184,6 +238,8 @@ implementation
             localAverage = newLocalAverage;
             numEntries = tableEntries;
         }
+
+	printfflush();
     }
 
     void clearTable()
@@ -211,6 +267,7 @@ implementation
         {
             if (++numErrors>3)
                 clearTable();
+	    printf("\n\n\t\tCLEAR TABLE\n\n");
             return; // don't incorporate a bad reading
         }
 
@@ -244,6 +301,11 @@ implementation
 
         table[freeItem].localTime = msg->localTime;
         table[freeItem].timeOffset = msg->globalTime - msg->localTime;
+
+//	printf("\nAdd entry mgs->globalTime %lu msg->localTime %lu\n", 
+//						msg->globalTime, msg->localTime);
+//	printf("\t entry [%u] - localTime %lu ,  timeOffset %ld\n", 
+//		freeItem, table[freeItem].localTime, table[freeItem].timeOffset);
     }
 
     void task processMsg()
