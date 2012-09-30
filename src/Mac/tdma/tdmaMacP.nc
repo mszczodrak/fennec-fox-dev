@@ -582,7 +582,7 @@ implementation {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
 
-    printf("Period %lu %lu %d\n", local, global, sync);
+    //printf("Period %lu %lu %d\n", local, global, sync);
     //printfflush();
   }
 
@@ -609,7 +609,7 @@ implementation {
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
 
-      printf("Received: %lu %lu %d\n", local, global, sync);
+      //printf("Received: %lu %lu %d\n", local, global, sync);
       //printfflush();
     }
   }
@@ -619,8 +619,8 @@ implementation {
       call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
-      printf("Send: %lu %lu %d\n", local, global, sync);
-      printfflush();
+      //printf("Send: %lu %lu %d\n", local, global, sync);
+      //printfflush();
     }
 
   }
