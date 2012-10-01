@@ -185,7 +185,9 @@ implementation {
   }
 
   void start_synchronization() {
-    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+    if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
+         ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
+//    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call TimeSyncMode.send();
     }
   }
@@ -562,7 +564,7 @@ implementation {
       global = tdma_period - global;
 
       /* check if global is suuper small */
-      if (global < ((tdma_period / 10) + 5))
+      if (global < ((tdma_period / 5) + 5 * (call tdmaMacParams.get_frame_size())))
         global = global + tdma_period;
 
       call PeriodTimer.startOneShot(global);
@@ -591,7 +593,7 @@ implementation {
   event void FrameTimer.fired() {
     frame_counter++;
 
-    if (should_start_synchronizing()) {
+    if (is_synchronizing()) {
       call Leds.set(1);
       start_synchronization();
     }
@@ -608,26 +610,21 @@ implementation {
   }
 
   event void TimeSyncNotify.msg_received() {
-    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+    //if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
       syncs_missed = 0;
-      //call Leds.set(call TimeSyncInfo.getSeqNum());
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
 
       printf("Received: %lu %lu %d\n", local, global, sync);
       printfflush();
-    }
+    //}
   }
 
   event void TimeSyncNotify.msg_sent() {
-    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-      //call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
-      local = global = call GlobalTime.getLocalTime();
-      sync = call GlobalTime.getGlobalTime(&global);
-      printf("Send: %lu %lu %d\n", local, global, sync);
-      printfflush();
-    }
-
+    local = global = call GlobalTime.getLocalTime();
+    sync = call GlobalTime.getGlobalTime(&global);
+    printf("Send: %lu %lu %d\n", local, global, sync);
+    printfflush();
   }
 
 }
