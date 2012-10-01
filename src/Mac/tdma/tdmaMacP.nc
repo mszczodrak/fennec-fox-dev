@@ -170,16 +170,16 @@ implementation {
   }
 
   void turn_on_radio() {
-    //printf("turn on\n");
-    //printfflush();
+    printf("turn on\n");
+    printfflush();
     call RadioControl.start();
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
-    if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
-      //printf("turn off radio\n");
-      //printfflush();
+    if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)){
+      printf("turn off radio\n");
+      printfflush();
       call RadioControl.stop();
     } 
   }
@@ -380,10 +380,6 @@ implementation {
     return metadata->ack;
   }
 
-
-
-
-
   event void tdmaMacParams.receive_status(uint16_t status_flag) {
   }
 
@@ -562,7 +558,7 @@ implementation {
       global = tdma_period - global;
 
       /* check if global is suuper small */
-      if (global < ((tdma_period / 4) + 5))
+      if (global < ((tdma_period / 10) + 5))
         global = global + tdma_period;
 
       call PeriodTimer.startOneShot(global);
@@ -571,7 +567,9 @@ implementation {
       call PeriodTimer.startOneShot(tdma_period);
     }
 
-    syncs_missed++;
+    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+      syncs_missed++;
+    }
 
     /* reset frame delimeter */
     call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
@@ -612,8 +610,8 @@ implementation {
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
 
-      //printf("Received: %lu %lu %d\n", local, global, sync);
-      //printfflush();
+      printf("Received: %lu %lu %d\n", local, global, sync);
+      printfflush();
     }
   }
 
@@ -622,8 +620,8 @@ implementation {
       //call Leds.set(call TimeSyncInfo.getSeqNum() - 1);
       local = global = call GlobalTime.getLocalTime();
       sync = call GlobalTime.getGlobalTime(&global);
-      //printf("Send: %lu %lu %d\n", local, global, sync);
-      //printfflush();
+      printf("Send: %lu %lu %d\n", local, global, sync);
+      printfflush();
     }
 
   }
