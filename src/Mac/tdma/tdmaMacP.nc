@@ -187,7 +187,6 @@ implementation {
   void start_synchronization() {
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
          ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
-//    if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
       call TimeSyncMode.send();
     }
   }
