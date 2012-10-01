@@ -205,6 +205,7 @@ implementation {
     syncs_missed = 0;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
+				call tdmaMacParams.get_init_slack() +
 				call tdmaMacParams.get_sync_time() + 
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
@@ -224,7 +225,10 @@ implementation {
     }
 
     call TimerControl.start();
-    call PeriodTimer.startOneShot(tdma_period);
+    call PeriodTimer.startOneShot(call tdmaMacParams.get_frame_size() *
+				(call tdmaMacParams.get_init_slack() +
+				call tdmaMacParams.get_sync_time() + 
+				call tdmaMacParams.get_node_time()));
     status = S_STARTING;
     return SUCCESS;
   }

@@ -45,6 +45,8 @@ configuration TimeSyncC
   provides interface TimeSyncInfo;
   provides interface TimeSyncMode;
   provides interface TimeSyncNotify;
+
+  uses interface tdmaMacParams;
 }
 
 implementation
@@ -56,6 +58,7 @@ implementation
   TimeSyncInfo    =   TimeSyncP;
   TimeSyncMode    =   TimeSyncP;
   TimeSyncNotify  =   TimeSyncP;
+  tdmaMacParams	  =   TimeSyncP;
 
   components TimeSyncMessageC as ActiveMessageC;
   TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli[TIMESYNC_AM_FTSP];

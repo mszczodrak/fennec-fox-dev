@@ -136,6 +136,7 @@ implementation {
   tdmaMacP.FrameTimer ->  FrameTimerC;
 
   tdmaMacP.TimerControl -> TimeSyncC;
+  tdmaMacParams = TimeSyncC;
 
 }
 

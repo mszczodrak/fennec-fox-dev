@@ -22,6 +22,7 @@ generic module TimeSyncP(typedef precision_tag)
         interface TimeSyncPacket<precision_tag,uint32_t>;
         interface LocalTime<precision_tag> as LocalTime;
     }
+    uses interface tdmaMacParams;
 }
 implementation
 {
@@ -439,7 +440,7 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
-        outgoingMsg->rootID = TOS_NODE_ID;
+        outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
         timeSyncMsgSend();
         return SUCCESS;
     }
@@ -485,7 +486,6 @@ implementation
     async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
     async command uint8_t   TimeSyncInfo.getHeartBeats() { return heartBeats; }
 
-    default event void TimeSyncNotify.msg_received(){}
-    default event void TimeSyncNotify.msg_sent(){}
-
+    event void tdmaMacParams.receive_status(uint16_t status_flag) {
+    }
 }
