@@ -121,38 +121,8 @@ implementation {
 
   /* Functions */
 
-
-  bool is_init() {
-    if (frame_counter < call tdmaMacParams.get_init_slack()) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-
-/*
-  bool is_radio_off() {
-    if (frame_counter >= (call tdmaMacParams.get_init_slack() + 
-				call tdmaMacParams.get_sync_time() + 
-				call tdmaMacParams.get_node_time())) {
-      //printf("radio off\n");
-      return 1;
-    } else {
-      //printf("radio on\n");
-      return 0;
-    }
-  }
-
-  bool is_networking() {
-    return (!is_radio_off());
-  }
-*/
-
   bool should_stop_radio() {
-    return (frame_counter == (call tdmaMacParams.get_init_slack() + 
-                               call tdmaMacParams.get_sync_time() +
-                               call tdmaMacParams.get_node_time()));
+    return (frame_counter == (call tdmaMacParams.get_node_time()));
   }
 
   void correct_period_time() {
@@ -241,8 +211,6 @@ implementation {
     radio_status = OFF;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
-				call tdmaMacParams.get_init_slack() +
-				call tdmaMacParams.get_sync_time() + 
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
 
@@ -261,10 +229,7 @@ implementation {
     }
 
     call TimerControl.start();
-    call PeriodTimer.startOneShot(call tdmaMacParams.get_frame_size() *
-				(call tdmaMacParams.get_init_slack() +
-				call tdmaMacParams.get_sync_time() + 
-				call tdmaMacParams.get_node_time()));
+    call PeriodTimer.startOneShot(tdma_period);
     status = S_STARTING;
     return SUCCESS;
   }
