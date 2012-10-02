@@ -33,9 +33,6 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_MAX_SYNCS_MISSED 	3
-#define TDMA_JUST_STARTED_SYNCS 10
-
 module tdmaMacP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as MacStatus;
@@ -229,7 +226,8 @@ implementation {
     }
 
     call TimerControl.start();
-    call PeriodTimer.startOneShot(tdma_period);
+    call PeriodTimer.startOneShot(call tdmaMacParams.get_frame_size() * (
+		call tdmaMacParams.get_node_time() * TDMA_INITIAL_STAY_ON ));
     status = S_STARTING;
     return SUCCESS;
   }
