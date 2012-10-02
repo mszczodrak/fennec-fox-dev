@@ -72,6 +72,8 @@ module tdmaMacP @safe() {
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as PacketIndicator;
 
+  uses interface Queue<message_t*> as SendQueue;
+
   uses interface PacketTimeStamp<TMilli,uint32_t>;
   uses interface GlobalTime<TMilli>;
   uses interface TimeSyncInfo;
