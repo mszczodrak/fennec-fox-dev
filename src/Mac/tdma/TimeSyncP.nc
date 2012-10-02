@@ -359,11 +359,15 @@ implementation
     command error_t TimeSyncMode.send(){
         outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          call Timer.startOneShot((uint32_t)(224+(call Random.rand16() % (0xFF & call tdmaMacParams.get_node_time())))
-				* ROOT_BEACON_RATE);
+          call Timer.startOneShot((uint32_t)((call tdmaMacParams.get_frame_size() / BEACON_RATE) + 
+			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
+						call tdmaMacParams.get_frame_size())))
+						* ROOT_BEACON_RATE);
         } else {
-          call Timer.startOneShot((uint32_t)(448+(call Random.rand16() % (0xFF & call tdmaMacParams.get_node_time())))
-				* BEACON_RATE);
+          call Timer.startOneShot((uint32_t)((call tdmaMacParams.get_frame_size() / BEACON_RATE) + 
+			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
+						call tdmaMacParams.get_frame_size())))
+						* BEACON_RATE);
         }
         return SUCCESS;
     }
