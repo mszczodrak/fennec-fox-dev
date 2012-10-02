@@ -116,9 +116,9 @@ implementation {
     S_TURNING_OFF,
   };
 
-  uint32_t local, global;
-  error_t sync;
-  bool busy_sending = FALSE;
+  norace uint32_t local, global;
+  norace error_t sync;
+  norace bool busy_sending = FALSE;
 
   /* Functions */
 
@@ -176,6 +176,20 @@ implementation {
     } else {
       return 0;
     }
+  }
+
+  void correct_period_time() {
+    /* compute the time that passed from the last global period */
+    global = global % tdma_period;
+
+    /* compute the time that is left till the global period fires */
+    global = tdma_period - global;
+
+    /* check if global is suuper small */
+    if (global < ((tdma_period / 5) + 5 * (call tdmaMacParams.get_frame_size())))
+      global = global + tdma_period;
+
+    call PeriodTimer.startOneShot(global);
   }
 
   void turn_on_radio() {
@@ -621,17 +635,7 @@ implementation {
     sync = call GlobalTime.getGlobalTime(&global);
 
     if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
-      /* compute the time that passed from the last global period */
-      global = global % tdma_period;
-
-      /* compute the time that is left till the global period fires */
-      global = tdma_period - global;
-
-      /* check if global is suuper small */
-      if (global < ((tdma_period / 5) + 5 * (call tdmaMacParams.get_frame_size())))
-        global = global + tdma_period;
-
-      call PeriodTimer.startOneShot(global);
+      correct_period_time();
     } else {
       /* if the clock is not synced, continue without adjusting the period */
       call PeriodTimer.startOneShot(tdma_period);
@@ -674,16 +678,19 @@ implementation {
   }
 
   event void TimeSyncNotify.msg_received() {
-    //if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-      syncs_missed = 0;
-      local = global = call GlobalTime.getLocalTime();
-      sync = call GlobalTime.getGlobalTime(&global);
+    syncs_missed = 0;
+    local = global = call GlobalTime.getLocalTime();
+    sync = call GlobalTime.getGlobalTime(&global);
+    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+      if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
+        correct_period_time();
+      }
+    }
 
-      dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>8),(uint16_t)global);
+    dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>8),(uint16_t)global);
 
-      //printf("Received: %lu %lu %d\n", local, global, sync);
-      //printfflush();
-    //}
+    //printf("Received: %lu %lu %d\n", local, global, sync);
+    //printfflush();
   }
 
   event void TimeSyncNotify.msg_sent() {
