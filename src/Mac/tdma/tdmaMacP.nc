@@ -136,10 +136,10 @@ implementation {
     if (frame_counter >= (call tdmaMacParams.get_init_slack() + 
 				call tdmaMacParams.get_sync_time() + 
 				call tdmaMacParams.get_node_time())) {
-      printf("radio off\n");
+      //printf("radio off\n");
       return 1;
     } else {
-      printf("radio on\n");
+      //printf("radio on\n");
       return 0;
     }
   }
@@ -170,8 +170,8 @@ implementation {
   }
 
   void turn_on_radio() {
-    printf("turn on\n");
-    printfflush();
+    //printf("turn on\n");
+    //printfflush();
     call RadioControl.start();
     dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, (uint16_t)(global>>16),(uint16_t)global);
   }
@@ -179,8 +179,8 @@ implementation {
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)){
-      printf("turn off radio\n");
-      printfflush();
+      //printf("turn off radio\n");
+      //printfflush();
       dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, (uint16_t)(global>>16),(uint16_t)global);
       call RadioControl.stop();
       busy_sending = FALSE;
@@ -188,7 +188,7 @@ implementation {
   }
 
   void start_synchronization() {
-    printf("start synchronization\n");
+    //printf("start synchronization\n");
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
          ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
       call TimeSyncMode.send();
@@ -661,8 +661,8 @@ implementation {
     dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
     start_synchronization();
 
-    printf("Received: %lu %lu %d\n", local, global, sync);
-    printfflush();
+    //printf("Received: %lu %lu %d\n", local, global, sync);
+    //printfflush();
   }
 
   event void TimeSyncNotify.msg_sent() {
@@ -670,8 +670,8 @@ implementation {
     sync = call GlobalTime.getGlobalTime(&global);
     dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
 
-    printf("Send: %lu %lu %d\n", local, global, sync);
-    printfflush();
+    //printf("Send: %lu %lu %d\n", local, global, sync);
+    //printfflush();
   }
 
 }
