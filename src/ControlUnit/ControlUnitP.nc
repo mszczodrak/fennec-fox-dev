@@ -193,7 +193,7 @@ done_receive:
 
   event void Timer.fired() {
     dbg("ControlUnit", "ControlUnit Timer.fired()\n");
-    //post sendConfigurationMsg();
+    post sendConfigurationMsg();
   }
 
 

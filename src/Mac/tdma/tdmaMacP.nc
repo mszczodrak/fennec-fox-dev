@@ -140,7 +140,6 @@ implementation {
     //printf("turn on\n");
     //printfflush();
     call RadioControl.start();
-    dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, (uint16_t)(global>>16),(uint16_t)global);
   }
 
   void turn_off_radio() {
@@ -148,7 +147,6 @@ implementation {
     if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)){
       //printf("turn off radio\n");
       //printfflush();
-      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, (uint16_t)(global>>16),(uint16_t)global);
       call RadioControl.stop();
       busy_sending = FALSE;
     } 
@@ -261,6 +259,8 @@ implementation {
         err = SUCCESS;
         post start_done();
       }
+      dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, 
+				(uint16_t)(global>>16),(uint16_t)global);
       start_synchronization();
       break;
 
@@ -272,6 +272,8 @@ implementation {
         err = SUCCESS;
         post start_done();
       }
+      dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, 
+				(uint16_t)(global>>16),(uint16_t)global);
       start_synchronization();
       break;
 
@@ -290,6 +292,8 @@ implementation {
         err = SUCCESS;
         post stop_done();
       }
+      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, 
+				(uint16_t)(global>>16),(uint16_t)global);
       break;
 
     case SUCCESS:
@@ -300,6 +304,8 @@ implementation {
         err = SUCCESS;
         post stop_done();
       }
+      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, 
+				(uint16_t)(global>>16),(uint16_t)global);
       break;
 
     default:
