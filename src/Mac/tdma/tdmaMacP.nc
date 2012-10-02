@@ -99,9 +99,6 @@ implementation {
   /* keeps track of the frame # within the given period */
   uint16_t frame_counter;
 
-  /* keeps tract of the number of periods when sync message was missed */
-  uint8_t syncs_missed = 0;
-
   /**
    * Radio Power, Check State, and Duty Cycling State
    */
@@ -144,7 +141,7 @@ implementation {
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
-    if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)){
+    if (sync == SUCCESS) {
       //printf("turn off radio\n");
       //printfflush();
       call RadioControl.stop();
@@ -155,7 +152,7 @@ implementation {
   void start_synchronization() {
     //printf("start synchronization\n");
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
-         ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
+         (sync == SUCCESS) ){
       call TimeSyncMode.send();
     }
   }
@@ -201,7 +198,6 @@ implementation {
 
   command error_t Mgmt.start() {
     frame_counter = 0;
-    syncs_missed = 0;
     busy_sending = FALSE;
     local = global = 0;
     radio_status = OFF;
@@ -580,15 +576,11 @@ implementation {
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&global);
 
-    if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
+    if (sync == SUCCESS) {
       correct_period_time();
     } else {
       /* if the clock is not synced, continue without adjusting the period */
       call PeriodTimer.startOneShot(tdma_period);
-    }
-
-    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-      syncs_missed++;
     }
 
     /* reset frame delimeter */
@@ -624,7 +616,6 @@ implementation {
   }
 
   event void TimeSyncNotify.msg_received() {
-    syncs_missed = 0;
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
 
