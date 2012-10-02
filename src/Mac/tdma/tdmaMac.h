@@ -46,7 +46,7 @@ typedef nx_struct tdma_header_t {
 
 
 #ifndef TIMESYNC_RATE
-#define TIMESYNC_RATE   10
+#define TIMESYNC_RATE   3
 #endif
 
 enum {

@@ -343,6 +343,8 @@ implementation
         globalTime = localTime = call GlobalTime.getLocalTime();
         call GlobalTime.local2Global(&globalTime);
 
+        printf("sendMsg\n");
+
         // we need to periodically update the reference point for the root
         // to avoid wrapping the 32-bit (localTime - localAverage) value
         if( outgoingMsg->rootID == TOS_NODE_ID ) {
@@ -420,9 +422,11 @@ implementation
     command error_t TimeSyncMode.send(){
         outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          timeSyncMsgSend();
+          call Timer.startOneShot((uint32_t)(111U+(call Random.rand16()&0xFF)) 
+				* BEACON_RATE);
+//          timeSyncMsgSend();
         } else {
-          call Timer.startOneShot((uint32_t)(896U+(call Random.rand16()&0xFF)) 
+          call Timer.startOneShot((uint32_t)(333U+(call Random.rand16()&0xFF)) 
 				* BEACON_RATE);
         }
         return SUCCESS;

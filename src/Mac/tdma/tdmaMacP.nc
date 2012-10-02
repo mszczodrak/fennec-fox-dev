@@ -93,10 +93,9 @@ implementation {
   uint16_t pending_length;
   message_t * ONE_NOK pending_message = NULL;
   uint32_t tdma_period;
+  bool radio_status = OFF;
 
   message_t * ftsp_sync_message = NULL;
-
-  uint8_t just_started;
 
   uint8_t localSendId;
 
@@ -122,20 +121,6 @@ implementation {
 
   /* Functions */
 
-  bool should_start_synchronizing() {
-    return (frame_counter == (call tdmaMacParams.get_init_slack()));
-  }
-
-  bool should_start_networking() {
-    return (frame_counter == (call tdmaMacParams.get_init_slack() + 
-				call tdmaMacParams.get_sync_time()));
-  }
-
-  bool should_stop_radio() {
-    return (frame_counter == (call tdmaMacParams.get_init_slack() + 
-				call tdmaMacParams.get_sync_time() +
-				call tdmaMacParams.get_node_time()));
-  }
 
   bool is_init() {
     if (frame_counter < call tdmaMacParams.get_init_slack()) {
@@ -145,37 +130,29 @@ implementation {
     }
   }
 
-  bool is_synchronizing() {
-    if (((frame_counter >= call tdmaMacParams.get_init_slack()) && 
-	(frame_counter < (call tdmaMacParams.get_init_slack() 
-			+ call tdmaMacParams.get_sync_time()))) ||
-	(just_started > 0)) {
+
+/*
+  bool is_radio_off() {
+    if (frame_counter >= (call tdmaMacParams.get_init_slack() + 
+				call tdmaMacParams.get_sync_time() + 
+				call tdmaMacParams.get_node_time())) {
+      printf("radio off\n");
       return 1;
     } else {
+      printf("radio on\n");
       return 0;
     }
   }
 
   bool is_networking() {
-    if ((frame_counter >= (call tdmaMacParams.get_init_slack() + 
-			call tdmaMacParams.get_sync_time())) && 
-	(frame_counter < (call tdmaMacParams.get_init_slack() 
-			+ call tdmaMacParams.get_sync_time()
-			+ call tdmaMacParams.get_node_time()))) {
-      return 1;
-    } else {
-      return 0;
-    }
+    return (!is_radio_off());
   }
+*/
 
-  bool is_radio_off() {
-    if (frame_counter >= (call tdmaMacParams.get_init_slack() + 
-				call tdmaMacParams.get_sync_time() + 
-				call tdmaMacParams.get_node_time())) {
-      return 1;
-    } else {
-      return 0;
-    }
+  bool should_stop_radio() {
+    return (frame_counter == (call tdmaMacParams.get_init_slack() + 
+                               call tdmaMacParams.get_sync_time() +
+                               call tdmaMacParams.get_node_time()));
   }
 
   void correct_period_time() {
@@ -193,29 +170,28 @@ implementation {
   }
 
   void turn_on_radio() {
-    //printf("turn on\n");
-    //printfflush();
+    printf("turn on\n");
+    printfflush();
     call RadioControl.start();
-    dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, 0, 0);
+    dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, (uint16_t)(global>>16),(uint16_t)global);
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)){
-      //printf("turn off radio\n");
-      //printfflush();
-      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, 0, 0);
+      printf("turn off radio\n");
+      printfflush();
+      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, (uint16_t)(global>>16),(uint16_t)global);
       call RadioControl.stop();
+      busy_sending = FALSE;
     } 
   }
 
   void start_synchronization() {
+    printf("start synchronization\n");
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
          ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
-      if (busy_sending == FALSE) {
-        call TimeSyncMode.send();
-        if (just_started > 0) just_started--;
-      }
+      call TimeSyncMode.send();
     }
   }
 
@@ -233,14 +209,23 @@ implementation {
     tdma_header_t* header;
     message_t *next_msg;
 
-    if ((!is_networking()) || (call SendQueue.empty()) || (busy_sending == TRUE)) {
+    if ((radio_status == OFF) || ((call SendQueue.empty()) && (ftsp_sync_message == NULL)) || (busy_sending == TRUE)) {
       /* if we can't route packages OR there are no messages to send
        * OR we're busy with sending other messages, then skip transmission
        */
+      printf("skip sending\n");
       return;
     }
 
-    next_msg = call SendQueue.head();
+    if ((ftsp_sync_message != NULL)) {
+      printf("sending ftsp\n");
+      next_msg = ftsp_sync_message;
+      ftsp_sync_message = NULL;
+    } else {
+      printf("sending regular\n");
+      next_msg = call SendQueue.head();
+    }
+
     header = (tdma_header_t*)getHeader( next_msg );
 
     if (call SubSend.send(next_msg, header->length) == SUCCESS) {
@@ -252,14 +237,14 @@ implementation {
     frame_counter = 0;
     syncs_missed = 0;
     busy_sending = FALSE;
+    local = global = 0;
+    radio_status = OFF;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
 				call tdmaMacParams.get_init_slack() +
 				call tdmaMacParams.get_sync_time() + 
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
-
-    just_started = ENTRY_VALID_LIMIT + 2;
 
     if (status == S_STARTED) {
       err = SUCCESS;
@@ -303,25 +288,28 @@ implementation {
     return SUCCESS;
   }
 
-
   event void RadioControl.startDone(error_t error) {
     switch(error){
     case EALREADY:
+      radio_status = ON;
       if (status == S_STARTING) {
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         err = SUCCESS;
         post start_done();
       }
+      start_synchronization();
       break;
 
     case SUCCESS:
+      radio_status = ON;
       if (status == S_STARTING) {
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         err = SUCCESS;
         post start_done();
       }
+      start_synchronization();
       break;
 
     default:
@@ -329,10 +317,10 @@ implementation {
     }
   }
 
-
   event void RadioControl.stopDone(error_t error) {
     switch(error){
     case EALREADY:
+      radio_status = OFF;
       if (status == S_STOPPING) {
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
@@ -342,6 +330,7 @@ implementation {
       break;
 
     case SUCCESS:
+      radio_status = OFF;
       if (status == S_STOPPING) {
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);  
@@ -357,6 +346,7 @@ implementation {
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     ftsp_sync_message = msg;
+    printf("ftsp wants to send\n");
     return call MacAMSend.send(addr, msg, len);
   }
 
@@ -389,25 +379,15 @@ implementation {
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
     header->length = len + CC2420_SIZE;
 
-    if ((ftsp_sync_message != NULL) && (ftsp_sync_message == msg)) {
-      /* we're sending FTSP message, skip Queue */
-      ftsp_sync_message = NULL;
-
-      if (busy_sending == TRUE)
-        return FAIL;
-
-      if (call SubSend.send(msg, header->length) == SUCCESS) {
-        busy_sending = TRUE;
+    if ((ftsp_sync_message != NULL) && (ftsp_sync_message != msg)) {
+      if (call SendQueue.enqueue(msg) == SUCCESS) {
+        post try_send_network_message();
         return SUCCESS;
-      }
+      } 
       return FAIL;
     }
-
-    if (call SendQueue.enqueue(msg) == SUCCESS) {
-      post try_send_network_message();
-      return SUCCESS;
-    } 
-    return FAIL;
+    post try_send_network_message();
+    return SUCCESS;
   }
 
   command error_t FtspMacAMSend.cancel(message_t* msg) {
@@ -579,10 +559,8 @@ implementation {
     busy_sending = FALSE;
     if (header->type == AM_TIMESYNCMSG) {
       signal FtspMacAMSend.sendDone(msg, result);
-      if ( is_synchronizing() && 
-	((just_started > 0) || (call tdmaMacParams.get_root_addr() == TOS_NODE_ID))) {
+      if ( radio_status == ON ) {
         /* continue synchronization */
-        //printf("continue synch\n");
         start_synchronization();
         return;
       }
@@ -629,8 +607,6 @@ implementation {
 
 
   event void PeriodTimer.fired() {
-    frame_counter = 0;
-
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&global);
 
@@ -646,6 +622,7 @@ implementation {
     }
 
     /* reset frame delimeter */
+    frame_counter = 0;
     call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
 
     /* turn of radio */
@@ -661,12 +638,7 @@ implementation {
   event void FrameTimer.fired() {
     frame_counter++;
 
-    if (is_synchronizing()) {
-      call Leds.set(1);
-      start_synchronization();
-    }
-
-    if (should_start_networking()) {
+    if (radio_status == ON) {
       call Leds.set(2);
     }
 
@@ -674,6 +646,10 @@ implementation {
     if (should_stop_radio()) {
       call Leds.set(4);
       turn_off_radio();
+      if (ftsp_sync_message != NULL) {
+        signal FtspMacAMSend.sendDone(ftsp_sync_message, FAIL);
+        ftsp_sync_message = NULL;
+      }
     }
   }
 
@@ -681,24 +657,21 @@ implementation {
     syncs_missed = 0;
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
-    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-      if ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) {
-        correct_period_time();
-      }
-    }
 
-    dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>8),(uint16_t)global);
+    dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+    start_synchronization();
 
-    //printf("Received: %lu %lu %d\n", local, global, sync);
-    //printfflush();
+    printf("Received: %lu %lu %d\n", local, global, sync);
+    printfflush();
   }
 
   event void TimeSyncNotify.msg_sent() {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
-    dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>8),(uint16_t)global);
-    //printf("Send: %lu %lu %d\n", local, global, sync);
-    //printfflush();
+    dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+
+    printf("Send: %lu %lu %d\n", local, global, sync);
+    printfflush();
   }
 
 }
