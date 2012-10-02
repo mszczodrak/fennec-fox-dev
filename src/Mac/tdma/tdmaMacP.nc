@@ -180,16 +180,16 @@ implementation {
       /* if we can't route packages OR there are no messages to send
        * OR we're busy with sending other messages, then skip transmission
        */
-      printf("skip sending\n");
+      //printf("skip sending\n");
       return;
     }
 
     if ((ftsp_sync_message != NULL)) {
-      printf("sending ftsp\n");
+      //printf("sending ftsp\n");
       next_msg = ftsp_sync_message;
       ftsp_sync_message = NULL;
     } else {
-      printf("sending regular\n");
+      //printf("sending regular\n");
       next_msg = call SendQueue.head();
     }
 
@@ -309,7 +309,7 @@ implementation {
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     ftsp_sync_message = msg;
-    printf("ftsp wants to send\n");
+    //printf("ftsp wants to send\n");
     return call MacAMSend.send(addr, msg, len);
   }
 
