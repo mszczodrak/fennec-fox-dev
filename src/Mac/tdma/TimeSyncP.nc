@@ -64,6 +64,8 @@ implementation
     uint8_t heartBeats; // the number of sucessfully sent messages
                         // since adding a new entry with lower beacon id than ours
 
+    uint8_t receive_counter = 0;
+
     async command uint32_t GlobalTime.getLocalTime()
     {
         return call LocalTime.get();
@@ -271,6 +273,7 @@ implementation
 
             return old;
         }
+        receive_counter++;
 
         return msg;
     }
@@ -334,10 +337,13 @@ implementation
 
     void timeSyncMsgSend()
     {
+
+/*
         if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
             outgoingMsg->seqNum = 0;
             outgoingMsg->rootID = TOS_NODE_ID;
         }
+*/
 
         if( outgoingMsg->rootID != 0xFFFF && (state & STATE_SENDING) == 0 ) {
            state |= STATE_SENDING;
@@ -360,6 +366,10 @@ implementation
 
     command error_t TimeSyncMode.send(){
         outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
+        if (call Timer.isRunning() == TRUE) {
+          return SUCCESS;
+        }
+
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
           call Timer.startOneShot((uint32_t)((call tdmaMacParams.get_frame_size() / BEACON_RATE) + 
 			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
@@ -377,6 +387,7 @@ implementation
 
     command error_t StdControl.start()
     {
+        receive_counter = 0;
         clearTable();
 
         atomic {

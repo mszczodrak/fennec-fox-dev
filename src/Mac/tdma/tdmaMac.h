@@ -56,6 +56,7 @@ enum {
   ENTRY_THROWOUT_LIMIT  = 500,            // if time sync error is bigger than this clear the table
   TDMA_INITIAL_STAY_ON	= ENTRY_VALID_LIMIT * 3, //
   TDMA_MAX_SYNCS_MISSED = ENTRY_VALID_LIMIT,
+  FTSP_SUPPRESS_COUNTER	= ENTRY_VALID_LIMIT,
 };
 
 typedef struct TableItem
