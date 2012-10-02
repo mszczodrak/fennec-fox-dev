@@ -343,8 +343,6 @@ implementation
         globalTime = localTime = call GlobalTime.getLocalTime();
         call GlobalTime.local2Global(&globalTime);
 
-        printf("sendMsg\n");
-
         // we need to periodically update the reference point for the root
         // to avoid wrapping the 32-bit (localTime - localAverage) value
         if( outgoingMsg->rootID == TOS_NODE_ID ) {
