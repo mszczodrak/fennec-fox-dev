@@ -113,7 +113,6 @@ implementation {
   components new QueueC(message_t*, TDMA_QUEUE_SIZE) as SendQueueP;
   tdmaMacP.SendQueue -> SendQueueP;
 
-
   /* FTSP */
   components FtspActiveMessageC;
 

@@ -94,6 +94,8 @@ implementation {
   message_t * ONE_NOK pending_message = NULL;
   uint32_t tdma_period;
 
+  message_t * ftsp_sync_message = NULL;
+
   uint8_t just_started;
 
   uint8_t localSendId;
@@ -116,6 +118,7 @@ implementation {
 
   uint32_t local, global;
   error_t sync;
+  bool busy_sending = FALSE;
 
   /* Functions */
 
@@ -210,9 +213,29 @@ implementation {
     signal Mgmt.stopDone(err);
   }
 
+  task void try_send_network_message() {
+    tdma_header_t* header;
+    message_t *next_msg;
+
+    if ((!is_networking()) || (call SendQueue.empty()) || (busy_sending == TRUE)) {
+      /* if we can't route packages OR there are no messages to send
+       * OR we're busy with sending other messages, then skip transmission
+       */
+      return;
+    }
+
+    next_msg = call SendQueue.head();
+    header = (tdma_header_t*)getHeader( next_msg );
+
+    if (call SubSend.send(next_msg, header->length) == SUCCESS) {
+      busy_sending = TRUE;
+    }
+  }
+
   command error_t Mgmt.start() {
     frame_counter = 0;
     syncs_missed = 0;
+    busy_sending = FALSE;
 
     tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
 				call tdmaMacParams.get_init_slack() +
@@ -220,9 +243,7 @@ implementation {
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
 
-
     just_started = call tdmaMacParams.get_sync_time() + (call tdmaMacParams.get_node_time() / 2);
-
 
     if (status == S_STARTED) {
       err = SUCCESS;
@@ -319,14 +340,19 @@ implementation {
   }
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+    ftsp_sync_message = msg;
     return call MacAMSend.send(addr, msg, len);
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     tdma_header_t* header = (tdma_header_t*)getHeader( msg );
 
+    if (call SendQueue.full()) {
+      /* we have no space to store another message */
+      return EBUSY;
+    }
+
     call MacAMPacket.setGroup(msg, msg->conf);
-    dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
 
     msg->crc = 0;
     msg->rssi = 0;
@@ -347,13 +373,25 @@ implementation {
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
     header->length = len + CC2420_SIZE;
 
-    {
-      error_t rc;
+    if ((ftsp_sync_message != NULL) && (ftsp_sync_message == msg)) {
+      /* we're sending FTSP message, skip Queue */
+      ftsp_sync_message = NULL;
 
-      rc = call SubSend.send( msg, len );
+      if (busy_sending == TRUE)
+        return FAIL;
 
-      return rc;
+      if (call SubSend.send(msg, header->length) == SUCCESS) {
+        busy_sending = TRUE;
+        return SUCCESS;
+      }
+      return FAIL;
     }
+
+    if (call SendQueue.enqueue(msg) == SUCCESS) {
+      post try_send_network_message();
+      return SUCCESS;
+    } 
+    return FAIL;
   }
 
   command error_t FtspMacAMSend.cancel(message_t* msg) {
@@ -522,10 +560,12 @@ implementation {
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
+    busy_sending = FALSE;
     if (header->type == AM_TIMESYNCMSG) {
       signal FtspMacAMSend.sendDone(msg, result);
     } else {
       signal MacAMSend.sendDone(msg, result);
+      post try_send_network_message();
     }
   }
 
