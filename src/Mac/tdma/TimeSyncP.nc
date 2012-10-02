@@ -406,6 +406,7 @@ implementation
 
     event void Timer.fired()
     {
+      timeSyncMsgSend();
     }
 
     command error_t TimeSyncMode.setMode(uint8_t mode_){
@@ -418,7 +419,12 @@ implementation
 
     command error_t TimeSyncMode.send(){
         outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
-        timeSyncMsgSend();
+        if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+          timeSyncMsgSend();
+        } else {
+          call Timer.startOneShot((uint32_t)(896U+(call Random.rand16()&0xFF)) 
+				* BEACON_RATE);
+        }
         return SUCCESS;
     }
 
