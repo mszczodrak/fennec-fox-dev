@@ -196,6 +196,7 @@ implementation {
     if (call SubSend.send(next_msg, header->length) == SUCCESS) {
       busy_sending = TRUE;
     }
+    //printfflush();
   }
 
   command error_t Mgmt.start() {
