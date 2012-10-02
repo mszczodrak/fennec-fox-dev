@@ -33,7 +33,8 @@
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
-#define TDMA_MAX_SYNCS_MISSED 3
+#define TDMA_MAX_SYNCS_MISSED 	3
+#define TDMA_JUST_STARTED_SYNCS 10
 
 module tdmaMacP @safe() {
   provides interface Mgmt;
@@ -91,6 +92,8 @@ implementation {
   message_t * ONE_NOK pending_message = NULL;
   uint32_t tdma_period;
 
+  uint8_t just_started;
+
   uint8_t localSendId;
 
   /* keeps track of the frame # within the given period */
@@ -138,9 +141,10 @@ implementation {
   }
 
   bool is_synchronizing() {
-    if ((frame_counter >= call tdmaMacParams.get_init_slack()) && 
+    if (((frame_counter >= call tdmaMacParams.get_init_slack()) && 
 	(frame_counter < (call tdmaMacParams.get_init_slack() 
-			+ call tdmaMacParams.get_sync_time()))) {
+			+ call tdmaMacParams.get_sync_time()))) ||
+	(just_started > 0)) {
       return 1;
     } else {
       return 0;
@@ -190,6 +194,7 @@ implementation {
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
          ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
       call TimeSyncMode.send();
+      if (just_started > 0) just_started--;
     }
   }
 
@@ -212,6 +217,10 @@ implementation {
 				call tdmaMacParams.get_sync_time() + 
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
+
+
+    just_started = call tdmaMacParams.get_sync_time() + (call tdmaMacParams.get_node_time() / 2);
+
 
     if (status == S_STARTED) {
       err = SUCCESS;
