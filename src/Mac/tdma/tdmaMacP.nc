@@ -198,8 +198,10 @@ implementation {
   void start_synchronization() {
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
          ((sync == SUCCESS) && (syncs_missed < TDMA_MAX_SYNCS_MISSED)) ){
-      call TimeSyncMode.send();
-      if (just_started > 0) just_started--;
+      if (busy_sending == FALSE) {
+        call TimeSyncMode.send();
+        if (just_started > 0) just_started--;
+      }
     }
   }
 
@@ -243,7 +245,7 @@ implementation {
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
 
-    just_started = call tdmaMacParams.get_sync_time() + (call tdmaMacParams.get_node_time() / 2);
+    just_started = ENTRY_VALID_LIMIT + 2;
 
     if (status == S_STARTED) {
       err = SUCCESS;
@@ -563,10 +565,20 @@ implementation {
     busy_sending = FALSE;
     if (header->type == AM_TIMESYNCMSG) {
       signal FtspMacAMSend.sendDone(msg, result);
+      if ( is_synchronizing() && 
+	((just_started > 0) || (call tdmaMacParams.get_root_addr() == TOS_NODE_ID))) {
+        /* continue synchronization */
+        //printf("continue synch\n");
+        start_synchronization();
+        return;
+      }
     } else {
+      if (msg == call SendQueue.head()) {
+        call SendQueue.dequeue();
+      }
       signal MacAMSend.sendDone(msg, result);
-      post try_send_network_message();
     }
+    post try_send_network_message();
   }
 
   /***************** SubReceive Events ****************/

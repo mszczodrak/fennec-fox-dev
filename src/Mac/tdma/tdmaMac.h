@@ -45,5 +45,31 @@ typedef nx_struct tdma_header_t {
 } tdma_header_t;
 
 
+#ifndef TIMESYNC_RATE
+#define TIMESYNC_RATE   10
+#endif
+
+enum {
+  MAX_ENTRIES           = 8,              // number of entries in the table
+  BEACON_RATE           = TIMESYNC_RATE,  // how often send the beacon msg (in seconds)
+  ROOT_TIMEOUT          = 5,              //time to declare itself the root if no msg was received (in sync periods)
+  IGNORE_ROOT_MSG       = 4,              // after becoming the root ignore other roots messages (in send period)
+  ENTRY_VALID_LIMIT     = 4,              // number of entries to become synchronized
+  ENTRY_SEND_LIMIT      = 3,              // number of entries to send sync messages
+  ENTRY_THROWOUT_LIMIT  = 500,            // if time sync error is bigger than this clear the table
+};
+
+typedef struct TableItem
+{
+  uint8_t     state;
+  uint32_t    localTime;
+  int32_t     timeOffset; // globalTime - localTime
+} TableItem;
+
+enum {
+  ENTRY_EMPTY = 0,
+  ENTRY_FULL = 1,
+};
+
 #endif
 
