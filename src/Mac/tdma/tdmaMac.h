@@ -46,16 +46,16 @@ typedef nx_struct tdma_header_t {
 
 
 enum {
-  MAX_ENTRIES           = 8,              // number of entries in the table
-  BEACON_RATE           = 3,  		  // how often send the beacon msg (in seconds)
+  MAX_ENTRIES           = 10,              // number of entries in the table
+  BEACON_RATE           = 2,  		  // how often send the beacon msg (in seconds)
   ROOT_BEACON_RATE      = 1,  		  // how often send the beacon msg (in seconds) at root
   ROOT_TIMEOUT          = 5,              //time to declare itself the root if no msg was received (in sync periods)
   IGNORE_ROOT_MSG       = 4,              // after becoming the root ignore other roots messages (in send period)
   ENTRY_VALID_LIMIT     = 4,              // number of entries to become synchronized
   ENTRY_SEND_LIMIT      = 3,              // number of entries to send sync messages
   ENTRY_THROWOUT_LIMIT  = 500,            // if time sync error is bigger than this clear the table
-  TDMA_INITIAL_STAY_ON	= ENTRY_VALID_LIMIT * 2, //
-  TDMA_MAX_SYNCS_MISSED = ENTRY_VALID_LIMIT + 1,
+  TDMA_INITIAL_STAY_ON	= ENTRY_VALID_LIMIT * 3, //
+  TDMA_MAX_SYNCS_MISSED = ENTRY_VALID_LIMIT,
 };
 
 typedef struct TableItem

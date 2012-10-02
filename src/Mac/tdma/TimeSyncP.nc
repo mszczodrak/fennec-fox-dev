@@ -294,11 +294,13 @@ implementation
                 }
             }
         }
+/*
         else if( heartBeats >= ROOT_TIMEOUT ) {
             heartBeats = 0; //to allow ROOT_SWITCH_IGNORE to work
             outgoingMsg->rootID = TOS_NODE_ID;
             ++(outgoingMsg->seqNum); // maybe set it to zero?
         }
+*/
 
         outgoingMsg->globalTime = globalTime;
         // we don't send time sync msg, if we don't have enough data

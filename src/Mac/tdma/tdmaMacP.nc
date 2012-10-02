@@ -130,7 +130,7 @@ implementation {
     global = tdma_period - global;
 
     /* check if global is suuper small */
-    if (global < ((tdma_period / 5) + 5 * (call tdmaMacParams.get_frame_size())))
+    if (global < ((tdma_period / 10) + 3 * (call tdmaMacParams.get_frame_size())))
       global = global + tdma_period;
 
     call PeriodTimer.startOneShot(global);
