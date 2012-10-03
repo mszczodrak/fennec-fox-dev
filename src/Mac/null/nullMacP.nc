@@ -60,6 +60,11 @@ module nullMacP @safe() {
 
   uses interface Random;
 
+  uses interface ReceiveIndicator as EnergyIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
+  uses interface ReceiveIndicator as PacketIndicator;
+
+
 }
 
 implementation {

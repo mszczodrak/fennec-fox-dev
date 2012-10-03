@@ -79,28 +79,19 @@ implementation {
   RadioPower = CSMATransmitC.RadioPower;
   RadioResource = CSMATransmitC.RadioResource;
 
-  components DefaultLplC as LplC;
-  nullMacP.RadioControl -> LplC.SplitControl;
+  nullMacP.RadioControl -> CSMATransmitC;
 
-  nullMacP.SubSend -> LplC.Send;
-  nullMacP.SubReceive -> LplC;
+  nullMacP.SubSend -> CSMATransmitC;
+  nullMacP.SubReceive = RadioReceive;
 
-  // SplitControl Layers
+  EnergyIndicator = nullMacP.EnergyIndicator;
+  ByteIndicator = nullMacP.ByteIndicator;
+  PacketIndicator = nullMacP.PacketIndicator;
 
-  LplC.MacPacketAcknowledgements -> nullMacP.MacPacketAcknowledgements;
-  LplC.SubControl -> CSMATransmitC;
+  RadioTransmit = CSMATransmitC.RadioTransmit;
+  EnergyIndicator = CSMATransmitC.EnergyIndicator;
+  RadioControl = CSMATransmitC.RadioControl;
 
-  LplC.SubSend -> CSMATransmitC;
-
-  RadioReceive = LplC.SubReceive;
-
-  components PowerCycleC;
-  PacketIndicator = PowerCycleC.PacketIndicator;
-  EnergyIndicator = PowerCycleC.EnergyIndicator;
-  ByteIndicator = PowerCycleC.ByteIndicator;
-
-  nullMacParams = PowerCycleC.nullMacParams;
-  nullMacParams = LplC.nullMacParams;
   nullMacParams = CSMATransmitC.nullMacParams;
 
   components RandomC;
@@ -108,7 +99,6 @@ implementation {
 
   RadioTransmit = CSMATransmitC.RadioTransmit;
   EnergyIndicator = CSMATransmitC.EnergyIndicator;
-  LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
   RadioControl = CSMATransmitC.RadioControl;
 }
 
