@@ -1,6 +1,6 @@
 #include "message.h"
 
-interface MacTransmit {
+interface TDMATransmit {
 
   command error_t resend(bool useCca);
 

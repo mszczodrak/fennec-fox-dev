@@ -77,11 +77,11 @@ implementation {
 
   RadioStatus = tdmaMacP.RadioStatus;
 
-  components macTransmitC;
-  RadioPower = macTransmitC.RadioPower;
-  RadioResource = macTransmitC.RadioResource;
+  components TDMATransmitC;
+  RadioPower = TDMATransmitC.RadioPower;
+  RadioResource = TDMATransmitC.RadioResource;
 
-  tdmaMacP.RadioControl -> macTransmitC;
+  tdmaMacP.RadioControl -> TDMATransmitC;
 
   components UniqueSendC;
   components UniqueReceiveC;
@@ -94,21 +94,21 @@ implementation {
 
   // SplitControl Layers
 
-  UniqueSendC.SubSend -> macTransmitC;
+  UniqueSendC.SubSend -> TDMATransmitC;
   UniqueReceiveC.SubReceive =  RadioReceive;
 
   EnergyIndicator = tdmaMacP.EnergyIndicator;
   ByteIndicator = tdmaMacP.ByteIndicator;
   PacketIndicator = tdmaMacP.PacketIndicator;
 
-  tdmaMacParams = macTransmitC.tdmaMacParams;
+  tdmaMacParams = TDMATransmitC.tdmaMacParams;
 
   components RandomC;
   tdmaMacP.Random -> RandomC;
 
-  RadioTransmit = macTransmitC.RadioTransmit;
-  EnergyIndicator = macTransmitC.EnergyIndicator;
-  RadioControl = macTransmitC.RadioControl;
+  RadioTransmit = TDMATransmitC.RadioTransmit;
+  EnergyIndicator = TDMATransmitC.EnergyIndicator;
+  RadioControl = TDMATransmitC.RadioControl;
 
   components new QueueC(message_t*, TDMA_QUEUE_SIZE) as SendQueueP;
   tdmaMacP.SendQueue -> SendQueueP;
