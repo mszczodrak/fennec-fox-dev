@@ -95,15 +95,6 @@ implementation {
 
   /***************** Send Commands ****************/
   command error_t Send.cancel( message_t* p_msg ) {
-    switch( m_state ) {
-    case S_LOAD:
-    case S_BEGIN_TRANSMIT:
-      break;
-
-    default:
-      // cancel not allowed while radio is busy transmitting
-      return FAIL;
-    }
   }
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
@@ -134,10 +125,6 @@ implementation {
     metadata->rssi = 0;
     metadata->lqi = 0;
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
-
-    csmaca_backoff_period = call nullMacParams.get_backoff();
-    csmaca_min_backoff = call nullMacParams.get_min_backoff();
-    csmaca_delay_after_receive = call nullMacParams.get_delay_after_receive();
 
     if ( m_state != S_STARTED ) {
       return FAIL;
@@ -170,7 +157,6 @@ implementation {
 
   async event void RadioPower.startOscillatorDone() {}
 
-  /***************** Tasks ****************/
   task void sendDone_task() {
     error_t packetErr;
     atomic packetErr = sendErr;
@@ -185,10 +171,6 @@ implementation {
   }
 
   task void startDone_task() {
-    csmaca_backoff_period = call nullMacParams.get_backoff();
-    csmaca_min_backoff = call nullMacParams.get_min_backoff();
-    csmaca_delay_after_receive = call nullMacParams.get_delay_after_receive();
-
     m_state = S_STARTED;
 
     call SplitControlState.forceState(S_STARTED);
