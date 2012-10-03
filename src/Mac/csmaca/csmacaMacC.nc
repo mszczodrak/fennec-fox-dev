@@ -113,7 +113,7 @@ implementation {
 
   RadioTransmit = CSMATransmitC.RadioTransmit;
   EnergyIndicator = CSMATransmitC.EnergyIndicator;
-  LplC.MacTransmit -> CSMATransmitC.MacTransmit;
+  LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
   RadioControl = CSMATransmitC.RadioControl;
 }
 

@@ -2,17 +2,15 @@
 #include "IEEE802154.h"
 
 configuration CSMATransmitC {
-  provides interface MacTransmit;
+  provides interface CSMATransmit;
+  provides interface SplitControl;
+  provides interface Send;
 
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
   uses interface SplitControl as RadioControl;
   uses interface csmacaMacParams;
-
-  provides interface SplitControl;
-  provides interface Send;
-
   uses interface RadioPower;
   uses interface Resource as RadioResource;
 }
@@ -20,7 +18,7 @@ configuration CSMATransmitC {
 implementation {
 
   components CSMATransmitP;
-  MacTransmit = CSMATransmitP;
+  CSMATransmit = CSMATransmitP;
   EnergyIndicator = CSMATransmitP.EnergyIndicator;
 
   RadioStdControl = CSMATransmitP.RadioStdControl;

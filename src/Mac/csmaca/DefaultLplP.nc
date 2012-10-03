@@ -54,7 +54,7 @@ module DefaultLplP {
   
   uses {
     interface Send as SubSend;
-    interface MacTransmit;
+    interface CSMATransmit;
     interface Receive as SubReceive;
     interface SplitControl as SubControl;
     interface PowerCycle;
@@ -336,7 +336,7 @@ implementation {
   }
   
   task void resend() {
-    if(call MacTransmit.resend(TRUE) != SUCCESS) {
+    if(call CSMATransmit.resend(TRUE) != SUCCESS) {
       post resend();
     }
   }

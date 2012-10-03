@@ -54,7 +54,7 @@ configuration DefaultLplC {
     interface PacketAcknowledgements as MacPacketAcknowledgements;
   }
   uses interface csmacaMacParams;
-  uses interface MacTransmit;
+  uses interface CSMATransmit;
 }
 
 implementation {
@@ -74,7 +74,7 @@ implementation {
   SendState = SendStateC;
   MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
 
-  MacTransmit = DefaultLplP.MacTransmit;
+  CSMATransmit = DefaultLplP.CSMATransmit;
 
   csmacaMacParams = DefaultLplP.csmacaMacParams;
   

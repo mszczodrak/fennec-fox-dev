@@ -1,6 +1,6 @@
 #include "message.h"
 
-interface MacTransmit {
+interface CSMATransmit {
 
   command error_t resend(bool useCca);
 
