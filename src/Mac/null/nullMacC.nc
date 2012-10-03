@@ -82,10 +82,7 @@ implementation {
   components DefaultLplC as LplC;
   nullMacP.RadioControl -> LplC.SplitControl;
 
-  components UniqueSendC;
-  components UniqueReceiveC;
-
-  nullMacP.SubSend -> UniqueSendC;
+  nullMacP.SubSend -> LplC.Send;
   nullMacP.SubReceive -> LplC;
 
   // SplitControl Layers
@@ -93,11 +90,9 @@ implementation {
   LplC.MacPacketAcknowledgements -> nullMacP.MacPacketAcknowledgements;
   LplC.SubControl -> CSMATransmitC;
 
-  UniqueSendC.SubSend -> LplC.Send;
   LplC.SubSend -> CSMATransmitC;
 
-  LplC.SubReceive -> UniqueReceiveC.Receive;
-  UniqueReceiveC.SubReceive =  RadioReceive;
+  RadioReceive = LplC.SubReceive;
 
   components PowerCycleC;
   PacketIndicator = PowerCycleC.PacketIndicator;
