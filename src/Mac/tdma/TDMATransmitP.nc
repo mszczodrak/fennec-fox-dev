@@ -4,23 +4,19 @@
 #include "message.h"
 #include "Fennec.h"
 
-module macTransmitP @safe() {
-  provides interface MacTransmit;
+module TDMATransmitP @safe() {
+  provides interface TDMATransmit;
+  provides interface SplitControl;
+  provides interface Send;
 
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
   uses interface SplitControl as RadioControl;
-
   uses interface tdmaMacParams;
   uses interface Random;
-
   uses interface State as SplitControlState;
-
-  provides interface SplitControl;
-  provides interface Send;
-
   uses interface RadioPower;
   uses interface Resource as RadioResource;
 }
@@ -264,7 +260,7 @@ implementation {
    * chip
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  command error_t MacTransmit.resend(bool useCca) {
+  command error_t TDMATransmit.resend(bool useCca) {
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }
