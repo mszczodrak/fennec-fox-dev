@@ -24,9 +24,6 @@ implementation {
   RadioStdControl = CSMATransmitP.RadioStdControl;
   RadioControl = CSMATransmitP.RadioControl;
 
-  components new MuxAlarm32khz32C() as Alarm;
-  CSMATransmitP.BackoffTimer -> Alarm;
-
   RadioTransmit = CSMATransmitP.RadioTransmit;
 
   nullMacParams = CSMATransmitP.nullMacParams;

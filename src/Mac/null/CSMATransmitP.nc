@@ -9,7 +9,6 @@ module CSMATransmitP @safe() {
   provides interface SplitControl;
   provides interface Send;
 
-  uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioTransmit;
@@ -61,12 +60,6 @@ implementation {
   /** Total CCA checks that showed no activity before the NoAck LPL send */
   norace int8_t totalCcaChecks;
   
-  /** The initial backoff period */
-  norace uint16_t myInitialBackoff;
-  
-  /** The congestion backoff period */
-  norace uint16_t myCongestionBackoff;
-
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
@@ -227,36 +220,11 @@ implementation {
    */
   void shutdown() {
     m_state = S_STOPPED;
-    call BackoffTimer.stop();
     post stopDone_task();
   }
 
 
   event void nullMacParams.receive_status(uint16_t status_flag) {
-  }
-
-  void requestInitialBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
-    } else {
-      myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
-    }
-  }
-
-  void congestionBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
-    } else {
-      myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
-    }
-
-    if (myCongestionBackoff) {
-      call BackoffTimer.start(myCongestionBackoff);
-    } else {
-      signal BackoffTimer.fired();
-    }
   }
 
   command error_t CSMATransmit.resend(bool useCca) {
@@ -272,16 +240,7 @@ implementation {
     m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
     totalCcaChecks = 0;
 
-    if(m_cca) {
-      requestInitialBackoff(m_msg);
-      if (myInitialBackoff) {
-        call BackoffTimer.start( myInitialBackoff );
-      } else {
-        signal BackoffTimer.fired();
-      }
-    } else {
-      call RadioTransmit.send(m_msg, useCca);
-    }
+    call RadioTransmit.send(m_msg, useCca);
     return SUCCESS;
   }
 
@@ -291,36 +250,6 @@ implementation {
   }
 
 
-  async event void BackoffTimer.fired() {
-    switch( m_state ) {
-        
-    case S_SAMPLE_CCA : 
-      // sample CCA and wait a little longer if free, just in case we
-      // sampled during the ack turn-around window
-      if ( !call EnergyIndicator.isReceiving() ) {
-        m_state = S_BEGIN_TRANSMIT;
-        call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );    
-      } else {
-        congestionBackoff(m_msg);
-      }
-      break;
-        
-    case S_BEGIN_TRANSMIT:
-      call RadioTransmit.send(m_msg, m_cca);
-      break;
-
-    case S_CANCEL:
-      call RadioTransmit.cancel();
-      m_state = S_STARTED;
-      sendDoneErr = ECANCEL;
-      post signalSendDone();
-      break;
-        
-    default:
-      break;
-    }
-  }
-      
   async event void RadioTransmit.sendDone(error_t error) {
     sendDoneErr = error;
     post signalSendDone();
