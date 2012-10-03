@@ -35,7 +35,7 @@
  * @author David Moss
  */
  
-configuration UniqueSendC {
+configuration TDMAUniqueSendC {
   provides {
     interface Send;
   }
@@ -47,16 +47,16 @@ configuration UniqueSendC {
 }
 
 implementation {
-  components UniqueSendP,
+  components TDMAUniqueSendP,
       new StateC(),
       RandomC;
      
-  StdControl = UniqueSendP.StdControl; 
-  Send = UniqueSendP.Send;
-  SubSend = UniqueSendP.SubSend;
+  StdControl = TDMAUniqueSendP.StdControl; 
+  Send = TDMAUniqueSendP.Send;
+  SubSend = TDMAUniqueSendP.SubSend;
   
-  UniqueSendP.State -> StateC;
-  UniqueSendP.Random -> RandomC;
+  TDMAUniqueSendP.State -> StateC;
+  TDMAUniqueSendP.Random -> RandomC;
   
 }
 

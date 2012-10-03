@@ -39,7 +39,7 @@
 #include "CC2420.h"
 #include "tdmaMac.h"
 
-module UniqueReceiveP @safe() {
+module TDMAUniqueReceiveP @safe() {
   provides {
     interface Receive;
     interface Receive as DuplicateReceive;

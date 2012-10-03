@@ -83,19 +83,19 @@ implementation {
 
   tdmaMacP.RadioControl -> TDMATransmitC;
 
-  components UniqueSendC;
-  components UniqueReceiveC;
+  components TDMAUniqueSendC;
+  components TDMAUniqueReceiveC;
 
-  tdmaMacP.SubSend -> UniqueSendC;
-  tdmaMacP.SubReceive -> UniqueReceiveC.Receive;
+  tdmaMacP.SubSend -> TDMAUniqueSendC;
+  tdmaMacP.SubReceive -> TDMAUniqueReceiveC.Receive;
 
   components LedsC;
   tdmaMacP.Leds -> LedsC;
 
   // SplitControl Layers
 
-  UniqueSendC.SubSend -> TDMATransmitC;
-  UniqueReceiveC.SubReceive =  RadioReceive;
+  TDMAUniqueSendC.SubSend -> TDMATransmitC;
+  TDMAUniqueReceiveC.SubReceive =  RadioReceive;
 
   EnergyIndicator = tdmaMacP.EnergyIndicator;
   ByteIndicator = tdmaMacP.ByteIndicator;

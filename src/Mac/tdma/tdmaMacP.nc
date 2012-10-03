@@ -544,6 +544,10 @@ implementation {
     metadata_t* metadata = (metadata_t*) msg->metadata;
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
 
+    printf("receive\n");
+	printfflush();
+
+
     if((call tdmaMacParams.get_crc()) && (!(metadata)->crc)) {
       return msg;
     }
@@ -562,6 +566,8 @@ implementation {
       } else {
 
 	/* add info about new message */
+    printf("receive other\n");
+	printfflush();
 
         return signal MacReceive.receive(msg, payload, len);
       }
@@ -601,12 +607,12 @@ implementation {
     frame_counter++;
 
     if (radio_status == ON) {
-      call Leds.set(2);
+//      call Leds.set(2);
     }
 
     /* check when to turn off the radio */
     if (should_stop_radio()) {
-      call Leds.set(4);
+//      call Leds.set(4);
       turn_off_radio();
       if (ftsp_sync_message != NULL) {
         signal FtspMacAMSend.sendDone(ftsp_sync_message, FAIL);

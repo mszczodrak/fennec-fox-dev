@@ -37,7 +37,7 @@
  * @author David Moss
  */
  
-configuration UniqueReceiveC {
+configuration TDMAUniqueReceiveC {
   provides {
     interface Receive;
     interface Receive as DuplicateReceive;
@@ -50,11 +50,11 @@ configuration UniqueReceiveC {
 }
 
 implementation {
-  components UniqueReceiveP;
+  components TDMAUniqueReceiveP;
   
-  Receive = UniqueReceiveP.Receive;
-  DuplicateReceive = UniqueReceiveP.DuplicateReceive;
-  SubReceive = UniqueReceiveP.SubReceive;
-  StdControl = UniqueReceiveP;
+  Receive = TDMAUniqueReceiveP.Receive;
+  DuplicateReceive = TDMAUniqueReceiveP.DuplicateReceive;
+  SubReceive = TDMAUniqueReceiveP.SubReceive;
+  StdControl = TDMAUniqueReceiveP;
 }
 

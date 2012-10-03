@@ -35,7 +35,7 @@
  * @author David Moss
  */
  
-module UniqueSendP @safe() {
+module TDMAUniqueSendP @safe() {
   provides {
     interface StdControl;
     interface Send;
