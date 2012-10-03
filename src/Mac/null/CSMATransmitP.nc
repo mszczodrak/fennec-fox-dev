@@ -41,9 +41,6 @@ implementation {
 
   error_t sendErr = SUCCESS;
 
-  /** TRUE if we are to use CCA when sending the current packet */
-  norace bool ccaOn;
-
   /****************** Prototypes ****************/
   task void startDone_task();
   task void stopDone_task();
@@ -57,9 +54,6 @@ implementation {
     post sendDone_task();
   }
 
-  /** Total CCA checks that showed no activity before the NoAck LPL send */
-  norace int8_t totalCcaChecks;
-  
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
@@ -158,7 +152,6 @@ implementation {
     m_state = S_LOAD;
     m_cca = call nullMacParams.get_cca();
     m_msg = m_msg;
-    totalCcaChecks = 0;
 
     call RadioTransmit.load(m_msg);
     return SUCCESS;
@@ -238,7 +231,6 @@ implementation {
 
     m_cca = useCca;
     m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
-    totalCcaChecks = 0;
 
     call RadioTransmit.send(m_msg, useCca);
     return SUCCESS;
