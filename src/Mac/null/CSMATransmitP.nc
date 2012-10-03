@@ -139,24 +139,15 @@ implementation {
       m_msg = p_msg;
     }
 
-    // header->length = len + CC2420_SIZE;
-#ifdef CC2420_HW_SECURITY
-    header->fcf &= ((1 << IEEE154_FCF_ACK_REQ)|
-                    (1 << IEEE154_FCF_SECURITY_ENABLED)|
-                    (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
-                    (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
-#else
     header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
                     (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
                     (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
-#endif
     header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
                      ( 1 << IEEE154_FCF_INTRAPAN ) );
 
     metadata->ack = !call nullMacParams.get_ack();
     metadata->rssi = 0;
     metadata->lqi = 0;
-    //metadata->timesync = FALSE;
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
 
     csmaca_backoff_period = call nullMacParams.get_backoff();
@@ -268,11 +259,6 @@ implementation {
     }
   }
 
-  /**
-   * Resend a packet that already exists in the outbound tx buffer on the
-   * chip
-   * @param cca TRUE if this transmit should use clear channel assessment
-   */
   command error_t CSMATransmit.resend(bool useCca) {
     if (m_state == S_CANCEL) {
       return ECANCEL;
@@ -300,24 +286,8 @@ implementation {
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
-    if ( m_state == S_CANCEL ) {
-      call RadioTransmit.cancel();
-      sendDoneErr = ECANCEL;
-      post signalSendDone();
-
-    } else if ( !m_cca ) {
-      m_state = S_BEGIN_TRANSMIT;
-      call RadioTransmit.send(m_msg, m_cca);
-    } else {
-      m_state = S_SAMPLE_CCA;
-
-      requestInitialBackoff(msg);
-      if (myInitialBackoff) {
-        call BackoffTimer.start(myInitialBackoff);
-      } else {
-        signal BackoffTimer.fired();
-      }
-    }
+    m_state = S_BEGIN_TRANSMIT;
+    call RadioTransmit.send(m_msg, m_cca);
   }
 
 
