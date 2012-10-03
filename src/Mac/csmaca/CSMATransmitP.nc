@@ -4,7 +4,7 @@
 #include "message.h"
 #include "Fennec.h"
 
-module macTransmitP @safe() {
+module CSMATransmitP @safe() {
   provides interface MacTransmit;
 
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
