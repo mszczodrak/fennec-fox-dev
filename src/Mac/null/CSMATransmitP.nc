@@ -97,9 +97,7 @@ implementation {
   command error_t Send.cancel( message_t* p_msg ) {
     switch( m_state ) {
     case S_LOAD:
-    case S_SAMPLE_CCA:
     case S_BEGIN_TRANSMIT:
-      m_state = S_CANCEL;
       break;
 
     default:
@@ -140,10 +138,6 @@ implementation {
     csmaca_backoff_period = call nullMacParams.get_backoff();
     csmaca_min_backoff = call nullMacParams.get_min_backoff();
     csmaca_delay_after_receive = call nullMacParams.get_delay_after_receive();
-
-    if (m_state == S_CANCEL) {
-      return ECANCEL;
-    }
 
     if ( m_state != S_STARTED ) {
       return FAIL;
@@ -221,16 +215,12 @@ implementation {
   }
 
   command error_t CSMATransmit.resend(bool useCca) {
-    if (m_state == S_CANCEL) {
-      return ECANCEL;
-    }
-
     if ( m_state != S_STARTED ) {
       return FAIL;
     }
 
     m_cca = useCca;
-    m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
+    m_state = S_BEGIN_TRANSMIT;
 
     call RadioTransmit.send(m_msg, useCca);
     return SUCCESS;

@@ -75,12 +75,6 @@ implementation {
 
   uint8_t localSendId;
 
-//  enum {
-//    S_IDLE,
-//    S_SENDING,
-//  };
-
-
   /* Functions */
 
   command error_t Mgmt.start() {
