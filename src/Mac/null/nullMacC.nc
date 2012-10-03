@@ -97,8 +97,5 @@ implementation {
   components RandomC;
   nullMacP.Random -> RandomC;
 
-  RadioTransmit = CSMATransmitC.RadioTransmit;
-  EnergyIndicator = CSMATransmitC.EnergyIndicator;
-  RadioControl = CSMATransmitC.RadioControl;
 }
 
