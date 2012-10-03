@@ -1,5 +1,5 @@
 /*
- *  null mac module for Fennec Fox platform.
+ *  Dummy radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,18 +19,28 @@
  */
 
 /*
- * Module: null Mac Protocol
+ * Network: Dummy Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#ifndef __null_MAC_H__
-#define __null_MAC_H__
+#ifndef __H_NULL_MAC_H_
+#define __H_NULL_MAC_H_
 
+typedef nx_struct csmaca_header_t {
+  nxle_uint8_t length;
+  nxle_uint16_t fcf;
+  nxle_uint8_t dsn;
+  nxle_uint16_t destpan;
+  nxle_uint16_t dest;
+  nxle_uint16_t src;
+  /** CC2420 802.15.4 header ends here */
+  /** I-Frame 6LowPAN interoperability byte */
+  nxle_uint8_t network;
+  nxle_uint8_t type;
+} csmaca_header_t;
 
-nx_struct null_mac_footer {
-  nx_uint16_t footer;
-};
 
 #endif
+

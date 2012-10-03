@@ -32,10 +32,15 @@ typedef uint16_t conf_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 
-nx_struct fennec_header {
-	nx_uint8_t len;
-	nx_uint8_t conf;
-};
+
+typedef nx_struct fennec_header_t {
+  nxle_uint8_t length;
+  nxle_uint16_t fcf;
+  nxle_uint8_t dsn;
+  nxle_uint16_t destpan;
+  nxle_uint16_t dest;
+  nxle_uint16_t src;
+} fennec_header_t;
 
 
 typedef nx_struct msg_t {
@@ -45,7 +50,7 @@ typedef nx_struct msg_t {
 	nx_uint8_t ack;
 	nx_uint8_t crc;
 	nx_uint8_t asap;
-	nx_struct fennec_header fennec;
+	fennec_header_t fennec;
 	nx_uint8_t channel;
 	nx_uint8_t vnet_id;
 	nx_uint8_t last_layer;
@@ -118,7 +123,7 @@ struct fennec_event {
 };
 
 nx_struct accept_conf {
-	nx_struct fennec_header fennec;
+	fennec_header_t fennec;
 	nx_uint8_t vnet_id;
 	nx_uint8_t local_conf;
 };

@@ -1,5 +1,5 @@
 /*
- *  null mac module for Fennec Fox platform.
+ *  csma/ca MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,15 +19,16 @@
  */
 
 /*
- * Module: null Mac Protocol
+ * Module: CSMA/CA MAC Protocol
  * Author: Marcin Szczodrak
- * Date: 8/20/2010
- * Last Modified: 1/5/2012
+ * Date: 2/18/2012
+ * Last Modified: 8/29/2012
  */
+
+#include "nullMac.h"
 
 configuration nullMacC {
   provides interface Mgmt;
-  provides interface Module;
   provides interface AMSend as MacAMSend;
   provides interface Receive as MacReceive;
   provides interface Receive as MacSnoop;
@@ -54,28 +55,65 @@ configuration nullMacC {
 }
 
 implementation {
+
   components nullMacP;
+
   Mgmt = nullMacP;
-  Module = nullMacP;
-  nullMacParams = nullMacP;
+  MacStatus = nullMacP;
   MacAMSend = nullMacP.MacAMSend;
   MacReceive = nullMacP.MacReceive;
   MacSnoop = nullMacP.MacSnoop;
-  MacAMPacket = nullMacP.MacAMPacket;
   MacPacket = nullMacP.MacPacket;
+  MacAMPacket = nullMacP.MacAMPacket;
   MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
-  MacStatus = nullMacP.MacStatus;
-  RadioReceive = nullMacP.RadioReceive;
-  RadioStatus = nullMacP.RadioStatus;
+  nullMacParams = nullMacP;
 
   RadioConfig = nullMacP.RadioConfig;
   RadioPower = nullMacP.RadioPower;
   ReadRssi = nullMacP.ReadRssi;
   RadioResource = nullMacP.RadioResource;
-  PacketIndicator = nullMacP.PacketIndicator;
-  EnergyIndicator = nullMacP.EnergyIndicator;
-  ByteIndicator = nullMacP.ByteIndicator;
-  RadioTransmit = nullMacP.RadioTransmit;
-  RadioControl = nullMacP.RadioControl;
+
+  RadioStatus = nullMacP.RadioStatus;
+
+  components CSMATransmitC;
+  RadioPower = CSMATransmitC.RadioPower;
+  RadioResource = CSMATransmitC.RadioResource;
+
+  components DefaultLplC as LplC;
+  nullMacP.RadioControl -> LplC.SplitControl;
+
+  components UniqueSendC;
+  components UniqueReceiveC;
+
+  nullMacP.SubSend -> UniqueSendC;
+  nullMacP.SubReceive -> LplC;
+
+  // SplitControl Layers
+
+  LplC.MacPacketAcknowledgements -> nullMacP.MacPacketAcknowledgements;
+  LplC.SubControl -> CSMATransmitC;
+
+  UniqueSendC.SubSend -> LplC.Send;
+  LplC.SubSend -> CSMATransmitC;
+
+  LplC.SubReceive -> UniqueReceiveC.Receive;
+  UniqueReceiveC.SubReceive =  RadioReceive;
+
+  components PowerCycleC;
+  PacketIndicator = PowerCycleC.PacketIndicator;
+  EnergyIndicator = PowerCycleC.EnergyIndicator;
+  ByteIndicator = PowerCycleC.ByteIndicator;
+
+  nullMacParams = PowerCycleC.nullMacParams;
+  nullMacParams = LplC.nullMacParams;
+  nullMacParams = CSMATransmitC.nullMacParams;
+
+  components RandomC;
+  nullMacP.Random -> RandomC;
+
+  RadioTransmit = CSMATransmitC.RadioTransmit;
+  EnergyIndicator = CSMATransmitC.EnergyIndicator;
+  LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
+  RadioControl = CSMATransmitC.RadioControl;
 }
 
