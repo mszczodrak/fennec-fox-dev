@@ -47,6 +47,7 @@
 #include "ff_states.h"
 #include "ff_sensors.h"
 #include "ff_functions.h"
+#include "ff_consts.h"
 
 enum {
         OFF                     = 0,

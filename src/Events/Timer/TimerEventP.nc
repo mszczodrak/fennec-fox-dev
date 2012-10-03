@@ -25,6 +25,8 @@
  */
 
 #include <Fennec.h>
+#include "ff_structs.h"
+#include "ff_consts.h"
 
 generic module TimerEventP()
 {
@@ -52,15 +54,15 @@ implementation {
 
     scale = 1;
 
-    if (!strcmp(en->scale, "sec")) {
+    if (en->scale == TYPE_SECOND) {
       scale = 1024U;
     }
 
-    if (!strcmp(en->scale, "min")) {
+    if (en->scale == TYPE_MINUTE) {
       scale = 61440U;
     }
  
-    if (!strcmp(en->scale, "day")) {
+    if (en->scale == TYPE_DAY) {
       scale = 1474560U;
     }
 
