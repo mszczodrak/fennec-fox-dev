@@ -64,7 +64,7 @@ module nullMacP @safe() {
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as PacketIndicator;
 
-
+  uses interface State as SplitControlState;
 }
 
 implementation {
@@ -371,7 +371,6 @@ implementation {
       return signal MacSnoop.receive(msg, payload, len);
     }
   }
-
 
 }
 

@@ -11,8 +11,6 @@ configuration CSMATransmitC {
   uses interface RadioTransmit;
   uses interface SplitControl as RadioControl;
   uses interface nullMacParams;
-  uses interface RadioPower;
-  uses interface Resource as RadioResource;
 }
 
 implementation {
@@ -28,13 +26,8 @@ implementation {
 
   nullMacParams = CSMATransmitP.nullMacParams;
 
-  components RandomC;
-  CSMATransmitP.Random -> RandomC;
-
   SplitControl = CSMATransmitP;
   Send = CSMATransmitP;
-  RadioPower = CSMATransmitP.RadioPower;
-  RadioResource = CSMATransmitP.RadioResource;
 
   components new StateC();
   CSMATransmitP.SplitControlState -> StateC;

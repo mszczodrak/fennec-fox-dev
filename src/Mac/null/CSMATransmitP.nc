@@ -16,8 +16,6 @@ module CSMATransmitP @safe() {
   uses interface nullMacParams;
   uses interface Random;
   uses interface State as SplitControlState;
-  uses interface RadioPower;
-  uses interface Resource as RadioResource;
 }
 
 implementation {
@@ -150,12 +148,6 @@ implementation {
   command uint8_t Send.maxPayloadLength() {
     return TOSH_DATA_LENGTH;
   }
-
-  async event void RadioPower.startVRegDone() {}
-
-  event void RadioResource.granted() {}
-
-  async event void RadioPower.startOscillatorDone() {}
 
   task void sendDone_task() {
     error_t packetErr;

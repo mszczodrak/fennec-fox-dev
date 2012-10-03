@@ -76,8 +76,6 @@ implementation {
   RadioStatus = nullMacP.RadioStatus;
 
   components CSMATransmitC;
-  RadioPower = CSMATransmitC.RadioPower;
-  RadioResource = CSMATransmitC.RadioResource;
 
   nullMacP.RadioControl -> CSMATransmitC;
 
@@ -96,6 +94,10 @@ implementation {
 
   components RandomC;
   nullMacP.Random -> RandomC;
+
+  components new StateC();
+  nullMacP.SplitControlState -> StateC;
+
 
 }
 
