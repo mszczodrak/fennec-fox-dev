@@ -291,13 +291,6 @@ implementation {
   }
 
 
-  /***************** Timer Events ****************/
-  /**
-   * The backoff timer is mainly used to wait for a moment before trying
-   * to send a packet again. But we also use it to timeout the wait for
-   * an acknowledgement, and timeout the wait for an SFD interrupt when
-   * we should have gotten one.
-   */
   async event void BackoffTimer.fired() {
     switch( m_state ) {
         
@@ -329,34 +322,18 @@ implementation {
   }
       
   async event void RadioTransmit.sendDone(error_t error) {
-    if (m_state == S_CANCEL){
-      sendDoneErr = ECANCEL;
-      post signalSendDone();
-    } else {
-      if (error == EBUSY) {
-        m_state = S_SAMPLE_CCA;
-        totalCcaChecks = 0;
-        congestionBackoff(m_msg);
-      } else {
-        call BackoffTimer.stop();
-        sendDoneErr = error;
-        post signalSendDone();
-      }
-    }
+    sendDoneErr = error;
+    post signalSendDone();
   }
 
   event void RadioControl.startDone( error_t err) {
     if (call SplitControlState.isState(S_STARTING)) {
-      //printf("Mac startDone - task\n");
-      //printfflush();
       post startDone_task();
     }
   }
 
   event void RadioControl.stopDone( error_t err) {
     if (call SplitControlState.isState(S_STOPPING)) {
-      //printf("Mac stopDone - shutdown\n");
-      //printfflush();
       shutdown();
     }
   }
