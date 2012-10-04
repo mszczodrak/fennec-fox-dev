@@ -1,5 +1,5 @@
 /*
- *  ControlUnit MAC module for Fennec Fox platform.
+ *  cu MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,15 +19,15 @@
  */
 
 /*
- * Module: ControlUnit MAC Protocol
+ * Module: cu MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 2/18/2012
  * Last Modified: 9/29/2012
  */
 
-#include "ControlUnitMac.h"
+#include "cuMac.h"
 
-configuration ControlUnitMacC {
+configuration cuMacC {
   provides interface Mgmt;
   provides interface AMSend as MacAMSend;
   provides interface Receive as MacReceive;
@@ -37,7 +37,7 @@ configuration ControlUnitMacC {
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
   provides interface ModuleStatus as MacStatus;
 
-  uses interface ControlUnitMacParams;
+  uses interface cuMacParams;
   uses interface Receive as RadioReceive;
   uses interface ModuleStatus as RadioStatus;
 
@@ -55,33 +55,34 @@ configuration ControlUnitMacC {
 
 implementation {
 
-  components nullMacC as ControlUnitMacP;
-  components ControlUnitParamsP;
+  components cuMacP;
+  Mgmt = cuMacP;
+  MacStatus = cuMacP;
+  MacAMSend = cuMacP.MacAMSend;
+  MacReceive = cuMacP.MacReceive;
+  MacSnoop = cuMacP.MacSnoop;
+  MacPacket = cuMacP.MacPacket;
+  MacAMPacket = cuMacP.MacAMPacket;
+  MacPacketAcknowledgements = cuMacP.MacPacketAcknowledgements;
 
-  Mgmt = ControlUnitMacP;
-  MacStatus = ControlUnitMacP;
-  MacAMSend = ControlUnitMacP.MacAMSend;
-  MacReceive = ControlUnitMacP.MacReceive;
-  MacSnoop = ControlUnitMacP.MacSnoop;
-  MacPacket = ControlUnitMacP.MacPacket;
-  MacAMPacket = ControlUnitMacP.MacAMPacket;
-  MacPacketAcknowledgements = ControlUnitMacP.MacPacketAcknowledgements;
+  cuMacParams = cuMacP;
 
-  RadioConfig = ControlUnitMacP.RadioConfig;
-  RadioPower = ControlUnitMacP.RadioPower;
-  ReadRssi = ControlUnitMacP.ReadRssi;
-  RadioResource = ControlUnitMacP.RadioResource;
-  RadioStatus = ControlUnitMacP.RadioStatus;
-  RadioTransmit = ControlUnitMacP.RadioTransmit;
-  RadioControl = ControlUnitMacP.RadioControl;
-  RadioReceive = ControlUnitMacP.RadioReceive;
+  RadioConfig = cuMacP.RadioConfig;
+  RadioPower = cuMacP.RadioPower;
+  ReadRssi = cuMacP.ReadRssi;
+  RadioResource = cuMacP.RadioResource;
+  RadioStatus = cuMacP.RadioStatus;
+  RadioTransmit = cuMacP.RadioTransmit;
+  RadioControl = cuMacP.RadioControl;
+  RadioReceive = cuMacP.RadioReceive;
 
-  EnergyIndicator = ControlUnitMacP.EnergyIndicator;
-  ByteIndicator = ControlUnitMacP.ByteIndicator;
-  PacketIndicator = ControlUnitMacP.PacketIndicator;
+  EnergyIndicator = cuMacP.EnergyIndicator;
+  ByteIndicator = cuMacP.ByteIndicator;
+  PacketIndicator = cuMacP.PacketIndicator;
 
-  ControlUnitMacParams = ControlUnitParamsP.ControlUnitMacParams;
-  ControlUnitMacP.nullMacParams -> ControlUnitParamsP.nullMacParams;
-
+  components RandomC;
+  cuMacP.Random -> RandomC;
+  components new StateC();
+  cuMacP.SplitControlState -> StateC;
 }
 

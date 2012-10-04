@@ -1,5 +1,5 @@
 /*
- *  ControlUnit MAC module for Fennec Fox platform.
+ *  cu MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,22 +19,14 @@
  */
 
 /*
- * Module: ControlUnit MAC Protocol
+ * Network: cu MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#include <Fennec.h>
-#include <Ieee154.h> 
-#include "ControlUnitMac.h"
+#ifndef __cu_MAC_H_
+#define __cu_MAC_H_
 
+#endif
 
-module ControlUnitParamsP @safe() {
-  provides interface nullMacParams;
-  uses interface ControlUnitMacParams;
-}
-
-implementation {
-
-}
