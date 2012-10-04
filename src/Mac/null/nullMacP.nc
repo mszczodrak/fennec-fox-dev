@@ -80,7 +80,6 @@ implementation {
   uint8_t localSendId;
 
   norace message_t * ONE_NOK m_msg;
-  norace bool m_cca;
   norace uint8_t m_state = S_STOPPED;
   norace uint16_t csmaca_backoff_period;
   norace uint16_t csmaca_min_backoff;
@@ -260,7 +259,7 @@ implementation {
     {
 
 
-    if ((!call nullMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
+    if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     }
 
@@ -279,7 +278,7 @@ implementation {
     header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
                      ( 1 << IEEE154_FCF_INTRAPAN ) );
 
-    metadata->ack = !call nullMacParams.get_ack();
+    metadata->ack = 1;
     metadata->rssi = 0;
     metadata->lqi = 0;
     metadata->timestamp = CC2420_INVALID_TIMESTAMP;
@@ -289,7 +288,6 @@ implementation {
     }
 
     m_state = S_LOAD;
-    m_cca = call nullMacParams.get_cca();
     m_msg = m_msg;
 
     call RadioTransmit.load(m_msg);
@@ -483,7 +481,7 @@ implementation {
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
-    if((call nullMacParams.get_crc()) && (!(metadata)->crc)) {
+    if(!(metadata)->crc) {
       return msg;
     }
 
@@ -505,7 +503,7 @@ implementation {
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     m_state = S_BEGIN_TRANSMIT;
-    call RadioTransmit.send(m_msg, m_cca);
+    call RadioTransmit.send(m_msg, 0);
   }
 
 
