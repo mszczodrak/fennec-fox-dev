@@ -87,7 +87,6 @@ implementation {
 
   void set_new_state(state_t conf, uint16_t seq) {
     call Timer.stop();
-    //printf("Set new state %d %d\n", conf, seq);
     atomic {
       configuration_id = conf;
       configuration_seq = seq;
@@ -207,10 +206,10 @@ done_receive:
   }
 
   event void FennecEngine.stopDone(error_t err) {
-    printf("FE stopdone %d\n", err);
-    printfflush();
+    //printf("FE stopdone %d\n", err);
+    //printfflush();
     if (err == SUCCESS) {
-      printf("FennecEngine stopDone\n");
+      //printf("FennecEngine stopDone\n");
       enable_policy_control_support = TRUE;
       post start_engine();
     } else {
@@ -221,18 +220,18 @@ done_receive:
   task void start_engine() {
     if (enable_policy_control_support == TRUE) {
       call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-      printf("start_engine - %d\n", POLICY_CONF_ID);
+      //printf("start_engine - %d\n", POLICY_CONF_ID);
     } else {
       call PolicyCache.set_active_configuration(configuration_id);
-      printf("start_engine - %d\n", configuration_id);
+      //printf("start_engine - %d\n", configuration_id);
     }
-    printfflush();
+    //printfflush();
     call FennecEngine.start();
   }
 
   task void stop_engine() {
-    printf("call stop_engine\n");
-    printfflush();
+    //printf("call stop_engine\n");
+    //printfflush();
     call EventCache.clearMask();
     call FennecEngine.stop();
   }
