@@ -134,23 +134,18 @@ implementation {
   }
 
   void turn_on_radio() {
-    //printf("turn on\n");
-    //printfflush();
     call RadioControl.start();
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if (sync == SUCCESS) {
-      //printf("turn off radio\n");
-      //printfflush();
       call RadioControl.stop();
       busy_sending = FALSE;
     } 
   }
 
   void start_synchronization() {
-    //printf("start synchronization\n");
     if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
          (sync == SUCCESS) ){
       call TimeSyncMode.send();
@@ -175,16 +170,13 @@ implementation {
       /* if we can't route packages OR there are no messages to send
        * OR we're busy with sending other messages, then skip transmission
        */
-      //printf("skip sending\n");
       return;
     }
 
     if ((ftsp_sync_message != NULL)) {
-      //printf("sending ftsp\n");
       next_msg = ftsp_sync_message;
       ftsp_sync_message = NULL;
     } else {
-      //printf("sending regular\n");
       next_msg = call SendQueue.head();
     }
 
@@ -193,7 +185,6 @@ implementation {
     if (call SubSend.send(next_msg, header->length) == SUCCESS) {
       busy_sending = TRUE;
     }
-    //printfflush();
   }
 
   command error_t Mgmt.start() {
@@ -312,7 +303,6 @@ implementation {
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     ftsp_sync_message = msg;
-    //printf("ftsp wants to send\n");
     return call MacAMSend.send(addr, msg, len);
   }
 
@@ -544,10 +534,6 @@ implementation {
     metadata_t* metadata = (metadata_t*) msg->metadata;
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
 
-    printf("receive\n");
-	printfflush();
-
-
     if((call tdmaMacParams.get_crc()) && (!(metadata)->crc)) {
       return msg;
     }
@@ -560,14 +546,11 @@ implementation {
     msg->crc = metadata->crc;
 
     if (call MacAMPacket.isForMe(msg)) {
-      dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
       if (header->type == AM_TIMESYNCMSG) {
         return signal FtspMacReceive.receive(msg, payload, len);
       } else {
 
 	/* add info about new message */
-    printf("receive other\n");
-	printfflush();
 
         return signal MacReceive.receive(msg, payload, len);
       }
@@ -598,21 +581,16 @@ implementation {
 
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
-
-    //printf("Period %lu %lu %d\n", local, global, sync);
-    //printfflush();
   }
 
   event void FrameTimer.fired() {
     frame_counter++;
 
     if (radio_status == ON) {
-//      call Leds.set(2);
     }
 
     /* check when to turn off the radio */
     if (should_stop_radio()) {
-//      call Leds.set(4);
       turn_off_radio();
       if (ftsp_sync_message != NULL) {
         signal FtspMacAMSend.sendDone(ftsp_sync_message, FAIL);
@@ -627,18 +605,12 @@ implementation {
 
     dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
     start_synchronization();
-
-    //printf("Received: %lu %lu %d\n", local, global, sync);
-    //printfflush();
   }
 
   event void TimeSyncNotify.msg_sent() {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
     dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
-
-    //printf("Send: %lu %lu %d\n", local, global, sync);
-    //printfflush();
   }
 
 }
