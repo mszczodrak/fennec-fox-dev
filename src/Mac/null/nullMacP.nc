@@ -1,5 +1,5 @@
 /*
- *  CSMA/CA MAC module for Fennec Fox platform.
+ *  null MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,21 +19,13 @@
  */
 
 /*
- * Module: CSMA/CA MAC Protocol
+ * Module: null MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#include "CC2420.h"
-#include "CC2420TimeSyncMessage.h"
-#include "crc.h"
-#include "message.h"
-#include "Fennec.h"
-
-
 #include <Fennec.h>
-
 #include <Ieee154.h> 
 #include "CC2420.h"
 #include "nullMac.h"
@@ -81,9 +73,6 @@ implementation {
 
   norace message_t * ONE_NOK m_msg;
   norace uint8_t m_state = S_STOPPED;
-  norace uint16_t csmaca_backoff_period;
-  norace uint16_t csmaca_min_backoff;
-  norace uint16_t csmaca_delay_after_receive;
 
   norace error_t sendDoneErr;
 
@@ -200,7 +189,6 @@ implementation {
       call RadioControl.start();
     } else {
       if (status == S_STARTING) {
-        dbg("Mac", "Mac csmaca got RadioControl startDone\n");
         if (call SplitControlState.isState(S_STARTING)) {
           post startDone_task();
         }
@@ -218,7 +206,6 @@ implementation {
       call RadioControl.stop();
     } else {
       if (status == S_STOPPING) {
-        dbg("Mac", "Mac csmaca got RadioControl stopDone\n");
         if (call SplitControlState.isState(S_STOPPING)) {
           shutdown();
         }
@@ -231,7 +218,7 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader( msg );
+    fennec_header_t* header = (fennec_header_t*)getHeader( msg );
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
     call MacAMPacket.setGroup(msg, msg->conf);
@@ -309,13 +296,13 @@ implementation {
 
   /***************** PacketAcknowledgement Commands ****************/
   async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(p_msg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(p_msg);
     header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
     return SUCCESS;
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(p_msg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(p_msg);
     header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     return SUCCESS;
   }
@@ -374,22 +361,22 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
     return header->dest;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
     return header->src;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
     header->dest = addr;
   }
 
   command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
     header->src = addr;
   }
 
@@ -401,23 +388,20 @@ implementation {
   }
 
   command am_id_t MacAMPacket.type(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
-    return header->type;
+    return UNKNOWN;
   }
 
   command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
-    header->type = type;
   }
 
   command am_group_t MacAMPacket.group(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
     return header->destpan;
   }
 
   command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
     // Overridden intentionally when we send()
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
     header->destpan = grp;
   }
 
@@ -432,18 +416,18 @@ implementation {
   /***************** Packet Commands ****************/
   command void MacPacket.clear(message_t* msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
-    memset(header, 0x0, sizeof(csmaca_header_t));
+    fennec_header_t* header = (fennec_header_t*)getHeader(msg);
+    memset(header, 0x0, sizeof(fennec_header_t));
     memset(metadata, 0x0, sizeof(metadata_t));
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(msg);
     return header->length - CC2420_SIZE;
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    fennec_header_t* header = (fennec_header_t*)getHeader(msg);
     header->length  = len + CC2420_SIZE;
   }
 
