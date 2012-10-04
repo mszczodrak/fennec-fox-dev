@@ -456,7 +456,7 @@ implementation {
   }
 
 
-  async event void RadioTransmit.sendDone(error_t error) {
+  async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
     printf("send done\n");
     printfflush();
     m_state = S_STARTED;

@@ -301,7 +301,7 @@ implementation {
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if ( m_state == S_CANCEL ) {
-      call RadioTransmit.cancel();
+      call RadioTransmit.cancel(msg);
       sendDoneErr = ECANCEL;
       post signalSendDone();
 
@@ -347,7 +347,7 @@ implementation {
       break;
 
     case S_CANCEL:
-      call RadioTransmit.cancel();
+      call RadioTransmit.cancel(m_msg);
       m_state = S_STARTED;
       sendDoneErr = ECANCEL;
       post signalSendDone();
@@ -358,7 +358,7 @@ implementation {
     }
   }
       
-  async event void RadioTransmit.sendDone(error_t error) {
+  async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
     if (m_state == S_CANCEL){
       sendDoneErr = ECANCEL;
       post signalSendDone();
