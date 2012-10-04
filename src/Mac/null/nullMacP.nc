@@ -52,7 +52,7 @@ module nullMacP @safe() {
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
 
-  uses interface Receive as SubReceive;
+  uses interface Receive as RadioReceive;
 
   uses interface Random;
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -435,8 +435,7 @@ implementation {
   }
 
 
-  /***************** SubReceive Events ****************/
-  event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
+  event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
     if(!(metadata)->crc) {

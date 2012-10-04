@@ -64,6 +64,7 @@ implementation {
   MacPacket = nullMacP.MacPacket;
   MacAMPacket = nullMacP.MacAMPacket;
   MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
+
   nullMacParams = nullMacP;
 
   RadioConfig = nullMacP.RadioConfig;
@@ -73,8 +74,8 @@ implementation {
   RadioStatus = nullMacP.RadioStatus;
   RadioTransmit = nullMacP.RadioTransmit;
   RadioControl = nullMacP.RadioControl;
+  RadioReceive = nullMacP.RadioReceive;
 
-  nullMacP.SubReceive = RadioReceive;
   EnergyIndicator = nullMacP.EnergyIndicator;
   ByteIndicator = nullMacP.ByteIndicator;
   PacketIndicator = nullMacP.PacketIndicator;
