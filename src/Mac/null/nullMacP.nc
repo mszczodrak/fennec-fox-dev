@@ -27,7 +27,6 @@
 
 #include <Fennec.h>
 #include <Ieee154.h> 
-#include "CC2420.h"
 #include "nullMac.h"
 
 
@@ -66,15 +65,8 @@ module nullMacP @safe() {
 implementation {
 
   uint8_t status = S_STOPPED;
-  uint16_t pending_length;
-  message_t * ONE_NOK pending_message = NULL;
-
-  uint8_t localSendId;
-
   norace message_t * ONE_NOK m_msg;
   norace uint8_t m_state = S_STOPPED;
-
-  norace error_t sendDoneErr;
 
   enum {
     S_STOPPED,
@@ -91,7 +83,6 @@ implementation {
   task void stopDone_task();
   task void sendDone_task();
 
-
   task void startDone_task() {
     m_state = S_STARTED;
     call SplitControlState.forceState(S_STARTED);
@@ -104,12 +95,6 @@ implementation {
   void shutdown() {
     m_state = S_STOPPED;
     post stopDone_task();
-  }
-
-  task void signalSendDone() {
-    m_state = S_STARTED;
-    atomic sendErr = sendDoneErr;
-    post sendDone_task();
   }
 
   error_t SplitControl_start() {
@@ -159,8 +144,6 @@ implementation {
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
-
-    localSendId = call Random.rand16();
 
     if (SplitControl_start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
@@ -222,7 +205,6 @@ implementation {
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
     call MacAMPacket.setGroup(msg, msg->conf);
-    dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
 
     msg->crc = 0;
     msg->rssi = 0;
@@ -232,19 +214,12 @@ implementation {
       return ESIZE;
     }
 
-    //header->type = id;
     header->dest = addr;
-    //header->destpan = call CC2420Config.getPanAddr();
-    //header->destpan = signal Mgmt.currentStateId();
-    //header->destpan = msg->conf;
     header->src = call MacAMPacket.address();
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
     header->length = len + CC2420_SIZE;
-
-    {
-
 
     if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
@@ -279,7 +254,6 @@ implementation {
 
     call RadioTransmit.load(m_msg);
     return SUCCESS;
-  }
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
@@ -492,8 +466,9 @@ implementation {
 
 
   async event void RadioTransmit.sendDone(error_t error) {
-    sendDoneErr = error;
-    post signalSendDone();
+    m_state = S_STARTED;
+    atomic sendErr = error;
+    post sendDone_task();
   }
 
 }
