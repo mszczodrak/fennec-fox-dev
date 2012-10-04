@@ -1,5 +1,5 @@
 /*
- *  Null network module for Fennec Fox platform.
+ *  cu network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Network: Null Network Protocol
+ * Network: cu Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
-#include "ControlUnitNet.h"
+#include "cuNet.h"
 
-module ControlUnitNetP {
+module cuNetP {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as NetworkAMSend;
@@ -39,7 +39,7 @@ module ControlUnitNetP {
   provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   provides interface ModuleStatus as NetworkStatus;
 
-  uses interface ControlUnitNetParams;
+  uses interface cuNetParams;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
@@ -53,13 +53,13 @@ module ControlUnitNetP {
 implementation {
 
   command error_t Mgmt.start() {
-    dbg("Network", "Network ControlUnit starts\n");
+    dbg("Network", "Network null starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    dbg("Network", "Network ControlUnit stops\n");
+    dbg("Network", "Network null stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -171,7 +171,7 @@ implementation {
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
   }
 
-  event void ControlUnitNetParams.receive_status(uint16_t status_flag) {
+  event void cuNetParams.receive_status(uint16_t status_flag) {
   }
 
 }

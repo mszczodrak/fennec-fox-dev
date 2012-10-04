@@ -1,5 +1,5 @@
 /*
- *  Dummy network module for Fennec Fox platform.
+ *  null network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,17 +19,17 @@
  */
 
 /*
- * Network: Dummy Network Protocol
+ * Network: null Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 
-#ifndef __dummy_NET_H_
-#define __dummy_NET_H_
+#ifndef __null_NET_H_
+#define __null_NET_H_
 
-nx_struct dummy_header {
+nx_struct null_header {
 };
 
 #endif

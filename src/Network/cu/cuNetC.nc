@@ -1,5 +1,5 @@
 /*
- *  Null network module for Fennec Fox platform.
+ *  cu network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Null Network Protocol
+ * Network: cu Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -27,7 +27,7 @@
 
 #include <Fennec.h>
 
-configuration ControlUnitNetC {
+configuration cuNetC {
   provides interface Mgmt;
   provides interface Module;
   provides interface AMSend as NetworkAMSend;
@@ -38,7 +38,7 @@ configuration ControlUnitNetC {
   provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   provides interface ModuleStatus as NetworkStatus;
 
-  uses interface ControlUnitNetParams;
+  uses interface cuNetParams;
 
   uses interface AMSend as MacAMSend;
   uses interface Receive as MacReceive;
@@ -51,23 +51,23 @@ configuration ControlUnitNetC {
 
 implementation {
 
-  components ControlUnitNetP;
-  Mgmt = ControlUnitNetP;
-  Module = ControlUnitNetP;
-  ControlUnitNetParams = ControlUnitNetP;
-  NetworkAMSend = ControlUnitNetP.NetworkAMSend;
-  NetworkReceive = ControlUnitNetP.NetworkReceive;
-  NetworkSnoop = ControlUnitNetP.NetworkSnoop;
-  NetworkAMPacket = ControlUnitNetP.NetworkAMPacket;
-  NetworkPacket = ControlUnitNetP.NetworkPacket;
-  NetworkPacketAcknowledgements = ControlUnitNetP.NetworkPacketAcknowledgements;
-  NetworkStatus = ControlUnitNetP.NetworkStatus;
+  components cuNetP;
+  Mgmt = cuNetP;
+  Module = cuNetP;
+  cuNetParams = cuNetP;
+  NetworkAMSend = cuNetP.NetworkAMSend;
+  NetworkReceive = cuNetP.NetworkReceive;
+  NetworkSnoop = cuNetP.NetworkSnoop;
+  NetworkAMPacket = cuNetP.NetworkAMPacket;
+  NetworkPacket = cuNetP.NetworkPacket;
+  NetworkPacketAcknowledgements = cuNetP.NetworkPacketAcknowledgements;
+  NetworkStatus = cuNetP.NetworkStatus;
 
-  MacAMSend = ControlUnitNetP;
-  MacReceive = ControlUnitNetP.MacReceive;
-  MacSnoop = ControlUnitNetP.MacSnoop;
-  MacAMPacket = ControlUnitNetP.MacAMPacket;
-  MacPacket = ControlUnitNetP.MacPacket;
-  MacPacketAcknowledgements = ControlUnitNetP.MacPacketAcknowledgements;
-  MacStatus = ControlUnitNetP.MacStatus;
+  MacAMSend = cuNetP;
+  MacReceive = cuNetP.MacReceive;
+  MacSnoop = cuNetP.MacSnoop;
+  MacAMPacket = cuNetP.MacAMPacket;
+  MacPacket = cuNetP.MacPacket;
+  MacPacketAcknowledgements = cuNetP.MacPacketAcknowledgements;
+  MacStatus = cuNetP.MacStatus;
 }

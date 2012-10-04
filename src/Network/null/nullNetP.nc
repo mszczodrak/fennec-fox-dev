@@ -1,5 +1,5 @@
 /*
- *  Null network module for Fennec Fox platform.
+ *  null network module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Null Network Protocol
+ * Network: null Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
