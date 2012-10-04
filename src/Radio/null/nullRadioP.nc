@@ -51,11 +51,10 @@ implementation {
   uint8_t channel;
   uint8_t mgmt = FALSE;
   norace uint8_t state = S_STOPPED;
+  norace message_t *m;
 
   task void start_done() {
     state = S_STARTED;
-    printf("Radio task start done\n");
-    printfflush();
 
     signal RadioControl.startDone(SUCCESS);
     if (mgmt == TRUE) {
@@ -70,8 +69,6 @@ implementation {
 
   task void stop_done() {
     state = S_STOPPED;
-    printf("Radio task stop done\n");
-    printfflush();
     signal RadioControl.stopDone(SUCCESS);
     if (mgmt == TRUE) {
       signal Mgmt.stopDone(SUCCESS);
@@ -80,14 +77,12 @@ implementation {
   }
 
   command error_t Mgmt.start() {
-    printf("Mgmt start\n");
     mgmt = TRUE;
     call RadioControl.start();
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    printf("Mgmt stop\n");
     mgmt = TRUE;
     call RadioControl.stop();
     return SUCCESS;
@@ -96,24 +91,16 @@ implementation {
   command error_t RadioControl.start() {
     if (state == S_STOPPED) {
       state = S_STARTING;
-      printf("Radio split start 1\n");
-      printfflush();
       post start_done();
       return SUCCESS;
 
     } else if(state == S_STARTED) {
-      printf("Radio split start 2\n");
-      printfflush();
       post start_done();
       return EALREADY;
 
     } else if(state == S_STARTING) {
-      printf("Radio split start 3\n");
-      printfflush();
       return SUCCESS;
     }
-    printf("Radio split start 4\n");
-    printfflush();
 
     return EBUSY;
   }
@@ -216,23 +203,33 @@ implementation {
 
 
   async command bool ByteIndicator.isReceiving() {
-    return FAIL;
+    return FALSE;
   }
 
   async command bool EnergyIndicator.isReceiving() {
-    return FAIL;
+    return FALSE;
   }
 
   async command bool PacketIndicator.isReceiving() {
-    return FAIL;
+    return FALSE;
   }
 
+  task void load_done() {
+    signal RadioTransmit.loadDone(m, SUCCESS);
+  }
 
   async command error_t RadioTransmit.load(message_t* msg) {
+    m = msg;
+    post load_done();
     return SUCCESS;
   }
 
+  task void send_done() {
+    signal RadioTransmit.sendDone(SUCCESS);
+  }
+
   async command error_t RadioTransmit.send(message_t* msg, bool useCca) {
+    post send_done();
     return SUCCESS;
   }
 

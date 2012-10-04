@@ -86,8 +86,6 @@ implementation {
   }
 
   command error_t SplitControl.stop() {
-    printf("SplitControl.stop()\n");
-    printfflush();
     if (call SplitControlState.isState(S_STARTED)) {
       call SplitControlState.forceState(S_STOPPING);
       call RadioControl.stop();
@@ -379,16 +377,12 @@ implementation {
 
   event void RadioControl.startDone( error_t err) {
     if (call SplitControlState.isState(S_STARTING)) {
-      //printf("Mac startDone - task\n");
-      //printfflush();
       post startDone_task();
     }
   }
 
   event void RadioControl.stopDone( error_t err) {
     if (call SplitControlState.isState(S_STOPPING)) {
-      //printf("Mac stopDone - shutdown\n");
-      //printfflush();
       shutdown();
     }
   }
