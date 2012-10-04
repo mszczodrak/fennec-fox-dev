@@ -86,7 +86,6 @@ implementation {
 
   void set_new_state(state_t conf, uint16_t seq) {
     call Timer.stop();
-    dbg("ControlUnit", "ControlUnit: new state id %d with sequence %d\n", conf, seq);
     //printf("Set new state %d %d\n", conf, seq);
     atomic {
       configuration_id = conf;
@@ -97,24 +96,19 @@ implementation {
   }
 
   command void SimpleStart.start() {
-    dbg("ControlUnit", "ControlUnit: simple start\n");
+    confmsg.conf = POLICY_CONFIGURATION;
     set_new_state(get_state_id(), CONFIGURATION_SEQ_UNKNOWN);
     signal SimpleStart.startDone(SUCCESS);
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    dbg("ControlUnit", "PolicyCache new conf %d with sequence %d\n",
-		new_conf, configuration_seq + 1);
     set_new_state(new_conf, configuration_seq + 1);
   }
 
   event void PolicyCache.wrong_conf() {}
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
-
-    dbg("ControlUnit", "ControlUnit: receive message\n");
 
     if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
@@ -175,7 +169,6 @@ reset:
     goto done_receive;
 
 reconfigure:
-    dbg("ControlUnit", "ControlUnit: reconfigure\n");
     if ((cu_msg->conf_id != configuration_id) && 
 	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations())
                                 			) {
@@ -187,14 +180,12 @@ done_receive:
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    dbg("ControlUnit", "ControlUnit: sendDone error=%d\n", error);
     if (error != SUCCESS) {
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
     }
   }
 
   event void Timer.fired() {
-    dbg("ControlUnit", "ControlUnit Timer.fired()\n");
     post sendConfigurationMsg();
   }
 
@@ -202,21 +193,17 @@ done_receive:
   event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
       status = S_STARTED;
-      dbg("ControlUnit", "ControlUnit FennecEngine startDone SUCCESS\n");
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
     } else {
-      dbg("ControlUnit", "ControlUnit FennecEngine startDone FAIL - retry\n");
       call FennecEngine.start();
     }
   }
 
   event void FennecEngine.stopDone(error_t err) {
     if (err == SUCCESS) {
-      dbg("ControlUnit", "ControlUnit FennecEngine stopDone SUCCESS\n");
       //printf("Engine stop done\n");
       post start_engine();
     } else {
-       dbg("ControlUnit", "ControlUnit FennecEngine stopDone DAIL - retry\n");
       //printf("Retry to start engine\n");
       call FennecEngine.stop();
     }
@@ -245,10 +232,7 @@ done_receive:
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
 
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      dbg("ControlUnit", "ControlUnit sendConfigurationMsg() does not happen, same_msg_counter is %d\n", same_msg_counter);
       return;
-    } else {
-      dbg("ControlUnit", "ControlUnit sendConfigurationMsg()\n");
     }
 
     if (cu_msg == NULL) {

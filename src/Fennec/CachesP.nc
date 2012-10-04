@@ -20,8 +20,9 @@ implementation {
   module_t get_protocol(layer_t layer, conf_t conf) {
 
     if (conf == POLICY_CONFIGURATION) {
-      if (layer == F_NETWORK) return conf;
-      conf = active_state;
+      conf = 1;
+//      if (layer == F_NETWORK) return conf;
+//      conf = active_state;
     }
 
     if (conf >= NUMBER_OF_CONFIGURATIONS) {
