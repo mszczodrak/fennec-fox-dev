@@ -46,7 +46,7 @@
 #define POLICY_RAND_SEND	10
 #define SAME_MSG_COUNTER_THRESHOLD 2
 
-module ControlUnitAppP {
+module ControlUnitAppP @safe() {
   provides interface SimpleStart;
   provides interface Mgmt;
 
