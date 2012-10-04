@@ -169,7 +169,7 @@ implementation {
     radio_state = S_STARTED;
     abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
-    signal RadioTransmit.sendDone(err);
+    signal RadioTransmit.sendDone(radio_msg, err);
   }
 
 
@@ -217,7 +217,7 @@ implementation {
       call CSN.set();
 
     if ( congestion ) {
-      signal RadioTransmit.sendDone(EBUSY);
+      signal RadioTransmit.sendDone(radio_msg, EBUSY);
       releaseSpiResource();
     } else {
       radio_state = S_SFD;
@@ -463,7 +463,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command void RadioTransmit.cancel() {
+  async command void RadioTransmit.cancel(message_t *msg) {
     call CSN.clr();
     call SFLUSHTX.strobe();
     call CSN.set();

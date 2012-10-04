@@ -181,8 +181,8 @@ done_receive:
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    printf("CU send done\n");
-    printfflush();
+    //printf("CU send done\n");
+    //printfflush();
     if (error != SUCCESS) {
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
     }
@@ -262,8 +262,8 @@ done_receive:
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
-    printf("CU sending\n");
-    printfflush();
+    //printf("CU sending\n");
+    //printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);

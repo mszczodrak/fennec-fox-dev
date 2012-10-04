@@ -18,7 +18,7 @@ include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 
 # 2. TinyOS printf
 CFLAGS += -I$(TOSDIR)/lib/printf
-CFLAGS += -DPRINTF_BUFFER_SIZE=200
+CFLAGS += -DPRINTF_BUFFER_SIZE=2000
 CFLAGS += -DFENNEC_TOS_PRINTF
 
 #CFLAGS+=-D_H_IMB400_CAMERA_H

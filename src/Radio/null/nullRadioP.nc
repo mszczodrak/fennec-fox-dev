@@ -225,7 +225,7 @@ implementation {
   }
 
   task void send_done() {
-    signal RadioTransmit.sendDone(SUCCESS);
+    signal RadioTransmit.sendDone(m, SUCCESS);
   }
 
   async command error_t RadioTransmit.send(message_t* msg, bool useCca) {
@@ -233,7 +233,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command void RadioTransmit.cancel() {
+  async command void RadioTransmit.cancel(message_t *msg) {
   }
 
   async command error_t RadioResource.immediateRequest() {

@@ -100,7 +100,14 @@ implementation {
   error_t SplitControl_start() {
 
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      call RadioControl.start();
+      if (call SplitControlState.isState(S_STARTING)) {
+        post startDone_task();
+      }
+
+      status = S_STARTED;
+      signal MacStatus.status(F_RADIO, ON);
+      signal Mgmt.startDone(SUCCESS);
+
       return SUCCESS;
 
     } else if(call SplitControlState.isState(S_STARTED)) {
@@ -116,7 +123,13 @@ implementation {
   error_t SplitControl_stop() {
     if (call SplitControlState.isState(S_STARTED)) {
       call SplitControlState.forceState(S_STOPPING);
-      call RadioControl.stop();
+      if (call SplitControlState.isState(S_STOPPING)) {
+        shutdown();
+      }
+
+      status = S_STOPPED;
+      signal MacStatus.status(F_RADIO, OFF);
+      signal Mgmt.stopDone(SUCCESS);
       return SUCCESS;
 
     } else if(call SplitControlState.isState(S_STOPPED)) {
@@ -168,36 +181,10 @@ implementation {
 
 
   event void RadioControl.startDone(error_t err) {
-    if (err != SUCCESS) {
-      call RadioControl.start();
-    } else {
-      if (status == S_STARTING) {
-        if (call SplitControlState.isState(S_STARTING)) {
-          post startDone_task();
-        }
-
-        status = S_STARTED;
-        signal MacStatus.status(F_RADIO, ON);
-        signal Mgmt.startDone(SUCCESS);
-      }
-    }
   }
 
 
   event void RadioControl.stopDone(error_t err) {
-    if (err != SUCCESS) {
-      call RadioControl.stop();
-    } else {
-      if (status == S_STOPPING) {
-        if (call SplitControlState.isState(S_STOPPING)) {
-          shutdown();
-        }
-
-        status = S_STOPPED;
-        signal MacStatus.status(F_RADIO, OFF);
-        signal Mgmt.stopDone(SUCCESS);
-      }
-    }
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
@@ -227,6 +214,8 @@ implementation {
 
     atomic {
       if (!call SplitControlState.isState(S_STARTED)) {
+        printf("fail\n");
+        printfflush();
         return FAIL;
       }
 
@@ -234,6 +223,8 @@ implementation {
       m_msg = msg;
     }
 
+        printf("send\n");
+        printfflush();
     header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
                     (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
                     (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
@@ -459,12 +450,15 @@ implementation {
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+    printf("load done\n");
     m_state = S_BEGIN_TRANSMIT;
     call RadioTransmit.send(m_msg, 0);
   }
 
 
   async event void RadioTransmit.sendDone(error_t error) {
+    printf("send done\n");
+    printfflush();
     m_state = S_STARTED;
     atomic sendErr = error;
     post sendDone_task();
