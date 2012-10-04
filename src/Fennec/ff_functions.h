@@ -32,7 +32,7 @@ void force_new_configuration(uint8_t new_conf);
 
 uint16_t get_next_module(module_t module_id, uint8_t way);
 
-uint16_t get_module_id(state_t state_id, conf_t conf_id, layer_t layer_id);
+uint16_t get_module_id(module_t module_id, conf_t conf_id, layer_t layer_id);
 
 state_t get_state_id();
 conf_t get_conf_id();

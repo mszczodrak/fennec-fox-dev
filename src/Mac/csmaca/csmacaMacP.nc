@@ -145,7 +145,6 @@ implementation {
     csmaca_header_t* header = (csmaca_header_t*)getHeader( msg );
 
     call MacAMPacket.setGroup(msg, msg->conf);
-    dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
 
     msg->crc = 0;
     msg->rssi = 0;
@@ -155,11 +154,7 @@ implementation {
       return ESIZE;
     }
 
-    //header->type = id;
     header->dest = addr;
-    //header->destpan = call CC2420Config.getPanAddr();
-    //header->destpan = signal Mgmt.currentStateId();
-    //header->destpan = msg->conf;
     header->src = call MacAMPacket.address();
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
@@ -358,15 +353,11 @@ implementation {
       return msg;
     }
 
-//    msg->conf = call MacAMPacket.group(msg);
-//    msg->conf = call MacAMPacket.group(msg);
-
     msg->rssi = metadata->rssi;
     msg->lqi = metadata->lqi;
     msg->crc = metadata->crc;
 
     if (call MacAMPacket.isForMe(msg)) {
-      dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
       return signal MacReceive.receive(msg, payload, len);
     }
     else {

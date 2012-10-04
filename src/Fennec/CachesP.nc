@@ -21,8 +21,6 @@ implementation {
 
     if (conf == POLICY_CONFIGURATION) {
       conf = POLICY_CONF_ID;
-//      if (layer == F_NETWORK) return conf;
-//      conf = active_state;
     }
 
     if (conf >= NUMBER_OF_CONFIGURATIONS) {
@@ -100,7 +98,7 @@ implementation {
     }
   }
 
-  module_t get_module_id(state_t state_id, conf_t conf_id, layer_t layer_id) @C() {
+  module_t get_module_id(module_t module_id, conf_t conf_id, layer_t layer_id) @C() {
     return get_protocol(layer_id, conf_id);
   }
 
