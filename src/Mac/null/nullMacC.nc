@@ -1,5 +1,5 @@
 /*
- *  csma/ca MAC module for Fennec Fox platform.
+ *  null MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,10 +19,10 @@
  */
 
 /*
- * Module: CSMA/CA MAC Protocol
+ * Module: null MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 2/18/2012
- * Last Modified: 8/29/2012
+ * Last Modified: 9/29/2012
  */
 
 #include "nullMac.h"
@@ -38,7 +38,6 @@ configuration nullMacC {
   provides interface ModuleStatus as MacStatus;
 
   uses interface nullMacParams;
-
   uses interface Receive as RadioReceive;
   uses interface ModuleStatus as RadioStatus;
 
@@ -57,7 +56,6 @@ configuration nullMacC {
 implementation {
 
   components nullMacP;
-
   Mgmt = nullMacP;
   MacStatus = nullMacP;
   MacAMSend = nullMacP.MacAMSend;
@@ -72,9 +70,7 @@ implementation {
   RadioPower = nullMacP.RadioPower;
   ReadRssi = nullMacP.ReadRssi;
   RadioResource = nullMacP.RadioResource;
-
   RadioStatus = nullMacP.RadioStatus;
-
   RadioTransmit = nullMacP.RadioTransmit;
   RadioControl = nullMacP.RadioControl;
 
@@ -85,9 +81,7 @@ implementation {
 
   components RandomC;
   nullMacP.Random -> RandomC;
-
   components new StateC();
   nullMacP.SplitControlState -> StateC;
-
 }
 
