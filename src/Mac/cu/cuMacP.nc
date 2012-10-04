@@ -1,5 +1,5 @@
 /*
- *  null MAC module for Fennec Fox platform.
+ *  cu MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Module: null MAC Protocol
+ * Module: cu MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -27,10 +27,10 @@
 
 #include <Fennec.h>
 #include <Ieee154.h> 
-#include "nullMac.h"
+#include "cuMac.h"
 
 
-module nullMacP @safe() {
+module cuMacP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as MacStatus;
   provides interface AMSend as MacAMSend;
@@ -41,7 +41,7 @@ module nullMacP @safe() {
   provides interface AMPacket as MacAMPacket;
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface nullMacParams;
+  uses interface cuMacParams;
   uses interface RadioTransmit;
 
   uses interface SplitControl as RadioControl;
@@ -290,7 +290,7 @@ implementation {
 
 
 
-  event void nullMacParams.receive_status(uint16_t status_flag) {
+  event void cuMacParams.receive_status(uint16_t status_flag) {
   }
 
 
