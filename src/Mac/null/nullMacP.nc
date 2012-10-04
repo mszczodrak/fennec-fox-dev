@@ -25,6 +25,13 @@
  * Last Modified: 1/5/2012
  */
 
+#include "CC2420.h"
+#include "CC2420TimeSyncMessage.h"
+#include "crc.h"
+#include "message.h"
+#include "Fennec.h"
+
+
 #include <Fennec.h>
 
 #include <Ieee154.h> 
@@ -41,13 +48,12 @@ module nullMacP @safe() {
 
   provides interface Packet as MacPacket;
   provides interface AMPacket as MacAMPacket;
-
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
   uses interface nullMacParams;
+  uses interface RadioTransmit;
 
   uses interface SplitControl as RadioControl;
-
   uses interface ModuleStatus as RadioStatus;
 
   uses interface RadioConfig;
@@ -55,11 +61,9 @@ module nullMacP @safe() {
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
 
-  uses interface Send as SubSend;
   uses interface Receive as SubReceive;
 
   uses interface Random;
-
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as PacketIndicator;
@@ -75,36 +79,116 @@ implementation {
 
   uint8_t localSendId;
 
+  norace message_t * ONE_NOK m_msg;
+  norace bool m_cca;
+  norace uint8_t m_state = S_STOPPED;
+  norace uint16_t csmaca_backoff_period;
+  norace uint16_t csmaca_min_backoff;
+  norace uint16_t csmaca_delay_after_receive;
+
+  norace error_t sendDoneErr;
+
+  enum {
+    S_STOPPED,
+    S_STARTING,
+    S_STARTED,
+    S_STOPPING,
+    S_TRANSMITTING,
+  };
+
+  error_t sendErr = SUCCESS;
+
+  /****************** Prototypes ****************/
+  task void startDone_task();
+  task void stopDone_task();
+  task void sendDone_task();
+
+
+  task void startDone_task() {
+    m_state = S_STARTED;
+    call SplitControlState.forceState(S_STARTED);
+  }
+
+  task void stopDone_task() {
+    call SplitControlState.forceState(S_STOPPED);
+  }
+
+  void shutdown() {
+    m_state = S_STOPPED;
+    post stopDone_task();
+  }
+
+  task void signalSendDone() {
+    m_state = S_STARTED;
+    atomic sendErr = sendDoneErr;
+    post sendDone_task();
+  }
+
+  error_t SplitControl_start() {
+
+    if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
+      call RadioControl.start();
+      return SUCCESS;
+
+    } else if(call SplitControlState.isState(S_STARTED)) {
+      return EALREADY;
+
+    } else if(call SplitControlState.isState(S_STARTING)) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
+  }
+
+  error_t SplitControl_stop() {
+    if (call SplitControlState.isState(S_STARTED)) {
+      call SplitControlState.forceState(S_STOPPING);
+      call RadioControl.stop();
+      return SUCCESS;
+
+    } else if(call SplitControlState.isState(S_STOPPED)) {
+      return EALREADY;
+
+    } else if(call SplitControlState.isState(S_TRANSMITTING)) {
+      call SplitControlState.forceState(S_STOPPING);
+      // At sendDone, the radio will shut down
+      return SUCCESS;
+
+    } else if(call SplitControlState.isState(S_STOPPING)) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
+  }
+
+
+
+
   /* Functions */
 
   command error_t Mgmt.start() {
     if (status == S_STARTED) {
-      dbg("Mac", "Mac csmaca already started\n");
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
 
     localSendId = call Random.rand16();
 
-    dbg("Mac", "Mac csmaca starts\n");
-
-    if (call RadioControl.start() != SUCCESS) {
+    if (SplitControl_start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
     }
     status = S_STARTING;
     return SUCCESS;
   }
 
+
   command error_t Mgmt.stop() {
     if (status == S_STOPPED) {
-      dbg("Mac", "Mac csmaca  already stopped\n");
       signal Mgmt.stopDone(SUCCESS);
       return SUCCESS;
     }
 
-    dbg("Mac", "Mac csmaca stops\n");
-
-    if (call RadioControl.stop() != SUCCESS) {
+    if (SplitControl_stop() != SUCCESS) {
       signal Mgmt.stopDone(FAIL);
     }
     status = S_STOPPING;
@@ -118,6 +202,10 @@ implementation {
     } else {
       if (status == S_STARTING) {
         dbg("Mac", "Mac csmaca got RadioControl startDone\n");
+        if (call SplitControlState.isState(S_STARTING)) {
+          post startDone_task();
+        }
+
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         signal Mgmt.startDone(SUCCESS);
@@ -132,6 +220,10 @@ implementation {
     } else {
       if (status == S_STOPPING) {
         dbg("Mac", "Mac csmaca got RadioControl stopDone\n");
+        if (call SplitControlState.isState(S_STOPPING)) {
+          shutdown();
+        }
+
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
         signal Mgmt.stopDone(SUCCESS);
@@ -141,6 +233,7 @@ implementation {
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     csmaca_header_t* header = (csmaca_header_t*)getHeader( msg );
+    metadata_t* metadata = (metadata_t*) msg->metadata;
 
     call MacAMPacket.setGroup(msg, msg->conf);
     dbg("Mac", "Mac sends msg on state %d\n", msg->conf);
@@ -165,16 +258,47 @@ implementation {
     header->length = len + CC2420_SIZE;
 
     {
-      error_t rc;
 
-      rc = call SubSend.send( msg, len );
 
-      return rc;
+    if ((!call nullMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
+      header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     }
+
+    atomic {
+      if (!call SplitControlState.isState(S_STARTED)) {
+        return FAIL;
+      }
+
+      call SplitControlState.forceState(S_TRANSMITTING);
+      m_msg = msg;
+    }
+
+    header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
+                    (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
+                    (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
+    header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
+                     ( 1 << IEEE154_FCF_INTRAPAN ) );
+
+    metadata->ack = !call nullMacParams.get_ack();
+    metadata->rssi = 0;
+    metadata->lqi = 0;
+    metadata->timestamp = CC2420_INVALID_TIMESTAMP;
+
+    if ( m_state != S_STARTED ) {
+      return FAIL;
+    }
+
+    m_state = S_LOAD;
+    m_cca = call nullMacParams.get_cca();
+    m_msg = m_msg;
+
+    call RadioTransmit.load(m_msg);
+    return SUCCESS;
+  }
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
-    return call SubSend.cancel(msg);
+    return SUCCESS;
   }
 
   command uint8_t MacAMSend.maxPayloadLength() {
@@ -326,26 +450,33 @@ implementation {
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
-    return call SubSend.maxPayloadLength();
+    return TOSH_DATA_LENGTH;
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call SubSend.maxPayloadLength()) {
+    if (len <= call MacPacket.maxPayloadLength()) {
       return msg->data;
     } else {
       return NULL;
     }
 
-    //return call SubSend.getPayload(msg, len);
   }
 
 
 
-  /***************** SubSend Events ****************/
-  event void SubSend.sendDone(message_t* msg, error_t result) {
-    signal MacAMSend.sendDone(msg, result);
-  }
 
+  task void sendDone_task() {
+    error_t packetErr;
+    atomic packetErr = sendErr;
+    if(call SplitControlState.isState(S_STOPPING)) {
+      shutdown();
+
+    } else {
+      call SplitControlState.forceState(S_STARTED);
+    }
+
+    signal MacAMSend.sendDone( m_msg, packetErr );
+  }
 
 
   /***************** SubReceive Events ****************/
@@ -370,6 +501,17 @@ implementation {
     else {
       return signal MacSnoop.receive(msg, payload, len);
     }
+  }
+
+  async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+    m_state = S_BEGIN_TRANSMIT;
+    call RadioTransmit.send(m_msg, m_cca);
+  }
+
+
+  async event void RadioTransmit.sendDone(error_t error) {
+    sendDoneErr = error;
+    post signalSendDone();
   }
 
 }

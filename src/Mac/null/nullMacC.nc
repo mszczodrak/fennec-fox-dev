@@ -75,29 +75,19 @@ implementation {
 
   RadioStatus = nullMacP.RadioStatus;
 
-  components CSMATransmitC;
+  RadioTransmit = nullMacP.RadioTransmit;
+  RadioControl = nullMacP.RadioControl;
 
-  nullMacP.RadioControl -> CSMATransmitC;
-
-  nullMacP.SubSend -> CSMATransmitC;
   nullMacP.SubReceive = RadioReceive;
-
   EnergyIndicator = nullMacP.EnergyIndicator;
   ByteIndicator = nullMacP.ByteIndicator;
   PacketIndicator = nullMacP.PacketIndicator;
-
-  RadioTransmit = CSMATransmitC.RadioTransmit;
-  EnergyIndicator = CSMATransmitC.EnergyIndicator;
-  RadioControl = CSMATransmitC.RadioControl;
-
-  nullMacParams = CSMATransmitC.nullMacParams;
 
   components RandomC;
   nullMacP.Random -> RandomC;
 
   components new StateC();
   nullMacP.SplitControlState -> StateC;
-
 
 }
 
