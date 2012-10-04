@@ -20,7 +20,7 @@ implementation {
   module_t get_protocol(layer_t layer, conf_t conf) {
 
     if (conf == POLICY_CONFIGURATION) {
-      conf = 1;
+      conf = POLICY_CONF_ID;
 //      if (layer == F_NETWORK) return conf;
 //      conf = active_state;
     }
@@ -74,7 +74,6 @@ implementation {
   }
 
   command void PolicyCache.control_unit_support(bool status) {
-    control_unit_support = status;  
   }
 
   command bool PolicyCache.valid_policy_msg(nx_struct FFControl *policy_msg) {

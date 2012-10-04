@@ -73,6 +73,7 @@ implementation {
   uint16_t configuration_id;
   uint16_t configuration_seq;
   uint8_t same_msg_counter;
+  bool enable_policy_control_support = FALSE;
 
   message_t confmsg;
 
@@ -96,6 +97,7 @@ implementation {
   }
 
   command void SimpleStart.start() {
+    enable_policy_control_support = FALSE;
     confmsg.conf = POLICY_CONFIGURATION;
     set_new_state(get_state_id(), CONFIGURATION_SEQ_UNKNOWN);
     signal SimpleStart.startDone(SUCCESS);
@@ -192,8 +194,13 @@ done_receive:
 
   event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
-      status = S_STARTED;
-      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+      if (enable_policy_control_support == TRUE) {
+        enable_policy_control_support = FALSE;
+        post start_engine();
+      } else {
+        status = S_STARTED;
+        call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+      }
     } else {
       call FennecEngine.start();
     }
@@ -201,29 +208,30 @@ done_receive:
 
   event void FennecEngine.stopDone(error_t err) {
     if (err == SUCCESS) {
-      //printf("Engine stop done\n");
+      printf("FennecEngine stopDone\n");
+      enable_policy_control_support = TRUE;
       post start_engine();
     } else {
-      //printf("Retry to start engine\n");
       call FennecEngine.stop();
     }
   }
 
   task void start_engine() {
-    //printf("Start Engine\n");
-    //call EventCache.clearMask();
-    call PolicyCache.control_unit_support(1);
-    //printf("Start engine with conf %d\n", configuration_id);
-    call PolicyCache.set_active_configuration(configuration_id);
-//    call ConfigurationCache.set_active_configuration(configuration_id);
+    if (enable_policy_control_support == TRUE) {
+      call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+      printf("start_engine - %d\n", POLICY_CONF_ID);
+    } else {
+      call PolicyCache.set_active_configuration(configuration_id);
+      printf("start_engine - %d\n", configuration_id);
+    }
+    printfflush();
     call FennecEngine.start();
   }
 
   task void stop_engine() {
-    //printf("Stop Engine\n");
     call EventCache.clearMask();
-    //call PolicyCache.control_unit_support(1);
     call FennecEngine.stop();
+   
   }
 
 

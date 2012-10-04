@@ -105,6 +105,7 @@ enum {
 
         FENNEC_SYSTEM_FLAGS_NUM = 30,
 	POLICY_CONFIGURATION	= 250,
+	POLICY_CONF_ID		= 1,
 };
 
 /* Forces a change in configuration */
