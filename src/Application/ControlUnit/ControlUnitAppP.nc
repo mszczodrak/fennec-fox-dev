@@ -50,6 +50,7 @@ module ControlUnitAppP {
   provides interface SimpleStart;
   provides interface Mgmt;
 
+  uses interface ControlUnitAppParams;
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
   uses interface Receive as NetworkSnoop;
@@ -278,5 +279,19 @@ done_receive:
 
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
   }
+
+  command error_t Mgmt.start() {
+    signal Mgmt.startDone(SUCCESS);
+    return SUCCESS;
+  }
+
+  command error_t Mgmt.stop() {
+    signal Mgmt.stopDone(SUCCESS);
+    return SUCCESS;
+  }
+
+  event void ControlUnitAppParams.receive_status(uint16_t status_flag) {
+  }
+
 
 }

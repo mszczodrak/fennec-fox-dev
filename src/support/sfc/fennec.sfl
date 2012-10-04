@@ -7,7 +7,7 @@ use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter (
 	uint16_t delay, uint16_t delay_scale, uint16_t src, uint16_t dest )
 
 use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
-i
+use application ControlUnit $(FENNEC_FOX_LIB)/Application/ControlUnit ()
 
 
 use network nullNet $(FENNEC_FOX_LIB)/Network/null ()

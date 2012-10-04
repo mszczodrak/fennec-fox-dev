@@ -22,8 +22,8 @@ implementation {
   components CachesC;
   FennecP.Caches -> CachesC;
 
-  components ControlUnitC;
-  FennecP.PolicyStart -> ControlUnitC;
+  components ControlUnitAppC;
+  FennecP.PolicyStart -> ControlUnitAppC;
 
   components FennecSerialDbgC;
   FennecP.DbgSerial -> FennecSerialDbgC;

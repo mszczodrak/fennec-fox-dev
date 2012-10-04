@@ -42,6 +42,7 @@ configuration ControlUnitAppC {
   provides interface Mgmt;
   provides interface SimpleStart;
 
+  uses interface ControlUnitAppParams;
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
   uses interface Receive as NetworkSnoop;
@@ -56,6 +57,7 @@ implementation {
   components ControlUnitAppP;
   SimpleStart = ControlUnitAppP;
   Mgmt = ControlUnitAppP;
+  ControlUnitAppParams = ControlUnitAppP;
 
   NetworkAMSend = ControlUnitAppP;
   NetworkReceive = ControlUnitAppP.NetworkReceive;
