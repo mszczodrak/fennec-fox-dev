@@ -33,87 +33,133 @@ module nullRadioP @safe() {
   provides interface Mgmt;
   provides interface Receive as RadioReceive;
   provides interface ModuleStatus as RadioStatus;
-
-  uses interface nullRadioParams;
-
   provides interface Resource as RadioResource;
   provides interface RadioConfig;
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
-
   provides interface SplitControl as RadioControl;
-
   provides interface RadioTransmit;
-
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
+
+  uses interface nullRadioParams;
 }
 
 implementation {
 
   uint8_t channel;
   uint8_t mgmt = FALSE;
+  norace uint8_t state = S_STOPPED;
 
   task void start_done() {
+    state = S_STARTED;
+    printf("Radio task start done\n");
+    printfflush();
+
     signal RadioControl.startDone(SUCCESS);
     if (mgmt == TRUE) {
-      mgmt = FALSE;
       signal Mgmt.startDone(SUCCESS);
+      mgmt = FALSE;
     }
   }
 
+  task void finish_starting_radio() {
+    post start_done();
+  }
+
   task void stop_done() {
+    state = S_STOPPED;
+    printf("Radio task stop done\n");
+    printfflush();
     signal RadioControl.stopDone(SUCCESS);
     if (mgmt == TRUE) {
-      mgmt = FALSE;
       signal Mgmt.stopDone(SUCCESS);
+      mgmt = FALSE;
     }
   }
 
   command error_t Mgmt.start() {
+    printf("Mgmt start\n");
     mgmt = TRUE;
-    dbg("Radio", "Radio null starts\n");
     call RadioControl.start();
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    printf("Mgmt stop\n");
     mgmt = TRUE;
-    dbg("Radio", "Radio null stops\n");
     call RadioControl.stop();
     return SUCCESS;
   }
 
   command error_t RadioControl.start() {
-    post start_done();
-    return SUCCESS;
+    if (state == S_STOPPED) {
+      state = S_STARTING;
+      printf("Radio split start 1\n");
+      printfflush();
+      post start_done();
+      return SUCCESS;
+
+    } else if(state == S_STARTED) {
+      printf("Radio split start 2\n");
+      printfflush();
+      post start_done();
+      return EALREADY;
+
+    } else if(state == S_STARTING) {
+      printf("Radio split start 3\n");
+      printfflush();
+      return SUCCESS;
+    }
+    printf("Radio split start 4\n");
+    printfflush();
+
+    return EBUSY;
   }
 
   command error_t RadioControl.stop() {
-    post stop_done();
-    return SUCCESS;
+    if (state == S_STARTED) {
+      state = S_STOPPING;
+      post stop_done();
+      return SUCCESS;
+
+    } else if(state == S_STOPPED) {
+      post stop_done();
+      return EALREADY;
+
+    } else if(state == S_STOPPING) {
+      return SUCCESS;
+    }
+
+    return EBUSY;
   }
 
   event void nullRadioParams.receive_status(uint16_t status_flag) {
   }
 
   async command error_t RadioPower.startVReg() {
+    return SUCCESS;
   }
 
   async command error_t RadioPower.stopVReg() {
+    return SUCCESS;
   }
 
   async command error_t RadioPower.startOscillator() {
+    return SUCCESS;
   }
 
   async command error_t RadioPower.stopOscillator() {
+    return SUCCESS;
   }
 
   async command error_t RadioPower.rxOn() {
+    return SUCCESS;
   }
 
   async command error_t RadioPower.rfOff() {
+    return SUCCESS;
   }
 
   command uint8_t RadioConfig.getChannel() {
@@ -139,6 +185,7 @@ implementation {
   }
 
   command error_t RadioConfig.sync() {
+    return SUCCESS;
   }
 
   command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {

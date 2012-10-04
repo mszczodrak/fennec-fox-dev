@@ -176,6 +176,7 @@ implementation {
     }
     
     call SplitControlState.forceState(S_TURNING_OFF);
+    printf("SC stop\n");
     post stopRadio();
     return SUCCESS;
   }
@@ -213,6 +214,7 @@ implementation {
   }
   
   event void SubControl.stopDone(error_t error) {
+    printf("sub control stopDone\n");
     call RadioPowerState.forceState(S_OFF);
     //call Leds.led2Off();
     
@@ -229,8 +231,10 @@ implementation {
   /***************** Tasks ****************/
   task void stopRadio() {
     error_t error = call SubControl.stop();
+    printf("stopRadio\n");
     if(error != SUCCESS) {
       // Already stopped?
+      printf("stopRadio != SUCCESS\n");
       finishSplitControlRequests();
       call OnTimer.startOneShot(sleepInterval);
     }

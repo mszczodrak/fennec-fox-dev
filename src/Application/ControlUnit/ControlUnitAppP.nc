@@ -207,6 +207,8 @@ done_receive:
   }
 
   event void FennecEngine.stopDone(error_t err) {
+    printf("FE stopdone %d\n", err);
+    printfflush();
     if (err == SUCCESS) {
       printf("FennecEngine stopDone\n");
       enable_policy_control_support = TRUE;
@@ -229,9 +231,10 @@ done_receive:
   }
 
   task void stop_engine() {
+    printf("call stop_engine\n");
+    printfflush();
     call EventCache.clearMask();
     call FennecEngine.stop();
-   
   }
 
 

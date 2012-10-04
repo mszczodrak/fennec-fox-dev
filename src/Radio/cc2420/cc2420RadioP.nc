@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  cc2420 radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: cc2420 Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -32,17 +32,14 @@
 module cc2420RadioP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as RadioStatus;
+  provides interface SplitControl;
 
   uses interface cc2420RadioParams;
   uses interface RadioConfig;
-
   uses interface StdControl as ReceiveControl;
   uses interface StdControl as TransmitControl;
-
   uses interface RadioPower;
   uses interface Resource as RadioResource;
-
-  provides interface SplitControl;
 }
 
 implementation {

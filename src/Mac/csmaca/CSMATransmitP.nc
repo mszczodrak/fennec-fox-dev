@@ -86,6 +86,8 @@ implementation {
   }
 
   command error_t SplitControl.stop() {
+    printf("SplitControl.stop()\n");
+    printfflush();
     if (call SplitControlState.isState(S_STARTED)) {
       call SplitControlState.forceState(S_STOPPING);
       call RadioControl.stop();
