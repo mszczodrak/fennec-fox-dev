@@ -214,8 +214,6 @@ implementation {
 
     atomic {
       if (!call SplitControlState.isState(S_STARTED)) {
-        printf("fail\n");
-        printfflush();
         return FAIL;
       }
 
@@ -223,8 +221,6 @@ implementation {
       m_msg = msg;
     }
 
-        printf("send\n");
-        printfflush();
     header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
                     (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
                     (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
@@ -450,15 +446,12 @@ implementation {
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
-    printf("load done\n");
     m_state = S_BEGIN_TRANSMIT;
     call RadioTransmit.send(m_msg, 0);
   }
 
 
   async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
-    printf("send done\n");
-    printfflush();
     m_state = S_STARTED;
     atomic sendErr = error;
     post sendDone_task();
