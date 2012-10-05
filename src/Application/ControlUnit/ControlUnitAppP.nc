@@ -38,14 +38,16 @@
 #include <Fennec.h>
 #include "hashing.h"
 #define POLICY_LED	1
-#define POLICY_RESEND_RECONF	300
-#define POLICY_MAX_WRONG_CONFS	5
+#define POLICY_RESEND_RECONF		300
+#define POLICY_MIN_RESEND_RECONF 	8
+#define POLICY_MAX_WRONG_CONFS		5
 
 #define POLICY_RESEND_MIN	5
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
 #define POLICY_RAND_SEND	20
 #define SAME_MSG_COUNTER_THRESHOLD 2
+#define POLICY_MAX_RECEIVE	10
 
 module ControlUnitAppP @safe() {
   provides interface SimpleStart;
@@ -79,6 +81,7 @@ implementation {
   bool disable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
+  bool current_state_started = FALSE;
 
   message_t confmsg;
 
@@ -89,17 +92,20 @@ implementation {
   task void stop_engine();
 
   void start_policy_send() {
+    same_msg_counter = 0;
     call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 3);
   }
 
   task void continue_reconfiguration() {
     if (resend_confs > 0) resend_confs--;
     if (resend_confs > 0) {
-      printf("continue_reconfiguration - next %d\n", resend_confs);
+      //printf("continue_reconfiguration - next %d\n", resend_confs);
       start_policy_send();
     } else {
       printf("continue_reconfiguration - done\n");
-      call EventsMgmt.start();
+      if (current_state_started == FALSE) {
+        call EventsMgmt.start();
+      }
     }
   }
 
@@ -109,7 +115,6 @@ implementation {
     call Timer.stop();
     status = S_RECONFIGURING;
     atomic {
-      resend_confs = POLICY_RESEND_RECONF;
       configuration_seq = seq;
       if (configuration_id == UNKNOWN_CONFIGURATION) {
         /* First time here */
@@ -130,11 +135,13 @@ implementation {
     enable_policy_control_support = FALSE;
     confmsg.conf = POLICY_CONFIGURATION;
     busy_sending = FALSE;
+    current_state_started = FALSE;
     set_new_state(get_state_id(), CONFIGURATION_SEQ_UNKNOWN);
     signal SimpleStart.startDone(SUCCESS);
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
+    resend_confs = POLICY_RESEND_RECONF;
     set_new_state(new_conf, configuration_seq + 1);
   }
 
@@ -205,9 +212,11 @@ implementation {
       
       if (cu_msg->conf_id == configuration_id) {
         /* Received same sequence with the same configuration id */
-        if (call Timer.isRunning()) {
-	  same_msg_counter++;
+//        if (call Timer.isRunning()) {
+	if (++same_msg_counter > POLICY_MAX_RECEIVE) {
+	  start_policy_send();
 	}
+	
         goto done_receive;
       }
 
@@ -224,16 +233,16 @@ implementation {
 
 reset:
     if (!call Timer.isRunning()) {
-      resend_confs = POLICY_RESEND_RECONF;
+      resend_confs = POLICY_MIN_RESEND_RECONF;
       same_msg_counter = 0;
-      //start_policy_send();
+      start_policy_send();
     }
     goto done_receive;
 
 reconfigure:
     if ((cu_msg->conf_id != configuration_id) && 
-	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations())
-                                			) {
+	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
+      resend_confs = POLICY_MIN_RESEND_RECONF;
       set_new_state(cu_msg->conf_id, cu_msg->seq);
     }
 
@@ -246,10 +255,11 @@ done_receive:
     same_msg_counter = 0;
     if (error != SUCCESS) {
       printf("sendDone - FAILED\n");
+      post sendConfigurationMsg();
+    } else {
       post continue_reconfiguration();
     }
-    post continue_reconfiguration();
-    printfflush();
+    //printfflush();
     
   }
 
@@ -262,14 +272,16 @@ done_receive:
   }
 
   event void FennecEngine.startDone(error_t err) {
-    printf("FE start done\n");
-    printfflush();
+    //printf("FE start done\n");
+    //printfflush();
     if (err == SUCCESS) {
       if (enable_policy_control_support == TRUE) {
         call PolicyCache.set_active_configuration(configuration_id);
         enable_policy_control_support = FALSE;
         status = S_STARTED;
         post continue_reconfiguration();
+      } else {
+        current_state_started = TRUE;
       }
       /* if false Engine started and is running */
     } else {
@@ -331,7 +343,6 @@ done_receive:
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-//      signal NetworkAMSend.sendDone(&confmsg, FAIL);
       start_policy_send();
     } else {
       busy_sending = TRUE;
