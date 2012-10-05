@@ -122,6 +122,7 @@ implementation {
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     cu_header_t* header = (cu_header_t*)getHeader( msg );
+    printf("CU MAC got send\n");
 
     call MacAMPacket.setGroup(msg, msg->conf);
 

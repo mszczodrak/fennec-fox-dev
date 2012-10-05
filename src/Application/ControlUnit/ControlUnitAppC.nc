@@ -79,5 +79,8 @@ implementation {
 
   components new TimerMilliC() as Timer;
   ControlUnitAppP.Timer -> Timer;
+
+  components EventsC;
+  ControlUnitAppP.EventsMgmt-> EventsC.Mgmt;
 }
 

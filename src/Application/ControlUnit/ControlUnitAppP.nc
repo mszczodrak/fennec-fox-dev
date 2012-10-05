@@ -60,6 +60,7 @@ module ControlUnitAppP @safe() {
   uses interface ModuleStatus as NetworkStatus;
 
   uses interface Mgmt as FennecEngine;
+  uses interface Mgmt as EventsMgmt;
 
   uses interface EventCache;
   uses interface PolicyCache;
@@ -80,19 +81,17 @@ implementation {
 
   norace uint8_t status = S_STOPPED;
 
-
   task void sendConfigurationMsg();
   task void start_engine();
   task void stop_engine();
-
 
   void start_policy_send() {
     call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
   }
 
-
   void set_new_state(state_t conf, uint16_t seq) {
     call Timer.stop();
+    status = S_RECONFIGURING;
     atomic {
       resend_confs = POLICY_RESEND_RECONF;
       configuration_seq = seq;
@@ -100,10 +99,11 @@ implementation {
         /* First time here */
         configuration_id = conf;
         enable_policy_control_support = TRUE;
+        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         post start_engine();
       } else {
         configuration_id = conf;
-        post stop_engine();
+        call EventsMgmt.stop();
       }
     }
   }
@@ -122,7 +122,25 @@ implementation {
   }
 
   event void PolicyCache.wrong_conf() {
+    printf("wrong conf\n");
     start_policy_send();
+  }
+
+  event void EventsMgmt.stopDone(error_t err) {
+    if (err == SUCCESS) { 
+      post stop_engine();
+    } else {
+      call EventsMgmt.stop();
+    }
+  }
+
+  event void EventsMgmt.startDone(error_t err) {
+    if (err == SUCCESS) { 
+      printf("events started\n");
+      post start_engine();
+    } else {
+      call EventsMgmt.stop();
+    }
   }
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -222,14 +240,16 @@ done_receive:
     post sendConfigurationMsg();
   }
 
-
   event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
       if (enable_policy_control_support == TRUE) {
+        call PolicyCache.set_active_configuration(configuration_id);
         enable_policy_control_support = FALSE;
-        post start_engine();
+        printf("The CU support started\n");
+        call EventsMgmt.start();
       } else {
         status = S_STARTED;
+        printf("The state engine started\n");
         start_policy_send();
       }
     } else {
@@ -241,6 +261,7 @@ done_receive:
     if (err == SUCCESS) {
       //printf("FennecEngine stopDone\n");
       enable_policy_control_support = TRUE;
+      call PolicyCache.set_active_configuration(POLICY_CONF_ID);
       post start_engine();
     } else {
       call FennecEngine.stop();
@@ -248,19 +269,11 @@ done_receive:
   }
 
   task void start_engine() {
-    if (enable_policy_control_support == TRUE) {
-      call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-      //printf("start_engine - %d\n", POLICY_CONF_ID);
-    } else {
-      call PolicyCache.set_active_configuration(configuration_id);
-      //printf("start_engine - %d\n", configuration_id);
-    }
-    //printfflush();
     call FennecEngine.start();
   }
 
   task void stop_engine() {
-    atomic status = S_STOPPED;
+    status = S_STOPPED;
     call EventCache.clearMask();
     call FennecEngine.stop();
   }
@@ -299,10 +312,11 @@ done_receive:
     printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      start_policy_send();
+      signal NetworkAMSend.sendDone(&confmsg, FAIL);
+//      start_policy_send();
+    } else {
+      same_msg_counter = 0;
     }
-    same_msg_counter = 0;
-
   }
 
   event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
