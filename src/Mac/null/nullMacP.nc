@@ -464,7 +464,7 @@ implementation {
   }
 
 
-  async event void RadioTransmit.sendDone(error_t error) {
+  async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
     m_state = S_STARTED;
     atomic sendErr = error;
     post sendDone_task();

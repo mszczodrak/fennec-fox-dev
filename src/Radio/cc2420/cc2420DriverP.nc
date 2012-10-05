@@ -441,6 +441,9 @@ implementation {
   }
 
   async command error_t RadioTransmit.load(message_t* msg) {
+    if (radio_state != S_STARTED) {
+      return FAIL;
+    }
     radio_msg = msg;
     radio_state = S_LOAD;
     post updateTXPower();
@@ -451,7 +454,7 @@ implementation {
   }
 
   async command error_t RadioTransmit.send(message_t* msg, bool useCca) {
-    if (msg != radio_msg)
+    if ((msg != radio_msg) || (radio_state != S_LOAD))
       return FAIL;
 
     radio_cca = useCca;
