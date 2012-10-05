@@ -38,12 +38,12 @@
 #include <Fennec.h>
 #include "hashing.h"
 #define POLICY_LED	1
-#define POLICY_RESEND_RECONF	2
+#define POLICY_RESEND_RECONF	6
 #define POLICY_MAX_WRONG_CONFS	5
 
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
-#define POLICY_RAND_SEND	10
+#define POLICY_RAND_SEND	20
 #define SAME_MSG_COUNTER_THRESHOLD 2
 
 module ControlUnitAppP @safe() {
@@ -74,7 +74,7 @@ implementation {
   uint16_t configuration_seq;
   uint8_t same_msg_counter;
   bool enable_policy_control_support = FALSE;
-  uint8_t resend_confs;
+  uint8_t resend_confs = POLICY_RESEND_RECONF;
 
   message_t confmsg;
 
@@ -87,9 +87,11 @@ implementation {
 
 
   void start_policy_send() {
+    //printf("start_policy_send\n");
+    //printfflush();
 //    uint16_t send_delay = POLICY_RAND_SEND;
 //    if (send_delay) {
-      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
 //    } else {
 //      post sendConfigurationMsg();
 //    }
@@ -99,6 +101,7 @@ implementation {
   void set_new_state(state_t conf, uint16_t seq) {
     call Timer.stop();
     atomic {
+      resend_confs = POLICY_RESEND_RECONF;
       configuration_id = conf;
       configuration_seq = seq;
       status = S_STOPPED;
@@ -123,6 +126,9 @@ implementation {
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
+
+    printf("receive\n");
+    printfflush();
 
     if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
@@ -198,13 +204,17 @@ done_receive:
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
     same_msg_counter = 0;
     if (error != SUCCESS) {
+      printf("sendDone - FAILED\n");
       start_policy_send();
     } else {
-      resend_confs--;
+      if (resend_confs > 0) resend_confs--;
+      printf("sendDone - SUCCESS r%d\n", resend_confs);
       if (resend_confs > 0) {
         start_policy_send();
       }
     }
+    printfflush();
+    
   }
 
   event void Timer.fired() {
@@ -263,7 +273,7 @@ done_receive:
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
     
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      resend_confs--;
+      if (resend_confs > 0) resend_confs--;
       if (resend_confs > 0) {
         start_policy_send();
       }
@@ -285,8 +295,8 @@ done_receive:
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
-    //printf("CU sending\n");
-    //printfflush();
+    printf("CU sending\n");
+    printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
