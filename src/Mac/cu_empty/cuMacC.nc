@@ -22,7 +22,7 @@
  * Module: cu MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 2/18/2012
- * Last Modified: 8/29/2012
+ * Last Modified: 9/29/2012
  */
 
 #include "cuMac.h"
@@ -38,7 +38,6 @@ configuration cuMacC {
   provides interface ModuleStatus as MacStatus;
 
   uses interface cuMacParams;
-
   uses interface Receive as RadioReceive;
   uses interface ModuleStatus as RadioStatus;
 
@@ -57,7 +56,6 @@ configuration cuMacC {
 implementation {
 
   components cuMacP;
-
   Mgmt = cuMacP;
   MacStatus = cuMacP;
   MacAMSend = cuMacP.MacAMSend;
@@ -66,34 +64,25 @@ implementation {
   MacPacket = cuMacP.MacPacket;
   MacAMPacket = cuMacP.MacAMPacket;
   MacPacketAcknowledgements = cuMacP.MacPacketAcknowledgements;
+
   cuMacParams = cuMacP;
 
   RadioConfig = cuMacP.RadioConfig;
   RadioPower = cuMacP.RadioPower;
   ReadRssi = cuMacP.ReadRssi;
   RadioResource = cuMacP.RadioResource;
-
   RadioStatus = cuMacP.RadioStatus;
+  RadioTransmit = cuMacP.RadioTransmit;
+  RadioControl = cuMacP.RadioControl;
+  RadioReceive = cuMacP.RadioReceive;
+
   EnergyIndicator = cuMacP.EnergyIndicator;
-  PacketIndicator = cuMacP.PacketIndicator;
   ByteIndicator = cuMacP.ByteIndicator;
-
-  components cuTransmitC;
-  RadioPower = cuTransmitC.RadioPower;
-  RadioResource = cuTransmitC.RadioResource;
-
-  cuMacP.RadioControl -> cuTransmitC.SplitControl;
-
-  cuMacP.SubSend -> cuTransmitC;
-  RadioReceive = cuMacP.SubReceive;
-
-  cuMacParams = cuTransmitC.cuMacParams;
-  EnergyIndicator = cuTransmitC.EnergyIndicator;
+  PacketIndicator = cuMacP.PacketIndicator;
 
   components RandomC;
   cuMacP.Random -> RandomC;
-
-  RadioTransmit = cuTransmitC.RadioTransmit;
-  RadioControl = cuTransmitC.RadioControl;
+  components new StateC();
+  cuMacP.SplitControlState -> StateC;
 }
 
