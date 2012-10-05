@@ -25,22 +25,8 @@
  * Last Modified: 1/5/2012
  */
 
-#ifndef __H_CU_MAC_H_
-#define __H_CU_MAC_H_
-
-typedef nx_struct cu_header_t {
-  nxle_uint8_t length;
-  nxle_uint16_t fcf;
-  nxle_uint8_t dsn;
-  nxle_uint16_t destpan;
-  nxle_uint16_t dest;
-  nxle_uint16_t src;
-  /** CC2420 802.15.4 header ends here */
-  /** I-Frame 6LowPAN interoperability byte */
-  nxle_uint8_t network;
-  nxle_uint8_t type;
-} cu_header_t;
-
+#ifndef __cu_MAC_H_
+#define __cu_MAC_H_
 
 #endif
 

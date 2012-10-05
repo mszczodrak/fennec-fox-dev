@@ -76,6 +76,7 @@ implementation {
   uint16_t configuration_seq = 0;
   uint8_t same_msg_counter;
   bool enable_policy_control_support = FALSE;
+  bool disable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
 
@@ -142,6 +143,7 @@ implementation {
 
   event void EventsMgmt.stopDone(error_t err) {
     if (err == SUCCESS) { 
+      disable_policy_control_support = TRUE;
       post stop_engine();
     } else {
       call EventsMgmt.stop();
@@ -150,7 +152,6 @@ implementation {
 
   event void EventsMgmt.startDone(error_t err) {
     if (err == SUCCESS) { 
-      printf("events started\n");
       post start_engine();
     } else {
       call EventsMgmt.stop();
@@ -279,10 +280,15 @@ done_receive:
 
   event void FennecEngine.stopDone(error_t err) {
     if (err == SUCCESS) {
-      //printf("FennecEngine stopDone\n");
-      enable_policy_control_support = TRUE;
-      call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-      post start_engine();
+      if (disable_policy_control_support == TRUE) { 
+        disable_policy_control_support = FALSE;
+        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+        call FennecEngine.stop();
+      } else {
+        enable_policy_control_support = TRUE;
+        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+        post start_engine();
+      }
     } else {
       call FennecEngine.stop();
     }
