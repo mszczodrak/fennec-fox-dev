@@ -230,7 +230,7 @@ done_receive:
         post start_engine();
       } else {
         status = S_STARTED;
-        call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+        post start_policy_send();
       }
     } else {
       call FennecEngine.start();
@@ -297,7 +297,7 @@ done_receive:
     printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+      post start_policy_send();
     }
     same_msg_counter = 0;
 
