@@ -230,7 +230,7 @@ done_receive:
         post start_engine();
       } else {
         status = S_STARTED;
-        post start_policy_send();
+        start_policy_send();
       }
     } else {
       call FennecEngine.start();
@@ -268,7 +268,9 @@ done_receive:
 
   task void sendConfigurationMsg() {
 
-    nx_struct FFControl *cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
+    nx_struct FFControl *cu_msg;
+    confmsg.conf = POLICY_CONFIGURATION;
+    cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
     
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
       if (resend_confs > 0) resend_confs--;
@@ -297,7 +299,7 @@ done_receive:
     printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      post start_policy_send();
+      start_policy_send();
     }
     same_msg_counter = 0;
 
