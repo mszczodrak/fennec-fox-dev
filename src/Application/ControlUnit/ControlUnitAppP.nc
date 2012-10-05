@@ -43,10 +43,10 @@
 
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
-#define POLICY_RAND_SEND	0
-#define SAME_MSG_COUNTER_THRESHOLD 1
+#define POLICY_RAND_SEND	10
+#define SAME_MSG_COUNTER_THRESHOLD 2
 
-module ControlUnitAppP {
+module ControlUnitAppP @safe() {
   provides interface SimpleStart;
   provides interface Mgmt;
 
@@ -70,85 +70,87 @@ module ControlUnitAppP {
 
 implementation {
 
-  uint8_t configuration_id;
+  uint16_t configuration_id;
   uint16_t configuration_seq;
   uint8_t same_msg_counter;
-
+  bool enable_policy_control_support = FALSE;
   uint8_t resend_confs;
 
   message_t confmsg;
+
+  uint8_t status = S_STOPPED;
+
 
   task void sendConfigurationMsg();
   task void start_engine();
   task void stop_engine();
 
+
   void start_policy_send() {
-    uint16_t send_delay = POLICY_RAND_SEND;
-    if (send_delay) {
-      call Timer.startOneShot(call Random.rand16() % send_delay);
-    } else {
-      dbg("ControlUnit", "ControlUnit Timer.fired()\n");
-      post sendConfigurationMsg();
-    }
+//    uint16_t send_delay = POLICY_RAND_SEND;
+//    if (send_delay) {
+      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+//    } else {
+//      post sendConfigurationMsg();
+//    }
   }
 
-  void set_new_state(uint8_t conf, uint8_t seq) {
+
+  void set_new_state(state_t conf, uint16_t seq) {
     call Timer.stop();
-    dbg("ControlUnit", "ControlUnit: new state id %d with sequence %d\n", conf, seq);
-    //printf("Set new state %d %d\n", conf, seq);
     atomic {
       configuration_id = conf;
       configuration_seq = seq;
+      status = S_STOPPED;
       post stop_engine();
     }
   }
 
   command void SimpleStart.start() {
-    dbg("ControlUnit", "ControlUnit: simple start\n");
+    enable_policy_control_support = FALSE;
+    confmsg.conf = POLICY_CONFIGURATION;
     set_new_state(get_state_id(), CONFIGURATION_SEQ_UNKNOWN);
     signal SimpleStart.startDone(SUCCESS);
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    dbg("ControlUnit", "ControlUnit: newConf %d\n", new_conf);
-    //printf("Policy New conf %d\n", new_conf);
     set_new_state(new_conf, configuration_seq + 1);
   }
 
-  event void PolicyCache.wrong_conf() {}
+  event void PolicyCache.wrong_conf() {
+    start_policy_send();
+  }
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
-
-    dbg("ControlUnit", "ControlUnit: receive message\n");
 
     if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
       goto done_receive;
     }
 
-    //dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
+    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
     if (!call PolicyCache.valid_policy_msg(cu_msg)) {
       goto done_receive;
     }
 
+    if (status != S_STARTED) {
+      goto done_receive;
+    }
+
     // First time receives Configuration
     if ( configuration_seq == CONFIGURATION_SEQ_UNKNOWN && cu_msg->seq != CONFIGURATION_SEQ_UNKNOWN ) {
-      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_FIRST_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
       goto reconfigure;
     } 
 
     /* Received configuration message with unknown sequence */
     if ( cu_msg->seq == CONFIGURATION_SEQ_UNKNOWN && configuration_seq != CONFIGURATION_SEQ_UNKNOWN ) {
-      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_UNKNOWN_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
       goto reset;
     }
 
     /* Received configuration message with lower sequence */
     if (cu_msg->seq < configuration_seq) {
-      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_LOWER_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
       goto reset;
     }
 
@@ -157,35 +159,32 @@ implementation {
       
       if (cu_msg->conf_id == configuration_id) {
         /* Received same sequence with the same configuration id */
-//        if (call Timer.isRunning()) {
+        if (call Timer.isRunning()) {
 	  same_msg_counter++;
-//	}
+	}
         goto done_receive;
       }
 
       /* there is an inconsistency in a network */
-      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_INCONSISTENT_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
       configuration_seq += (call Random.rand16() % POLICY_RAND_MOD) + POLICY_RAND_OFFSET;
       goto reset;
     }
 
     /* Received configuration message with larger sequence number */
     if (cu_msg->seq > configuration_seq) {
-      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_HIGHER_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
       goto reconfigure;
     }
 
 
 reset:
     if (!call Timer.isRunning()) {
-      resend_confs = POLICY_RESEND_RECONF; 
+      resend_confs = POLICY_RESEND_RECONF;
       same_msg_counter = 0;
       start_policy_send();
     }
     goto done_receive;
 
 reconfigure:
-    dbg("ControlUnit", "ControlUnit: reconfigure\n");
     if ((cu_msg->conf_id != configuration_id) && 
 	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations())
                                 			) {
@@ -197,7 +196,6 @@ done_receive:
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    dbg("ControlUnit", "ControlUnit: sendDone error=%d\n", error);
     same_msg_counter = 0;
     if (error != SUCCESS) {
       start_policy_send();
@@ -210,65 +208,66 @@ done_receive:
   }
 
   event void Timer.fired() {
-    dbg("ControlUnit", "ControlUnit Timer.fired()\n");
     post sendConfigurationMsg();
   }
 
 
   event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
-      dbg("ControlUnit", "ControlUnit FennecEngine startDone SUCCESS\n");
-      resend_confs = POLICY_RESEND_RECONF; 
-      same_msg_counter = 0;
-      start_policy_send();
+      if (enable_policy_control_support == TRUE) {
+        enable_policy_control_support = FALSE;
+        post start_engine();
+      } else {
+        status = S_STARTED;
+        call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
+      }
     } else {
-      dbg("ControlUnit", "ControlUnit FennecEngine startDone FAIL - retry\n");
       call FennecEngine.start();
     }
   }
 
   event void FennecEngine.stopDone(error_t err) {
+    //printf("FE stopdone %d\n", err);
+    //printfflush();
     if (err == SUCCESS) {
-      dbg("ControlUnit", "ControlUnit FennecEngine stopDone SUCCESS\n");
-      //printf("Engine stop done\n");
+      //printf("FennecEngine stopDone\n");
+      enable_policy_control_support = TRUE;
       post start_engine();
     } else {
-       dbg("ControlUnit", "ControlUnit FennecEngine stopDone DAIL - retry\n");
-      //printf("Retry to start engine\n");
       call FennecEngine.stop();
     }
   }
 
-
   task void start_engine() {
-    //call EventCache.clearMask();
-    call PolicyCache.control_unit_support(1);
-    call PolicyCache.set_active_configuration(configuration_id);
+    if (enable_policy_control_support == TRUE) {
+      call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+      //printf("start_engine - %d\n", POLICY_CONF_ID);
+    } else {
+      call PolicyCache.set_active_configuration(configuration_id);
+      //printf("start_engine - %d\n", configuration_id);
+    }
+    //printfflush();
     call FennecEngine.start();
   }
 
   task void stop_engine() {
+    //printf("call stop_engine\n");
+    //printfflush();
     call EventCache.clearMask();
-    //call PolicyCache.control_unit_support(1);
     call FennecEngine.stop();
   }
 
 
   task void sendConfigurationMsg() {
 
-    nx_struct FFControl *cu_msg;
-
-    if (call PolicyCache.get_number_of_configurations() == 1) {
-      return;
-    }
-
-    cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
-
+    nx_struct FFControl *cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
+    
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      dbg("ControlUnit", "ControlUnit sendConfigurationMsg() does not happen, same_msg_counter is %d\n", same_msg_counter);
+      resend_confs--;
+      if (resend_confs > 0) {
+        start_policy_send();
+      }
       return;
-    } else {
-      dbg("ControlUnit", "ControlUnit sendConfigurationMsg()\n");
     }
 
     if (cu_msg == NULL) {
@@ -276,7 +275,8 @@ done_receive:
     }
 
     cu_msg->seq = (nx_uint16_t) configuration_seq;
-    //cu_msg->vnet_id = 0;
+//    cu_msg->vnet_id = (nx_uint16_t) 0;
+    //cu_msg->vnet_id = (nx_uint16_t) call ConfigurationCache.get_virtual_network_id();
     cu_msg->conf_id = (nx_uint8_t) configuration_id;
 
     // get crc of the FFControl and address
@@ -285,8 +285,11 @@ done_receive:
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
+    //printf("CU sending\n");
+    //printfflush();
+
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      start_policy_send();
+      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND);
     }
     same_msg_counter = 0;
 
@@ -314,5 +317,3 @@ done_receive:
 
 
 }
-
-

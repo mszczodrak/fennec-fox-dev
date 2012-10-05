@@ -94,8 +94,6 @@ implementation {
 
   void set_new_state(uint8_t conf, uint8_t seq) {
     call Timer.stop();
-    dbg("ControlUnit", "ControlUnit: new state id %d with sequence %d\n", conf, seq);
-    //printf("Set new state %d %d\n", conf, seq);
     atomic {
       configuration_id = conf;
       configuration_seq = seq;
