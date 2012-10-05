@@ -28,7 +28,6 @@ implementation {
   norace uint8_t m_state = S_STOPPED;
   norace uint16_t cu_backoff_period;
   norace uint16_t cu_min_backoff;
-  norace uint16_t cu_delay_after_receive;
 
   norace error_t sendDoneErr;
 
@@ -161,7 +160,6 @@ implementation {
 
     cu_backoff_period = call cuMacParams.get_backoff();
     cu_min_backoff = call cuMacParams.get_min_backoff();
-    cu_delay_after_receive = call cuMacParams.get_delay_after_receive();
 
     if (m_state == S_CANCEL) {
       return ECANCEL;
@@ -216,7 +214,6 @@ implementation {
   task void startDone_task() {
     cu_backoff_period = call cuMacParams.get_backoff();
     cu_min_backoff = call cuMacParams.get_min_backoff();
-    cu_delay_after_receive = call cuMacParams.get_delay_after_receive();
 
     m_state = S_STARTED;
 
@@ -245,21 +242,11 @@ implementation {
   }
 
   void requestInitialBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((cu_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myInitialBackoff = ( call Random.rand16() % (0x4 * cu_backoff_period) + cu_min_backoff);
-    } else {
-      myInitialBackoff = ( call Random.rand16() % (0x1F * cu_backoff_period) + cu_min_backoff);
-    }
+    myInitialBackoff = ( call Random.rand16() % (0x1F * cu_backoff_period) + cu_min_backoff);
   }
 
   void congestionBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((cu_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myCongestionBackoff = ( call Random.rand16() % (0x3 * cu_backoff_period) + cu_min_backoff);
-    } else {
-      myCongestionBackoff = ( call Random.rand16() % (0x7 * cu_backoff_period) + cu_min_backoff);
-    }
+    myCongestionBackoff = ( call Random.rand16() % (0x7 * cu_backoff_period) + cu_min_backoff);
 
     if (myCongestionBackoff) {
       call BackoffTimer.start(myCongestionBackoff);
@@ -273,11 +260,7 @@ implementation {
    * chip
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  command error_t cuTransmit.resend(message_t *msg, bool useCca) {
-    if (m_msg != msg) {
-      return FAIL;
-    }
-
+  command error_t cuTransmit.resend(bool useCca) {
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }

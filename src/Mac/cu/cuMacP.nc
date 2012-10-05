@@ -26,12 +26,9 @@
  */
 
 #include <Fennec.h>
-#include "cuMac.h"
-
 #include <Ieee154.h> 
 #include "CC2420.h"
 #include "cuMac.h"
-
 
 module cuMacP @safe() {
   provides interface Mgmt;
@@ -39,28 +36,23 @@ module cuMacP @safe() {
   provides interface AMSend as MacAMSend;
   provides interface Receive as MacReceive;
   provides interface Receive as MacSnoop;
-
   provides interface Packet as MacPacket;
   provides interface AMPacket as MacAMPacket;
-
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
   uses interface cuMacParams;
-
   uses interface SplitControl as RadioControl;
-
   uses interface ModuleStatus as RadioStatus;
-
   uses interface RadioConfig;
   uses interface RadioPower;
   uses interface Read<uint16_t> as ReadRssi;
   uses interface Resource as RadioResource;
-
   uses interface Send as SubSend;
   uses interface Receive as SubReceive;
-
   uses interface Random;
-
+  uses interface ReceiveIndicator as PacketIndicator;
+  uses interface ReceiveIndicator as ByteIndicator;
+  uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
@@ -71,24 +63,15 @@ implementation {
 
   uint8_t localSendId;
 
-//  enum {
-//    S_IDLE,
-//    S_SENDING,
-//  };
-
-
   /* Functions */
 
   command error_t Mgmt.start() {
     if (status == S_STARTED) {
-      dbg("Mac", "Mac cu already started\n");
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
 
     localSendId = call Random.rand16();
-
-    dbg("Mac", "Mac cu starts\n");
 
     if (call RadioControl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
@@ -99,12 +82,10 @@ implementation {
 
   command error_t Mgmt.stop() {
     if (status == S_STOPPED) {
-      dbg("Mac", "Mac cu  already stopped\n");
       signal Mgmt.stopDone(SUCCESS);
       return SUCCESS;
     }
 
-    dbg("Mac", "Mac cu stops\n");
 
     if (call RadioControl.stop() != SUCCESS) {
       signal Mgmt.stopDone(FAIL);
@@ -119,7 +100,6 @@ implementation {
       call RadioControl.start();
     } else {
       if (status == S_STARTING) {
-        dbg("Mac", "Mac cu got RadioControl startDone\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         signal Mgmt.startDone(SUCCESS);
@@ -133,7 +113,6 @@ implementation {
       call RadioControl.stop();
     } else {
       if (status == S_STOPPING) {
-        dbg("Mac", "Mac cu got RadioControl stopDone\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
         signal Mgmt.stopDone(SUCCESS);
@@ -200,48 +179,17 @@ implementation {
     return metadata->ack;
   }
 
-
-
-
-
-  event void cuMacParams.receive_status(uint16_t status_flag) {
-  }
-
+  event void cuMacParams.receive_status(uint16_t status_flag) {}
 
   event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
     return signal MacStatus.status(layer, status_flag);
   }
 
-  event void RadioConfig.syncDone(error_t error) {
-  
-  }
-
-  async event void RadioPower.startVRegDone() {
-  }
-
-  async event void RadioPower.startOscillatorDone() {
-  }
-
-  event void ReadRssi.readDone(error_t error, uint16_t rssi) {
-  }
-
-  event void RadioResource.granted() {
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  event void RadioConfig.syncDone(error_t error) {}
+  async event void RadioPower.startVRegDone() {}
+  async event void RadioPower.startOscillatorDone() {}
+  event void ReadRssi.readDone(error_t error, uint16_t rssi) {}
+  event void RadioResource.granted() {}
 
   /***************** AMPacket Commands ****************/
   command am_addr_t MacAMPacket.address() {
@@ -267,8 +215,6 @@ implementation {
     cu_header_t* header = (cu_header_t*)getHeader(amsg);
     header->src = addr;
   }
-
-
 
   command bool MacAMPacket.isForMe(message_t* amsg) {
     return (call MacAMPacket.destination(amsg) == call MacAMPacket.address() ||
@@ -332,18 +278,12 @@ implementation {
     } else {
       return NULL;
     }
-
-    //return call SubSend.getPayload(msg, len);
   }
-
-
 
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
     signal MacAMSend.sendDone(msg, result);
   }
-
-
 
   /***************** SubReceive Events ****************/
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
@@ -364,7 +304,5 @@ implementation {
       return signal MacSnoop.receive(msg, payload, len);
     }
   }
-
-
 }
 

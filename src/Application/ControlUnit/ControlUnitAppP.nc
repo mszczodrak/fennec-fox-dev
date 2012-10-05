@@ -255,6 +255,8 @@ done_receive:
   }
 
   event void FennecEngine.startDone(error_t err) {
+    printf("FE start done\n");
+    printfflush();
     if (err == SUCCESS) {
       if (enable_policy_control_support == TRUE) {
         call PolicyCache.set_active_configuration(configuration_id);
