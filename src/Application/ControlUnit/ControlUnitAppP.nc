@@ -74,7 +74,7 @@ implementation {
 
   uint16_t configuration_id = UNKNOWN_CONFIGURATION;
   uint16_t configuration_seq = 0;
-  uint8_t same_msg_counter;
+  uint8_t same_msg_counter = 0;
   bool enable_policy_control_support = FALSE;
   bool disable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
@@ -89,7 +89,7 @@ implementation {
   task void stop_engine();
 
   void start_policy_send() {
-    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
+    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 3);
   }
 
   task void continue_reconfiguration() {
@@ -104,6 +104,8 @@ implementation {
   }
 
   void set_new_state(state_t conf, uint16_t seq) {
+    //printf("got new state\n");
+    //printfflush();
     call Timer.stop();
     status = S_RECONFIGURING;
     atomic {
@@ -137,7 +139,7 @@ implementation {
   }
 
   event void PolicyCache.wrong_conf() {
-    printf("wrong conf\n");
+    //printf("wrong conf\n");
     start_policy_send();
   }
 
@@ -244,10 +246,9 @@ done_receive:
     same_msg_counter = 0;
     if (error != SUCCESS) {
       printf("sendDone - FAILED\n");
-      start_policy_send();
-    } else {
       post continue_reconfiguration();
     }
+    post continue_reconfiguration();
     printfflush();
     
   }
@@ -267,12 +268,10 @@ done_receive:
       if (enable_policy_control_support == TRUE) {
         call PolicyCache.set_active_configuration(configuration_id);
         enable_policy_control_support = FALSE;
-        printf("The CU support started\n");
         status = S_STARTED;
-        start_policy_send();
-      } else {
-        printf("The state engine started\n");
+        post continue_reconfiguration();
       }
+      /* if false Engine started and is running */
     } else {
       call FennecEngine.start();
     }
@@ -330,9 +329,6 @@ done_receive:
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
-
-//    printf("CU sending\n");
-//    printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
 //      signal NetworkAMSend.sendDone(&confmsg, FAIL);
