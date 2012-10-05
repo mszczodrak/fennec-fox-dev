@@ -91,6 +91,17 @@ implementation {
     call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
   }
 
+  task void continue_reconfiguration() {
+    if (resend_confs > 0) resend_confs--;
+    if (resend_confs > 0) {
+      printf("continue_reconfiguration - next %d\n", resend_confs);
+      start_policy_send();
+    } else {
+      printf("continue_reconfiguration - done\n");
+      call EventsMgmt.start();
+    }
+  }
+
   void set_new_state(state_t conf, uint16_t seq) {
     call Timer.stop();
     status = S_RECONFIGURING;
@@ -212,7 +223,7 @@ reset:
     if (!call Timer.isRunning()) {
       resend_confs = POLICY_RESEND_RECONF;
       same_msg_counter = 0;
-      start_policy_send();
+      //start_policy_send();
     }
     goto done_receive;
 
@@ -234,13 +245,7 @@ done_receive:
       printf("sendDone - FAILED\n");
       start_policy_send();
     } else {
-      if (resend_confs > 0) resend_confs--;
-      printf("sendDone - SUCCESS r%d\n", resend_confs);
-      if (resend_confs > 0) {
-        start_policy_send();
-      } else {
-        call EventsMgmt.start();
-      }
+      post continue_reconfiguration();
     }
     printfflush();
     
@@ -301,10 +306,7 @@ done_receive:
     cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
     
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      if (resend_confs > 0) resend_confs--;
-      if (resend_confs > 0) {
-        start_policy_send();
-      }
+      post continue_reconfiguration();
       return;
     }
 
@@ -323,12 +325,12 @@ done_receive:
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
-    printf("CU sending\n");
-    printfflush();
+//    printf("CU sending\n");
+//    printfflush();
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      signal NetworkAMSend.sendDone(&confmsg, FAIL);
-//      start_policy_send();
+//      signal NetworkAMSend.sendDone(&confmsg, FAIL);
+      start_policy_send();
     } else {
       busy_sending = TRUE;
       same_msg_counter = 0;
