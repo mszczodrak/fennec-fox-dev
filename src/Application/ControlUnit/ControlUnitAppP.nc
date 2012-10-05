@@ -38,9 +38,10 @@
 #include <Fennec.h>
 #include "hashing.h"
 #define POLICY_LED	1
-#define POLICY_RESEND_RECONF	6
+#define POLICY_RESEND_RECONF	300
 #define POLICY_MAX_WRONG_CONFS	5
 
+#define POLICY_RESEND_MIN	5
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
 #define POLICY_RAND_SEND	20
@@ -75,7 +76,7 @@ implementation {
   uint16_t configuration_seq = 0;
   uint8_t same_msg_counter;
   bool enable_policy_control_support = FALSE;
-  uint8_t resend_confs = POLICY_RESEND_RECONF;
+  uint16_t resend_confs = POLICY_RESEND_RECONF;
 
   message_t confmsg;
 
@@ -162,6 +163,10 @@ implementation {
 
     if (status != S_STARTED) {
       goto done_receive;
+    }
+
+    if (resend_confs > POLICY_RESEND_MIN) {
+      resend_confs = POLICY_RESEND_MIN;
     }
 
     // First time receives Configuration
