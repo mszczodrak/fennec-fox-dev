@@ -70,15 +70,15 @@ module ControlUnitAppP @safe() {
 
 implementation {
 
-  uint16_t configuration_id;
-  uint16_t configuration_seq;
+  uint16_t configuration_id = UNKNOWN_CONFIGURATION;
+  uint16_t configuration_seq = 0;
   uint8_t same_msg_counter;
   bool enable_policy_control_support = FALSE;
   uint8_t resend_confs = POLICY_RESEND_RECONF;
 
   message_t confmsg;
 
-  uint8_t status = S_STOPPED;
+  norace uint8_t status = S_STOPPED;
 
 
   task void sendConfigurationMsg();
@@ -87,14 +87,7 @@ implementation {
 
 
   void start_policy_send() {
-    //printf("start_policy_send\n");
-    //printfflush();
-//    uint16_t send_delay = POLICY_RAND_SEND;
-//    if (send_delay) {
-      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
-//    } else {
-//      post sendConfigurationMsg();
-//    }
+    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
   }
 
 
@@ -102,14 +95,22 @@ implementation {
     call Timer.stop();
     atomic {
       resend_confs = POLICY_RESEND_RECONF;
-      configuration_id = conf;
       configuration_seq = seq;
-      status = S_STOPPED;
-      post stop_engine();
+      if (configuration_id == UNKNOWN_CONFIGURATION) {
+        /* First time here */
+        configuration_id = conf;
+        enable_policy_control_support = TRUE;
+        post start_engine();
+      } else {
+        configuration_id = conf;
+        post stop_engine();
+      }
     }
   }
 
   command void SimpleStart.start() {
+    configuration_id = UNKNOWN_CONFIGURATION;
+    configuration_seq = 0;
     enable_policy_control_support = FALSE;
     confmsg.conf = POLICY_CONFIGURATION;
     set_new_state(get_state_id(), CONFIGURATION_SEQ_UNKNOWN);
@@ -237,8 +238,6 @@ done_receive:
   }
 
   event void FennecEngine.stopDone(error_t err) {
-    //printf("FE stopdone %d\n", err);
-    //printfflush();
     if (err == SUCCESS) {
       //printf("FennecEngine stopDone\n");
       enable_policy_control_support = TRUE;
@@ -261,8 +260,7 @@ done_receive:
   }
 
   task void stop_engine() {
-    //printf("call stop_engine\n");
-    //printfflush();
+    atomic status = S_STOPPED;
     call EventCache.clearMask();
     call FennecEngine.stop();
   }
