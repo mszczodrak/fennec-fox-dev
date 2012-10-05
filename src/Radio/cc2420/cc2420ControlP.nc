@@ -215,12 +215,13 @@ implementation {
 
   task void report_start() {
     on_time = call StartupTimer.getNow();
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
+    dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
   }
 
   task void report_stop() {
-    on_time = (call StartupTimer.getNow() - on_time);
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
+    //on_time = (call StartupTimer.getNow() - on_time);
+    on_time = call StartupTimer.getNow();
+    dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
     //dbgs(F_RADIO, S_NONE, DBGS_RADIO_ON_PERIOD, (uint16_t)(on_time >> 16), (uint16_t)on_time);
   }
 

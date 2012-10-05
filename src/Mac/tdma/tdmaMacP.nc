@@ -247,8 +247,6 @@ implementation {
         err = SUCCESS;
         post start_done();
       }
-      dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, 
-				(uint16_t)(global>>16),(uint16_t)global);
       start_synchronization();
       break;
 
@@ -260,8 +258,6 @@ implementation {
         err = SUCCESS;
         post start_done();
       }
-      dbgs(F_MAC, S_STARTED, DBGS_RADIO_START_V_REG, 
-				(uint16_t)(global>>16),(uint16_t)global);
       start_synchronization();
       break;
 
@@ -280,8 +276,6 @@ implementation {
         err = SUCCESS;
         post stop_done();
       }
-      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, 
-				(uint16_t)(global>>16),(uint16_t)global);
       break;
 
     case SUCCESS:
@@ -292,8 +286,6 @@ implementation {
         err = SUCCESS;
         post stop_done();
       }
-      dbgs(F_MAC, S_STARTED, DBGS_RADIO_STOP_V_REG, 
-				(uint16_t)(global>>16),(uint16_t)global);
       break;
 
     default:
