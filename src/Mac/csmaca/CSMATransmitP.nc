@@ -274,7 +274,11 @@ implementation {
    * chip
    * @param cca TRUE if this transmit should use clear channel assessment
    */
-  command error_t CSMATransmit.resend(bool useCca) {
+  command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
+    if (m_msg != msg) {
+      return FAIL;
+    }
+
     if (m_state == S_CANCEL) {
       return ECANCEL;
     }

@@ -336,7 +336,7 @@ implementation {
   }
   
   task void resend() {
-    if(call CSMATransmit.resend(TRUE) != SUCCESS) {
+    if(call CSMATransmit.resend(currentSendMsg, TRUE) != SUCCESS) {
       post resend();
     }
   }

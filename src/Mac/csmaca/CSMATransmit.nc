@@ -2,7 +2,7 @@
 
 interface CSMATransmit {
 
-  command error_t resend(bool useCca);
+  command error_t resend(message_t *msg, bool useCca);
 
 }
 

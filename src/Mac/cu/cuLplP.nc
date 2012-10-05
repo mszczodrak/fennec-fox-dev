@@ -336,7 +336,7 @@ implementation {
   }
   
   task void resend() {
-    if(call cuTransmit.resend(TRUE) != SUCCESS) {
+    if(call cuTransmit.resend(currentSendMsg, TRUE) != SUCCESS) {
       post resend();
     }
   }
