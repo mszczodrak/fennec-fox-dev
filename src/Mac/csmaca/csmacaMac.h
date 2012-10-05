@@ -25,8 +25,8 @@
  * Last Modified: 1/5/2012
  */
 
-#ifndef __H_CSMACA_MAC_H_
-#define __H_CSMACA_MAC_H_
+#ifndef _H_CSMACA_MAC_H_
+#define _H_CSMACA_MAC_H_
 
 typedef nx_struct csmaca_header_t {
   nxle_uint8_t length;

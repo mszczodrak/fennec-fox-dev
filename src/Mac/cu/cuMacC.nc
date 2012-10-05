@@ -1,5 +1,5 @@
 /*
- *  cu MAC module for Fennec Fox platform.
+ *  csma/ca MAC module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Module: cu MAC Protocol
+ * Module: cu/CA MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 2/18/2012
  * Last Modified: 8/29/2012
@@ -74,26 +74,46 @@ implementation {
   RadioResource = cuMacP.RadioResource;
 
   RadioStatus = cuMacP.RadioStatus;
-  EnergyIndicator = cuMacP.EnergyIndicator;
-  PacketIndicator = cuMacP.PacketIndicator;
-  ByteIndicator = cuMacP.ByteIndicator;
 
   components cuTransmitC;
   RadioPower = cuTransmitC.RadioPower;
   RadioResource = cuTransmitC.RadioResource;
 
-  cuMacP.RadioControl -> cuTransmitC.SplitControl;
+  components cuLplC as LplC;
+  cuMacP.RadioControl -> LplC.SplitControl;
 
-  cuMacP.SubSend -> cuTransmitC;
-  RadioReceive = cuMacP.SubReceive;
+  components cuUniqueSendC;
+  components cuUniqueReceiveC;
 
+  cuMacP.SubSend -> cuUniqueSendC;
+  cuMacP.SubReceive -> LplC;
+
+  // SplitControl Layers
+
+  LplC.MacPacketAcknowledgements -> cuMacP.MacPacketAcknowledgements;
+  LplC.SubControl -> cuTransmitC;
+
+  cuUniqueSendC.SubSend -> LplC.Send;
+  LplC.SubSend -> cuTransmitC;
+
+  LplC.SubReceive -> cuUniqueReceiveC.Receive;
+  cuUniqueReceiveC.SubReceive =  RadioReceive;
+
+  components cuPowerCycleC;
+  PacketIndicator = cuPowerCycleC.PacketIndicator;
+  EnergyIndicator = cuPowerCycleC.EnergyIndicator;
+  ByteIndicator = cuPowerCycleC.ByteIndicator;
+
+  cuMacParams = cuPowerCycleC.cuMacParams;
+  cuMacParams = LplC.cuMacParams;
   cuMacParams = cuTransmitC.cuMacParams;
-  EnergyIndicator = cuTransmitC.EnergyIndicator;
 
   components RandomC;
   cuMacP.Random -> RandomC;
 
   RadioTransmit = cuTransmitC.RadioTransmit;
+  EnergyIndicator = cuTransmitC.EnergyIndicator;
+  LplC.cuTransmit -> cuTransmitC.cuTransmit;
   RadioControl = cuTransmitC.RadioControl;
 }
 

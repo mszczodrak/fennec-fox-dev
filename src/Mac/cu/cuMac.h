@@ -1,5 +1,5 @@
 /*
- *  cu MAC module for Fennec Fox platform.
+ *  Dummy radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: cu MAC Protocol
+ * Network: Dummy Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012

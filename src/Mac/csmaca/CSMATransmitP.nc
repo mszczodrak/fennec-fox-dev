@@ -3,6 +3,7 @@
 #include "crc.h"
 #include "message.h"
 #include "Fennec.h"
+#include "csmacaMac.h"
 
 module CSMATransmitP @safe() {
   provides interface CSMATransmit;
