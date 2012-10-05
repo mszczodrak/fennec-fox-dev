@@ -77,6 +77,7 @@ implementation {
   uint8_t same_msg_counter;
   bool enable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
+  bool busy_sending = FALSE;
 
   message_t confmsg;
 
@@ -114,6 +115,7 @@ implementation {
     configuration_seq = 0;
     enable_policy_control_support = FALSE;
     confmsg.conf = POLICY_CONFIGURATION;
+    busy_sending = FALSE;
     set_new_state(get_state_id(), CONFIGURATION_SEQ_UNKNOWN);
     signal SimpleStart.startDone(SUCCESS);
   }
@@ -161,12 +163,12 @@ implementation {
       goto done_receive;
     }
 
-    if (status != S_STARTED) {
-      goto done_receive;
-    }
-
     if (resend_confs > POLICY_RESEND_MIN) {
       resend_confs = POLICY_RESEND_MIN;
+    }
+
+    if (status != S_STARTED) {
+      goto done_receive;
     }
 
     // First time receives Configuration
@@ -226,6 +228,7 @@ done_receive:
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+    busy_sending = FALSE;
     same_msg_counter = 0;
     if (error != SUCCESS) {
       printf("sendDone - FAILED\n");
@@ -235,6 +238,8 @@ done_receive:
       printf("sendDone - SUCCESS r%d\n", resend_confs);
       if (resend_confs > 0) {
         start_policy_send();
+      } else {
+        call EventsMgmt.start();
       }
     }
     printfflush();
@@ -242,7 +247,11 @@ done_receive:
   }
 
   event void Timer.fired() {
-    post sendConfigurationMsg();
+    if (busy_sending == TRUE) {
+      start_policy_send();
+    } else {
+      post sendConfigurationMsg();
+    }
   }
 
   event void FennecEngine.startDone(error_t err) {
@@ -251,11 +260,10 @@ done_receive:
         call PolicyCache.set_active_configuration(configuration_id);
         enable_policy_control_support = FALSE;
         printf("The CU support started\n");
-        call EventsMgmt.start();
-      } else {
         status = S_STARTED;
-        printf("The state engine started\n");
         start_policy_send();
+      } else {
+        printf("The state engine started\n");
       }
     } else {
       call FennecEngine.start();
@@ -320,6 +328,7 @@ done_receive:
       signal NetworkAMSend.sendDone(&confmsg, FAIL);
 //      start_policy_send();
     } else {
+      busy_sending = TRUE;
       same_msg_counter = 0;
     }
   }
