@@ -66,6 +66,7 @@ implementation {
     } else {
       switch(status) {
         case S_STARTED:
+          call PolicyCache.set_active_configuration(configuration_id);
           call EventsMgmt.start();
           break;
 
@@ -75,8 +76,6 @@ implementation {
   }
 
   void set_new_state(state_t conf, uint16_t seq) {
-    //printf("got new state\n");
-    //printfflush();
     call Timer.stop();
     configuration_seq = seq;
     configuration_id = conf;
@@ -87,8 +86,9 @@ implementation {
         call FennecEngine.start();
         break;
 
-      default:
+      case S_COMPLETED:
         status = S_STOPPING;
+        call EventCache.clearMask();
         call EventsMgmt.stop();
     }
   }
@@ -126,7 +126,6 @@ implementation {
 
   event void EventsMgmt.stopDone(error_t err) {
     if (err == SUCCESS) { 
-      call EventCache.clearMask();
       call FennecEngine.stop();
     } else {
       call EventsMgmt.stop();
@@ -248,7 +247,7 @@ done_receive:
           post continue_reconfiguration();
           break;
 
-        default:
+        case S_STARTED:
           status = S_COMPLETED;
       }
     } else {
