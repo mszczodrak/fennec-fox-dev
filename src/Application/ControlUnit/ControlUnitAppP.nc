@@ -312,9 +312,9 @@ done_receive:
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      //printf("send failed...\n");
-      //printfflush();
-      start_policy_send();
+      printf("failed.  \n");
+      printfflush();
+      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 500);
     } else {
       busy_sending = TRUE;
       //same_msg_counter = 0;
