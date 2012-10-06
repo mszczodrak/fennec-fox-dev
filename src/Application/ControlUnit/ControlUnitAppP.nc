@@ -54,25 +54,18 @@ implementation {
   norace uint8_t status = S_STOPPED;
   task void sendConfigurationMsg();
 
-  void start_policy_send() {
-    same_msg_counter = 0;
-    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 3);
+  void reset_control() {
+    if (!call Timer.isRunning()) {
+      resend_confs = POLICY_MIN_RESEND_RECONF;
+      same_msg_counter = 0;
+      same_msg_counter = 0;
+      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
+    }
   }
 
-  task void continue_reconfiguration() {
-    if (resend_confs > 0) resend_confs--;
-    if (resend_confs > 0) {
-      start_policy_send();
-    } else {
-      switch(status) {
-        case S_STARTED:
-          call PolicyCache.set_active_configuration(configuration_id);
-          call EventsMgmt.start();
-          break;
-
-        default:
-      }
-    }
+  void start_policy_send() {
+    same_msg_counter = 0;
+    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 6);
   }
 
   void set_new_state(state_t conf, uint16_t seq) {
@@ -82,26 +75,48 @@ implementation {
     switch(status) {
       case S_STOPPED:
         status = S_STARTING;
+        resend_confs = POLICY_RESEND_RECONF;
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         call FennecEngine.start();
         break;
 
       case S_COMPLETED:
+        status = S_INIT;
+        call EventsMgmt.stop();
+        reset_control();
+        break;
+
+      case S_INIT:
         status = S_STOPPING;
         call EventCache.clearMask();
-        call EventsMgmt.stop();
+        call FennecEngine.stop();
+        break;
     }
   }
 
-  void reset_control() {
-    if (!call Timer.isRunning()) {
-      resend_confs = POLICY_MIN_RESEND_RECONF;
-      same_msg_counter = 0;
-      //printf("reset\n");
-      //printfflush();
+  task void continue_reconfiguration() {
+    if (resend_confs > 0) resend_confs--;
+    if (resend_confs > 0) {
+      printf("cr %d\n", resend_confs);
+      
       start_policy_send();
+    } else {
+      switch(status) {
+        case S_INIT:
+          set_new_state(configuration_id, configuration_seq);
+          break;
+
+        case S_STARTED:
+          call PolicyCache.set_active_configuration(configuration_id);
+          call EventsMgmt.start();
+          call FennecEngine.start();
+          break;
+
+        default:
+      }
     }
   }
+
 
   command void SimpleStart.start() {
     configuration_id = UNKNOWN_CONFIGURATION;
@@ -115,7 +130,6 @@ implementation {
   event void PolicyCache.newConf(conf_t new_conf) {
     printf("new conf\n");
     printfflush();
-    resend_confs = POLICY_RESEND_RECONF;
     set_new_state(new_conf, configuration_seq + 1);
   }
 
@@ -127,17 +141,13 @@ implementation {
   }
 
   event void EventsMgmt.stopDone(error_t err) {
-    if (err == SUCCESS) { 
-      call FennecEngine.stop();
-    } else {
+    if (err != SUCCESS) { 
       call EventsMgmt.stop();
     }
   }
 
   event void EventsMgmt.startDone(error_t err) {
-    if (err == SUCCESS) { 
-      call FennecEngine.start();
-    } else {
+    if (err != SUCCESS) { 
       call EventsMgmt.start();
     }
   }
@@ -212,7 +222,6 @@ reset:
 reconfigure:
     if ((cu_msg->conf_id != configuration_id) && 
 	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
-      resend_confs = POLICY_MIN_RESEND_RECONF;
       set_new_state(cu_msg->conf_id, cu_msg->seq);
     }
 
@@ -227,7 +236,6 @@ done_receive:
       printf("sendDone - FAILED\n");
       printfflush();
       call Timer.startOneShot(1);
-//      start_policy_send();
     } else {
       post continue_reconfiguration();
     }

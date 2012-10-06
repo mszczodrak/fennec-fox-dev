@@ -134,6 +134,8 @@ implementation {
   }
 
   void turn_on_radio() {
+    printf("Turn On Radio\n");
+    printfflush();
     call RadioControl.start();
   }
 
