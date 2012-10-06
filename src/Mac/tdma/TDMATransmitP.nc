@@ -285,7 +285,10 @@ implementation {
         signal BackoffTimer.fired();
       }
     } else {
-      call RadioTransmit.send(m_msg, useCca);
+      if (call RadioTransmit.send(m_msg, useCca) != SUCCESS) {
+        signal RadioTransmit.sendDone(m_msg, FAIL);
+        return FAIL;
+      }
     }
     return SUCCESS;
   }
@@ -298,7 +301,9 @@ implementation {
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
-      call RadioTransmit.send(m_msg, m_cca);
+      if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
+        signal RadioTransmit.sendDone(m_msg, FAIL);
+      }
     } else {
       m_state = S_SAMPLE_CCA;
 
@@ -334,7 +339,9 @@ implementation {
       break;
         
     case S_BEGIN_TRANSMIT:
-      call RadioTransmit.send(m_msg, m_cca);
+      if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
+        signal RadioTransmit.sendDone(m_msg, FAIL);
+      }
       break;
 
     case S_CANCEL:

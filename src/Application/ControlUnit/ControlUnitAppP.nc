@@ -99,12 +99,13 @@ implementation {
   task void continue_reconfiguration() {
     if (resend_confs > 0) resend_confs--;
     if (resend_confs > 0) {
-      //printf("continue_reconfiguration - next %d\n", resend_confs);
       start_policy_send();
     } else {
-      printf("continue_reconfiguration - done\n");
       if (current_state_started == FALSE) {
+        printf("done - Start the rest\n");
         call EventsMgmt.start();
+      } else {
+        printf("done - that's it\n");
       }
     }
   }
@@ -141,12 +142,14 @@ implementation {
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
+    printf("nwe conf\n");
     resend_confs = POLICY_RESEND_RECONF;
     set_new_state(new_conf, configuration_seq + 1);
   }
 
   event void PolicyCache.wrong_conf() {
-    //printf("wrong conf\n");
+    printf("wrong conf\n");
+    printfflush();
     start_policy_send();
   }
 
@@ -163,7 +166,7 @@ implementation {
     if (err == SUCCESS) { 
       post start_engine();
     } else {
-      call EventsMgmt.stop();
+      call EventsMgmt.start();
     }
   }
 
@@ -214,6 +217,8 @@ implementation {
         /* Received same sequence with the same configuration id */
 //        if (call Timer.isRunning()) {
 	if (++same_msg_counter > POLICY_MAX_RECEIVE) {
+          printf("same_msg_counter >\n");
+          printfflush();
 	  start_policy_send();
 	}
 	
@@ -235,6 +240,8 @@ reset:
     if (!call Timer.isRunning()) {
       resend_confs = POLICY_MIN_RESEND_RECONF;
       same_msg_counter = 0;
+      printf("reset\n");
+      printfflush();
       start_policy_send();
     }
     goto done_receive;
@@ -255,16 +262,17 @@ done_receive:
     same_msg_counter = 0;
     if (error != SUCCESS) {
       printf("sendDone - FAILED\n");
-      post sendConfigurationMsg();
+      start_policy_send();
     } else {
       post continue_reconfiguration();
     }
-    //printfflush();
     
   }
 
   event void Timer.fired() {
     if (busy_sending == TRUE) {
+      printf("busy fired\n");
+      printfflush();
       start_policy_send();
     } else {
       post sendConfigurationMsg();
@@ -272,8 +280,6 @@ done_receive:
   }
 
   event void FennecEngine.startDone(error_t err) {
-    //printf("FE start done\n");
-    //printfflush();
     if (err == SUCCESS) {
       if (enable_policy_control_support == TRUE) {
         call PolicyCache.set_active_configuration(configuration_id);
@@ -281,9 +287,9 @@ done_receive:
         status = S_STARTED;
         post continue_reconfiguration();
       } else {
+        printf("current started\n"); 
         current_state_started = TRUE;
       }
-      /* if false Engine started and is running */
     } else {
       call FennecEngine.start();
     }
@@ -292,6 +298,7 @@ done_receive:
   event void FennecEngine.stopDone(error_t err) {
     if (err == SUCCESS) {
       if (disable_policy_control_support == TRUE) { 
+        current_state_started = FALSE;
         disable_policy_control_support = FALSE;
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         call FennecEngine.stop();
@@ -323,17 +330,20 @@ done_receive:
     cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
     
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
+      same_msg_counter = 0;
+      printf("same...\n");
+      printfflush();
       post continue_reconfiguration();
       return;
     }
 
     if (cu_msg == NULL) {
+      printf("null...\n");
+      printfflush();
       return;
     }
 
     cu_msg->seq = (nx_uint16_t) configuration_seq;
-//    cu_msg->vnet_id = (nx_uint16_t) 0;
-    //cu_msg->vnet_id = (nx_uint16_t) call ConfigurationCache.get_virtual_network_id();
     cu_msg->conf_id = (nx_uint8_t) configuration_id;
 
     // get crc of the FFControl and address
@@ -342,9 +352,16 @@ done_receive:
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
+    printf("ok\n");
+    printfflush();
+
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
+      printf("send failed...\n");
+      printfflush();
       start_policy_send();
     } else {
+      printf("sending...\n");
+      printfflush();
       busy_sending = TRUE;
       same_msg_counter = 0;
     }

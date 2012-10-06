@@ -441,6 +441,8 @@ implementation {
   }
 
   async command error_t RadioTransmit.load(message_t* msg) {
+    printf("load\n");
+    printfflush();
     if (radio_state != S_STARTED) {
       return FAIL;
     }

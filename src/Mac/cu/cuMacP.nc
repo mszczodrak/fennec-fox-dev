@@ -191,6 +191,9 @@ implementation {
     fennec_header_t* header = (fennec_header_t*)getHeader( msg );
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
+    printf("MacAMSend send\n");
+    printfflush();
+
     call MacAMPacket.setGroup(msg, msg->conf);
 
     msg->crc = 0;
@@ -447,9 +450,10 @@ implementation {
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     m_state = S_BEGIN_TRANSMIT;
-    call RadioTransmit.send(m_msg, 0);
+    if (call RadioTransmit.send(m_msg, 0) != SUCCESS) {
+      signal RadioTransmit.sendDone(m_msg, FAIL);
+    }
   }
-
 
   async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
     m_state = S_STARTED;
