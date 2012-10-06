@@ -102,10 +102,8 @@ implementation {
       start_policy_send();
     } else {
       if (current_state_started == FALSE) {
-        printf("done - Start the rest\n");
         call EventsMgmt.start();
       } else {
-        printf("done - that's it\n");
       }
     }
   }
@@ -142,7 +140,6 @@ implementation {
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    printf("nwe conf\n");
     resend_confs = POLICY_RESEND_RECONF;
     set_new_state(new_conf, configuration_seq + 1);
   }
@@ -173,8 +170,8 @@ implementation {
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
 
-    printf("receive\n");
-    printfflush();
+    //printf("receive\n");
+    //printfflush();
 
     if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
@@ -215,10 +212,7 @@ implementation {
       
       if (cu_msg->conf_id == configuration_id) {
         /* Received same sequence with the same configuration id */
-//        if (call Timer.isRunning()) {
 	if (++same_msg_counter > POLICY_MAX_RECEIVE) {
-          printf("same_msg_counter >\n");
-          printfflush();
 	  start_policy_send();
 	}
 	
@@ -271,8 +265,6 @@ done_receive:
 
   event void Timer.fired() {
     if (busy_sending == TRUE) {
-      printf("busy fired\n");
-      printfflush();
       start_policy_send();
     } else {
       post sendConfigurationMsg();
@@ -287,7 +279,6 @@ done_receive:
         status = S_STARTED;
         post continue_reconfiguration();
       } else {
-        printf("current started\n"); 
         current_state_started = TRUE;
       }
     } else {
@@ -331,15 +322,11 @@ done_receive:
     
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
       same_msg_counter = 0;
-      printf("same...\n");
-      printfflush();
       post continue_reconfiguration();
       return;
     }
 
     if (cu_msg == NULL) {
-      printf("null...\n");
-      printfflush();
       return;
     }
 
@@ -352,18 +339,13 @@ done_receive:
 
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
-    printf("ok\n");
-    printfflush();
-
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
       printf("send failed...\n");
       printfflush();
       start_policy_send();
     } else {
-      printf("sending...\n");
-      printfflush();
       busy_sending = TRUE;
-      same_msg_counter = 0;
+      //same_msg_counter = 0;
     }
   }
 
