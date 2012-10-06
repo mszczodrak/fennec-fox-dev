@@ -23,7 +23,7 @@ implementation {
   FennecP.Caches -> CachesC;
 
   components ControlUnitAppC;
-  FennecP.PolicyStart -> ControlUnitAppC;
+  FennecP.ControlUnit -> ControlUnitAppC;
 
   components FennecSerialDbgC;
   FennecP.DbgSerial -> FennecSerialDbgC;

@@ -77,17 +77,12 @@ implementation {
   uint16_t configuration_id = UNKNOWN_CONFIGURATION;
   uint16_t configuration_seq = 0;
   uint8_t same_msg_counter = 0;
-//  bool enable_policy_control_support = FALSE;
-//  bool disable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
-//  bool current_state_started = FALSE;
-//  bool sending_at_old_conf = FALSE;
 
   message_t confmsg;
 
   norace uint8_t status = S_STOPPED;
-
   task void sendConfigurationMsg();
 
   void start_policy_send() {
@@ -103,10 +98,12 @@ implementation {
       switch(status) {
         case S_STARTED:
           /* enable the rest of the stack */
+          printf("Finished reconfiguring - start events\n");
           call EventsMgmt.start();
           break;
 
         case S_STOPPING:
+          printf("Finished reconfiguring - stop engine\n");
           call FennecEngine.stop();
           break;
 
@@ -124,9 +121,12 @@ implementation {
     call Timer.stop();
     configuration_seq = seq;
     configuration_id = conf;
+    resend_confs = POLICY_RESEND_RECONF;
     switch(status) {
       case S_STOPPED:
         /* Enable reconfiguration */
+        printf("set_new_state -> STOPPED so start POLICY support\n");
+        printfflush();
         status = S_STARTING; 
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         call FennecEngine.start();
@@ -134,6 +134,7 @@ implementation {
 
       case S_STARTED:
       case S_COMPLETED:
+        printf("set_new_state -> stop events\n");
         call EventsMgmt.stop();
         break;
 
@@ -159,11 +160,15 @@ implementation {
     status = S_STOPPED;
     busy_sending = FALSE;
 
+    printf("simple start done\n");
+    printfflush();
+
     signal SimpleStart.startDone(SUCCESS);
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    resend_confs = POLICY_RESEND_RECONF;
+    printf("got new conf\n");
+    printfflush();
     set_new_state(new_conf, configuration_seq + 1);
   }
 
@@ -178,6 +183,7 @@ implementation {
     if (err == SUCCESS) { 
       status = S_STOPPING;
       call EventCache.clearMask();
+      printf("events stopped -> reset\n");
       reset_control();
     } else {
       call EventsMgmt.stop();
@@ -186,6 +192,7 @@ implementation {
 
   event void EventsMgmt.startDone(error_t err) {
     if (err  == SUCCESS) { 
+      printf("events started , start engine\n");
       call FennecEngine.start();
     } else {
       call EventsMgmt.start();
@@ -295,11 +302,13 @@ done_receive:
       switch(status) {
         case S_STARTING:
           status = S_STARTED;
+          printf("FE started - just try to reconf\n");
           call PolicyCache.set_active_configuration(configuration_id);
           post continue_reconfiguration();
           break;
 
         case S_STARTED:
+          printf("FE started - that's it - end of story\n\n\n");
           status = S_COMPLETED;
           break;
 
@@ -316,12 +325,14 @@ done_receive:
     if (err == SUCCESS) {
       switch(status) {
         case S_STOPPING:
+          printf("stopped Engine, also stop POLICY support\n"); 
           call PolicyCache.set_active_configuration(POLICY_CONF_ID);
           status = S_STOPPED;
           call FennecEngine.stop();
           break;
 
         case S_STOPPED:
+          printf("stopped Engine, everything stopped, start enabling\n"); 
           set_new_state(configuration_seq, configuration_id);
           break;
 

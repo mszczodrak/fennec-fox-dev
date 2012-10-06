@@ -10,6 +10,7 @@ module CachesP @safe() {
 implementation {
 
   command void SimpleStart.start() {
+    signal PolicyCache.newConf(active_state);
     signal SimpleStart.startDone(SUCCESS);
   }
 

@@ -6,7 +6,7 @@ module FennecP {
   uses interface SimpleStart as DbgSerial;
   uses interface SimpleStart as RandomStart;
   uses interface SimpleStart as Caches;
-  uses interface SimpleStart as PolicyStart;
+  uses interface SimpleStart as ControlUnit;
 }
 
 implementation {
@@ -29,24 +29,24 @@ implementation {
   event void RandomStart.startDone(error_t err) {
     if (err == SUCCESS) {
       dbg("Fennec", "Fennec RandomStart.startDone() -> Caches.start()\n");
-      call Caches.start();
+      call ControlUnit.start();
     } else {
       dbg("Fennec", "Fennec RandomStart.startDone() -> RandomStart.start()\n");
       call RandomStart.start();
     }
   }
 
-  event void Caches.startDone(error_t err) {
+  event void ControlUnit.startDone(error_t err) {
     if (err == SUCCESS) {
       dbg("Fennec", "Fennec Caches.startDone() -> PolicyStart.start()\n");
-      call PolicyStart.start();
+      call Caches.start();
     } else {
       dbg("Fennec", "Fennec Caches.startDone() -> Caches.start()\n");
-      call Caches.start();
+      call ControlUnit.start();
     }
   }
 
-  event void PolicyStart.startDone(error_t err) {
+  event void Caches.startDone(error_t err) {
       dbg("Fennec", "PolicyStart.startDone()\n");
   }
 
