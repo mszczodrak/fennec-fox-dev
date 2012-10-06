@@ -102,6 +102,12 @@ implementation {
     return get_protocol(layer_id, conf_id);
   }
 
+  void check_configuration(conf_t conf_id) @C() {
+    if ((conf_id != POLICY_CONF_ID) || (conf_id != active_state)) {
+      signal PolicyCache.wrong_conf();
+    }
+  }
+
   conf_t get_conf_id() @C() {
     return get_state_id();
   }

@@ -39,6 +39,8 @@ conf_t get_conf_id();
 
 conf_t get_active_state();
 
+void check_configuration(conf_t conf_id);
+
 bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
 
 
