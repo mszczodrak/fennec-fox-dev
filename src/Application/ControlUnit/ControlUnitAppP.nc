@@ -97,8 +97,7 @@ implementation {
   task void continue_reconfiguration() {
     if (resend_confs > 0) resend_confs--;
     if (resend_confs > 0) {
-      printf("cr %d\n", resend_confs);
-      
+      //printf("cr %d\n", resend_confs);
       start_policy_send();
     } else {
       switch(status) {
