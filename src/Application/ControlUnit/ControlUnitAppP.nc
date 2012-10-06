@@ -145,8 +145,8 @@ implementation {
   }
 
   event void PolicyCache.wrong_conf() {
-    printf("wrong conf\n");
-    printfflush();
+    //printf("wrong conf\n");
+    //printfflush();
     start_policy_send();
   }
 
@@ -234,8 +234,8 @@ reset:
     if (!call Timer.isRunning()) {
       resend_confs = POLICY_MIN_RESEND_RECONF;
       same_msg_counter = 0;
-      printf("reset\n");
-      printfflush();
+      //printf("reset\n");
+      //printfflush();
       start_policy_send();
     }
     goto done_receive;
@@ -255,7 +255,7 @@ done_receive:
     busy_sending = FALSE;
     same_msg_counter = 0;
     if (error != SUCCESS) {
-      printf("sendDone - FAILED\n");
+      //printf("sendDone - FAILED\n");
       start_policy_send();
     } else {
       post continue_reconfiguration();
@@ -340,8 +340,8 @@ done_receive:
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      printf("send failed...\n");
-      printfflush();
+      //printf("send failed...\n");
+      //printfflush();
       start_policy_send();
     } else {
       busy_sending = TRUE;
