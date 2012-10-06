@@ -191,9 +191,6 @@ implementation {
     fennec_header_t* header = (fennec_header_t*)getHeader( msg );
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
-    printf("MacAMSend send\n");
-    printfflush();
-
     call MacAMPacket.setGroup(msg, msg->conf);
 
     msg->crc = 0;
