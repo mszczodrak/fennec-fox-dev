@@ -130,6 +130,8 @@ implementation {
     //printf("new conf\n");
     //printfflush();
     set_new_state(new_conf, configuration_seq + 1);
+    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_AND_RECONFIGURE, 
+				new_conf, configuration_seq + 1);
   }
 
   event void PolicyCache.wrong_conf() {
@@ -222,6 +224,7 @@ reconfigure:
     if ((cu_msg->conf_id != configuration_id) && 
 	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
       set_new_state(cu_msg->conf_id, cu_msg->seq);
+      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_AND_RECONFIGURE, cu_msg->seq, cu_msg->conf_id);
     }
 
 done_receive:

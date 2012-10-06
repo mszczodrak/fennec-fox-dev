@@ -158,5 +158,8 @@ def get_action(action):
         if (action == DBGS_RECEIVE_WRONG_CONF_MSG):
                 return "Receive Wrong Conf"
 
+        if (action == DBGS_RECEIVE_AND_RECONFIGURE):
+                return "New Configuration"
+
 	return "UNKNOWN"
 
