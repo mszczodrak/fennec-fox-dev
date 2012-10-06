@@ -127,14 +127,14 @@ implementation {
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    printf("new conf\n");
-    printfflush();
+    //printf("new conf\n");
+    //printfflush();
     set_new_state(new_conf, configuration_seq + 1);
   }
 
   event void PolicyCache.wrong_conf() {
-    printf("wrong conf\n");
-    printfflush();
+    //printf("wrong conf\n");
+    //printfflush();
     dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_WRONG_CONF_MSG, 0, 0);
     reset_control();
   }
@@ -232,8 +232,8 @@ done_receive:
     busy_sending = FALSE;
     same_msg_counter = 0;
     if (error != SUCCESS) {
-      printf("sendDone - FAILED\n");
-      printfflush();
+      //printf("sendDone - FAILED\n");
+      //printfflush();
       call Timer.startOneShot(1);
     } else {
       post continue_reconfiguration();
