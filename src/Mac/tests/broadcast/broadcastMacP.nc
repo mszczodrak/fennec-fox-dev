@@ -103,8 +103,6 @@ implementation {
   }
 
   event void RadioAMSend.sendDone(message_t *msg, uint8_t len) {
-    //printf("radio senddone\n");
-    //printfflush();
     if (++report >= REPORT_PERIOD) {
       post show_neighborhood();
     }

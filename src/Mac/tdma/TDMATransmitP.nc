@@ -385,16 +385,12 @@ implementation {
 
   event void RadioControl.startDone( error_t err) {
     if (call SplitControlState.isState(S_STARTING)) {
-      //printf("Mac startDone - task\n");
-      //printfflush();
       post startDone_task();
     }
   }
 
   event void RadioControl.stopDone( error_t err) {
     if (call SplitControlState.isState(S_STOPPING)) {
-      //printf("Mac stopDone - shutdown\n");
-      //printfflush();
       shutdown();
     }
   }
