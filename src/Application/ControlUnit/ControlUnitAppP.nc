@@ -128,6 +128,16 @@ implementation {
     }
   }
 
+  void reset_control() {
+    if (!call Timer.isRunning()) {
+      resend_confs = POLICY_MIN_RESEND_RECONF;
+      same_msg_counter = 0;
+      //printf("reset\n");
+      //printfflush();
+      start_policy_send();
+    }
+  }
+
   command void SimpleStart.start() {
     configuration_id = UNKNOWN_CONFIGURATION;
     configuration_seq = 0;
@@ -147,7 +157,8 @@ implementation {
   event void PolicyCache.wrong_conf() {
     //printf("wrong conf\n");
     //printfflush();
-    start_policy_send();
+    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_WRONG_CONF_MSG, 0, 0);
+    reset_control();
   }
 
   event void EventsMgmt.stopDone(error_t err) {
@@ -231,13 +242,7 @@ implementation {
 
 
 reset:
-    if (!call Timer.isRunning()) {
-      resend_confs = POLICY_MIN_RESEND_RECONF;
-      same_msg_counter = 0;
-      //printf("reset\n");
-      //printfflush();
-      start_policy_send();
-    }
+    reset_control();
     goto done_receive;
 
 reconfigure:
