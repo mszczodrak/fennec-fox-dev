@@ -46,7 +46,6 @@ implementation {
   uint16_t configuration_id = UNKNOWN_CONFIGURATION;
   uint16_t configuration_seq = 0;
   uint8_t same_msg_counter = 0;
-  bool enable_policy_control_support = FALSE;
   bool disable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
@@ -57,8 +56,6 @@ implementation {
   norace uint8_t status = S_STOPPED;
 
   task void sendConfigurationMsg();
-  task void start_engine();
-  task void stop_engine();
 
   void start_policy_send() {
     same_msg_counter = 0;
@@ -70,9 +67,12 @@ implementation {
     if (resend_confs > 0) {
       start_policy_send();
     } else {
-      if (current_state_started == FALSE) {
-        call EventsMgmt.start();
-      } else {
+      switch(status) {
+        case S_STARTED:
+          call EventsMgmt.start();
+          break;
+
+        default:
       }
     }
   }
@@ -81,19 +81,18 @@ implementation {
     //printf("got new state\n");
     //printfflush();
     call Timer.stop();
-    status = S_RECONFIGURING;
-    atomic {
-      configuration_seq = seq;
-      if (configuration_id == UNKNOWN_CONFIGURATION) {
-        /* First time here */
-        configuration_id = conf;
-        enable_policy_control_support = TRUE;
+    configuration_seq = seq;
+    configuration_id = conf;
+    switch(status) {
+      case S_STOPPED:
+        status = S_STARTING;
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-        post start_engine();
-      } else {
-        configuration_id = conf;
+        call FennecEngine.start();
+        break;
+
+      default:
+        status = S_STOPPING;
         call EventsMgmt.stop();
-      }
     }
   }
 
@@ -110,7 +109,6 @@ implementation {
   command void SimpleStart.start() {
     configuration_id = UNKNOWN_CONFIGURATION;
     configuration_seq = 0;
-    enable_policy_control_support = FALSE;
     confmsg.conf = POLICY_CONFIGURATION;
     busy_sending = FALSE;
     current_state_started = FALSE;
@@ -132,8 +130,8 @@ implementation {
 
   event void EventsMgmt.stopDone(error_t err) {
     if (err == SUCCESS) { 
-      disable_policy_control_support = TRUE;
-      post stop_engine();
+      call EventCache.clearMask();
+      call FennecEngine.stop();
     } else {
       call EventsMgmt.stop();
     }
@@ -141,7 +139,7 @@ implementation {
 
   event void EventsMgmt.startDone(error_t err) {
     if (err == SUCCESS) { 
-      post start_engine();
+      call FennecEngine.start();
     } else {
       call EventsMgmt.start();
     }
@@ -168,7 +166,7 @@ implementation {
       resend_confs = POLICY_RESEND_MIN;
     }
 
-    if (status != S_STARTED) {
+    if ((status != S_STARTED) && (status != S_COMPLETED)) {
       goto done_receive;
     }
 
@@ -247,13 +245,15 @@ done_receive:
 
   event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
-      if (enable_policy_control_support == TRUE) {
-        call PolicyCache.set_active_configuration(configuration_id);
-        enable_policy_control_support = FALSE;
-        status = S_STARTED;
-        post continue_reconfiguration();
-      } else {
-        current_state_started = TRUE;
+      switch(status) {
+        case S_STARTING:
+          status = S_STARTED;
+          call PolicyCache.set_active_configuration(configuration_id);
+          post continue_reconfiguration();
+          break;
+
+        default:
+          status = S_COMPLETED;
       }
     } else {
       call FennecEngine.start();
@@ -262,29 +262,20 @@ done_receive:
 
   event void FennecEngine.stopDone(error_t err) {
     if (err == SUCCESS) {
-      if (disable_policy_control_support == TRUE) { 
-        current_state_started = FALSE;
-        disable_policy_control_support = FALSE;
-        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-        call FennecEngine.stop();
-      } else {
-        enable_policy_control_support = TRUE;
-        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-        post start_engine();
+      switch(status) {
+        case S_STOPPING:
+          status = S_STOPPED;
+          call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+          call FennecEngine.stop();
+          break;
+      
+        case S_STOPPED:
+          set_new_state(configuration_id, configuration_seq);
+          break;
       }
     } else {
       call FennecEngine.stop();
     }
-  }
-
-  task void start_engine() {
-    call FennecEngine.start();
-  }
-
-  task void stop_engine() {
-    status = S_STOPPED;
-    call EventCache.clearMask();
-    call FennecEngine.stop();
   }
 
 
