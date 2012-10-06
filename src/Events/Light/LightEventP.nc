@@ -53,7 +53,6 @@ implementation {
   bool occures;
 
   command void Event.start(nx_struct fennec_event *en) {
-    //printf("start\n");
     occures = FALSE;
     threshold = en->value;
     op = en->operation; 
