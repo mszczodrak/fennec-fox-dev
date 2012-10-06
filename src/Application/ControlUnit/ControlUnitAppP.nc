@@ -39,7 +39,7 @@
 #include "hashing.h"
 #define POLICY_LED	1
 #define POLICY_RESEND_RECONF		300
-#define POLICY_MIN_RESEND_RECONF 	8
+#define POLICY_MIN_RESEND_RECONF 	30
 #define POLICY_MAX_WRONG_CONFS		5
 
 #define POLICY_RESEND_MIN	5
