@@ -60,6 +60,8 @@ enum {
 	S_BEGIN_TRANSMIT        = 28,
 	S_LOAD                  = 29,
 	S_RECONFIGURING		= 30,
+	S_RECONF_ENABLED	= 31,
+        S_COMPLETED		= 32,
 
 
                 /* tx */
