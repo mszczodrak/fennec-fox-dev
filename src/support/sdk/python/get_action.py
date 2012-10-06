@@ -155,6 +155,8 @@ def get_action(action):
         if (action == DBGS_RECEIVE_HIGHER_CONTROL_MSG):
                 return "Receive Ctrl HiMsg"
 
+        if (action == DBGS_RECEIVE_WRONG_CONF_MSG):
+                return "Receive Wrong Conf"
 
 	return "UNKNOWN"
 
