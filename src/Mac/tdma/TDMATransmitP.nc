@@ -174,7 +174,11 @@ implementation {
     m_msg = m_msg;
     totalCcaChecks = 0;
 
-    call RadioTransmit.load(m_msg);
+    sendDoneErr = call RadioTransmit.load(m_msg);
+    if (sendDoneErr != SUCCESS) {
+      post signalSendDone();
+      return sendDoneErr;
+    }
     return SUCCESS;
   }
 
@@ -294,6 +298,12 @@ implementation {
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+    if (error != SUCCESS) {
+      sendDoneErr = error;
+      post signalSendDone();
+      return;
+    }
+
     if ( m_state == S_CANCEL ) {
       call RadioTransmit.cancel(msg);
       sendDoneErr = ECANCEL;

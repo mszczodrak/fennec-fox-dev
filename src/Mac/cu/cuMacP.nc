@@ -242,7 +242,10 @@ implementation {
     m_state = S_LOAD;
     m_msg = m_msg;
 
-    call RadioTransmit.load(m_msg);
+    if( call RadioTransmit.load(m_msg) != SUCCESS) {
+      signal RadioTransmit.sendDone(msg, FAIL);
+      return FAIL;
+    }
     return SUCCESS;
   }
 
@@ -449,6 +452,11 @@ implementation {
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+    if (error != SUCCESS) {
+      signal RadioTransmit.sendDone(msg, FAIL);
+      return;
+    }
+
     m_state = S_BEGIN_TRANSMIT;
     if (call RadioTransmit.send(m_msg, 0) != SUCCESS) {
       signal RadioTransmit.sendDone(m_msg, FAIL);
