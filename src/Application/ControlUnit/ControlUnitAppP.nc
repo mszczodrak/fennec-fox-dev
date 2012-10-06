@@ -46,15 +46,12 @@ implementation {
   uint16_t configuration_id = UNKNOWN_CONFIGURATION;
   uint16_t configuration_seq = 0;
   uint8_t same_msg_counter = 0;
-  bool disable_policy_control_support = FALSE;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
-  bool current_state_started = FALSE;
 
   message_t confmsg;
 
   norace uint8_t status = S_STOPPED;
-
   task void sendConfigurationMsg();
 
   void start_policy_send() {
@@ -111,7 +108,6 @@ implementation {
     configuration_seq = 0;
     confmsg.conf = POLICY_CONFIGURATION;
     busy_sending = FALSE;
-    current_state_started = FALSE;
     status = S_STOPPED;
     signal SimpleStart.startDone(SUCCESS);
   }
