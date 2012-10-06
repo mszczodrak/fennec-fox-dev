@@ -190,8 +190,8 @@ implementation {
 
 
   event void RadioControl.startDone(error_t err) {
-    printf("Radio ON\n");
-    printfflush();
+    //printf("Radio ON\n");
+    //printfflush();
     radio_status = 1;
     if (m_state == S_LOAD) {
       start_loading();
@@ -201,8 +201,8 @@ implementation {
 
 
   event void RadioControl.stopDone(error_t err) {
-    printf("Radio OFF\n");
-    printfflush();
+    //printf("Radio OFF\n");
+    //printfflush();
     radio_status = 0;
   }
 
@@ -259,8 +259,8 @@ implementation {
     if (radio_status == 1) {
       start_loading();
     } else {
-      printf("hold it\n");
-      printfflush();
+      //printf("hold it\n");
+      //printfflush();
     }
     return SUCCESS;
   }
