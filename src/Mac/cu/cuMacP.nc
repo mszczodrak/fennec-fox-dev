@@ -240,7 +240,7 @@ implementation {
     m_msg = m_msg;
 
     if( call RadioTransmit.load(m_msg) != SUCCESS) {
-      signal RadioTransmit.sendDone(msg, FAIL);
+      m_state = S_STARTED;
       return FAIL;
     }
     return SUCCESS;
