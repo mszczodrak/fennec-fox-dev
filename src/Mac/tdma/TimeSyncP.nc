@@ -39,7 +39,6 @@ implementation
     };
 
     uint8_t state;
-    uint32_t mult;
 
 /*
     We do linear regression from localTime to timeOffset (globalTime - localTime).
@@ -54,13 +53,16 @@ implementation
     float       skew;
     uint32_t    localAverage;
     int32_t     offsetAverage;
-    uint8_t     numEntries; // the number of full entries in the table
+    uint8_t     numEntries = 0; // the number of full entries in the table
 
     message_t processedMsgBuffer;
     message_t* processedMsg;
 
     message_t outgoingMsgBuffer;
     TimeSyncMsg* outgoingMsg;
+
+    uint8_t heartBeats; // the number of sucessfully sent messages
+                        // since adding a new entry with lower beacon id than ours
 
     uint8_t receive_counter = 0;
 
@@ -231,7 +233,10 @@ implementation
     {
         TimeSyncMsg* msg = (TimeSyncMsg*)(call Send.getPayload(processedMsg, sizeof(TimeSyncMsg)));
 
-        if( msg->rootID < outgoingMsg->rootID ) {
+        if( msg->rootID < outgoingMsg->rootID &&
+            //after becoming the root, a node ignores messages that advertise the old root (it may take
+            //some time for all nodes to timeout and discard the old root) 
+            !(heartBeats < IGNORE_ROOT_MSG && outgoingMsg->rootID == TOS_NODE_ID) ){
             outgoingMsg->rootID = msg->rootID;
             outgoingMsg->seqNum = msg->seqNum;
         }
@@ -240,6 +245,10 @@ implementation
         }
         else
             goto exit;
+
+        //call Leds.led0Toggle();
+        if( outgoingMsg->rootID < TOS_NODE_ID )
+            heartBeats = 0;
 
         addNewEntry(msg);
         calculateConversion();
@@ -272,8 +281,6 @@ implementation
     task void sendMsg()
     {
         uint32_t localTime, globalTime;
-        //printf("sending message\n");
-        //printfflush();
 
         globalTime = localTime = call GlobalTime.getLocalTime();
         call GlobalTime.local2Global(&globalTime);
@@ -290,25 +297,23 @@ implementation
                 }
             }
         }
+/*
+        else if( heartBeats >= ROOT_TIMEOUT ) {
+            heartBeats = 0; //to allow ROOT_SWITCH_IGNORE to work
+            outgoingMsg->rootID = TOS_NODE_ID;
+            ++(outgoingMsg->seqNum); // maybe set it to zero?
+        }
+*/
 
         outgoingMsg->globalTime = globalTime;
         // we don't send time sync msg, if we don't have enough data
         if( numEntries < ENTRY_SEND_LIMIT && outgoingMsg->rootID != TOS_NODE_ID ){
+            ++heartBeats;
             state &= ~STATE_SENDING;
         }
         else if( call Send.send(AM_BROADCAST_ADDR, &outgoingMsgBuffer, TIMESYNCMSG_LEN, localTime ) != SUCCESS ){
             state &= ~STATE_SENDING;
-            //printf("failed to send\n");
-            //printfflush();
-            mult = TDMA_MIN_MULT;
-            //signal TimeSyncNotify.msg_sent();
-        } else {
-          if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-            mult+=2;
-          } else {
-            mult*=2;
-          }
-          mult = min(mult, call tdmaMacParams.get_frame_size() * call tdmaMacParams.get_node_time());
+            signal TimeSyncNotify.msg_sent();
         }
     }
 
@@ -319,6 +324,8 @@ implementation
 
         if(error == SUCCESS)
         {
+            ++heartBeats;
+            //call Leds.led1Toggle();
 
             if( outgoingMsg->rootID == TOS_NODE_ID )
                 ++(outgoingMsg->seqNum);
@@ -330,6 +337,14 @@ implementation
 
     void timeSyncMsgSend()
     {
+
+/*
+        if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
+            outgoingMsg->seqNum = 0;
+            outgoingMsg->rootID = TOS_NODE_ID;
+        }
+*/
+
         if( outgoingMsg->rootID != 0xFFFF && (state & STATE_SENDING) == 0 ) {
            state |= STATE_SENDING;
            post sendMsg();
@@ -350,11 +365,20 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
+        outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
         if (call Timer.isRunning() == TRUE) {
           return SUCCESS;
         }
 
-        call Timer.startOneShot((uint32_t)(1 + (call Random.rand16() % mult)));
+        if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+          call Timer.startOneShot((uint32_t)( 
+			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
+						call tdmaMacParams.get_frame_size()))));
+        } else {
+          call Timer.startOneShot((uint32_t)( 
+			(call Random.rand16() % 
+				(call tdmaMacParams.get_node_time() * call tdmaMacParams.get_frame_size()) ) * 2));
+        }
         return SUCCESS;
     }
 
@@ -362,8 +386,7 @@ implementation
     command error_t StdControl.start()
     {
         receive_counter = 0;
-        mult = TDMA_MIN_MULT;
-        clearTable();
+        //clearTable();
 
         atomic {
 	   skew = 0.0;
@@ -376,14 +399,13 @@ implementation
 		return FAIL;
 	}
 
-	if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-		outgoingMsg->rootID = TOS_NODE_ID;
-	} else {
-		outgoingMsg->rootID = 0xFFFF;
-	}
+	outgoingMsg->rootID = 0xFFFF;
 
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
+
+        heartBeats = 0;
+        outgoingMsg->nodeID = TOS_NODE_ID;
 
         return SUCCESS;
     }
@@ -400,7 +422,7 @@ implementation
     async command uint16_t  TimeSyncInfo.getRootID() { return outgoingMsg->rootID; }
     async command uint8_t   TimeSyncInfo.getSeqNum() { return outgoingMsg->seqNum; }
     async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
-    async command uint8_t   TimeSyncInfo.getHeartBeats() { return 0; }
+    async command uint8_t   TimeSyncInfo.getHeartBeats() { return heartBeats; }
 
     event void tdmaMacParams.receive_status(uint16_t status_flag) {
     }

@@ -120,9 +120,6 @@ implementation {
   }
 
   void correct_period_time() {
-    sync = call GlobalTime.getGlobalTime(&global);
-    local = global;
-
     /* compute the time that passed from the last global period */
     global = global % tdma_period;
 
@@ -130,38 +127,32 @@ implementation {
     global = tdma_period - global;
 
     /* check if global is suuper small */
-    if (global < ((tdma_period / 20) + 3 * (call tdmaMacParams.get_frame_size())))
+    if (global < ((tdma_period / 10) + 3 * (call tdmaMacParams.get_frame_size())))
       global = global + tdma_period;
 
-    /* convert global time to local */
-    local = local + global;
+    local = global;
     call GlobalTime.global2Local(&local);
-
-    /* setup timer */
     call PeriodTimer.startOneShot(local);
   }
 
   void turn_on_radio() {
-    //printf("turn on radio\n");
-    //printfflush();
     call RadioControl.start();
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if (sync == SUCCESS) {
-      //printf("turn off radio\n");
-      //printfflush();
+      signal RadioControl.stopDone(SUCCESS);
       //call RadioControl.stop();
       //busy_sending = FALSE;
     } 
   }
 
   void start_synchronization() {
-//    if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
-//         (sync == SUCCESS) ){
+    if ( (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) || 
+         (sync == SUCCESS) ){
       call TimeSyncMode.send();
-//    }
+    }
   }
 
   error_t err;
@@ -225,7 +216,6 @@ implementation {
 
     call TimerControl.start();
     call PeriodTimer.startOneShot(tdma_period);
-//    call PeriodTimer.startOneShot(call tdmaMacParams.get_frame_size() * (
 //		call tdmaMacParams.get_node_time() * TDMA_INITIAL_STAY_ON ));
     status = S_STARTING;
     return SUCCESS;
@@ -261,8 +251,6 @@ implementation {
         post start_done();
       }
       start_synchronization();
-      //printf("radio start Done\n");
-      //printfflush();
       break;
 
     case SUCCESS:
@@ -274,8 +262,6 @@ implementation {
         post start_done();
       }
       start_synchronization();
-      //printf("radio start Done\n");
-      //printfflush();
       break;
 
     default:
@@ -293,8 +279,6 @@ implementation {
         err = SUCCESS;
         post stop_done();
       }
-      //printf("radio stop Done\n");
-      //printfflush();
       break;
 
     case SUCCESS:
@@ -305,8 +289,6 @@ implementation {
         err = SUCCESS;
         post stop_done();
       }
-      //printf("radio stop Done\n");
-      //printfflush();
       break;
 
     default:
@@ -315,7 +297,6 @@ implementation {
   }
 
   command error_t FtspMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    if (radio_status == OFF) return FAIL;
     ftsp_sync_message = msg;
     return call MacAMSend.send(addr, msg, len);
   }
@@ -338,7 +319,11 @@ implementation {
       return ESIZE;
     }
 
+    //header->type = id;
     header->dest = addr;
+    //header->destpan = call CC2420Config.getPanAddr();
+    //header->destpan = signal Mgmt.currentStateId();
+    //header->destpan = msg->conf;
     header->src = call MacAMPacket.address();
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
@@ -548,6 +533,9 @@ implementation {
       return msg;
     }
 
+//    msg->conf = call MacAMPacket.group(msg);
+//    msg->conf = call MacAMPacket.group(msg);
+
     msg->rssi = metadata->rssi;
     msg->lqi = metadata->lqi;
     msg->crc = metadata->crc;
@@ -614,20 +602,14 @@ implementation {
       dbgs(F_MAC, S_STARTED, DBGS_SYNC, (uint16_t)(global>>16),(uint16_t)global);
     } else {
       dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
-    }
-
+    }    
     start_synchronization();
-    //printf("rec %lu\n", global);
-    //printfflush();
   }
 
   event void TimeSyncNotify.msg_sent() {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
-    //dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
-    //printf("se %lu\n", global);
-    //printfflush();
+    dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
   }
 
 }
-
