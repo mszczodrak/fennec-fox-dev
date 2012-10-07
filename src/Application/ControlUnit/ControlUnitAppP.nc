@@ -54,6 +54,11 @@ implementation {
   norace uint8_t status = S_STOPPED;
   task void sendConfigurationMsg();
 
+  task void report_new_configuration() {
+    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_AND_RECONFIGURE,
+                                configuration_id, configuration_seq);
+  }
+
   void reset_control() {
     if (!call Timer.isRunning()) {
       resend_confs = POLICY_MIN_RESEND_RECONF;
@@ -69,9 +74,9 @@ implementation {
   }
 
   void set_new_state(state_t conf, uint16_t seq) {
-    call Timer.stop();
     configuration_seq = seq;
     configuration_id = conf;
+    call Timer.stop();
     switch(status) {
       case S_STOPPED:
         status = S_STARTING;
@@ -130,8 +135,7 @@ implementation {
     //printf("new conf\n");
     //printfflush();
     set_new_state(new_conf, configuration_seq + 1);
-    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_AND_RECONFIGURE, 
-				new_conf, configuration_seq + 1);
+    post report_new_configuration();
   }
 
   event void PolicyCache.wrong_conf() {
@@ -164,7 +168,7 @@ implementation {
       goto done_receive;
     }
 
-    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
+    //dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
     if (!call PolicyCache.valid_policy_msg(cu_msg)) {
       goto done_receive;
@@ -224,7 +228,7 @@ reconfigure:
     if ((cu_msg->conf_id != configuration_id) && 
 	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
       set_new_state(cu_msg->conf_id, cu_msg->seq);
-      dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_AND_RECONFIGURE, cu_msg->seq, cu_msg->conf_id);
+      post report_new_configuration();
     }
 
 done_receive:
