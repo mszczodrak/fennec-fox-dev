@@ -161,5 +161,8 @@ def get_action(action):
         if (action == DBGS_RECEIVE_AND_RECONFIGURE):
                 return "New Configuration"
 
+        if (action == DBGS_SEND_CONTROL_MSG_FAILED):
+                return "Send Ctrl Msg FAILED"
+
 	return "UNKNOWN"
 
