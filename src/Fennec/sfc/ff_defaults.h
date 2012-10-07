@@ -35,7 +35,7 @@ struct tdmaMac_params count_tdmaMac = {
 	2,
 	100,
 	30,
-	1000,
+	3000,
 	10,
 	10,
 	1,
