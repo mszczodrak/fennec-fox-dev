@@ -50,11 +50,11 @@ implementation {
 
   message_t confmsg;
 
-  norace uint8_t status = S_STOPPED;
+  norace uint8_t status = S_NONE;
   task void sendConfigurationMsg();
 
   task void report_new_configuration() {
-    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_AND_RECONFIGURE,
+    dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_AND_RECONFIGURE,
                                 configuration_id, configuration_seq);
   }
 
@@ -77,9 +77,17 @@ implementation {
     call Timer.stop();
     switch(status) {
       case S_STOPPED:
-        got_response = FALSE;
         status = S_STARTING;
+        got_response = FALSE;
         resend_confs = POLICY_RESEND_RECONF;
+        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+        call FennecEngine.start();
+        break;
+
+      case S_NONE:
+        status = S_STARTING;
+        got_response = TRUE;
+        resend_confs = 0;  /* skip resending at the first time */
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         call FennecEngine.start();
         break;
@@ -126,7 +134,7 @@ implementation {
     configuration_seq = 0;
     confmsg.conf = POLICY_CONFIGURATION;
     busy_sending = FALSE;
-    status = S_STOPPED;
+    status = S_NONE;
     got_response = FALSE;
     signal SimpleStart.startDone(SUCCESS);
   }
@@ -141,7 +149,8 @@ implementation {
   event void PolicyCache.wrong_conf() {
     //printf("wrong conf\n");
     //printfflush();
-    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_WRONG_CONF_MSG, 0, 0);
+    dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
+					configuration_id, configuration_seq);
     reset_control();
   }
 
@@ -168,7 +177,7 @@ implementation {
       goto done_receive;
     }
 
-    //dbgs(F_CONTROL_UNIT, S_NONE, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
+    //dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
     if (!call PolicyCache.valid_policy_msg(cu_msg)) {
       goto done_receive;
@@ -323,14 +332,15 @@ done_receive:
     cu_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq,
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
-    dbgs(F_CONTROL_UNIT, S_NONE, DBGS_SEND_CONTROL_MSG, configuration_seq, configuration_id);
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
       //printf("failed.  \n");
       //printfflush();
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 500);
+      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
     } else {
       busy_sending = TRUE;
+      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
       //same_msg_counter = 0;
     }
   }
