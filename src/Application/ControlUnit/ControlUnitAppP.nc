@@ -262,6 +262,9 @@ done_receive:
           break;
 
         case S_STARTED:
+          // TODO: check if need to continue Trickle-like behavior
+	  // for example, when no other nodes receive the message we need to continue
+          // resending once in a while
           status = S_COMPLETED;
       }
     } else {
