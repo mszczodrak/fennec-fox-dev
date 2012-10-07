@@ -120,6 +120,9 @@ implementation {
   }
 
   void correct_period_time() {
+    sync = call GlobalTime.getGlobalTime(&global);
+    local = global;
+
     /* compute the time that passed from the last global period */
     global = global % tdma_period;
 
@@ -127,10 +130,15 @@ implementation {
     global = tdma_period - global;
 
     /* check if global is suuper small */
-    if (global < ((tdma_period / 10) + 3 * (call tdmaMacParams.get_frame_size())))
+    if (global < ((tdma_period / 20) + 3 * (call tdmaMacParams.get_frame_size())))
       global = global + tdma_period;
 
-    call PeriodTimer.startOneShot(global);
+    /* convert global time to local */
+    local = local + global;
+    call GlobalTime.global2Local(&local);
+
+    /* setup timer */
+    call PeriodTimer.startOneShot(local);
   }
 
   void turn_on_radio() {
