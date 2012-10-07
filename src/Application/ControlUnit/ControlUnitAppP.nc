@@ -6,17 +6,15 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_LED	1
 #define POLICY_RESEND_RECONF		300
 #define POLICY_MIN_RESEND_RECONF 	30
-#define POLICY_MAX_WRONG_CONFS		5
+#define POLICY_MAX_WRONG_CONFS		2
 
 #define POLICY_RESEND_MIN	5
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
 #define POLICY_RAND_SEND	20
 #define SAME_MSG_COUNTER_THRESHOLD 2
-#define POLICY_MAX_RECEIVE	10
 
 module ControlUnitAppP @safe() {
   provides interface SimpleStart;
@@ -48,6 +46,7 @@ implementation {
   uint8_t same_msg_counter = 0;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
+  bool got_response = FALSE;
 
   message_t confmsg;
 
@@ -62,7 +61,6 @@ implementation {
   void reset_control() {
     if (!call Timer.isRunning()) {
       resend_confs = POLICY_MIN_RESEND_RECONF;
-      same_msg_counter = 0;
       same_msg_counter = 0;
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
     }
@@ -79,6 +77,7 @@ implementation {
     call Timer.stop();
     switch(status) {
       case S_STOPPED:
+        got_response = FALSE;
         status = S_STARTING;
         resend_confs = POLICY_RESEND_RECONF;
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
@@ -128,6 +127,7 @@ implementation {
     confmsg.conf = POLICY_CONFIGURATION;
     busy_sending = FALSE;
     status = S_STOPPED;
+    got_response = FALSE;
     signal SimpleStart.startDone(SUCCESS);
   }
 
@@ -202,7 +202,8 @@ implementation {
       
       if (cu_msg->conf_id == configuration_id) {
         /* Received same sequence with the same configuration id */
-	if (++same_msg_counter > POLICY_MAX_RECEIVE) {
+        got_response = TRUE;
+	if (++same_msg_counter > POLICY_RESEND_MIN) {
 	  start_policy_send();
 	}
 	
@@ -266,10 +267,14 @@ done_receive:
           break;
 
         case S_STARTED:
-          // TODO: check if need to continue Trickle-like behavior
-	  // for example, when no other nodes receive the message we need to continue
-          // resending once in a while
           status = S_COMPLETED;
+          if (got_response == FALSE) {
+            /* we went through the whole reconfiguration process
+             * but it seems that nobody is there around to get
+             * our reconfigurations message, so let's retry after a while
+             */
+             call Timer.startOneShot(call Random.rand16() % (POLICY_RAND_SEND * 4) + 100);
+          }
       }
     } else {
       call FennecEngine.start();
