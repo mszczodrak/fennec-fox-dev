@@ -32,6 +32,9 @@ def get_action(action):
 	if (action == DBGS_BLINK_LED):
 		return "Blink LED"
 
+	if (action == DBGS_SYNC):
+		return "Synchronized"
+
 	if (action == DBGS_TEST_SIGNAL):
 		return "Send Test Signal"
 

@@ -12,6 +12,8 @@ DBGS_MGMT_STOP          		= 6
 
 DBGS_MEMORY_EMPTY       		= 7
 DBGS_BLINK_LED				= 8
+DBGS_SYNC               		= 10
+
 
 DBGS_GOT_SEND                           = 20
 DBGS_GOT_SEND_HEADER_NULL_FAIL          = 21

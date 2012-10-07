@@ -142,14 +142,18 @@ implementation {
   }
 
   void turn_on_radio() {
+    //printf("turn on radio\n");
+    //printfflush();
     call RadioControl.start();
   }
 
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if (sync == SUCCESS) {
-      call RadioControl.stop();
-      busy_sending = FALSE;
+      //printf("turn off radio\n");
+      //printfflush();
+      //call RadioControl.stop();
+      //busy_sending = FALSE;
     } 
   }
 
@@ -606,7 +610,11 @@ implementation {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
 
-    //dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+    if (sync == SUCCESS) {
+      dbgs(F_MAC, S_STARTED, DBGS_SYNC, (uint16_t)(global>>16),(uint16_t)global);
+    } else {
+      dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+    }
 
     start_synchronization();
     //printf("rec %lu\n", global);

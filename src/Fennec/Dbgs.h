@@ -12,6 +12,7 @@
 
 #define DBGS_MEMORY_EMPTY	7
 #define DBGS_BLINK_LED		8
+#define DBGS_SYNC		10
 
 #define DBGS_GOT_SEND				20
 #define DBGS_GOT_SEND_HEADER_NULL_FAIL		21

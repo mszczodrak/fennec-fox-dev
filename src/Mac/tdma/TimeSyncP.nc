@@ -272,6 +272,8 @@ implementation
     task void sendMsg()
     {
         uint32_t localTime, globalTime;
+        //printf("sending message\n");
+        //printfflush();
 
         globalTime = localTime = call GlobalTime.getLocalTime();
         call GlobalTime.local2Global(&globalTime);
@@ -301,7 +303,12 @@ implementation
             mult = TDMA_MIN_MULT;
             //signal TimeSyncNotify.msg_sent();
         } else {
-          mult = min(mult * 2, call tdmaMacParams.get_frame_size() * call tdmaMacParams.get_node_time());
+          if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+            mult+=2;
+          } else {
+            mult*=2;
+          }
+          mult = min(mult, call tdmaMacParams.get_frame_size() * call tdmaMacParams.get_node_time());
         }
     }
 
@@ -347,13 +354,7 @@ implementation
           return SUCCESS;
         }
 
-        if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          call Timer.startOneShot((uint32_t)(1 + (call Random.rand16() % mult)
-						* ROOT_BEACON_RATE));
-        } else {
-          call Timer.startOneShot((uint32_t)(1 + (call Random.rand16() % mult)
-						* BEACON_RATE));
-        }
+        call Timer.startOneShot((uint32_t)(1 + (call Random.rand16() % mult)));
         return SUCCESS;
     }
 
