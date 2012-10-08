@@ -576,7 +576,7 @@ implementation {
     }
 
     /* turn on radio */
-    call Leds.set(1);
+//    call Leds.set(1);
     call RadioControl.start();
     call TimerControl.start();
 
@@ -590,7 +590,7 @@ implementation {
     correct_period_time();
     /* turn off radio only when timer is synced */
     if ((sync == SUCCESS) && (received_beacon == TRUE)) {
-      call Leds.set(4);
+//      call Leds.set(4);
       call RadioControl.stop();
       busy_sending = FALSE;
       call TimerControl.stop();
@@ -599,7 +599,7 @@ implementation {
         ftsp_sync_message = NULL;
       }
     } else {
-      call Leds.set(2);
+//      call Leds.set(2);
     }
   }
 
