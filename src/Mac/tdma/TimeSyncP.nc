@@ -297,13 +297,6 @@ implementation
                 }
             }
         }
-/*
-        else if( heartBeats >= ROOT_TIMEOUT ) {
-            heartBeats = 0; //to allow ROOT_SWITCH_IGNORE to work
-            outgoingMsg->rootID = TOS_NODE_ID;
-            ++(outgoingMsg->seqNum); // maybe set it to zero?
-        }
-*/
 
         outgoingMsg->globalTime = globalTime;
         // we don't send time sync msg, if we don't have enough data
@@ -337,14 +330,6 @@ implementation
 
     void timeSyncMsgSend()
     {
-
-/*
-        if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
-            outgoingMsg->seqNum = 0;
-            outgoingMsg->rootID = TOS_NODE_ID;
-        }
-*/
-
         if( outgoingMsg->rootID != 0xFFFF && (state & STATE_SENDING) == 0 ) {
            state |= STATE_SENDING;
            post sendMsg();
@@ -365,17 +350,17 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
-        outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
         if (call Timer.isRunning() == TRUE) {
           return SUCCESS;
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          call Timer.startOneShot((uint32_t)( 
+          outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
+          call Timer.startOneShot((uint32_t)( 1 + 
 			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
 						call tdmaMacParams.get_frame_size()))));
         } else {
-          call Timer.startOneShot((uint32_t)( 
+          call Timer.startOneShot((uint32_t)( 5 +
 			(call Random.rand16() % 
 				(call tdmaMacParams.get_node_time() * call tdmaMacParams.get_frame_size()) ) * 2));
         }
@@ -405,7 +390,7 @@ implementation
         state = STATE_INIT;
 
         heartBeats = 0;
-        outgoingMsg->nodeID = TOS_NODE_ID;
+        //outgoingMsg->nodeID = TOS_NODE_ID;
 
         return SUCCESS;
     }

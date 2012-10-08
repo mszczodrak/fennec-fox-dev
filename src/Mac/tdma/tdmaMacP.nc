@@ -120,6 +120,8 @@ implementation {
   }
 
   void correct_period_time() {
+    local = global;
+
     /* compute the time that passed from the last global period */
     global = global % tdma_period;
 
@@ -130,7 +132,7 @@ implementation {
     if (global < ((tdma_period / 10) + 3 * (call tdmaMacParams.get_frame_size())))
       global = global + tdma_period;
 
-    local = global;
+    local = local + global;
     call GlobalTime.global2Local(&local);
     call PeriodTimer.startOneShot(local);
   }
@@ -142,9 +144,8 @@ implementation {
   void turn_off_radio() {
     /* turn off radio only when timer is synced */
     if (sync == SUCCESS) {
-      signal RadioControl.stopDone(SUCCESS);
-      //call RadioControl.stop();
-      //busy_sending = FALSE;
+      call RadioControl.stop();
+      busy_sending = FALSE;
     } 
   }
 
