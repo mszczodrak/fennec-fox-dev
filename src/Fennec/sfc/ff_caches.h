@@ -12,10 +12,12 @@
 
 #include "ControlUnitAppParams.h"
 #include "cuNetParams.h"
-#include "csmacaMacParams.h"
+#include "cuMacParams.h"
 #include "cc2420RadioParams.h"
 #include "BlinkAppParams.h"
 #include "nullNetParams.h"
+#include "csmacaMacParams.h"
+#include "tdmaMacParams.h"
 
 uint16_t active_state = 2;
 
@@ -39,7 +41,7 @@ struct fennec_configuration configurations[NUMBER_OF_CONFIGURATIONS] = {
 	{
 		.application = 5,
 		.network = 6,
-		.mac = 3,
+		.mac = 7,
 		.radio = 4,
 		.level = F_MINIMUM_STATE_LEVEL
 	}
@@ -47,7 +49,7 @@ struct fennec_configuration configurations[NUMBER_OF_CONFIGURATIONS] = {
 	{
 		.application = 5,
 		.network = 6,
-		.mac = 3,
+		.mac = 8,
 		.radio = 4,
 		.level = F_MINIMUM_STATE_LEVEL
 	}
@@ -68,9 +70,9 @@ struct default_params defaults[NUMBER_OF_CONFIGURATIONS] = {
 		.network_cache = &cuNet_data,
 		.network_default_params = &control_cuNet,
 		.network_default_size = sizeof(struct cuNet_params),
-		.mac_cache = &csmacaMac_data,
-		.mac_default_params = &control_csmacaMac,
-		.mac_default_size = sizeof(struct csmacaMac_params),
+		.mac_cache = &cuMac_data,
+		.mac_default_params = &control_cuMac,
+		.mac_default_size = sizeof(struct cuMac_params),
 		.radio_cache = &cc2420Radio_data,
 		.radio_default_params = &control_cc2420Radio,
 		.radio_default_size = sizeof(struct cc2420Radio_params)
@@ -93,16 +95,16 @@ struct default_params defaults[NUMBER_OF_CONFIGURATIONS] = {
 	,
 	{
 		.application_cache = &BlinkApp_data,
-		.application_default_params = &blue_BlinkApp,
+		.application_default_params = &yellow_BlinkApp,
 		.application_default_size = sizeof(struct BlinkApp_params),
 		.network_cache = &nullNet_data,
-		.network_default_params = &blue_nullNet,
+		.network_default_params = &yellow_nullNet,
 		.network_default_size = sizeof(struct nullNet_params),
-		.mac_cache = &csmacaMac_data,
-		.mac_default_params = &blue_csmacaMac,
-		.mac_default_size = sizeof(struct csmacaMac_params),
+		.mac_cache = &tdmaMac_data,
+		.mac_default_params = &yellow_tdmaMac,
+		.mac_default_size = sizeof(struct tdmaMac_params),
 		.radio_cache = &cc2420Radio_data,
-		.radio_default_params = &blue_cc2420Radio,
+		.radio_default_params = &yellow_cc2420Radio,
 		.radio_default_size = sizeof(struct cc2420Radio_params)
 	}
 };
@@ -137,7 +139,7 @@ struct fennec_policy policies[2] = {
 	},
 	{
 		.src_conf = 3,
-		.event_mask = 4,
+		.event_mask = 2,
 		.dst_conf = 2
 
 	}

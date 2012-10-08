@@ -4,18 +4,18 @@
 #include <Fennec.h>
 #include "ControlUnitAppParams.h"
 #include "cuNetParams.h"
-#include "csmacaMacParams.h"
+#include "cuMacParams.h"
 #include "cc2420RadioParams.h"
 #include "BlinkAppParams.h"
 #include "nullNetParams.h"
+#include "csmacaMacParams.h"
+#include "tdmaMacParams.h"
 
 struct ControlUnitApp_params control_ControlUnitApp = {
 };
 struct cuNet_params control_cuNet = {
 };
-struct csmacaMac_params control_csmacaMac = {
-	2,
-	0,
+struct cuMac_params control_cuMac = {
 	10,
 	10,
 	1,
@@ -49,22 +49,23 @@ struct cc2420Radio_params red_cc2420Radio = {
 	1,
 	1
 };
-struct BlinkApp_params blue_BlinkApp = {
-	4,
+struct BlinkApp_params yellow_BlinkApp = {
+	2,
 	1024
 };
-struct nullNet_params blue_nullNet = {
+struct nullNet_params yellow_nullNet = {
 };
-struct csmacaMac_params blue_csmacaMac = {
+struct tdmaMac_params yellow_tdmaMac = {
 	2,
-	200,
+	10000,
+	40000,
 	10,
 	10,
 	1,
 	1,
 	1
 };
-struct cc2420Radio_params blue_cc2420Radio = {
+struct cc2420Radio_params yellow_cc2420Radio = {
 	26,
 	31,
 	1,

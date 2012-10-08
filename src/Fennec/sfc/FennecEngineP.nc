@@ -69,6 +69,26 @@ module FennecEngineP {
 
   /* MAC Modules */
 
+  /* MAC Module: cuMac */
+  uses interface Mgmt as cuMacControl;
+  uses interface AMSend as cuMacMacAMSend;
+  uses interface Receive as cuMacMacReceive;
+  uses interface Receive as cuMacMacSnoop;
+  uses interface Packet as cuMacMacPacket;
+  uses interface AMPacket as cuMacMacAMPacket;
+  uses interface PacketAcknowledgements as cuMacMacPacketAcknowledgements;
+  uses interface ModuleStatus as cuMacMacStatus;
+  provides interface Receive as cuMacRadioReceive;
+  provides interface ModuleStatus as cuMacRadioStatus;
+  provides interface Resource as cuMacRadioResource;
+  provides interface RadioConfig as cuMacRadioConfig;
+  provides interface RadioPower as cuMacRadioPower;
+  provides interface Read<uint16_t> as cuMacReadRssi;
+  provides interface RadioTransmit as cuMacRadioTransmit;
+  provides interface ReceiveIndicator as cuMacPacketIndicator;
+  provides interface ReceiveIndicator as cuMacEnergyIndicator;
+  provides interface ReceiveIndicator as cuMacByteIndicator;
+  provides interface SplitControl as cuMacRadioControl;
   /* MAC Module: csmacaMac */
   uses interface Mgmt as csmacaMacControl;
   uses interface AMSend as csmacaMacMacAMSend;
@@ -89,6 +109,26 @@ module FennecEngineP {
   provides interface ReceiveIndicator as csmacaMacEnergyIndicator;
   provides interface ReceiveIndicator as csmacaMacByteIndicator;
   provides interface SplitControl as csmacaMacRadioControl;
+  /* MAC Module: tdmaMac */
+  uses interface Mgmt as tdmaMacControl;
+  uses interface AMSend as tdmaMacMacAMSend;
+  uses interface Receive as tdmaMacMacReceive;
+  uses interface Receive as tdmaMacMacSnoop;
+  uses interface Packet as tdmaMacMacPacket;
+  uses interface AMPacket as tdmaMacMacAMPacket;
+  uses interface PacketAcknowledgements as tdmaMacMacPacketAcknowledgements;
+  uses interface ModuleStatus as tdmaMacMacStatus;
+  provides interface Receive as tdmaMacRadioReceive;
+  provides interface ModuleStatus as tdmaMacRadioStatus;
+  provides interface Resource as tdmaMacRadioResource;
+  provides interface RadioConfig as tdmaMacRadioConfig;
+  provides interface RadioPower as tdmaMacRadioPower;
+  provides interface Read<uint16_t> as tdmaMacReadRssi;
+  provides interface RadioTransmit as tdmaMacRadioTransmit;
+  provides interface ReceiveIndicator as tdmaMacPacketIndicator;
+  provides interface ReceiveIndicator as tdmaMacEnergyIndicator;
+  provides interface ReceiveIndicator as tdmaMacByteIndicator;
+  provides interface SplitControl as tdmaMacRadioControl;
   /* Radio Modules */
 
   /* Radio Module: cc2420Radio */
@@ -137,9 +177,9 @@ implementation {
 
       case 3:
         if (ctrl) {
-          call csmacaMacControl.start();
+          call cuMacControl.start();
         } else {
-          call csmacaMacControl.stop();
+          call cuMacControl.stop();
         }
         break;
 
@@ -164,6 +204,22 @@ implementation {
           call nullNetControl.start();
         } else {
           call nullNetControl.stop();
+        }
+        break;
+
+      case 7:
+        if (ctrl) {
+          call csmacaMacControl.start();
+        } else {
+          call csmacaMacControl.stop();
+        }
+        break;
+
+      case 8:
+        if (ctrl) {
+          call tdmaMacControl.start();
+        } else {
+          call tdmaMacControl.stop();
         }
         break;
 
@@ -201,7 +257,13 @@ implementation {
         return call nullNetNetworkAMSend.send(addr, msg, len);
 
       case 3:
+        return call cuMacMacAMSend.send(addr, msg, len);
+
+      case 7:
         return call csmacaMacMacAMSend.send(addr, msg, len);
+
+      case 8:
+        return call tdmaMacMacAMSend.send(addr, msg, len);
 
       default:
         return FAIL;
@@ -218,7 +280,13 @@ implementation {
         return call nullNetNetworkAMSend.cancel(msg);
 
       case 3:
+        return call cuMacMacAMSend.cancel(msg);
+
+      case 7:
         return call csmacaMacMacAMSend.cancel(msg);
+
+      case 8:
+        return call tdmaMacMacAMSend.cancel(msg);
 
       default:
         return FAIL;
@@ -235,7 +303,13 @@ implementation {
         return call nullNetNetworkAMSend.getPayload(msg, len);
 
       case 3:
+        return call cuMacMacAMSend.getPayload(msg, len);
+
+      case 7:
         return call csmacaMacMacAMSend.getPayload(msg, len);
+
+      case 8:
+        return call tdmaMacMacAMSend.getPayload(msg, len);
 
       default:
         return NULL;
@@ -251,7 +325,13 @@ implementation {
         return call nullNetNetworkAMSend.maxPayloadLength();
 
       case 3:
+        return call cuMacMacAMSend.maxPayloadLength();
+
+      case 7:
         return call csmacaMacMacAMSend.maxPayloadLength();
+
+      case 8:
+        return call tdmaMacMacAMSend.maxPayloadLength();
 
       default:
         return 0;
@@ -267,7 +347,13 @@ implementation {
         return call nullNetNetworkAMPacket.address();
 
       case 3:
+        return call cuMacMacAMPacket.address();
+
+      case 7:
         return call csmacaMacMacAMPacket.address();
+
+      case 8:
+        return call tdmaMacMacAMPacket.address();
 
       default:
         return 0;
@@ -282,7 +368,11 @@ implementation {
       case 6:
         return call nullNetNetworkAMPacket.destination(msg);
       case 3:
+        return call cuMacMacAMPacket.destination(msg);
+      case 7:
         return call csmacaMacMacAMPacket.destination(msg);
+      case 8:
+        return call tdmaMacMacAMPacket.destination(msg);
       default:
         return 0;
     }
@@ -298,7 +388,13 @@ implementation {
         return call nullNetNetworkAMPacket.source(msg);
 
       case 3:
+        return call cuMacMacAMPacket.source(msg);
+
+      case 7:
         return call csmacaMacMacAMPacket.source(msg);
+
+      case 8:
+        return call tdmaMacMacAMPacket.source(msg);
 
       default:
         return 0;
@@ -315,7 +411,13 @@ implementation {
         return call nullNetNetworkAMPacket.setDestination(msg, addr);
 
       case 3:
+        return call cuMacMacAMPacket.setDestination(msg, addr);
+
+      case 7:
         return call csmacaMacMacAMPacket.setDestination(msg, addr);
+
+      case 8:
+        return call tdmaMacMacAMPacket.setDestination(msg, addr);
 
       default:
         return;
@@ -332,7 +434,13 @@ implementation {
         return call nullNetNetworkAMPacket.setSource(msg, addr);
 
       case 3:
+        return call cuMacMacAMPacket.setSource(msg, addr);
+
+      case 7:
         return call csmacaMacMacAMPacket.setSource(msg, addr);
+
+      case 8:
+        return call tdmaMacMacAMPacket.setSource(msg, addr);
 
       default:
         return;
@@ -349,7 +457,13 @@ implementation {
         return call nullNetNetworkAMPacket.isForMe(msg);
 
       case 3:
+        return call cuMacMacAMPacket.isForMe(msg);
+
+      case 7:
         return call csmacaMacMacAMPacket.isForMe(msg);
+
+      case 8:
+        return call tdmaMacMacAMPacket.isForMe(msg);
 
       default:
         return 0;
@@ -366,7 +480,13 @@ implementation {
         return call nullNetNetworkAMPacket.type(msg);
 
       case 3:
+        return call cuMacMacAMPacket.type(msg);
+
+      case 7:
         return call csmacaMacMacAMPacket.type(msg);
+
+      case 8:
+        return call tdmaMacMacAMPacket.type(msg);
 
       default:
         return 0;
@@ -383,7 +503,13 @@ implementation {
         return call nullNetNetworkAMPacket.setType(msg, t);
 
       case 3:
+        return call cuMacMacAMPacket.setType(msg, t);
+
+      case 7:
         return call csmacaMacMacAMPacket.setType(msg, t);
+
+      case 8:
+        return call tdmaMacMacAMPacket.setType(msg, t);
 
       default:
         return;
@@ -400,7 +526,13 @@ implementation {
         return call nullNetNetworkAMPacket.group(msg);
 
       case 3:
+        return call cuMacMacAMPacket.group(msg);
+
+      case 7:
         return call csmacaMacMacAMPacket.group(msg);
+
+      case 8:
+        return call tdmaMacMacAMPacket.group(msg);
 
       default:
         return 0;
@@ -417,7 +549,13 @@ implementation {
         return call nullNetNetworkAMPacket.setGroup(msg, grp);
 
       case 3:
+        return call cuMacMacAMPacket.setGroup(msg, grp);
+
+      case 7:
         return call csmacaMacMacAMPacket.setGroup(msg, grp);
+
+      case 8:
+        return call tdmaMacMacAMPacket.setGroup(msg, grp);
 
       default:
         return;
@@ -434,7 +572,13 @@ implementation {
         return call nullNetNetworkPacket.getPayload(msg, len);
 
       case 3:
+        return call cuMacMacPacket.getPayload(msg, len);
+
+      case 7:
         return call csmacaMacMacPacket.getPayload(msg, len);
+
+      case 8:
+        return call tdmaMacMacPacket.getPayload(msg, len);
 
       default:
         return NULL;
@@ -450,7 +594,13 @@ implementation {
         return call nullNetNetworkPacket.maxPayloadLength();
 
       case 3:
+        return call cuMacMacPacket.maxPayloadLength();
+
+      case 7:
         return call csmacaMacMacPacket.maxPayloadLength();
+
+      case 8:
+        return call tdmaMacMacPacket.maxPayloadLength();
 
       default:
         return 0;
@@ -466,7 +616,13 @@ implementation {
         return call nullNetNetworkAMPacket.localGroup();
 
       case 3:
+        return call cuMacMacAMPacket.localGroup();
+
+      case 7:
         return call csmacaMacMacAMPacket.localGroup();
+
+      case 8:
+        return call tdmaMacMacAMPacket.localGroup();
 
       default:
         return 0;
@@ -483,7 +639,13 @@ implementation {
         return call nullNetNetworkPacket.clear(msg);
 
       case 3:
+        return call cuMacMacPacket.clear(msg);
+
+      case 7:
         return call csmacaMacMacPacket.clear(msg);
+
+      case 8:
+        return call tdmaMacMacPacket.clear(msg);
 
       default:
         return;
@@ -500,7 +662,13 @@ implementation {
         return call nullNetNetworkPacket.payloadLength(msg);
 
       case 3:
+        return call cuMacMacPacket.payloadLength(msg);
+
+      case 7:
         return call csmacaMacMacPacket.payloadLength(msg);
+
+      case 8:
+        return call tdmaMacMacPacket.payloadLength(msg);
 
       default:
         return 0;
@@ -517,7 +685,13 @@ implementation {
         return call nullNetNetworkPacket.setPayloadLength(msg, len);
 
       case 3:
+        return call cuMacMacPacket.setPayloadLength(msg, len);
+
+      case 7:
         return call csmacaMacMacPacket.setPayloadLength(msg, len);
+
+      case 8:
+        return call tdmaMacMacPacket.setPayloadLength(msg, len);
 
       default:
         return;
@@ -534,7 +708,13 @@ implementation {
         return call nullNetNetworkPacketAcknowledgements.requestAck(msg);
 
       case 3:
+        return call cuMacMacPacketAcknowledgements.requestAck(msg);
+
+      case 7:
         return call csmacaMacMacPacketAcknowledgements.requestAck(msg);
+
+      case 8:
+        return call tdmaMacMacPacketAcknowledgements.requestAck(msg);
 
       default:
         return FAIL;
@@ -551,7 +731,13 @@ implementation {
         return call nullNetNetworkPacketAcknowledgements.noAck(msg);
 
       case 3:
+        return call cuMacMacPacketAcknowledgements.noAck(msg);
+
+      case 7:
         return call csmacaMacMacPacketAcknowledgements.noAck(msg);
+
+      case 8:
+        return call tdmaMacMacPacketAcknowledgements.noAck(msg);
 
       default:
         return FAIL;
@@ -568,7 +754,13 @@ implementation {
         return call nullNetNetworkPacketAcknowledgements.wasAcked(msg);
 
       case 3:
+        return call cuMacMacPacketAcknowledgements.wasAcked(msg);
+
+      case 7:
         return call csmacaMacMacPacketAcknowledgements.wasAcked(msg);
+
+      case 8:
+        return call tdmaMacMacPacketAcknowledgements.wasAcked(msg);
 
       default:
         return 0;
@@ -937,7 +1129,13 @@ implementation {
         return signal nullNetMacReceive.receive(msg, payload, len);
 
       case 3:
+        return signal cuMacRadioReceive.receive(msg, payload, len);
+
+      case 7:
         return signal csmacaMacRadioReceive.receive(msg, payload, len);
+
+      case 8:
+        return signal tdmaMacRadioReceive.receive(msg, payload, len);
 
       default:
         return msg;
@@ -980,7 +1178,13 @@ implementation {
         return signal nullNetMacStatus.status(layer, status_flag);
 
       case 3:
+        return signal cuMacRadioStatus.status(layer, status_flag);
+
+      case 7:
         return signal csmacaMacRadioStatus.status(layer, status_flag);
+
+      case 8:
+        return signal tdmaMacRadioStatus.status(layer, status_flag);
 
     }
   }
@@ -988,7 +1192,13 @@ implementation {
   void syncDone(uint16_t module_id, uint8_t to_layer, error_t error) {
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacRadioConfig.syncDone(error);
+
+      case 7:
         return signal csmacaMacRadioConfig.syncDone(error);
+
+      case 8:
+        return signal tdmaMacRadioConfig.syncDone(error);
 
     }
   }
@@ -996,7 +1206,13 @@ implementation {
   void startVRegDone(uint16_t module_id, uint8_t to_layer) {
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacRadioPower.startVRegDone();
+
+      case 7:
         return signal csmacaMacRadioPower.startVRegDone();
+
+      case 8:
+        return signal tdmaMacRadioPower.startVRegDone();
 
     }
   }
@@ -1004,7 +1220,13 @@ implementation {
   void startOscillatorDone(uint16_t module_id, uint8_t to_layer) {
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacRadioPower.startOscillatorDone();
+
+      case 7:
         return signal csmacaMacRadioPower.startOscillatorDone();
+
+      case 8:
+        return signal tdmaMacRadioPower.startOscillatorDone();
 
     }
   }
@@ -1012,7 +1234,13 @@ implementation {
   void readRssiDone(uint16_t module_id, uint8_t to_layer, error_t error, uint16_t rssi) {
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacReadRssi.readDone(error, rssi);
+
+      case 7:
         return signal csmacaMacReadRssi.readDone(error, rssi);
+
+      case 8:
+        return signal tdmaMacReadRssi.readDone(error, rssi);
 
     }
   }
@@ -1020,7 +1248,13 @@ implementation {
   void granted(uint16_t module_id, uint8_t to_layer) {
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacRadioResource.granted();
+
+      case 7:
         return signal csmacaMacRadioResource.granted();
+
+      case 8:
+        return signal tdmaMacRadioResource.granted();
 
     }
   }
@@ -1028,7 +1262,13 @@ implementation {
   void transmitLoadDone(uint16_t module_id, uint8_t to_layer, message_t *msg, error_t error) {
     switch( get_module_id(module_id, msg->conf, to_layer) ) {
       case 3:
+        return signal cuMacRadioTransmit.loadDone(msg, error);
+
+      case 7:
         return signal csmacaMacRadioTransmit.loadDone(msg, error);
+
+      case 8:
+        return signal tdmaMacRadioTransmit.loadDone(msg, error);
 
     }
   }
@@ -1036,7 +1276,13 @@ implementation {
   void transmitSendDone(uint16_t module_id, uint8_t to_layer, message_t *msg, error_t error) {
     switch( get_module_id(module_id, msg->conf, to_layer) ) {
       case 3:
+        return signal cuMacRadioTransmit.sendDone(msg, error);
+
+      case 7:
         return signal csmacaMacRadioTransmit.sendDone(msg, error);
+
+      case 8:
+        return signal tdmaMacRadioTransmit.sendDone(msg, error);
 
     }
   }
@@ -1044,13 +1290,27 @@ implementation {
   void radioControlStartDone(uint16_t module_id, uint8_t to_layer, error_t error) {
     switch( configurations[POLICY_CONF_ID].mac ) {
       case 3:
+        signal cuMacRadioControl.startDone(error);
+        break;
+
+      case 7:
         signal csmacaMacRadioControl.startDone(error);
+        break;
+
+      case 8:
+        signal tdmaMacRadioControl.startDone(error);
         break;
 
     }
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacRadioControl.startDone(error);
+
+      case 7:
         return signal csmacaMacRadioControl.startDone(error);
+
+      case 8:
+        return signal tdmaMacRadioControl.startDone(error);
 
     }
   }
@@ -1058,13 +1318,27 @@ implementation {
   void radioControlStopDone(uint16_t module_id, uint8_t to_layer, error_t error) {
     switch( configurations[POLICY_CONF_ID].mac ) {
       case 3:
+        signal cuMacRadioControl.stopDone(error);
+        break;
+
+      case 7:
         signal csmacaMacRadioControl.stopDone(error);
+        break;
+
+      case 8:
+        signal tdmaMacRadioControl.stopDone(error);
         break;
 
     }
     switch( get_module_id(module_id, get_conf_id(), to_layer) ) {
       case 3:
+        return signal cuMacRadioControl.stopDone(error);
+
+      case 7:
         return signal csmacaMacRadioControl.stopDone(error);
+
+      case 8:
+        return signal tdmaMacRadioControl.stopDone(error);
 
     }
   }
@@ -1489,6 +1763,158 @@ implementation {
     return PacketAcknowledgements_wasAcked(6, F_MAC, msg);
   }
 
+  event void cuMacControl.startDone(error_t err) {
+    post configure_engine();
+  }
+
+  event void cuMacControl.stopDone(error_t err) {
+    post configure_engine();
+  }
+
+  event void cuMacMacAMSend.sendDone(message_t *msg, error_t error) {
+    sendDone(3, F_NETWORK, msg, error);
+  }
+
+  event message_t* cuMacMacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+    return receive(3, F_NETWORK, msg, payload, len);
+  }
+
+  event message_t* cuMacMacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+    return snoop(3, F_NETWORK, msg, payload, len);
+  }
+
+  event void cuMacMacStatus.status(uint8_t layer, uint8_t status_flag) {
+    return status(3, F_NETWORK, layer, status_flag);
+  }
+
+  command error_t cuMacRadioConfig.sync() {
+    return RadioConfig_sync(3, F_RADIO);
+  }
+
+  command uint8_t cuMacRadioConfig.getChannel() {
+    return RadioConfig_getChannel(3, F_RADIO);
+  }
+
+  command void cuMacRadioConfig.setChannel(uint8_t channel) {
+    return RadioConfig_setChannel(3, F_RADIO, channel);
+  }
+
+  async command uint16_t cuMacRadioConfig.getShortAddr() {
+    return RadioConfig_getShortAddr(3, F_RADIO);
+  }
+
+  command void cuMacRadioConfig.setShortAddr(uint16_t address) {
+    return RadioConfig_setShortAddr(3, F_RADIO, address);
+  }
+
+  async command uint16_t cuMacRadioConfig.getPanAddr() {
+    return RadioConfig_getPanAddr(3, F_RADIO);
+  }
+
+  command void cuMacRadioConfig.setPanAddr(uint16_t address) {
+    return RadioConfig_setPanAddr(3, F_RADIO, address);
+  }
+
+  command void cuMacRadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
+    return RadioConfig_setAddressRecognition(3, F_RADIO, enableAddressRecognition, useHwAddressRecognition);
+  }
+
+  async command bool cuMacRadioConfig.isAddressRecognitionEnabled() {
+    return RadioConfig_isAddressRecognitionEnabled(3, F_RADIO);
+  }
+
+  async command bool cuMacRadioConfig.isHwAddressRecognitionDefault() {
+    return RadioConfig_isHwAddressRecognitionDefault(3, F_RADIO);
+  }
+
+  command void cuMacRadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
+    return RadioConfig_setAutoAck(3, F_RADIO, enableAutoAck, hwAutoAck);
+  }
+
+  async command bool cuMacRadioConfig.isAutoAckEnabled() {
+    return RadioConfig_isAutoAckEnabled(3, F_RADIO);
+  }
+
+  async command bool cuMacRadioConfig.isHwAutoAckDefault() {
+    return RadioConfig_isHwAutoAckDefault(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioPower.startVReg() {
+    return RadioPower_startVReg(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioPower.stopVReg() {
+    return RadioPower_stopVReg(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioPower.startOscillator() {
+    return RadioPower_startOscillator(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioPower.stopOscillator() {
+    return RadioPower_stopOscillator(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioPower.rxOn() {
+    return RadioPower_rxOn(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioPower.rfOff() {
+    return RadioPower_rfOff(3, F_RADIO);
+  }
+
+  command error_t cuMacReadRssi.read() {
+    return ReadRssi_read(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioResource.request() {
+    return RadioResource_request(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioResource.immediateRequest() {
+    return RadioResource_immediateRequest(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioResource.release() {
+    return RadioResource_release(3, F_RADIO);
+  }
+
+  async command error_t cuMacRadioResource.isOwner() {
+    return RadioResource_isOwner(3, F_RADIO);
+  }
+
+  command error_t cuMacRadioControl.start() {
+    return RadioControl_start(3, F_RADIO);
+  }
+
+  command error_t cuMacRadioControl.stop() {
+    return RadioControl_stop(3, F_RADIO);
+  }
+
+  async command void cuMacRadioTransmit.cancel(message_t *msg) {
+    return RadioTransmit_cancel(3, F_RADIO, msg);
+  }
+
+  async command error_t cuMacRadioTransmit.load(message_t* msg) {
+    return RadioTransmit_load(3, F_RADIO, msg);
+  }
+
+  async command error_t cuMacRadioTransmit.send(message_t* msg, bool useCca) {
+    return RadioTransmit_send(3, F_RADIO, msg, useCca);
+  }
+
+  async command bool cuMacPacketIndicator.isReceiving() {
+    return PacketIndicator_isReceiving(3, F_RADIO);
+  }
+
+  async command bool cuMacEnergyIndicator.isReceiving() {
+    return EnergyIndicator_isReceiving(3, F_RADIO);
+  }
+
+  async command bool cuMacByteIndicator.isReceiving() {
+    return ByteIndicator_isReceiving(3, F_RADIO);
+  }
+
   event void csmacaMacControl.startDone(error_t err) {
     post configure_engine();
   }
@@ -1498,147 +1924,299 @@ implementation {
   }
 
   event void csmacaMacMacAMSend.sendDone(message_t *msg, error_t error) {
-    sendDone(3, F_NETWORK, msg, error);
+    sendDone(7, F_NETWORK, msg, error);
   }
 
   event message_t* csmacaMacMacReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    return receive(3, F_NETWORK, msg, payload, len);
+    return receive(7, F_NETWORK, msg, payload, len);
   }
 
   event message_t* csmacaMacMacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return snoop(3, F_NETWORK, msg, payload, len);
+    return snoop(7, F_NETWORK, msg, payload, len);
   }
 
   event void csmacaMacMacStatus.status(uint8_t layer, uint8_t status_flag) {
-    return status(3, F_NETWORK, layer, status_flag);
+    return status(7, F_NETWORK, layer, status_flag);
   }
 
   command error_t csmacaMacRadioConfig.sync() {
-    return RadioConfig_sync(3, F_RADIO);
+    return RadioConfig_sync(7, F_RADIO);
   }
 
   command uint8_t csmacaMacRadioConfig.getChannel() {
-    return RadioConfig_getChannel(3, F_RADIO);
+    return RadioConfig_getChannel(7, F_RADIO);
   }
 
   command void csmacaMacRadioConfig.setChannel(uint8_t channel) {
-    return RadioConfig_setChannel(3, F_RADIO, channel);
+    return RadioConfig_setChannel(7, F_RADIO, channel);
   }
 
   async command uint16_t csmacaMacRadioConfig.getShortAddr() {
-    return RadioConfig_getShortAddr(3, F_RADIO);
+    return RadioConfig_getShortAddr(7, F_RADIO);
   }
 
   command void csmacaMacRadioConfig.setShortAddr(uint16_t address) {
-    return RadioConfig_setShortAddr(3, F_RADIO, address);
+    return RadioConfig_setShortAddr(7, F_RADIO, address);
   }
 
   async command uint16_t csmacaMacRadioConfig.getPanAddr() {
-    return RadioConfig_getPanAddr(3, F_RADIO);
+    return RadioConfig_getPanAddr(7, F_RADIO);
   }
 
   command void csmacaMacRadioConfig.setPanAddr(uint16_t address) {
-    return RadioConfig_setPanAddr(3, F_RADIO, address);
+    return RadioConfig_setPanAddr(7, F_RADIO, address);
   }
 
   command void csmacaMacRadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
-    return RadioConfig_setAddressRecognition(3, F_RADIO, enableAddressRecognition, useHwAddressRecognition);
+    return RadioConfig_setAddressRecognition(7, F_RADIO, enableAddressRecognition, useHwAddressRecognition);
   }
 
   async command bool csmacaMacRadioConfig.isAddressRecognitionEnabled() {
-    return RadioConfig_isAddressRecognitionEnabled(3, F_RADIO);
+    return RadioConfig_isAddressRecognitionEnabled(7, F_RADIO);
   }
 
   async command bool csmacaMacRadioConfig.isHwAddressRecognitionDefault() {
-    return RadioConfig_isHwAddressRecognitionDefault(3, F_RADIO);
+    return RadioConfig_isHwAddressRecognitionDefault(7, F_RADIO);
   }
 
   command void csmacaMacRadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
-    return RadioConfig_setAutoAck(3, F_RADIO, enableAutoAck, hwAutoAck);
+    return RadioConfig_setAutoAck(7, F_RADIO, enableAutoAck, hwAutoAck);
   }
 
   async command bool csmacaMacRadioConfig.isAutoAckEnabled() {
-    return RadioConfig_isAutoAckEnabled(3, F_RADIO);
+    return RadioConfig_isAutoAckEnabled(7, F_RADIO);
   }
 
   async command bool csmacaMacRadioConfig.isHwAutoAckDefault() {
-    return RadioConfig_isHwAutoAckDefault(3, F_RADIO);
+    return RadioConfig_isHwAutoAckDefault(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioPower.startVReg() {
-    return RadioPower_startVReg(3, F_RADIO);
+    return RadioPower_startVReg(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioPower.stopVReg() {
-    return RadioPower_stopVReg(3, F_RADIO);
+    return RadioPower_stopVReg(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioPower.startOscillator() {
-    return RadioPower_startOscillator(3, F_RADIO);
+    return RadioPower_startOscillator(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioPower.stopOscillator() {
-    return RadioPower_stopOscillator(3, F_RADIO);
+    return RadioPower_stopOscillator(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioPower.rxOn() {
-    return RadioPower_rxOn(3, F_RADIO);
+    return RadioPower_rxOn(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioPower.rfOff() {
-    return RadioPower_rfOff(3, F_RADIO);
+    return RadioPower_rfOff(7, F_RADIO);
   }
 
   command error_t csmacaMacReadRssi.read() {
-    return ReadRssi_read(3, F_RADIO);
+    return ReadRssi_read(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioResource.request() {
-    return RadioResource_request(3, F_RADIO);
+    return RadioResource_request(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioResource.immediateRequest() {
-    return RadioResource_immediateRequest(3, F_RADIO);
+    return RadioResource_immediateRequest(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioResource.release() {
-    return RadioResource_release(3, F_RADIO);
+    return RadioResource_release(7, F_RADIO);
   }
 
   async command error_t csmacaMacRadioResource.isOwner() {
-    return RadioResource_isOwner(3, F_RADIO);
+    return RadioResource_isOwner(7, F_RADIO);
   }
 
   command error_t csmacaMacRadioControl.start() {
-    return RadioControl_start(3, F_RADIO);
+    return RadioControl_start(7, F_RADIO);
   }
 
   command error_t csmacaMacRadioControl.stop() {
-    return RadioControl_stop(3, F_RADIO);
+    return RadioControl_stop(7, F_RADIO);
   }
 
   async command void csmacaMacRadioTransmit.cancel(message_t *msg) {
-    return RadioTransmit_cancel(3, F_RADIO, msg);
+    return RadioTransmit_cancel(7, F_RADIO, msg);
   }
 
   async command error_t csmacaMacRadioTransmit.load(message_t* msg) {
-    return RadioTransmit_load(3, F_RADIO, msg);
+    return RadioTransmit_load(7, F_RADIO, msg);
   }
 
   async command error_t csmacaMacRadioTransmit.send(message_t* msg, bool useCca) {
-    return RadioTransmit_send(3, F_RADIO, msg, useCca);
+    return RadioTransmit_send(7, F_RADIO, msg, useCca);
   }
 
   async command bool csmacaMacPacketIndicator.isReceiving() {
-    return PacketIndicator_isReceiving(3, F_RADIO);
+    return PacketIndicator_isReceiving(7, F_RADIO);
   }
 
   async command bool csmacaMacEnergyIndicator.isReceiving() {
-    return EnergyIndicator_isReceiving(3, F_RADIO);
+    return EnergyIndicator_isReceiving(7, F_RADIO);
   }
 
   async command bool csmacaMacByteIndicator.isReceiving() {
-    return ByteIndicator_isReceiving(3, F_RADIO);
+    return ByteIndicator_isReceiving(7, F_RADIO);
+  }
+
+  event void tdmaMacControl.startDone(error_t err) {
+    post configure_engine();
+  }
+
+  event void tdmaMacControl.stopDone(error_t err) {
+    post configure_engine();
+  }
+
+  event void tdmaMacMacAMSend.sendDone(message_t *msg, error_t error) {
+    sendDone(8, F_NETWORK, msg, error);
+  }
+
+  event message_t* tdmaMacMacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+    return receive(8, F_NETWORK, msg, payload, len);
+  }
+
+  event message_t* tdmaMacMacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+    return snoop(8, F_NETWORK, msg, payload, len);
+  }
+
+  event void tdmaMacMacStatus.status(uint8_t layer, uint8_t status_flag) {
+    return status(8, F_NETWORK, layer, status_flag);
+  }
+
+  command error_t tdmaMacRadioConfig.sync() {
+    return RadioConfig_sync(8, F_RADIO);
+  }
+
+  command uint8_t tdmaMacRadioConfig.getChannel() {
+    return RadioConfig_getChannel(8, F_RADIO);
+  }
+
+  command void tdmaMacRadioConfig.setChannel(uint8_t channel) {
+    return RadioConfig_setChannel(8, F_RADIO, channel);
+  }
+
+  async command uint16_t tdmaMacRadioConfig.getShortAddr() {
+    return RadioConfig_getShortAddr(8, F_RADIO);
+  }
+
+  command void tdmaMacRadioConfig.setShortAddr(uint16_t address) {
+    return RadioConfig_setShortAddr(8, F_RADIO, address);
+  }
+
+  async command uint16_t tdmaMacRadioConfig.getPanAddr() {
+    return RadioConfig_getPanAddr(8, F_RADIO);
+  }
+
+  command void tdmaMacRadioConfig.setPanAddr(uint16_t address) {
+    return RadioConfig_setPanAddr(8, F_RADIO, address);
+  }
+
+  command void tdmaMacRadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
+    return RadioConfig_setAddressRecognition(8, F_RADIO, enableAddressRecognition, useHwAddressRecognition);
+  }
+
+  async command bool tdmaMacRadioConfig.isAddressRecognitionEnabled() {
+    return RadioConfig_isAddressRecognitionEnabled(8, F_RADIO);
+  }
+
+  async command bool tdmaMacRadioConfig.isHwAddressRecognitionDefault() {
+    return RadioConfig_isHwAddressRecognitionDefault(8, F_RADIO);
+  }
+
+  command void tdmaMacRadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
+    return RadioConfig_setAutoAck(8, F_RADIO, enableAutoAck, hwAutoAck);
+  }
+
+  async command bool tdmaMacRadioConfig.isAutoAckEnabled() {
+    return RadioConfig_isAutoAckEnabled(8, F_RADIO);
+  }
+
+  async command bool tdmaMacRadioConfig.isHwAutoAckDefault() {
+    return RadioConfig_isHwAutoAckDefault(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioPower.startVReg() {
+    return RadioPower_startVReg(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioPower.stopVReg() {
+    return RadioPower_stopVReg(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioPower.startOscillator() {
+    return RadioPower_startOscillator(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioPower.stopOscillator() {
+    return RadioPower_stopOscillator(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioPower.rxOn() {
+    return RadioPower_rxOn(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioPower.rfOff() {
+    return RadioPower_rfOff(8, F_RADIO);
+  }
+
+  command error_t tdmaMacReadRssi.read() {
+    return ReadRssi_read(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioResource.request() {
+    return RadioResource_request(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioResource.immediateRequest() {
+    return RadioResource_immediateRequest(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioResource.release() {
+    return RadioResource_release(8, F_RADIO);
+  }
+
+  async command error_t tdmaMacRadioResource.isOwner() {
+    return RadioResource_isOwner(8, F_RADIO);
+  }
+
+  command error_t tdmaMacRadioControl.start() {
+    return RadioControl_start(8, F_RADIO);
+  }
+
+  command error_t tdmaMacRadioControl.stop() {
+    return RadioControl_stop(8, F_RADIO);
+  }
+
+  async command void tdmaMacRadioTransmit.cancel(message_t *msg) {
+    return RadioTransmit_cancel(8, F_RADIO, msg);
+  }
+
+  async command error_t tdmaMacRadioTransmit.load(message_t* msg) {
+    return RadioTransmit_load(8, F_RADIO, msg);
+  }
+
+  async command error_t tdmaMacRadioTransmit.send(message_t* msg, bool useCca) {
+    return RadioTransmit_send(8, F_RADIO, msg, useCca);
+  }
+
+  async command bool tdmaMacPacketIndicator.isReceiving() {
+    return PacketIndicator_isReceiving(8, F_RADIO);
+  }
+
+  async command bool tdmaMacEnergyIndicator.isReceiving() {
+    return EnergyIndicator_isReceiving(8, F_RADIO);
+  }
+
+  async command bool tdmaMacByteIndicator.isReceiving() {
+    return ByteIndicator_isReceiving(8, F_RADIO);
   }
 
   event void cc2420RadioControl.startDone(error_t err) {

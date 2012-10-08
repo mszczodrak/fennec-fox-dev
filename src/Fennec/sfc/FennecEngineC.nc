@@ -81,6 +81,28 @@ implementation {
 
   /* Defined and linked mac */
 
+  components cuMacC as cuMac;
+  components cuMacParamsC;
+  cuMac.cuMacParams -> cuMacParamsC;
+  FennecEngineP.cuMacControl -> cuMac;
+  FennecEngineP.cuMacMacAMSend -> cuMac.MacAMSend;
+  FennecEngineP.cuMacMacReceive -> cuMac.MacReceive;
+  FennecEngineP.cuMacMacSnoop -> cuMac.MacSnoop;
+  FennecEngineP.cuMacMacPacket -> cuMac.MacPacket;
+  FennecEngineP.cuMacMacAMPacket -> cuMac.MacAMPacket;
+  FennecEngineP.cuMacMacPacketAcknowledgements -> cuMac.MacPacketAcknowledgements;
+  FennecEngineP.cuMacMacStatus -> cuMac.MacStatus;
+  FennecEngineP.cuMacRadioReceive <- cuMac.RadioReceive;
+  FennecEngineP.cuMacRadioStatus <- cuMac.RadioStatus;
+  FennecEngineP.cuMacRadioResource <- cuMac.RadioResource;
+  FennecEngineP.cuMacRadioConfig <- cuMac.RadioConfig;
+  FennecEngineP.cuMacRadioPower <- cuMac.RadioPower;
+  FennecEngineP.cuMacReadRssi <- cuMac.ReadRssi;
+  FennecEngineP.cuMacRadioTransmit <- cuMac.RadioTransmit;
+  FennecEngineP.cuMacPacketIndicator <- cuMac.PacketIndicator;
+  FennecEngineP.cuMacEnergyIndicator <- cuMac.EnergyIndicator;
+  FennecEngineP.cuMacByteIndicator <- cuMac.ByteIndicator;
+  FennecEngineP.cuMacRadioControl <- cuMac.RadioControl;
   components csmacaMacC as csmacaMac;
   components csmacaMacParamsC;
   csmacaMac.csmacaMacParams -> csmacaMacParamsC;
@@ -103,6 +125,28 @@ implementation {
   FennecEngineP.csmacaMacEnergyIndicator <- csmacaMac.EnergyIndicator;
   FennecEngineP.csmacaMacByteIndicator <- csmacaMac.ByteIndicator;
   FennecEngineP.csmacaMacRadioControl <- csmacaMac.RadioControl;
+  components tdmaMacC as tdmaMac;
+  components tdmaMacParamsC;
+  tdmaMac.tdmaMacParams -> tdmaMacParamsC;
+  FennecEngineP.tdmaMacControl -> tdmaMac;
+  FennecEngineP.tdmaMacMacAMSend -> tdmaMac.MacAMSend;
+  FennecEngineP.tdmaMacMacReceive -> tdmaMac.MacReceive;
+  FennecEngineP.tdmaMacMacSnoop -> tdmaMac.MacSnoop;
+  FennecEngineP.tdmaMacMacPacket -> tdmaMac.MacPacket;
+  FennecEngineP.tdmaMacMacAMPacket -> tdmaMac.MacAMPacket;
+  FennecEngineP.tdmaMacMacPacketAcknowledgements -> tdmaMac.MacPacketAcknowledgements;
+  FennecEngineP.tdmaMacMacStatus -> tdmaMac.MacStatus;
+  FennecEngineP.tdmaMacRadioReceive <- tdmaMac.RadioReceive;
+  FennecEngineP.tdmaMacRadioStatus <- tdmaMac.RadioStatus;
+  FennecEngineP.tdmaMacRadioResource <- tdmaMac.RadioResource;
+  FennecEngineP.tdmaMacRadioConfig <- tdmaMac.RadioConfig;
+  FennecEngineP.tdmaMacRadioPower <- tdmaMac.RadioPower;
+  FennecEngineP.tdmaMacReadRssi <- tdmaMac.ReadRssi;
+  FennecEngineP.tdmaMacRadioTransmit <- tdmaMac.RadioTransmit;
+  FennecEngineP.tdmaMacPacketIndicator <- tdmaMac.PacketIndicator;
+  FennecEngineP.tdmaMacEnergyIndicator <- tdmaMac.EnergyIndicator;
+  FennecEngineP.tdmaMacByteIndicator <- tdmaMac.ByteIndicator;
+  FennecEngineP.tdmaMacRadioControl <- tdmaMac.RadioControl;
   /* Defined and linked radios */
 
   components cc2420RadioC as cc2420Radio;

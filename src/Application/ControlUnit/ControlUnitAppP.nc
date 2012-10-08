@@ -6,14 +6,14 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_RESEND_RECONF		1000
-#define POLICY_MIN_RESEND_RECONF 	50
+#define POLICY_RESEND_RECONF		20
+#define POLICY_MIN_RESEND_RECONF 	20
 #define POLICY_MAX_WRONG_CONFS		1
 
-#define POLICY_RESEND_MIN	10
+#define POLICY_RESEND_MIN	20
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
-#define POLICY_RAND_SEND	20
+#define POLICY_RAND_SEND	1
 #define SAME_MSG_COUNTER_THRESHOLD 4
 
 module ControlUnitAppP @safe() {
@@ -177,15 +177,15 @@ implementation {
       goto done_receive;
     }
 
-    dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
+    //dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
     if (!call PolicyCache.valid_policy_msg(cu_msg)) {
       goto done_receive;
     }
 
-    if (resend_confs > POLICY_RESEND_MIN) {
-      resend_confs = POLICY_RESEND_MIN;
-    }
+//    if (resend_confs > POLICY_RESEND_MIN) {
+//      resend_confs = POLICY_RESEND_MIN;
+//    }
 
     if ((status != S_STARTED) && (status != S_COMPLETED)) {
       goto done_receive;
@@ -213,7 +213,7 @@ implementation {
         /* Received same sequence with the same configuration id */
         response_counter++;
 	if (++same_msg_counter > POLICY_RESEND_MIN) {
-	  start_policy_send();
+	//  start_policy_send();
 	}
 	
         goto done_receive;
@@ -339,7 +339,7 @@ done_receive:
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 100);
-      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
+      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
     } else {
       busy_sending = TRUE;
       dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
