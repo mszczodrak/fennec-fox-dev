@@ -27,6 +27,18 @@ implementation {
   FennecEngineP.ControlUnitAppNetworkPacketAcknowledgements <- ControlUnitApp.NetworkPacketAcknowledgements;
   FennecEngineP.ControlUnitAppNetworkStatus <- ControlUnitApp.NetworkStatus;
 
+  components BlinkAppC as BlinkApp;
+  components BlinkAppParamsC;
+  BlinkApp.BlinkAppParams -> BlinkAppParamsC;
+  FennecEngineP.BlinkAppControl -> BlinkApp;
+  FennecEngineP.BlinkAppNetworkAMSend <- BlinkApp.NetworkAMSend;
+  FennecEngineP.BlinkAppNetworkReceive <- BlinkApp.NetworkReceive;
+  FennecEngineP.BlinkAppNetworkSnoop <- BlinkApp.NetworkSnoop;
+  FennecEngineP.BlinkAppNetworkPacket <- BlinkApp.NetworkPacket;
+  FennecEngineP.BlinkAppNetworkAMPacket <- BlinkApp.NetworkAMPacket;
+  FennecEngineP.BlinkAppNetworkPacketAcknowledgements <- BlinkApp.NetworkPacketAcknowledgements;
+  FennecEngineP.BlinkAppNetworkStatus <- BlinkApp.NetworkStatus;
+
   components nullAppC as nullApp;
   components nullAppParamsC;
   nullApp.nullAppParams -> nullAppParamsC;
@@ -103,6 +115,28 @@ implementation {
   FennecEngineP.cuMacEnergyIndicator <- cuMac.EnergyIndicator;
   FennecEngineP.cuMacByteIndicator <- cuMac.ByteIndicator;
   FennecEngineP.cuMacRadioControl <- cuMac.RadioControl;
+  components csmacaMacC as csmacaMac;
+  components csmacaMacParamsC;
+  csmacaMac.csmacaMacParams -> csmacaMacParamsC;
+  FennecEngineP.csmacaMacControl -> csmacaMac;
+  FennecEngineP.csmacaMacMacAMSend -> csmacaMac.MacAMSend;
+  FennecEngineP.csmacaMacMacReceive -> csmacaMac.MacReceive;
+  FennecEngineP.csmacaMacMacSnoop -> csmacaMac.MacSnoop;
+  FennecEngineP.csmacaMacMacPacket -> csmacaMac.MacPacket;
+  FennecEngineP.csmacaMacMacAMPacket -> csmacaMac.MacAMPacket;
+  FennecEngineP.csmacaMacMacPacketAcknowledgements -> csmacaMac.MacPacketAcknowledgements;
+  FennecEngineP.csmacaMacMacStatus -> csmacaMac.MacStatus;
+  FennecEngineP.csmacaMacRadioReceive <- csmacaMac.RadioReceive;
+  FennecEngineP.csmacaMacRadioStatus <- csmacaMac.RadioStatus;
+  FennecEngineP.csmacaMacRadioResource <- csmacaMac.RadioResource;
+  FennecEngineP.csmacaMacRadioConfig <- csmacaMac.RadioConfig;
+  FennecEngineP.csmacaMacRadioPower <- csmacaMac.RadioPower;
+  FennecEngineP.csmacaMacReadRssi <- csmacaMac.ReadRssi;
+  FennecEngineP.csmacaMacRadioTransmit <- csmacaMac.RadioTransmit;
+  FennecEngineP.csmacaMacPacketIndicator <- csmacaMac.PacketIndicator;
+  FennecEngineP.csmacaMacEnergyIndicator <- csmacaMac.EnergyIndicator;
+  FennecEngineP.csmacaMacByteIndicator <- csmacaMac.ByteIndicator;
+  FennecEngineP.csmacaMacRadioControl <- csmacaMac.RadioControl;
   components tdmaMacC as tdmaMac;
   components tdmaMacParamsC;
   tdmaMac.tdmaMacParams -> tdmaMacParamsC;
@@ -125,6 +159,28 @@ implementation {
   FennecEngineP.tdmaMacEnergyIndicator <- tdmaMac.EnergyIndicator;
   FennecEngineP.tdmaMacByteIndicator <- tdmaMac.ByteIndicator;
   FennecEngineP.tdmaMacRadioControl <- tdmaMac.RadioControl;
+  components nullMacC as nullMac;
+  components nullMacParamsC;
+  nullMac.nullMacParams -> nullMacParamsC;
+  FennecEngineP.nullMacControl -> nullMac;
+  FennecEngineP.nullMacMacAMSend -> nullMac.MacAMSend;
+  FennecEngineP.nullMacMacReceive -> nullMac.MacReceive;
+  FennecEngineP.nullMacMacSnoop -> nullMac.MacSnoop;
+  FennecEngineP.nullMacMacPacket -> nullMac.MacPacket;
+  FennecEngineP.nullMacMacAMPacket -> nullMac.MacAMPacket;
+  FennecEngineP.nullMacMacPacketAcknowledgements -> nullMac.MacPacketAcknowledgements;
+  FennecEngineP.nullMacMacStatus -> nullMac.MacStatus;
+  FennecEngineP.nullMacRadioReceive <- nullMac.RadioReceive;
+  FennecEngineP.nullMacRadioStatus <- nullMac.RadioStatus;
+  FennecEngineP.nullMacRadioResource <- nullMac.RadioResource;
+  FennecEngineP.nullMacRadioConfig <- nullMac.RadioConfig;
+  FennecEngineP.nullMacRadioPower <- nullMac.RadioPower;
+  FennecEngineP.nullMacReadRssi <- nullMac.ReadRssi;
+  FennecEngineP.nullMacRadioTransmit <- nullMac.RadioTransmit;
+  FennecEngineP.nullMacPacketIndicator <- nullMac.PacketIndicator;
+  FennecEngineP.nullMacEnergyIndicator <- nullMac.EnergyIndicator;
+  FennecEngineP.nullMacByteIndicator <- nullMac.ByteIndicator;
+  FennecEngineP.nullMacRadioControl <- nullMac.RadioControl;
   /* Defined and linked radios */
 
   components cc2420RadioC as cc2420Radio;
@@ -142,5 +198,20 @@ implementation {
   FennecEngineP.cc2420RadioEnergyIndicator -> cc2420Radio.EnergyIndicator;
   FennecEngineP.cc2420RadioByteIndicator -> cc2420Radio.ByteIndicator;
   FennecEngineP.cc2420RadioRadioControl -> cc2420Radio.RadioControl;
+  components nullRadioC as nullRadio;
+  components nullRadioParamsC;
+  nullRadio.nullRadioParams -> nullRadioParamsC;
+  FennecEngineP.nullRadioControl -> nullRadio;
+  FennecEngineP.nullRadioRadioReceive -> nullRadio.RadioReceive;
+  FennecEngineP.nullRadioRadioStatus -> nullRadio.RadioStatus;
+  FennecEngineP.nullRadioRadioResource -> nullRadio.RadioResource;
+  FennecEngineP.nullRadioRadioConfig -> nullRadio.RadioConfig;
+  FennecEngineP.nullRadioRadioPower -> nullRadio.RadioPower;
+  FennecEngineP.nullRadioReadRssi -> nullRadio.ReadRssi;
+  FennecEngineP.nullRadioRadioTransmit -> nullRadio.RadioTransmit;
+  FennecEngineP.nullRadioPacketIndicator -> nullRadio.PacketIndicator;
+  FennecEngineP.nullRadioEnergyIndicator -> nullRadio.EnergyIndicator;
+  FennecEngineP.nullRadioByteIndicator -> nullRadio.ByteIndicator;
+  FennecEngineP.nullRadioRadioControl -> nullRadio.RadioControl;
 
 }

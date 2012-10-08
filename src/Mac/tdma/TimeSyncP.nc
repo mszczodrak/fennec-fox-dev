@@ -358,7 +358,7 @@ implementation
 							/ (ENTRY_VALID_LIMIT * 2));
           call Timer.startOneShot(d);
         } else {
-          uint32_t d = min_delay + call Random.rand32() % (call tdmaMacParams.get_active_time()
+          uint32_t d = 15 + call Random.rand32() % (call tdmaMacParams.get_active_time()
                 					/ (ENTRY_VALID_LIMIT));
           call Timer.startOneShot(d);
         }
