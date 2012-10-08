@@ -5,7 +5,7 @@
 #define NUMBER_OF_CONFIGURATIONS  6
 #define INTERNAL_POLICY_CONFIGURATION_ID  -1
 
-#define NUMBER_OF_POLICIES  4
+#define NUMBER_OF_POLICIES  3
 
 #include <Fennec.h>
 #include "ff_defaults.h"
@@ -22,7 +22,7 @@
 #include "nullMacParams.h"
 #include "nullRadioParams.h"
 
-uint16_t active_state = 5;
+uint16_t active_state = 2;
 
 struct fennec_configuration configurations[NUMBER_OF_CONFIGURATIONS] = {
 	{
@@ -158,7 +158,7 @@ struct default_params defaults[NUMBER_OF_CONFIGURATIONS] = {
 	}
 };
 
-struct fennec_event eventsTable[4] = {
+struct fennec_event eventsTable[3] = {
 	{
 		.operation = EQ,
 		.value = 30,
@@ -167,13 +167,7 @@ struct fennec_event eventsTable[4] = {
 	},
 	{
 		.operation = EQ,
-		.value = 300,
-		.scale = TYPE_SECOND,
-		.addr = 2
-	},
-	{
-		.operation = EQ,
-		.value = 30,
+		.value = 150,
 		.scale = TYPE_SECOND,
 		.addr = 2
 	},
@@ -185,7 +179,7 @@ struct fennec_event eventsTable[4] = {
 	}
 };
 
-struct fennec_policy policies[4] = {
+struct fennec_policy policies[3] = {
 	{
 		.src_conf = 2,
 		.event_mask = 1,
@@ -201,12 +195,6 @@ struct fennec_policy policies[4] = {
 	{
 		.src_conf = 4,
 		.event_mask = 4,
-		.dst_conf = 5
-
-	},
-	{
-		.src_conf = 5,
-		.event_mask = 8,
 		.dst_conf = 2
 
 	}
