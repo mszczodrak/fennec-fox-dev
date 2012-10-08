@@ -342,29 +342,29 @@ implementation
 
     command error_t TimeSyncMode.send(){
         if ((call Timer.isRunning() == TRUE) || (busy_sending == TRUE)) {
-          printf("busy\n");
-          printfflush();
+          //printf("busy\n");
+          //printfflush();
           return SUCCESS;
         }
 
         if (is_synced() != SUCCESS) {
-          printf("not synced\n");
-          printfflush();
+          //printf("not synced\n");
+          //printfflush();
           return SUCCESS;
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
           uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_node_time() *
                                                 call tdmaMacParams.get_frame_size() / ENTRY_VALID_LIMIT / 2);
-          printf("send %lu\n", d);
-          printfflush();
+          //printf("send %lu\n", d);
+          //printfflush();
           call Timer.startOneShot(d);
         } else {
           uint32_t d = call tdmaMacParams.get_frame_size() + 
 		call Random.rand32() % (call tdmaMacParams.get_node_time() *
                 call tdmaMacParams.get_frame_size() / (ENTRY_VALID_LIMIT * 2));
-          printf("send %lu\n", d);
-          printfflush();
+          //printf("send %lu\n", d);
+          //printfflush();
           call Timer.startOneShot(d);
         }
         return SUCCESS;

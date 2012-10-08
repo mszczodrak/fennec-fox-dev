@@ -87,7 +87,8 @@ module tdmaMacP @safe() {
 implementation {
 
   uint8_t status = S_STOPPED;
-  uint32_t tdma_period;
+  uint32_t sleep_period;
+  uint32_t sleep_period;
   bool radio_status = OFF;
 
   message_t * ftsp_sync_message = NULL;
@@ -118,29 +119,42 @@ implementation {
   }
 
   void correct_period_time() {
-    local = global;
+    atomic {
+      /* get global time */
 
-    /* compute the time that passed from the last global period */
-    global = global % tdma_period;
+      if (call GlobalTime.getGlobalTime(&global) != SUCCESS) {
+        /* if the clock is not synced, continue without adjusting the period */
+        call PeriodTimer.startOneShot(sleep_period);
+        return;
+      }
 
-    /* compute the time that is left till the global period fires */
-    global = tdma_period - global;
+      local = global;
 
-    /* check if global is suuper small */
-    if (global < (2 * (call tdmaMacParams.get_frame_size())))
-      global = global + tdma_period;
+      /* compute the time that passed from the last global period */
+      //global = global % sleep_period;
 
-    local = local + global;
-    call GlobalTime.global2Local(&local);
-    call PeriodTimer.startOneShot(local);
+      /* compute the time that is left till the global period fires */
+      //global = sleep_period - global;
+
+      /* check if global is suuper small */
+      //if (global < (2 * (call tdmaMacParams.get_frame_size())))
+      //global = global + sleep_period;
+
+      local = global + sleep_period;
+      call GlobalTime.global2Local(&local);
+      call PeriodTimer.startOneShot(local);
+    }
   }
 
   void turn_on_radio() {
+    call Leds.set(1);
     call RadioControl.start();
     call TimerControl.start();
   }
 
   void turn_off_radio() {
+    correct_period_time();
+    call Leds.set(4);
     /* turn off radio only when timer is synced */
     if (sync == SUCCESS) {
       call RadioControl.stop();
@@ -197,9 +211,12 @@ implementation {
     local = global = 0;
     radio_status = OFF;
 
-    tdma_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
+    sleep_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
 				call tdmaMacParams.get_node_time() + 
 				call tdmaMacParams.get_radio_off_time() );
+
+    sleep_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
+                                call tdmaMacParams.get_radio_off_time() );
 
     if (status == S_STARTED) {
       err = SUCCESS;
@@ -216,7 +233,7 @@ implementation {
     }
 
     call TimerControl.start();
-    call PeriodTimer.startOneShot(tdma_period);
+    call PeriodTimer.startOneShot(sleep_period);
     status = S_STARTING;
     return SUCCESS;
   }
@@ -241,8 +258,8 @@ implementation {
   }
 
   event void RadioControl.startDone(error_t error) {
-    printf("radio start done\n");
-    printfflush();
+    //printf("radio start done\n");
+    //printfflush();
     switch(error){
     case EALREADY:
       radio_status = ON;
@@ -272,8 +289,8 @@ implementation {
   }
 
   event void RadioControl.stopDone(error_t error) {
-    printf("radio stop done\n");
-    printfflush();
+    //printf("radio stop done\n");
+    //printfflush();
     switch(error){
     case EALREADY:
       radio_status = OFF;
@@ -533,11 +550,11 @@ implementation {
     metadata_t* metadata = (metadata_t*) msg->metadata;
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
 
-    printf("receive msg\n");
+    //printf("receive msg\n");
 
     if((call tdmaMacParams.get_crc()) && (!(metadata)->crc)) {
-      printf("failed crc\n");
-      printfflush();
+      //printf("failed crc\n");
+      //printfflush();
       return msg;
     }
 
@@ -556,29 +573,19 @@ implementation {
       }
     }
     else {
-      printf("failed destination\n");
-      printfflush();
+      //printf("failed destination\n");
+      //printfflush();
       return signal MacSnoop.receive(msg, payload, len);
     }
   }
 
 
   event void PeriodTimer.fired() {
-    /* get global time */
-    sync = call GlobalTime.getGlobalTime(&global);
-
-    if (sync == SUCCESS) {
-      correct_period_time();
-    } else {
-      /* if the clock is not synced, continue without adjusting the period */
-      call PeriodTimer.startOneShot(tdma_period);
-    }
-
     /* reset frame delimeter */
     frame_counter = 0;
     call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
 
-    /* turn of radio */
+    /* turn on radio */
     turn_on_radio();
 
     local = global = call GlobalTime.getLocalTime();
@@ -606,13 +613,13 @@ implementation {
     sync = call GlobalTime.getGlobalTime(&global);
 
     if (sync == SUCCESS) {
-      printf("synchronized\n");
-      printfflush();
+      //printf("synchronized\n");
+      //printfflush();
       dbgs(F_MAC, S_STARTED, DBGS_SYNC, (uint16_t)(global>>16),(uint16_t)global);
       start_synchronization();
     } else {
-      printf("received\n");
-      printfflush();
+      //printf("received\n");
+      //printfflush();
       dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
     }    
   }
