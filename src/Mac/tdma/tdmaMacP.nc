@@ -136,8 +136,8 @@ implementation {
 
       call PeriodTimer.startOneShot(local);
 
-      printf("%lu:  firing in %lu\n", global, local);
-      printfflush();
+      //printf("%lu:  firing in %lu\n", global, local);
+      //printfflush();
     }
   }
 
@@ -557,8 +557,8 @@ implementation {
     frame_counter = 0;
     call FrameTimer.startOneShot(active_time);
 
-    printf("%lu:  firing in %lu\n", global, active_time);
-    printfflush();
+    //printf("%lu:  firing in %lu\n", global, active_time);
+    //printfflush();
     /* turn on radio */
     call Leds.set(1);
     call RadioControl.start();
