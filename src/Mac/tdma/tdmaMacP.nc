@@ -127,11 +127,17 @@ implementation {
         return;
       }
 
-      /* compute the time that is left till next period */
-      global = tdma_time - (global % tdma_time);
+      local = global;
+      /* compute the next global period */
+      local = global + (tdma_time - (global % tdma_time));
 
-      call GlobalTime.global2Local(&global);
-      call PeriodTimer.startOneShot(global);
+      call GlobalTime.global2Local(&local);
+      local = local - call GlobalTime.getLocalTime();
+
+      call PeriodTimer.startOneShot(local);
+
+      printf("%lu:  firing in %lu\n", global, local);
+      printfflush();
     }
   }
 
@@ -551,6 +557,8 @@ implementation {
     frame_counter = 0;
     call FrameTimer.startOneShot(active_time);
 
+    printf("%lu:  firing in %lu\n", global, active_time);
+    printfflush();
     /* turn on radio */
     call Leds.set(1);
     call RadioControl.start();
