@@ -30,6 +30,7 @@ implementation
 
     TableItem   table[MAX_ENTRIES];
     uint8_t tableEntries;
+    bool busy_sending = FALSE;
 
     enum {
         STATE_IDLE = 0x00,
@@ -38,7 +39,7 @@ implementation
         STATE_INIT = 0x04,
     };
 
-    uint8_t state;
+    uint8_t state = STATE_IDLE;
 
 /*
     We do linear regression from localTime to timeOffset (globalTime - localTime).
@@ -292,15 +293,18 @@ implementation
         // we don't send time sync msg, if we don't have enough data
         if( numEntries < ENTRY_SEND_LIMIT && outgoingMsg->rootID != TOS_NODE_ID ){
             state &= ~STATE_SENDING;
+            busy_sending = FALSE;
         }
         else if( call Send.send(AM_BROADCAST_ADDR, &outgoingMsgBuffer, TIMESYNCMSG_LEN, localTime ) != SUCCESS ){
             state &= ~STATE_SENDING;
+            busy_sending = FALSE;
             signal TimeSyncNotify.msg_sent();
         }
     }
 
     event void Send.sendDone(message_t* ptr, error_t error)
     {
+        busy_sending = FALSE;
         if (ptr != &outgoingMsgBuffer)
           return;
 
@@ -317,6 +321,7 @@ implementation
     void timeSyncMsgSend()
     {
         if( outgoingMsg->rootID != 0xFFFF && (state & STATE_SENDING) == 0 ) {
+           busy_sending = TRUE;
            state |= STATE_SENDING;
            post sendMsg();
         }
@@ -327,7 +332,7 @@ implementation
       timeSyncMsgSend();
     }
 
-    command error_t TimeSyncMode.setMode(uint8_t mode_){
+    command error_t TimeSyncMode.setMode(uint8_t mode_) {
         return SUCCESS;
     }
 
@@ -336,8 +341,8 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
-        if (call Timer.isRunning() == TRUE) {
-          printf("running\n");
+        if ((call Timer.isRunning() == TRUE) || (busy_sending == TRUE)) {
+          printf("busy\n");
           printfflush();
           return SUCCESS;
         }
@@ -349,13 +354,18 @@ implementation
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          call Timer.startOneShot((uint32_t)( 1 + 
-			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
-						call tdmaMacParams.get_frame_size() / ENTRY_VALID_LIMIT))));
+          uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_node_time() *
+                                                call tdmaMacParams.get_frame_size() / ENTRY_VALID_LIMIT / 2);
+          printf("send %lu\n", d);
+          printfflush();
+          call Timer.startOneShot(d);
         } else {
-          call Timer.startOneShot((uint32_t)( 5 +
-			(call Random.rand16() % 
-				(call tdmaMacParams.get_node_time() * call tdmaMacParams.get_frame_size()) )));
+          uint32_t d = call tdmaMacParams.get_frame_size() + 
+		call Random.rand32() % (call tdmaMacParams.get_node_time() *
+                call tdmaMacParams.get_frame_size() / (ENTRY_VALID_LIMIT * 2));
+          printf("send %lu\n", d);
+          printfflush();
+          call Timer.startOneShot(d);
         }
         return SUCCESS;
     }
@@ -363,34 +373,37 @@ implementation
 
     command error_t StdControl.start()
     {
-        receive_counter = 0;
-        //clearTable();
 
-        atomic {
-	   skew = 0.0;
-           localAverage = 0;
-	   offsetAverage = 0;
-           outgoingMsg = (TimeSyncMsg*)call Send.getPayload(&outgoingMsgBuffer, sizeof(TimeSyncMsg));
+        if (state == STATE_IDLE) {
+          receive_counter = 0;
+          clearTable();
+          atomic {
+            skew = 0.0;
+            localAverage = 0;
+   	    offsetAverage = 0;
+            outgoingMsg = (TimeSyncMsg*)call Send.getPayload(&outgoingMsgBuffer, sizeof(TimeSyncMsg));
+          }
+  	  if (outgoingMsg == NULL) {
+	    return FAIL;
+	  }
+
+	  if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+  	    outgoingMsg->rootID = TOS_NODE_ID;
+          } else {
+  	    outgoingMsg->rootID = 0xFFFF;
+          }
+
+          processedMsg = &processedMsgBuffer;
         }
-
-	if (outgoingMsg == NULL) {
-		return FAIL;
-	}
-
-	if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-  	  outgoingMsg->rootID = TOS_NODE_ID;
-        } else {
-  	  outgoingMsg->rootID = 0xFFFF;
-        }
-
-        processedMsg = &processedMsgBuffer;
+        busy_sending = FALSE;
         state = STATE_INIT;
-
         return SUCCESS;
     }
 
     command error_t StdControl.stop()
     {
+        busy_sending = FALSE;
+        state = STATE_INIT;
         call Timer.stop();
         return SUCCESS;
     }

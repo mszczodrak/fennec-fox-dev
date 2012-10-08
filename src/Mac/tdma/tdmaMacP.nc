@@ -127,7 +127,7 @@ implementation {
     global = tdma_period - global;
 
     /* check if global is suuper small */
-    if (global < ((tdma_period / 10) + 3 * (call tdmaMacParams.get_frame_size())))
+    if (global < (2 * (call tdmaMacParams.get_frame_size())))
       global = global + tdma_period;
 
     local = local + global;
@@ -137,6 +137,7 @@ implementation {
 
   void turn_on_radio() {
     call RadioControl.start();
+    call TimerControl.start();
   }
 
   void turn_off_radio() {
@@ -144,6 +145,7 @@ implementation {
     if (sync == SUCCESS) {
       call RadioControl.stop();
       busy_sending = FALSE;
+      call TimerControl.stop();
     } 
   }
 
@@ -213,9 +215,6 @@ implementation {
       return FAIL;
     }
 
-    printf("starting\n");
-    printfflush();
-
     call TimerControl.start();
     call PeriodTimer.startOneShot(tdma_period);
     status = S_STARTING;
@@ -273,6 +272,8 @@ implementation {
   }
 
   event void RadioControl.stopDone(error_t error) {
+    printf("radio stop done\n");
+    printfflush();
     switch(error){
     case EALREADY:
       radio_status = OFF;
@@ -532,12 +533,13 @@ implementation {
     metadata_t* metadata = (metadata_t*) msg->metadata;
     tdma_header_t* header = (tdma_header_t*)getHeader(msg);
 
+    printf("receive msg\n");
+
     if((call tdmaMacParams.get_crc()) && (!(metadata)->crc)) {
+      printf("failed crc\n");
+      printfflush();
       return msg;
     }
-
-//    msg->conf = call MacAMPacket.group(msg);
-//    msg->conf = call MacAMPacket.group(msg);
 
     msg->rssi = metadata->rssi;
     msg->lqi = metadata->lqi;
@@ -554,6 +556,8 @@ implementation {
       }
     }
     else {
+      printf("failed destination\n");
+      printfflush();
       return signal MacSnoop.receive(msg, payload, len);
     }
   }
@@ -617,8 +621,6 @@ implementation {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
     dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
-      printf("send\n");
-      printfflush();
   }
 
 }
