@@ -61,9 +61,6 @@ implementation
     message_t outgoingMsgBuffer;
     TimeSyncMsg* outgoingMsg;
 
-    uint8_t heartBeats; // the number of sucessfully sent messages
-                        // since adding a new entry with lower beacon id than ours
-
     uint8_t receive_counter = 0;
 
     async command uint32_t GlobalTime.getLocalTime()
@@ -79,7 +76,7 @@ implementation
 
     error_t is_synced()
     {
-      if ((numEntries>=ENTRY_VALID_LIMIT) || (call tdmaMacParams.get_root_addr()==TOS_NODE_ID))
+      if ((numEntries>=ENTRY_VALID_LIMIT) || (outgoingMsg->rootID==TOS_NODE_ID))
         return SUCCESS;
       else
         return FAIL;
@@ -340,22 +337,25 @@ implementation
 
     command error_t TimeSyncMode.send(){
         if (call Timer.isRunning() == TRUE) {
+          printf("running\n");
+          printfflush();
           return SUCCESS;
         }
 
-        if (is_synced() == FALSE) {
+        if (is_synced() != SUCCESS) {
+          printf("not synced\n");
+          printfflush();
           return SUCCESS;
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          outgoingMsg->rootID = call tdmaMacParams.get_root_addr();
           call Timer.startOneShot((uint32_t)( 1 + 
 			(call Random.rand16() % (call tdmaMacParams.get_node_time() * 
-						call tdmaMacParams.get_frame_size()))));
+						call tdmaMacParams.get_frame_size() / ENTRY_VALID_LIMIT))));
         } else {
           call Timer.startOneShot((uint32_t)( 5 +
 			(call Random.rand16() % 
-				(call tdmaMacParams.get_node_time() * call tdmaMacParams.get_frame_size()) ) * 2));
+				(call tdmaMacParams.get_node_time() * call tdmaMacParams.get_frame_size()) )));
         }
         return SUCCESS;
     }
@@ -377,7 +377,11 @@ implementation
 		return FAIL;
 	}
 
-	outgoingMsg->rootID = 0xFFFF;
+	if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
+  	  outgoingMsg->rootID = TOS_NODE_ID;
+        } else {
+  	  outgoingMsg->rootID = 0xFFFF;
+        }
 
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
@@ -397,7 +401,7 @@ implementation
     async command uint16_t  TimeSyncInfo.getRootID() { return outgoingMsg->rootID; }
     async command uint8_t   TimeSyncInfo.getSeqNum() { return outgoingMsg->seqNum; }
     async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
-    async command uint8_t   TimeSyncInfo.getHeartBeats() { return heartBeats; }
+    async command uint8_t   TimeSyncInfo.getHeartBeats() { return 0; }
 
     event void tdmaMacParams.receive_status(uint16_t status_flag) {
     }

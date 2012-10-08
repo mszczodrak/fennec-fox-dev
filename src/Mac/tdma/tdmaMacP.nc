@@ -87,8 +87,6 @@ module tdmaMacP @safe() {
 implementation {
 
   uint8_t status = S_STOPPED;
-  uint16_t pending_length;
-  message_t * ONE_NOK pending_message = NULL;
   uint32_t tdma_period;
   bool radio_status = OFF;
 
@@ -110,7 +108,7 @@ implementation {
   };
 
   norace uint32_t local, global;
-  norace error_t sync;
+  norace error_t sync = FAIL;
   norace bool busy_sending = FALSE;
 
   /* Functions */
@@ -215,9 +213,11 @@ implementation {
       return FAIL;
     }
 
+    printf("starting\n");
+    printfflush();
+
     call TimerControl.start();
     call PeriodTimer.startOneShot(tdma_period);
-//		call tdmaMacParams.get_node_time() * TDMA_INITIAL_STAY_ON ));
     status = S_STARTING;
     return SUCCESS;
   }
@@ -242,6 +242,8 @@ implementation {
   }
 
   event void RadioControl.startDone(error_t error) {
+    printf("radio start done\n");
+    printfflush();
     switch(error){
     case EALREADY:
       radio_status = ON;
@@ -600,17 +602,23 @@ implementation {
     sync = call GlobalTime.getGlobalTime(&global);
 
     if (sync == SUCCESS) {
+      printf("synchronized\n");
+      printfflush();
       dbgs(F_MAC, S_STARTED, DBGS_SYNC, (uint16_t)(global>>16),(uint16_t)global);
+      start_synchronization();
     } else {
+      printf("received\n");
+      printfflush();
       dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
     }    
-    start_synchronization();
   }
 
   event void TimeSyncNotify.msg_sent() {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
     dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+      printf("send\n");
+      printfflush();
   }
 
 }
