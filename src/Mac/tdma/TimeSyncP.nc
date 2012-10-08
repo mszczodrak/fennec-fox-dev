@@ -354,13 +354,14 @@ implementation
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_active_time() / ENTRY_VALID_LIMIT / 2);
+          uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
+							/ (ENTRY_VALID_LIMIT + 2));
           //printf("send %lu\n", d);
           //printfflush();
           call Timer.startOneShot(d);
         } else {
           uint32_t d = 10 + call Random.rand32() % (call tdmaMacParams.get_active_time()
-                					/ (ENTRY_VALID_LIMIT * 2));
+                					/ (ENTRY_VALID_LIMIT));
           //printf("send %lu\n", d);
           //printfflush();
           call Timer.startOneShot(d);
