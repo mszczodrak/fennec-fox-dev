@@ -79,7 +79,7 @@ implementation
 
     error_t is_synced()
     {
-      if (numEntries>=ENTRY_VALID_LIMIT || outgoingMsg->rootID==TOS_NODE_ID)
+      if ((numEntries>=ENTRY_VALID_LIMIT) || (call tdmaMacParams.get_root_addr()==TOS_NODE_ID))
         return SUCCESS;
       else
         return FAIL;
@@ -233,10 +233,7 @@ implementation
     {
         TimeSyncMsg* msg = (TimeSyncMsg*)(call Send.getPayload(processedMsg, sizeof(TimeSyncMsg)));
 
-        if( msg->rootID < outgoingMsg->rootID &&
-            //after becoming the root, a node ignores messages that advertise the old root (it may take
-            //some time for all nodes to timeout and discard the old root) 
-            !(heartBeats < IGNORE_ROOT_MSG && outgoingMsg->rootID == TOS_NODE_ID) ){
+        if( msg->rootID < outgoingMsg->rootID ) {
             outgoingMsg->rootID = msg->rootID;
             outgoingMsg->seqNum = msg->seqNum;
         }
@@ -245,10 +242,6 @@ implementation
         }
         else
             goto exit;
-
-        //call Leds.led0Toggle();
-        if( outgoingMsg->rootID < TOS_NODE_ID )
-            heartBeats = 0;
 
         addNewEntry(msg);
         calculateConversion();
@@ -301,7 +294,6 @@ implementation
         outgoingMsg->globalTime = globalTime;
         // we don't send time sync msg, if we don't have enough data
         if( numEntries < ENTRY_SEND_LIMIT && outgoingMsg->rootID != TOS_NODE_ID ){
-            ++heartBeats;
             state &= ~STATE_SENDING;
         }
         else if( call Send.send(AM_BROADCAST_ADDR, &outgoingMsgBuffer, TIMESYNCMSG_LEN, localTime ) != SUCCESS ){
@@ -317,9 +309,6 @@ implementation
 
         if(error == SUCCESS)
         {
-            ++heartBeats;
-            //call Leds.led1Toggle();
-
             if( outgoingMsg->rootID == TOS_NODE_ID )
                 ++(outgoingMsg->seqNum);
         }
@@ -351,6 +340,10 @@ implementation
 
     command error_t TimeSyncMode.send(){
         if (call Timer.isRunning() == TRUE) {
+          return SUCCESS;
+        }
+
+        if (is_synced() == FALSE) {
           return SUCCESS;
         }
 
@@ -388,9 +381,6 @@ implementation
 
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
-
-        heartBeats = 0;
-        //outgoingMsg->nodeID = TOS_NODE_ID;
 
         return SUCCESS;
     }
