@@ -19,30 +19,21 @@ implementation {
 		return SUCCESS;
 	}
 
-	command uint16_t tdmaMacParams.get_frame_size() {
-		return tdmaMac_data.frame_size;
+	command uint32_t tdmaMacParams.get_active_time() {
+		return tdmaMac_data.active_time;
 	}
 
-	command error_t tdmaMacParams.set_frame_size(uint16_t new_frame_size) {
-		tdmaMac_data.frame_size = new_frame_size;
+	command error_t tdmaMacParams.set_active_time(uint32_t new_active_time) {
+		tdmaMac_data.active_time = new_active_time;
 		return SUCCESS;
 	}
 
-	command uint16_t tdmaMacParams.get_node_time() {
-		return tdmaMac_data.node_time;
+	command uint32_t tdmaMacParams.get_sleep_time() {
+		return tdmaMac_data.sleep_time;
 	}
 
-	command error_t tdmaMacParams.set_node_time(uint16_t new_node_time) {
-		tdmaMac_data.node_time = new_node_time;
-		return SUCCESS;
-	}
-
-	command uint16_t tdmaMacParams.get_radio_off_time() {
-		return tdmaMac_data.radio_off_time;
-	}
-
-	command error_t tdmaMacParams.set_radio_off_time(uint16_t new_radio_off_time) {
-		tdmaMac_data.radio_off_time = new_radio_off_time;
+	command error_t tdmaMacParams.set_sleep_time(uint32_t new_sleep_time) {
+		tdmaMac_data.sleep_time = new_sleep_time;
 		return SUCCESS;
 	}
 

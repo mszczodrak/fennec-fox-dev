@@ -3,9 +3,8 @@
 
 struct tdmaMac_params {
 	uint16_t root_addr;
-	uint16_t frame_size;
-	uint16_t node_time;
-	uint16_t radio_off_time;
+	uint32_t active_time;
+	uint32_t sleep_time;
 	uint16_t backoff;
 	uint16_t min_backoff;
 	uint8_t ack;

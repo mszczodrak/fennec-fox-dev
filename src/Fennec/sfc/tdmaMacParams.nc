@@ -3,12 +3,10 @@ interface tdmaMacParams {
 	command void send_status(uint16_t status_flag);
 	command uint16_t get_root_addr();
 	command error_t set_root_addr(uint16_t new_root_addr);
-	command uint16_t get_frame_size();
-	command error_t set_frame_size(uint16_t new_frame_size);
-	command uint16_t get_node_time();
-	command error_t set_node_time(uint16_t new_node_time);
-	command uint16_t get_radio_off_time();
-	command error_t set_radio_off_time(uint16_t new_radio_off_time);
+	command uint32_t get_active_time();
+	command error_t set_active_time(uint32_t new_active_time);
+	command uint32_t get_sleep_time();
+	command error_t set_sleep_time(uint32_t new_sleep_time);
 	command uint16_t get_backoff();
 	command error_t set_backoff(uint16_t new_backoff);
 	command uint16_t get_min_backoff();

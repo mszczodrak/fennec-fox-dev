@@ -87,9 +87,11 @@ module tdmaMacP @safe() {
 implementation {
 
   uint8_t status = S_STOPPED;
-  uint32_t sleep_period;
-  uint32_t sleep_period;
+  uint32_t tdma_time;
+  uint32_t active_time;
+  uint32_t sleep_time;
   bool radio_status = OFF;
+  error_t err;
 
   message_t * ftsp_sync_message = NULL;
 
@@ -114,53 +116,23 @@ implementation {
 
   /* Functions */
 
-  bool should_stop_radio() {
-    return (frame_counter == (call tdmaMacParams.get_node_time()));
-  }
-
   void correct_period_time() {
     atomic {
       /* get global time */
+      sync = call GlobalTime.getGlobalTime(&global);
 
-      if (call GlobalTime.getGlobalTime(&global) != SUCCESS) {
+      if (sync != SUCCESS) {
         /* if the clock is not synced, continue without adjusting the period */
-        call PeriodTimer.startOneShot(sleep_period);
+        call PeriodTimer.startOneShot(tdma_time);
         return;
       }
 
-      local = global;
+      /* compute the time that is left till next period */
+      global = tdma_time - (global % tdma_time);
 
-      /* compute the time that passed from the last global period */
-      //global = global % sleep_period;
-
-      /* compute the time that is left till the global period fires */
-      //global = sleep_period - global;
-
-      /* check if global is suuper small */
-      //if (global < (2 * (call tdmaMacParams.get_frame_size())))
-      //global = global + sleep_period;
-
-      local = global + sleep_period;
-      call GlobalTime.global2Local(&local);
-      call PeriodTimer.startOneShot(local);
+      call GlobalTime.global2Local(&global);
+      call PeriodTimer.startOneShot(global);
     }
-  }
-
-  void turn_on_radio() {
-    call Leds.set(1);
-    call RadioControl.start();
-    call TimerControl.start();
-  }
-
-  void turn_off_radio() {
-    correct_period_time();
-    call Leds.set(4);
-    /* turn off radio only when timer is synced */
-    if (sync == SUCCESS) {
-      call RadioControl.stop();
-      busy_sending = FALSE;
-      call TimerControl.stop();
-    } 
   }
 
   void start_synchronization() {
@@ -169,8 +141,6 @@ implementation {
       call TimeSyncMode.send();
     }
   }
-
-  error_t err;
 
   task void start_done() {
     signal Mgmt.startDone(err);
@@ -211,12 +181,9 @@ implementation {
     local = global = 0;
     radio_status = OFF;
 
-    sleep_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
-				call tdmaMacParams.get_node_time() + 
-				call tdmaMacParams.get_radio_off_time() );
-
-    sleep_period = (uint32_t) call tdmaMacParams.get_frame_size() * (
-                                call tdmaMacParams.get_radio_off_time() );
+    active_time = call tdmaMacParams.get_active_time();
+    sleep_time = call tdmaMacParams.get_sleep_time();
+    tdma_time = active_time + sleep_time;
 
     if (status == S_STARTED) {
       err = SUCCESS;
@@ -233,7 +200,7 @@ implementation {
     }
 
     call TimerControl.start();
-    call PeriodTimer.startOneShot(sleep_period);
+    call PeriodTimer.startOneShot(tdma_time);
     status = S_STARTING;
     return SUCCESS;
   }
@@ -579,28 +546,25 @@ implementation {
     }
   }
 
-
   event void PeriodTimer.fired() {
     /* reset frame delimeter */
     frame_counter = 0;
-    call FrameTimer.startPeriodic(call tdmaMacParams.get_frame_size());
+    call FrameTimer.startOneShot(active_time);
 
     /* turn on radio */
-    turn_on_radio();
-
-    local = global = call GlobalTime.getLocalTime();
-    sync = call GlobalTime.getGlobalTime(&global);
+    call Leds.set(1);
+    call RadioControl.start();
+    call TimerControl.start();
   }
 
   event void FrameTimer.fired() {
-    frame_counter++;
-
-    if (radio_status == ON) {
-    }
-
-    /* check when to turn off the radio */
-    if (should_stop_radio()) {
-      turn_off_radio();
+    correct_period_time();
+    /* turn off radio only when timer is synced */
+    if (sync == SUCCESS) {
+      call Leds.set(4);
+      call RadioControl.stop();
+      busy_sending = FALSE;
+      call TimerControl.stop();
       if (ftsp_sync_message != NULL) {
         signal FtspMacAMSend.sendDone(ftsp_sync_message, FAIL);
         ftsp_sync_message = NULL;
