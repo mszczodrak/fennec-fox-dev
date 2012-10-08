@@ -51,7 +51,7 @@
  * @author David Moss
  */
 
-#include "DefaultLpl.h"
+#include "cuLpl.h"
 
 module cuPowerCycleP {
   provides {

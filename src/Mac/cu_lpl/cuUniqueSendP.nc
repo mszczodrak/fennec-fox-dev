@@ -27,8 +27,9 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE
- *
+ */
  
+/**
  * This layer is responsible for supplying a unique data sequence number (dsn)
  * to each outgoing message.
  * @author David Moss

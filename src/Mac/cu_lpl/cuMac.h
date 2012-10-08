@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  cu radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,14 +19,14 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: cu Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-#ifndef __H_CU_MAC_H_
-#define __H_CU_MAC_H_
+#ifndef _H_CU_MAC_H_
+#define _H_CU_MAC_H_
 
 typedef nx_struct cu_header_t {
   nxle_uint8_t length;

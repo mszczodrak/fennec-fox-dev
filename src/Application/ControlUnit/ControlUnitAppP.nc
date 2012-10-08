@@ -6,15 +6,15 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_RESEND_RECONF		300
-#define POLICY_MIN_RESEND_RECONF 	30
-#define POLICY_MAX_WRONG_CONFS		2
+#define POLICY_RESEND_RECONF		1000
+#define POLICY_MIN_RESEND_RECONF 	50
+#define POLICY_MAX_WRONG_CONFS		1
 
-#define POLICY_RESEND_MIN	5
+#define POLICY_RESEND_MIN	10
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
 #define POLICY_RAND_SEND	20
-#define SAME_MSG_COUNTER_THRESHOLD 2
+#define SAME_MSG_COUNTER_THRESHOLD 4
 
 module ControlUnitAppP @safe() {
   provides interface SimpleStart;
@@ -46,7 +46,7 @@ implementation {
   uint8_t same_msg_counter = 0;
   uint16_t resend_confs = POLICY_RESEND_RECONF;
   bool busy_sending = FALSE;
-  bool got_response = FALSE;
+  uint8_t response_counter = 0;
 
   message_t confmsg;
 
@@ -68,7 +68,8 @@ implementation {
 
   void start_policy_send() {
     same_msg_counter = 0;
-    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 6);
+    //call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 6);
+    call Timer.startOneShot(1);
   }
 
   void set_new_state(state_t conf, uint16_t seq) {
@@ -78,15 +79,14 @@ implementation {
     switch(status) {
       case S_STOPPED:
         status = S_STARTING;
-        got_response = FALSE;
+        response_counter = 0;
         resend_confs = POLICY_RESEND_RECONF;
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         call FennecEngine.start();
         break;
 
       case S_NONE:
-        status = S_STARTING;
-        got_response = TRUE;
+        response_counter = SAME_MSG_COUNTER_THRESHOLD;
         resend_confs = 0;  /* skip resending at the first time */
         call PolicyCache.set_active_configuration(POLICY_CONF_ID);
         call FennecEngine.start();
@@ -94,6 +94,7 @@ implementation {
 
       case S_COMPLETED:
         status = S_INIT;
+        post report_new_configuration();
         call EventsMgmt.stop();
         reset_control();
         break;
@@ -135,15 +136,14 @@ implementation {
     confmsg.conf = POLICY_CONFIGURATION;
     busy_sending = FALSE;
     status = S_NONE;
-    got_response = FALSE;
+    response_counter = 0;
     signal SimpleStart.startDone(SUCCESS);
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    //printf("new conf\n");
+    //printf("new conf %d\n", new_conf);
     //printfflush();
     set_new_state(new_conf, configuration_seq + 1);
-    post report_new_configuration();
   }
 
   event void PolicyCache.wrong_conf() {
@@ -177,7 +177,7 @@ implementation {
       goto done_receive;
     }
 
-    //dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
+    dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
     if (!call PolicyCache.valid_policy_msg(cu_msg)) {
       goto done_receive;
@@ -211,7 +211,7 @@ implementation {
       
       if (cu_msg->conf_id == configuration_id) {
         /* Received same sequence with the same configuration id */
-        got_response = TRUE;
+        response_counter++;
 	if (++same_msg_counter > POLICY_RESEND_MIN) {
 	  start_policy_send();
 	}
@@ -238,7 +238,6 @@ reconfigure:
     if ((cu_msg->conf_id != configuration_id) && 
 	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
       set_new_state(cu_msg->conf_id, cu_msg->seq);
-      post report_new_configuration();
     }
 
 done_receive:
@@ -269,6 +268,10 @@ done_receive:
   event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
       switch(status) {
+        case S_NONE:
+	  post report_new_configuration();
+          status = S_STARTING;
+
         case S_STARTING:
           status = S_STARTED;
           call PolicyCache.set_active_configuration(configuration_id);
@@ -277,11 +280,12 @@ done_receive:
 
         case S_STARTED:
           status = S_COMPLETED;
-          if (got_response == FALSE) {
+          if (response_counter < SAME_MSG_COUNTER_THRESHOLD) {
             /* we went through the whole reconfiguration process
              * but it seems that nobody is there around to get
              * our reconfigurations message, so let's retry after a while
              */
+             resend_confs = POLICY_RESEND_RECONF;
              call Timer.startOneShot(call Random.rand16() % (POLICY_RAND_SEND * 4) + 100);
           }
       }
@@ -310,10 +314,10 @@ done_receive:
 
 
   task void sendConfigurationMsg() {
-
     nx_struct FFControl *cu_msg;
     confmsg.conf = POLICY_CONFIGURATION;
-    cu_msg = (nx_struct FFControl*) call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
+    cu_msg = (nx_struct FFControl*) 
+	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
     
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
       same_msg_counter = 0;
@@ -334,14 +338,12 @@ done_receive:
 
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      //printf("failed.  \n");
-      //printfflush();
-      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 500);
-      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
+      call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 100);
+      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
     } else {
       busy_sending = TRUE;
-      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
-      //same_msg_counter = 0;
+      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
+      same_msg_counter = 0;
     }
   }
 

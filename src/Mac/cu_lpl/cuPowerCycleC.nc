@@ -52,7 +52,7 @@ configuration cuPowerCycleC {
 }
 
 implementation {
-  components cuPowerCycleP,
+  components cuPowerCycle,
       cuTransmitC,
       LedsC,
       new StateC() as RadioPowerStateC,
@@ -62,24 +62,24 @@ implementation {
 
   components cuLplC as LplC;
 
-  PowerCycle = cuPowerCycleP;
-  SplitControl = cuPowerCycleP;
+  PowerCycle = cuPowerCycle;
+  SplitControl = cuPowerCycle;
 
-  PacketIndicator = cuPowerCycleP.PacketIndicator;
-  EnergyIndicator = cuPowerCycleP.EnergyIndicator;
-  ByteIndicator = cuPowerCycleP.ByteIndicator;
+  PacketIndicator = cuPowerCycle.PacketIndicator;
+  EnergyIndicator = cuPowerCycle.EnergyIndicator;
+  ByteIndicator = cuPowerCycle.ByteIndicator;
 
-  cuMacParams = cuPowerCycleP.cuMacParams;
+  cuMacParams = cuPowerCycle.cuMacParams;
 
   SplitControlState = SplitControlStateC;
   RadioPowerState = RadioPowerStateC;
   
-  cuPowerCycleP.SubControl -> cuTransmitC;
-  cuPowerCycleP.SendState -> LplC;
-  cuPowerCycleP.RadioPowerState -> RadioPowerStateC;
-  cuPowerCycleP.SplitControlState -> SplitControlStateC;
-  cuPowerCycleP.OnTimer -> OnTimerC;
-  cuPowerCycleP.Leds -> LedsC;
+  cuPowerCycle.SubControl -> cuTransmitC;
+  cuPowerCycle.SendState -> LplC;
+  cuPowerCycle.RadioPowerState -> RadioPowerStateC;
+  cuPowerCycle.SplitControlState -> SplitControlStateC;
+  cuPowerCycle.OnTimer -> OnTimerC;
+  cuPowerCycle.Leds -> LedsC;
 }
 
 

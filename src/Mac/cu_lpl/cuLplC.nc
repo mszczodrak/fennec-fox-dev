@@ -36,6 +36,7 @@
 
 
 #include "DefaultLpl.h"
+//#warning "*** USING DEFAULT LOW POWER COMMUNICATIONS ***"
 
 configuration cuLplC {
   provides {
@@ -59,7 +60,7 @@ configuration cuLplC {
 implementation {
   components MainC,
       cuLplP,
-      PowerCycleC,
+      cuPowerCycleC,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
@@ -69,7 +70,7 @@ implementation {
   LowPowerListening = cuLplP;
   Send = cuLplP;
   Receive = cuLplP;
-  SplitControl = PowerCycleC;
+  SplitControl = cuPowerCycleC;
   SendState = SendStateC;
   MacPacketAcknowledgements = cuLplP.PacketAcknowledgements;
 
@@ -85,12 +86,12 @@ implementation {
   MainC.SoftwareInit -> cuLplP;
   
   
-  cuLplP.SplitControlState -> PowerCycleC.SplitControlState;
-  cuLplP.RadioPowerState -> PowerCycleC.RadioPowerState;
+  cuLplP.SplitControlState -> cuPowerCycleC.SplitControlState;
+  cuLplP.RadioPowerState -> cuPowerCycleC.RadioPowerState;
   cuLplP.SendState -> SendStateC;
   cuLplP.OffTimer -> OffTimerC;
   cuLplP.SendDoneTimer -> SendDoneTimerC;
-  cuLplP.PowerCycle -> PowerCycleC;
+  cuLplP.PowerCycle -> cuPowerCycleC;
   cuLplP.Random -> RandomC;
   cuLplP.Leds -> LedsC;
 

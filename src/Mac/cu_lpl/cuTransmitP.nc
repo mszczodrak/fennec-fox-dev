@@ -3,6 +3,7 @@
 #include "crc.h"
 #include "message.h"
 #include "Fennec.h"
+#include "cuMac.h"
 
 module cuTransmitP @safe() {
   provides interface cuTransmit;
@@ -176,7 +177,11 @@ implementation {
     m_msg = m_msg;
     totalCcaChecks = 0;
 
-    call RadioTransmit.load(m_msg);
+    sendDoneErr = call RadioTransmit.load(m_msg);
+    if (sendDoneErr != SUCCESS) {
+      post signalSendDone();
+      return sendDoneErr;
+    }
     return SUCCESS;
   }
 
@@ -298,12 +303,21 @@ implementation {
         signal BackoffTimer.fired();
       }
     } else {
-      call RadioTransmit.send(m_msg, useCca);
+      if (call RadioTransmit.send(m_msg, useCca) != SUCCESS) {
+        signal RadioTransmit.sendDone(m_msg, FAIL);
+        return FAIL;
+      }
     }
     return SUCCESS;
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+    if (error != SUCCESS) {
+      sendDoneErr = error;
+      post signalSendDone();
+      return;
+    }
+
     if ( m_state == S_CANCEL ) {
       call RadioTransmit.cancel(msg);
       sendDoneErr = ECANCEL;
@@ -311,7 +325,9 @@ implementation {
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
-      call RadioTransmit.send(m_msg, m_cca);
+      if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
+        signal RadioTransmit.sendDone(m_msg, FAIL);
+      }
     } else {
       m_state = S_SAMPLE_CCA;
 
@@ -347,7 +363,9 @@ implementation {
       break;
         
     case S_BEGIN_TRANSMIT:
-      call RadioTransmit.send(m_msg, m_cca);
+      if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
+        signal RadioTransmit.sendDone(m_msg, FAIL);
+      }
       break;
 
     case S_CANCEL:

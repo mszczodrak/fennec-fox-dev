@@ -67,6 +67,8 @@ implementation {
   uint8_t status = S_STOPPED;
   norace message_t * ONE_NOK m_msg;
   norace uint8_t m_state = S_STOPPED;
+  bool radio_status = 0;
+
 
   enum {
     S_STOPPED,
@@ -90,6 +92,15 @@ implementation {
 
   task void stopDone_task() {
     call SplitControlState.forceState(S_STOPPED);
+  }
+
+  void start_loading() {
+    m_msg = m_msg;
+
+    if( call RadioTransmit.load(m_msg) != SUCCESS) {
+      m_state = S_STARTED;
+      signal RadioTransmit.sendDone(m_msg, FAIL);
+    }
   }
 
   void shutdown() {
@@ -148,8 +159,6 @@ implementation {
   }
 
 
-
-
   /* Functions */
 
   command error_t Mgmt.start() {
@@ -181,10 +190,22 @@ implementation {
 
 
   event void RadioControl.startDone(error_t err) {
+    //printf("Radio ON\n");
+    //printfflush();
+    radio_status = 1;
+    if (m_state == S_LOAD) {
+      //printf("goo\n");
+      //printfflush();
+      start_loading();
+    }
+
   }
 
 
   event void RadioControl.stopDone(error_t err) {
+    //printf("Radio OFF\n");
+    //printfflush();
+    radio_status = 0;
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
@@ -237,9 +258,12 @@ implementation {
     }
 
     m_state = S_LOAD;
-    m_msg = m_msg;
-
-    call RadioTransmit.load(m_msg);
+    if (radio_status == 1) {
+      start_loading();
+    } else {
+      //printf("hold it\n");
+      //printfflush();
+    }
     return SUCCESS;
   }
 
@@ -301,19 +325,6 @@ implementation {
   event void RadioResource.granted() {
 
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   /***************** AMPacket Commands ****************/
@@ -446,10 +457,16 @@ implementation {
   }
 
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
-    m_state = S_BEGIN_TRANSMIT;
-    call RadioTransmit.send(m_msg, 0);
-  }
+    if (error != SUCCESS) {
+      signal RadioTransmit.sendDone(msg, FAIL);
+      return;
+    }
 
+    m_state = S_BEGIN_TRANSMIT;
+    if (call RadioTransmit.send(m_msg, 0) != SUCCESS) {
+      signal RadioTransmit.sendDone(m_msg, FAIL);
+    }
+  }
 
   async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
     m_state = S_STARTED;
