@@ -31,6 +31,7 @@ implementation
     TableItem   table[MAX_ENTRIES];
     uint8_t tableEntries;
     bool busy_sending = FALSE;
+    uint16_t min_delay = 1;
 
     enum {
         STATE_IDLE = 0x00,
@@ -298,6 +299,7 @@ implementation
         else if( call Send.send(AM_BROADCAST_ADDR, &outgoingMsgBuffer, TIMESYNCMSG_LEN, localTime ) != SUCCESS ){
             state &= ~STATE_SENDING;
             busy_sending = FALSE;
+            min_delay = 1;
             signal TimeSyncNotify.msg_sent();
         }
     }
@@ -305,6 +307,7 @@ implementation
     event void Send.sendDone(message_t* ptr, error_t error)
     {
         busy_sending = FALSE;
+        min_delay *= 2;
         if (ptr != &outgoingMsgBuffer)
           return;
 
@@ -316,6 +319,7 @@ implementation
 
         state &= ~STATE_SENDING;
         signal TimeSyncNotify.msg_sent();
+        call TimeSyncMode.send();
     }
 
     void timeSyncMsgSend()
@@ -342,28 +346,20 @@ implementation
 
     command error_t TimeSyncMode.send(){
         if ((call Timer.isRunning() == TRUE) || (busy_sending == TRUE)) {
-          //printf("busy\n");
-          //printfflush();
           return SUCCESS;
         }
 
         if (is_synced() != SUCCESS) {
-          //printf("not synced\n");
-          //printfflush();
           return SUCCESS;
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
           uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
 							/ (ENTRY_VALID_LIMIT * 2));
-          //printf("send %lu\n", d);
-          //printfflush();
           call Timer.startOneShot(d);
         } else {
-          uint32_t d = 10 + call Random.rand32() % (call tdmaMacParams.get_active_time()
+          uint32_t d = min_delay + call Random.rand32() % (call tdmaMacParams.get_active_time()
                 					/ (ENTRY_VALID_LIMIT));
-          //printf("send %lu\n", d);
-          //printfflush();
           call Timer.startOneShot(d);
         }
         return SUCCESS;
@@ -394,6 +390,7 @@ implementation
 
           processedMsg = &processedMsgBuffer;
         }
+        min_delay = 1;
         busy_sending = FALSE;
         state = STATE_INIT;
         return SUCCESS;
