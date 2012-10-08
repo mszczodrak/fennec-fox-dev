@@ -555,10 +555,24 @@ implementation {
   event void PeriodTimer.fired() {
     /* reset frame delimeter */
     frame_counter = 0;
-    call FrameTimer.startOneShot(active_time);
 
-    //printf("%lu:  firing in %lu\n", global, active_time);
-    //printfflush();
+    /* get global time */
+    sync = call GlobalTime.getGlobalTime(&global);
+
+    if (sync != SUCCESS) {
+      /* if the clock is not synced, continue without adjusting the period */
+      call FrameTimer.startOneShot(active_time);
+    } else {
+      local = global;
+
+      /* compute the passed global period */
+      local = global + active_time;
+
+      call GlobalTime.global2Local(&local);
+      local = local - call GlobalTime.getLocalTime();
+      call PeriodTimer.startOneShot(local);
+    }
+
     /* turn on radio */
     call Leds.set(1);
     call RadioControl.start();
