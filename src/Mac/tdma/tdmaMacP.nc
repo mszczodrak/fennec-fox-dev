@@ -92,13 +92,11 @@ implementation {
   uint32_t sleep_time;
   bool radio_status = OFF;
   error_t err;
+  bool received_beacon = TRUE;
 
   message_t * ftsp_sync_message = NULL;
 
   uint8_t localSendId;
-
-  /* keeps track of the frame # within the given period */
-  uint16_t frame_counter;
 
   /**
    * Radio Power, Check State, and Duty Cycling State
@@ -182,10 +180,10 @@ implementation {
   }
 
   command error_t Mgmt.start() {
-    frame_counter = 0;
     busy_sending = FALSE;
     local = global = 0;
     radio_status = OFF;
+    received_beacon = TRUE;
 
     active_time = call tdmaMacParams.get_active_time();
     sleep_time = call tdmaMacParams.get_sleep_time();
@@ -553,8 +551,6 @@ implementation {
   }
 
   event void PeriodTimer.fired() {
-    /* reset frame delimeter */
-    frame_counter = 0;
 
     /* get global time */
     sync = call GlobalTime.getGlobalTime(&global);
@@ -583,12 +579,16 @@ implementation {
     call Leds.set(1);
     call RadioControl.start();
     call TimerControl.start();
+
+    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+      received_beacon = FALSE;
+    }
   }
 
   event void FrameTimer.fired() {
     correct_period_time();
     /* turn off radio only when timer is synced */
-    if (sync == SUCCESS) {
+    if ((sync == SUCCESS) && (received_beacon == TRUE)) {
       call Leds.set(4);
       call RadioControl.stop();
       busy_sending = FALSE;
@@ -597,12 +597,15 @@ implementation {
         signal FtspMacAMSend.sendDone(ftsp_sync_message, FAIL);
         ftsp_sync_message = NULL;
       }
+    } else {
+      call Leds.set(2);
     }
   }
 
   event void TimeSyncNotify.msg_received() {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
+    received_beacon = TRUE;
 
     if (sync == SUCCESS) {
       //printf("synchronized\n");
