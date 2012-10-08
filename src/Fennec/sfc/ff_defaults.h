@@ -61,7 +61,7 @@ struct nullNet_params yellow_nullNet = {
 struct tdmaMac_params yellow_tdmaMac = {
 	2,
 	10000,
-	100000,
+	300000,
 	10,
 	10,
 	1,

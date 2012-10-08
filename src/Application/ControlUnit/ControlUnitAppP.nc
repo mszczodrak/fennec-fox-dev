@@ -337,10 +337,10 @@ done_receive:
       //printf("failed.  \n");
       //printfflush();
       call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 500);
-      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
+      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
     } else {
       busy_sending = TRUE;
-      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
+      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
       //same_msg_counter = 0;
     }
   }

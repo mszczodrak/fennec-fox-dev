@@ -22,7 +22,7 @@
 #include "nullMacParams.h"
 #include "nullRadioParams.h"
 
-uint16_t active_state = 2;
+uint16_t active_state = 5;
 
 struct fennec_configuration configurations[NUMBER_OF_CONFIGURATIONS] = {
 	{
