@@ -34,7 +34,7 @@ struct nullNet_params count_nullNet = {
 struct tdmaMac_params count_tdmaMac = {
 	2,
 	10000,
-	500000,
+	100000,
 	10,
 	10,
 	1,

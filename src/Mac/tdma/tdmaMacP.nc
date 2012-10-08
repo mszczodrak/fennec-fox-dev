@@ -580,9 +580,10 @@ implementation {
     call RadioControl.start();
     call TimerControl.start();
 
-    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
-      received_beacon = FALSE;
-    }
+//    if (call tdmaMacParams.get_root_addr() != TOS_NODE_ID) {
+//TODO: can we do better than that?
+//      received_beacon = FALSE;
+//    }
   }
 
   event void FrameTimer.fired() {
