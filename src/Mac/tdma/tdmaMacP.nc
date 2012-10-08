@@ -565,12 +565,18 @@ implementation {
     } else {
       local = global;
 
-      /* compute the passed global period */
-      local = global + active_time;
+      /* compute the last global period */
+      local = global - (global % tdma_time);
+  
+      /* get next start of the sleep time */
+      local = local + active_time;
+
+      if (local < global)
+        local = local + tdma_time;
 
       call GlobalTime.global2Local(&local);
       local = local - call GlobalTime.getLocalTime();
-      call PeriodTimer.startOneShot(local);
+      call FrameTimer.startOneShot(local);
     }
 
     /* turn on radio */
