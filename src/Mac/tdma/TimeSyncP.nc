@@ -354,8 +354,8 @@ implementation
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
-							/ (ENTRY_VALID_LIMIT * 2));
+          uint32_t d = 2 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
+							/ (ENTRY_VALID_LIMIT * 3));
           call Timer.startOneShot(d);
         } else {
           uint32_t d = 15 + call Random.rand32() % (call tdmaMacParams.get_active_time()
