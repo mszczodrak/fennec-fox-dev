@@ -1,7 +1,6 @@
 #include "TimeSyncMsg.h"
 #include "tdmaMac.h"
 
-
 generic module TimeSyncP(typedef precision_tag)
 {
     provides
