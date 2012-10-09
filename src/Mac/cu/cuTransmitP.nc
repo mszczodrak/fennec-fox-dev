@@ -57,7 +57,6 @@ implementation {
     m_msg = m_msg;
 
     if( call RadioTransmit.load(m_msg) != SUCCESS) {
-      printf("can't load\n");
       sendDoneErr = FAIL;
       post signalSendDone();
     }
@@ -193,9 +192,6 @@ implementation {
 
     if (radio_status == 1) {
       start_loading();
-    } else {
-      printf("hold it\n");
-      printfflush();
     }
     return SUCCESS;
   }
@@ -341,7 +337,6 @@ implementation {
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
       if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
-        printf("tx send failed\n");
         sendDoneErr = FAIL;
         post signalSendDone();
       }
@@ -381,7 +376,6 @@ implementation {
         
     case S_BEGIN_TRANSMIT:
       if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
-        printf("sample - send\n");
         sendDoneErr = FAIL;
         post signalSendDone();
       }
