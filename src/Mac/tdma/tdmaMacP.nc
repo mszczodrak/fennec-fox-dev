@@ -206,7 +206,7 @@ implementation {
     call TimerControl.start();
 
     if (call GlobalTime.getGlobalTime(&global) == SUCCESS) {
-      call PeriodTimer.startOneShot(1);
+      call PeriodTimer.startOneShot(tdma_time / 2);
     } else {
       call PeriodTimer.startOneShot(tdma_time * 3);
     }
