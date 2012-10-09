@@ -204,7 +204,12 @@ implementation {
     }
 
     call TimerControl.start();
-    call PeriodTimer.startOneShot(tdma_time);
+
+    if (call GlobalTime.getGlobalTime(&global) == SUCCESS) {
+      call PeriodTimer.startOneShot(1);
+    } else {
+      call PeriodTimer.startOneShot(tdma_time);
+    }
     status = S_STARTING;
     return SUCCESS;
   }

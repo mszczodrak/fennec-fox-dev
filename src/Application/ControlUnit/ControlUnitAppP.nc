@@ -7,7 +7,6 @@
 #include <Fennec.h>
 #include "hashing.h"
 #define POLICY_RESEND_RECONF		3
-#define POLICY_MAX_WRONG_CONFS		1
 
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
@@ -143,7 +142,7 @@ implementation {
     //printfflush();
     dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
 					configuration_id, configuration_seq);
-    set_new_state(configuration_id, configuration_seq);
+    reset_control();
   }
 
   event void EventsMgmt.stopDone(error_t err) {
