@@ -217,7 +217,6 @@ implementation {
       call CSN.set();
 
     if ( congestion ) {
-      //printf("busy\n");
       releaseSpiResource();
       signalDone( EBUSY );
     } else {
@@ -276,7 +275,6 @@ implementation {
         // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
         // jiffies. Assume something is wrong.
         low_level_something_wrong();
-         printf("jiffied\n");
         signalDone( ERETRY );
         break;
 
@@ -444,7 +442,6 @@ implementation {
 
   async command error_t RadioTransmit.load(message_t* msg) {
     if (radio_state != S_STARTED) {
-      printf("wrong state %d\n", radio_state);
       return FAIL;
     }
     radio_msg = msg;
