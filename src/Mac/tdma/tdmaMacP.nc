@@ -208,7 +208,7 @@ implementation {
     if (call GlobalTime.getGlobalTime(&global) == SUCCESS) {
       call PeriodTimer.startOneShot(1);
     } else {
-      call PeriodTimer.startOneShot(tdma_time);
+      call PeriodTimer.startOneShot(tdma_time * 3);
     }
     status = S_STARTING;
     return SUCCESS;
