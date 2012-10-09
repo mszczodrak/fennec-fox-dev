@@ -55,7 +55,7 @@ implementation {
   }
 
   void start_policy_send() {
-    same_msg_counter = 0;
+    atomic same_msg_counter = 0;
     call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
   }
 
@@ -68,6 +68,8 @@ implementation {
     configuration_seq = seq;
     configuration_id = conf;
     call Timer.stop();
+    printf("set new state %d\n", status);
+    printfflush();
     switch(status) {
       case S_STOPPED:
         status = S_STARTING;
@@ -98,10 +100,14 @@ implementation {
   }
 
   task void continue_reconfiguration() {
-    if (resend_confs > 0) resend_confs--;
+    atomic if (resend_confs > 0) resend_confs--;
     if (resend_confs > 0) {
+      printf("continue %d\n", resend_confs);
+      printfflush();
       start_policy_send();
     } else {
+      printf("that's it continue %d\n", resend_confs);
+      printfflush();
       switch(status) {
         case S_INIT:
           set_new_state(configuration_id, configuration_seq);
@@ -132,14 +138,12 @@ implementation {
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    //printf("new conf %d\n", new_conf);
-    //printfflush();
+    printf("new conf %d\n", new_conf);
+    printfflush();
     set_new_state(new_conf, configuration_seq + 1);
   }
 
   event void PolicyCache.wrong_conf() {
-    //printf("wrong conf\n");
-    //printfflush();
     dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
 					configuration_id, configuration_seq);
     reset_control();
@@ -159,9 +163,6 @@ implementation {
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
     nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
-
-    //printf("receive\n");
-    //printfflush();
 
     if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
@@ -231,6 +232,8 @@ done_receive:
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
     busy_sending = FALSE;
     if (error != SUCCESS) {
+      printf("sendDone failed\n");
+      printfflush();
       start_policy_send();
     } else {
       post continue_reconfiguration();
@@ -249,8 +252,8 @@ done_receive:
     if (err == SUCCESS) {
       switch(status) {
         case S_NONE:
-	  post report_new_configuration();
           status = S_STARTING;
+	  post report_new_configuration();
 
         case S_STARTING:
           status = S_STARTED;
@@ -291,13 +294,18 @@ done_receive:
     confmsg.conf = POLICY_CONFIGURATION;
     cu_msg = (nx_struct FFControl*) 
 	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
-    
+   
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
+      printf("send conf ??\n");
+      printfflush();
       post continue_reconfiguration();
       return;
     }
 
     if (cu_msg == NULL) {
+      printf("null ??\n");
+      printfflush();
+      post continue_reconfiguration();
       return;
     }
 
@@ -309,6 +317,8 @@ done_receive:
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
+      printf("failed to send ??\n");
+      printfflush();
       start_policy_send();
       //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
     } else {
