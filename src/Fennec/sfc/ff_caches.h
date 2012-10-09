@@ -17,6 +17,7 @@
 #include "BlinkAppParams.h"
 #include "nullNetParams.h"
 #include "csmacaMacParams.h"
+#include "tdmaMacParams.h"
 
 uint16_t active_state = 2;
 
@@ -48,7 +49,7 @@ struct fennec_configuration configurations[NUMBER_OF_CONFIGURATIONS] = {
 	{
 		.application = 5,
 		.network = 6,
-		.mac = 7,
+		.mac = 8,
 		.radio = 4,
 		.level = F_MINIMUM_STATE_LEVEL
 	}
@@ -99,9 +100,9 @@ struct default_params defaults[NUMBER_OF_CONFIGURATIONS] = {
 		.network_cache = &nullNet_data,
 		.network_default_params = &yellow_nullNet,
 		.network_default_size = sizeof(struct nullNet_params),
-		.mac_cache = &csmacaMac_data,
-		.mac_default_params = &yellow_csmacaMac,
-		.mac_default_size = sizeof(struct csmacaMac_params),
+		.mac_cache = &tdmaMac_data,
+		.mac_default_params = &yellow_tdmaMac,
+		.mac_default_size = sizeof(struct tdmaMac_params),
 		.radio_cache = &cc2420Radio_data,
 		.radio_default_params = &yellow_cc2420Radio,
 		.radio_default_size = sizeof(struct cc2420Radio_params)
@@ -117,7 +118,7 @@ struct fennec_event eventsTable[2] = {
 	},
 	{
 		.operation = EQ,
-		.value = 10,
+		.value = 70,
 		.scale = TYPE_SECOND,
 		.addr = 2
 	}

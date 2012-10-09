@@ -9,6 +9,7 @@
 #include "BlinkAppParams.h"
 #include "nullNetParams.h"
 #include "csmacaMacParams.h"
+#include "tdmaMacParams.h"
 
 struct ControlUnitApp_params control_ControlUnitApp = {
 };
@@ -54,9 +55,10 @@ struct BlinkApp_params yellow_BlinkApp = {
 };
 struct nullNet_params yellow_nullNet = {
 };
-struct csmacaMac_params yellow_csmacaMac = {
+struct tdmaMac_params yellow_tdmaMac = {
 	2,
-	0,
+	5000,
+	15000,
 	10,
 	10,
 	1,
