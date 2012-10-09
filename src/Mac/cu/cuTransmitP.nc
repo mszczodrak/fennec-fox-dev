@@ -57,6 +57,7 @@ implementation {
     m_msg = m_msg;
 
     if( call RadioTransmit.load(m_msg) != SUCCESS) {
+      printf("can't load\n");
       sendDoneErr = FAIL;
       post signalSendDone();
     }
@@ -65,8 +66,6 @@ implementation {
   void shutdown();
 
   task void signalSendDone() {
-    printf("signal send done\n");
-    printfflush();
     m_state = S_STARTED;
     atomic sendErr = sendDoneErr;
     post sendDone_task();
@@ -142,6 +141,7 @@ implementation {
     cu_header_t* header = (cu_header_t*) getHeader( p_msg );
     metadata_t* metadata = (metadata_t*) p_msg->metadata;
 
+
     if ((!call cuMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     }
@@ -186,8 +186,6 @@ implementation {
       return FAIL;
     }
 
-        printf("sending\n");
-        printfflush();
     m_state = S_LOAD;
     m_cca = call cuMacParams.get_cca();
     m_msg = m_msg;
@@ -196,8 +194,8 @@ implementation {
     if (radio_status == 1) {
       start_loading();
     } else {
-      //printf("hold it\n");
-      //printfflush();
+      printf("hold it\n");
+      printfflush();
     }
     return SUCCESS;
   }
@@ -331,8 +329,6 @@ implementation {
   async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
     if (error != SUCCESS) {
       sendDoneErr = error;
-      printf("load done failed\n");
-      printfflush();
       post signalSendDone();
       return;
     }
@@ -345,6 +341,7 @@ implementation {
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
       if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
+        printf("tx send failed\n");
         sendDoneErr = FAIL;
         post signalSendDone();
       }
@@ -384,6 +381,7 @@ implementation {
         
     case S_BEGIN_TRANSMIT:
       if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
+        printf("sample - send\n");
         sendDoneErr = FAIL;
         post signalSendDone();
       }
@@ -419,19 +417,13 @@ implementation {
   }
 
   event void RadioControl.startDone( error_t err) {
-    //printf("Radio ON\n");
-    //printfflush();
     radio_status = 1;
     if (m_state == S_LOAD) {
-      //printf("goo\n");
-      //printfflush();
       start_loading();
     }
   }
 
   event void RadioControl.stopDone( error_t err) {
-    //printf("Radio OFF\n");
-    //printfflush();
     radio_status = 0;
   }
 

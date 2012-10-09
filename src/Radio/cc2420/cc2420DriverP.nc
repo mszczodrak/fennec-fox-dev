@@ -166,8 +166,8 @@ implementation {
   } 
 
   void signalDone( error_t err ) {
-    radio_state = S_STARTED;
-    abortSpiRelease = FALSE;
+    atomic radio_state = S_STARTED;
+    atomic abortSpiRelease = FALSE;
     call ChipSpiResource.attemptRelease();
     signal RadioTransmit.sendDone(radio_msg, err);
   }
@@ -217,8 +217,9 @@ implementation {
       call CSN.set();
 
     if ( congestion ) {
-      signal RadioTransmit.sendDone(radio_msg, EBUSY);
+      //printf("busy\n");
       releaseSpiResource();
+      signalDone( EBUSY );
     } else {
       radio_state = S_SFD;
       call RadioTimer.start(CC2420_ABORT_PERIOD);
@@ -275,6 +276,7 @@ implementation {
         // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
         // jiffies. Assume something is wrong.
         low_level_something_wrong();
+         printf("jiffied\n");
         signalDone( ERETRY );
         break;
 
@@ -442,6 +444,7 @@ implementation {
 
   async command error_t RadioTransmit.load(message_t* msg) {
     if (radio_state != S_STARTED) {
+      printf("wrong state %d\n", radio_state);
       return FAIL;
     }
     radio_msg = msg;

@@ -149,14 +149,11 @@ implementation {
 
     call MacAMPacket.setGroup(msg, msg->conf);
 
-   printf("CU send\n");
-
     msg->crc = 0;
     msg->rssi = 0;
     msg->lqi = 0;
 
     if (len > call MacPacket.maxPayloadLength()) {
-      printf("CU size\n");
       return ESIZE;
     }
 
