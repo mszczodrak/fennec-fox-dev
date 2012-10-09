@@ -166,9 +166,11 @@ implementation {
   } 
 
   void signalDone( error_t err ) {
-    atomic radio_state = S_STARTED;
-    atomic abortSpiRelease = FALSE;
-    call ChipSpiResource.attemptRelease();
+    atomic {
+      radio_state = S_STARTED;
+      abortSpiRelease = FALSE;
+      call ChipSpiResource.attemptRelease();
+    }
     signal RadioTransmit.sendDone(radio_msg, err);
   }
 
