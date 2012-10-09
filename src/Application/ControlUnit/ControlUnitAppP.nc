@@ -6,12 +6,10 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_RESEND_RECONF		5
-#define POLICY_MIN_RESEND_RECONF 	5
+#define POLICY_RESEND_RECONF		3
 #define POLICY_MAX_WRONG_CONFS		1
 
-#define POLICY_RESEND_MIN	5
-#define POLICY_RAND_MOD 	20
+#define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
 #define POLICY_RAND_SEND	10
 #define SAME_MSG_COUNTER_THRESHOLD 2
@@ -63,7 +61,7 @@ implementation {
   }
 
   void reset_control() {
-    resend_confs = POLICY_MIN_RESEND_RECONF;
+    resend_confs = POLICY_RESEND_RECONF;
     start_policy_send();
   }
 
