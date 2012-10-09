@@ -304,7 +304,8 @@ implementation {
       }
     } else {
       if (call RadioTransmit.send(m_msg, useCca) != SUCCESS) {
-        signal RadioTransmit.sendDone(m_msg, FAIL);
+        sendDoneErr = FAIL;
+        post signalSendDone();
         return FAIL;
       }
     }
@@ -326,7 +327,8 @@ implementation {
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
       if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
-        signal RadioTransmit.sendDone(m_msg, FAIL);
+        sendDoneErr = FAIL;
+        post signalSendDone();
       }
     } else {
       m_state = S_SAMPLE_CCA;
@@ -364,7 +366,8 @@ implementation {
         
     case S_BEGIN_TRANSMIT:
       if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
-        signal RadioTransmit.sendDone(m_msg, FAIL);
+        sendDoneErr = FAIL;
+        post signalSendDone();
       }
       break;
 
