@@ -20,7 +20,4 @@ implementation {
   components new TimerEventC() as TimerEvent2C;
   EventsP.TimerEvent2 -> TimerEvent2C;
 
-  components new TimerEventC() as TimerEvent3C;
-  EventsP.TimerEvent3 -> TimerEvent3C;
-
 }

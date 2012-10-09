@@ -7,7 +7,6 @@ module EventsP {
   uses interface EventCache;
   uses interface Event as TimerEvent1;
   uses interface Event as TimerEvent2;
-  uses interface Event as TimerEvent3;
 
 }
 
@@ -32,7 +31,7 @@ implementation {
 
   void turnEvents(bool flag) {
     uint8_t i;
-    for(i = 0 ; i < 3; i++ ) {
+    for(i = 0 ; i < 2; i++ ) {
       if ( call EventCache.eventStatus(i)) {
         setEvent(i + 1, flag);
       }
@@ -54,10 +53,6 @@ implementation {
         flag ? call TimerEvent2.start(call EventCache.getEntry(2)) : call TimerEvent2.stop();
         break;
 
-      case 3:
-        flag ? call TimerEvent3.start(call EventCache.getEntry(3)) : call TimerEvent3.stop();
-        break;
-
       default:
         dbg("Events", "Events: there is no event with number %d\n", ev_num);
     }
@@ -69,10 +64,6 @@ implementation {
 
   event void TimerEvent2.occured(bool oc) {
     oc ? call EventCache.setBit(2) : call EventCache.clearBit(2);
-  }
-
-  event void TimerEvent3.occured(bool oc) {
-    oc ? call EventCache.setBit(3) : call EventCache.clearBit(3);
   }
 
 
