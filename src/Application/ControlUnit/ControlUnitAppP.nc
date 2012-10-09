@@ -6,7 +6,7 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_RESEND_RECONF		3
+#define POLICY_RESEND_RECONF		6
 
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
