@@ -80,22 +80,24 @@ implementation {
   /* Functions */
 
   command error_t Mgmt.start() {
+    error_t e;
     if (status == S_STARTED) {
-      dbg("Mac", "Mac csmaca already started\n");
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
     }
 
     localSendId = call Random.rand16();
 
-    dbg("Mac", "Mac csmaca starts\n");
+    e = call RadioControl.start();
 
-    if (call RadioControl.start() == EALREADY) {
-      signal Mgmt.startDone(SUCCESS);
+    if (e == EALREADY) {
+      status = S_STARTING;
+      signal RadioControl.startDone(EALREADY);
     }
 
-    if (call RadioControl.start() != SUCCESS) {
+    if (e == FAIL) {
       signal Mgmt.startDone(FAIL);
+      return FAIL;
     }
 
     status = S_STARTING;
@@ -103,20 +105,22 @@ implementation {
   }
 
   command error_t Mgmt.stop() {
+    error_t e;
     if (status == S_STOPPED) {
-      dbg("Mac", "Mac csmaca  already stopped\n");
       signal Mgmt.stopDone(SUCCESS);
       return SUCCESS;
     }
 
-    dbg("Mac", "Mac csmaca stops\n");
+    e = call RadioControl.start();
 
-    if (call RadioControl.start() == EALREADY) {
-      signal Mgmt.startDone(SUCCESS);
+    if (e == EALREADY) {
+      status = S_STOPPING;
+      signal RadioControl.startDone(EALREADY);
     }
 
-    if (call RadioControl.stop() != SUCCESS) {
+    if (e == FAIL) {
       signal Mgmt.stopDone(FAIL);
+      return FAIL;
     }
 
     status = S_STOPPING;
@@ -125,11 +129,10 @@ implementation {
 
 
   event void RadioControl.startDone(error_t err) {
-    if (err != SUCCESS) {
+    if (err == FAIL) {
       call RadioControl.start();
     } else {
       if (status == S_STARTING) {
-        dbg("Mac", "Mac csmaca got RadioControl startDone\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
         signal Mgmt.startDone(SUCCESS);
@@ -139,11 +142,10 @@ implementation {
 
 
   event void RadioControl.stopDone(error_t err) {
-    if (err != SUCCESS) {
+    if (err == FAIL) {
       call RadioControl.stop();
     } else {
       if (status == S_STOPPING) {
-        dbg("Mac", "Mac csmaca got RadioControl stopDone\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
         signal Mgmt.stopDone(SUCCESS);
