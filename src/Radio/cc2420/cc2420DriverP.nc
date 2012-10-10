@@ -46,6 +46,7 @@ implementation {
   norace message_t * ONE_NOK radio_msg;
   norace bool radio_cca;
   norace uint8_t radio_state = S_STOPPED;
+  norace uint8_t failed_load_counter = 0;
 
   /** Byte reception/transmission indicator */
   bool sfdHigh;
@@ -79,6 +80,7 @@ implementation {
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
+    failed_load_counter = 0;
     param_tx_power = call cc2420RadioParams.get_power();
     call CaptureSFD.captureRisingEdge();
     abortSpiRelease = FALSE;
@@ -169,6 +171,7 @@ implementation {
     atomic {
       radio_state = S_STARTED;
       abortSpiRelease = FALSE;
+      failed_load_counter = 0;
       call ChipSpiResource.attemptRelease();
     }
     signal RadioTransmit.sendDone(radio_msg, err);
@@ -444,6 +447,10 @@ implementation {
 
   async command error_t RadioTransmit.load(message_t* msg) {
     if (radio_state != S_STARTED) {
+      failed_load_counter++;
+      if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
+        signalDone(FAIL);
+      }
       return FAIL;
     }
     radio_msg = msg;
