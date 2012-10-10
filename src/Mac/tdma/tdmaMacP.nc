@@ -93,6 +93,7 @@ implementation {
   bool radio_status = OFF;
   error_t err;
   bool received_beacon = TRUE;
+  bool the_init = 1;
 
   message_t * ftsp_sync_message = NULL;
 
@@ -206,8 +207,10 @@ implementation {
 
     call TimerControl.start();
 
-    if (call TimeSyncInfo.getNumEntries() < MGMT_MIN_ENTRIES) {
+//    if (call TimeSyncInfo.getNumEntries() < MGMT_MIN_ENTRIES) {
+    if (the_init) {
       call PeriodTimer.startOneShot(tdma_time * 3);
+      the_init = 0;
     } else {
       call PeriodTimer.startOneShot(tdma_time);
     }
