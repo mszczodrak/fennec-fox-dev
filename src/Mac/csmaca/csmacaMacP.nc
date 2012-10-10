@@ -111,7 +111,7 @@ implementation {
       return SUCCESS;
     }
 
-    e = call RadioControl.start();
+    e = call RadioControl.stop();
 
     if (e == EALREADY) {
       status = S_STOPPING;
