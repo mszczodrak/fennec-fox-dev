@@ -345,6 +345,7 @@ implementation
     }
 
     command error_t TimeSyncMode.send(){
+        uint32_t delta;
         if ((call Timer.isRunning() == TRUE) || (busy_sending == TRUE)) {
           return SUCCESS;
         }
@@ -354,14 +355,14 @@ implementation
         }
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
-          uint32_t d = 1 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
+          delta = 3 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
 							/ (ENTRY_VALID_LIMIT * 2));
-          call Timer.startOneShot(d);
         } else {
-          uint32_t d = 15 + call Random.rand32() % (call tdmaMacParams.get_active_time()
+          delta = 15 + call Random.rand32() % (call tdmaMacParams.get_active_time()
                 					/ (ENTRY_VALID_LIMIT));
-          call Timer.startOneShot(d);
         }
+
+        call Timer.startOneShot(delta);
         return SUCCESS;
     }
 
