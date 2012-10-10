@@ -115,7 +115,7 @@ implementation {
 
     if (e == EALREADY) {
       status = S_STOPPING;
-      signal RadioControl.startDone(EALREADY);
+      signal RadioControl.stopDone(EALREADY);
     }
 
     if (e == FAIL) {
