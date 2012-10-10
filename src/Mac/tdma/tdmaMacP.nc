@@ -197,7 +197,7 @@ implementation {
 
     localSendId = call Random.rand16();
 
-    if (call RadioControl.start() != SUCCESS) {
+    if (call RadioControl.start() == FAIL) {
       err = FAIL;
       post start_done();
       return FAIL;
@@ -228,7 +228,7 @@ implementation {
       return SUCCESS;
     }
 
-    if (call RadioControl.stop() != SUCCESS) {
+    if (call RadioControl.stop() == FAIL) {
       err = FAIL;
       post stop_done();
     }

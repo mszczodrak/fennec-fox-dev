@@ -93,7 +93,7 @@ implementation {
 
     dbg("Mac", "Mac cu starts\n");
 
-    if (call RadioControl.start() != SUCCESS) {
+    if (call RadioControl.start() == FAIL) {
       signal Mgmt.startDone(FAIL);
     }
     status = S_STARTING;
@@ -109,7 +109,7 @@ implementation {
 
     dbg("Mac", "Mac cu stops\n");
 
-    if (call RadioControl.stop() != SUCCESS) {
+    if (call RadioControl.stop() == FAIL) {
       signal Mgmt.stopDone(FAIL);
     }
     status = S_STOPPING;

@@ -90,9 +90,14 @@ implementation {
 
     dbg("Mac", "Mac csmaca starts\n");
 
+    if (call RadioControl.start() == EALREADY) {
+      signal Mgmt.startDone(SUCCESS);
+    }
+
     if (call RadioControl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
     }
+
     status = S_STARTING;
     return SUCCESS;
   }
@@ -106,9 +111,14 @@ implementation {
 
     dbg("Mac", "Mac csmaca stops\n");
 
+    if (call RadioControl.start() == EALREADY) {
+      signal Mgmt.startDone(SUCCESS);
+    }
+
     if (call RadioControl.stop() != SUCCESS) {
       signal Mgmt.stopDone(FAIL);
     }
+
     status = S_STOPPING;
     return SUCCESS;
   }
