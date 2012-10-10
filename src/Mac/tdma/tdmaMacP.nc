@@ -206,13 +206,11 @@ implementation {
 
     call TimerControl.start();
 
-//    if (call GlobalTime.getGlobalTime(&global) == SUCCESS) {
-      //call PeriodTimer.startOneShot(tdma_time / 2);
-      call PeriodTimer.startOneShot(tdma_time);
-//    } else {
-//      call PeriodTimer.startOneShot(tdma_time * 2);
-//      //call PeriodTimer.startOneShot(tdma_time);
-//    }
+    if (call TimeSyncInfo.getNumEntries() < MGMT_MIN_ENTRIES) {
+      call PeriodTimer.startOneShot(tdma_time * 3);
+    } else {
+      call PeriodTimer.startOneShot(1);
+    }
 
     status = S_STARTING;
     return SUCCESS;
@@ -623,19 +621,19 @@ implementation {
     if (sync == SUCCESS) {
       //printf("synchronized\n");
       //printfflush();
-      dbgs(F_MAC, S_STARTED, DBGS_SYNC, (uint16_t)(global>>16),(uint16_t)global);
+      //dbgs(F_MAC, S_STARTED, DBGS_SYNC, (uint16_t)(global>>16),(uint16_t)global);
       start_synchronization();
     } else {
       //printf("received\n");
       //printfflush();
-      dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+      //dbgs(F_MAC, S_STARTED, DBGS_RECEIVE_BEACON, (uint16_t)(global>>16),(uint16_t)global);
     }    
   }
 
   event void TimeSyncNotify.msg_sent() {
     local = global = call GlobalTime.getLocalTime();
     sync = call GlobalTime.getGlobalTime(&global);
-    dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
+    //dbgs(F_MAC, S_STARTED, DBGS_SEND_BEACON, (uint16_t)(global>>16),(uint16_t)global);
   }
 
 }

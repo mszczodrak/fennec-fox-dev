@@ -55,6 +55,7 @@ enum {
   ENTRY_SEND_LIMIT      = 3,              // number of entries to send sync messages
   ENTRY_THROWOUT_LIMIT  = 500,            // if time sync error is bigger than this clear the table
   TDMA_MIN_MULT		= 2,
+  MGMT_MIN_ENTRIES	= MAX_ENTRIES - 1,
 };
 
 typedef struct TableItem

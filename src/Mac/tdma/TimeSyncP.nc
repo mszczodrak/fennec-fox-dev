@@ -356,10 +356,10 @@ implementation
 
         if (call tdmaMacParams.get_root_addr() == TOS_NODE_ID) {
           delta = 3 + call Random.rand32() % (call tdmaMacParams.get_active_time() 
-							/ (ENTRY_VALID_LIMIT * 2));
+							/ (ENTRY_VALID_LIMIT));
         } else {
           delta = 15 + call Random.rand32() % (call tdmaMacParams.get_active_time()
-                					/ (ENTRY_VALID_LIMIT));
+                					/ (ENTRY_VALID_LIMIT / 2));
         }
 
         call Timer.startOneShot(delta);
