@@ -209,7 +209,7 @@ implementation {
     if (call TimeSyncInfo.getNumEntries() < MGMT_MIN_ENTRIES) {
       call PeriodTimer.startOneShot(tdma_time * 3);
     } else {
-      call PeriodTimer.startOneShot(1);
+      call PeriodTimer.startOneShot(tdma_time);
     }
 
     status = S_STARTING;
