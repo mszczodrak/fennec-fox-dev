@@ -68,8 +68,8 @@ implementation {
     configuration_seq = seq;
     configuration_id = conf;
     call Timer.stop();
-    printf("set new state %d\n", status);
-    printfflush();
+    //printf("set new state %d\n", status);
+    //printfflush();
     switch(status) {
       case S_STOPPED:
         status = S_STARTING;
@@ -93,8 +93,8 @@ implementation {
 
       case S_INIT:
         status = S_STOPPING;
-        printf("stopping\n");
-        printfflush();
+        //printf("stopping\n");
+        //printfflush();
         call EventCache.clearMask();
         call FennecEngine.stop();
         break;
@@ -104,12 +104,12 @@ implementation {
   task void continue_reconfiguration() {
     atomic if (resend_confs > 0) resend_confs--;
     if (resend_confs > 0) {
-      printf("continue %d\n", resend_confs);
-      printfflush();
+      //printf("continue %d\n", resend_confs);
+      //printfflush();
       start_policy_send();
     } else {
-      printf("that's it continue %d\n", resend_confs);
-      printfflush();
+      //printf("that's it continue %d\n", resend_confs);
+      //printfflush();
       switch(status) {
         case S_INIT:
           set_new_state(configuration_id, configuration_seq);
@@ -140,8 +140,8 @@ implementation {
   }
 
   event void PolicyCache.newConf(conf_t new_conf) {
-    printf("new conf %d\n", new_conf);
-    printfflush();
+    //printf("new conf %d\n", new_conf);
+    //printfflush();
     set_new_state(new_conf, configuration_seq + 1);
   }
 
@@ -234,9 +234,9 @@ done_receive:
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
     atomic busy_sending = FALSE;
     if (error != SUCCESS) {
-      printf("sendDone failed\n");
-      printfflush();
-      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
+      //printf("sendDone failed\n");
+      //printfflush();
+      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
       start_policy_send();
     } else {
       post continue_reconfiguration();
@@ -255,28 +255,28 @@ done_receive:
     if (err == SUCCESS) {
       switch(status) {
         case S_NONE:
-          printf("FE start done S_NONE\n");
-          printfflush();
+          //printf("FE start done S_NONE\n");
+          //printfflush();
           status = S_STARTING;
 	  post report_new_configuration();
 
         case S_STARTING:
-          printf("FE start done S_STARTING\n");
-          printfflush();
+          //printf("FE start done S_STARTING\n");
+          //printfflush();
           status = S_STARTED;
           call PolicyCache.set_active_configuration(configuration_id);
           post continue_reconfiguration();
           break;
 
         case S_STARTED:
-          printf("FE start done S_STARTED\n");
-          printfflush();
+          //printf("FE start done S_STARTED\n");
+          //printfflush();
           status = S_COMPLETED;
           break;
 
 	default:
-          printf("FE start done def %d\n", status);
-          printfflush();
+          //printf("FE start done def %d\n", status);
+          //printfflush();
 
       }
     } else {
@@ -285,8 +285,8 @@ done_receive:
   }
 
   event void FennecEngine.stopDone(error_t err) {
-    printf("FE stop done\n");
-    printfflush();
+    //printf("FE stop done\n");
+    //printfflush();
     if (err == SUCCESS) {
       switch(status) {
         case S_STOPPING:
@@ -313,8 +313,8 @@ done_receive:
     call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
    
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      printf("send conf ??\n");
-      printfflush();
+      //printf("send conf ??\n");
+      //printfflush();
       post continue_reconfiguration();
       return;
     }
@@ -332,15 +332,15 @@ done_receive:
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      printf("failed to send ??\n");
-      printfflush();
+      //printf("failed to send ??\n");
+      //printfflush();
       start_policy_send();
-      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
+      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
     } else {
       //printf("network sent ??\n");
       //printfflush();
       busy_sending = TRUE;
-      dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
+      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
     }
   }
 
