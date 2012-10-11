@@ -6,12 +6,12 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_RESEND_RECONF		12
+#define POLICY_RESEND_RECONF		6
 
 #define POLICY_RAND_MOD 	10
 #define POLICY_RAND_OFFSET	1
 #define POLICY_RAND_SEND	10
-#define SAME_MSG_COUNTER_THRESHOLD 2
+#define SAME_MSG_COUNTER_THRESHOLD 1
 
 module ControlUnitAppP @safe() {
   provides interface SimpleStart;
@@ -285,19 +285,26 @@ done_receive:
   }
 
   event void FennecEngine.stopDone(error_t err) {
-    //printf("FE stop done\n");
-    //printfflush();
     if (err == SUCCESS) {
       switch(status) {
         case S_STOPPING:
+          //printf("FE stop done\n");
+          //printfflush();
           status = S_STOPPED;
           call PolicyCache.set_active_configuration(POLICY_CONF_ID);
           call FennecEngine.stop();
           break;
       
         case S_STOPPED:
+          //printf("FE stop done - S_STOPPED\n");
+          //printfflush();
           set_new_state(configuration_id, configuration_seq);
           break;
+
+        default:
+          //printf("FE stop done def %d\n", status);
+          //printfflush();
+
       }
     } else {
       call FennecEngine.stop();
