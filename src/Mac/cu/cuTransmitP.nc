@@ -54,8 +54,6 @@ implementation {
   task void signalSendDone();
 
   void start_loading() {
-    m_msg = m_msg;
-
     if( call RadioTransmit.load(m_msg) != SUCCESS) {
       sendDoneErr = FAIL;
       post signalSendDone();
@@ -185,13 +183,15 @@ implementation {
       return FAIL;
     }
 
-    m_state = S_LOAD;
-    m_cca = call cuMacParams.get_cca();
-    m_msg = m_msg;
-    totalCcaChecks = 0;
-
-    if (radio_status == 1) {
-      start_loading();
+    atomic {
+      m_state = S_LOAD;
+      m_cca = call cuMacParams.get_cca();
+      m_msg = m_msg;
+      totalCcaChecks = 0;
+    
+      if (radio_status == 1) {
+        start_loading();
+      }
     }
     return SUCCESS;
   }
@@ -416,6 +416,10 @@ implementation {
 
   event void RadioControl.stopDone( error_t err) {
     radio_status = 0;
+    if ((m_state == S_LOAD) || (m_state == S_SAMPLE_CCA) || (m_state == S_BEGIN_TRANSMIT)) {
+      sendDoneErr = FAIL;
+      post signalSendDone();
+    }
   }
 
 }
