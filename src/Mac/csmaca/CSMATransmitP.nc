@@ -71,9 +71,10 @@ implementation {
 
   /***************** SplitControl Commands ****************/
   command error_t SplitControl.start() {
-
     if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      call RadioControl.start();
+      if (call RadioControl.start() == EALREADY) {
+        signal RadioControl.startDone(SUCCESS);
+      }
       return SUCCESS;
 
     } else if(call SplitControlState.isState(S_STARTED)) {
@@ -89,7 +90,9 @@ implementation {
   command error_t SplitControl.stop() {
     if (call SplitControlState.isState(S_STARTED)) {
       call SplitControlState.forceState(S_STOPPING);
-      call RadioControl.stop();
+      if (call RadioControl.stop() == EALREADY) {
+        signal RadioControl.stopDone(SUCCESS);
+      }
       return SUCCESS;
 
     } else if(call SplitControlState.isState(S_STOPPED)) {
