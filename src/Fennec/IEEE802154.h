@@ -32,8 +32,12 @@
  * @version $Revision: 1.7 $ $Date: 2007/07/04 00:37:14 $
  */
 
-#ifndef __IEEE802154_H__
-#define __IEEE802154_H__
+//#ifndef __IEEE802154_H__
+//#define __IEEE802154_H__
+
+#ifndef __IEEE154_H__
+#define __IEEE154_H__
+
 
 //#include <Ieee154.h>
 
