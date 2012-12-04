@@ -7,7 +7,7 @@ use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter (
 	uint16_t delay, uint16_t delay_scale, uint16_t src, uint16_t dest )
 
 use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
-use application ControlUnit $(FENNEC_FOX_LIB)/Application/ControlUnit ()
+use application cuApp $(FENNEC_FOX_LIB)/Application/ControlUnit ()
 
 use network nullNet $(FENNEC_FOX_LIB)/Network/null ()
 use network cuNet $(FENNEC_FOX_LIB)/Network/cu ()
@@ -15,8 +15,8 @@ use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
 use network ftsp /home/marcin/github/fennec-fox-dev/src/Network/ftsp ()
 
 #use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu ()
-use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff, uint16_t min_backoff,
-        uint8_t ack, uint8_t cca, uint8_t crc)
+use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backoff=10,
+        uint8_t ack=1, uint8_t cca=1, uint8_t crc=1)
 
 #use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t sink_addr,
 #	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
@@ -40,8 +40,8 @@ use mac tdma $(FENNEC_FOX_LIB)/Mac/tdma (uint16_t root_addr,
 
 use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
 use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
-	uint8_t channel, uint8_t power, 
-	uint8_t ack, uint8_t crc)
+	uint8_t channel=26, uint8_t power=31, 
+	uint8_t ack=1, uint8_t crc=1)
 use radio cape $(FENNEC_FOX_LIB)/Radio/cape (uint16_t sink_addr,
 	uint8_t channel, uint8_t power, uint16_t remote_wakeup, 
 	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
