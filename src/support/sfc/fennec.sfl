@@ -10,7 +10,7 @@ use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 use application cuApp $(FENNEC_FOX_LIB)/Application/ControlUnit ()
 
 use application phidget_adc $(FENNEC_FOX_LIB)/Application/TestPhidgetAdc (
-	uint32_t freq, uint8_t inputChannel, uint8_t netEnable,
+	uint32_t freq, uint8_t inputChannel,
 	uint16_t dest, uint8_t sampleCount )
 
 use network nullNet $(FENNEC_FOX_LIB)/Network/null ()

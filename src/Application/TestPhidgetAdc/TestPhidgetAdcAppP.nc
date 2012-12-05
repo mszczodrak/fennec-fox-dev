@@ -58,60 +58,44 @@ module TestPhidgetAdcAppP {
 
 implementation {
 
-  bool netEnable = MoteToSerial;
   uint16_t sampleCount = SAMPLE_COUNT_DEFAULT; //samples per packet
-  message_t packet_in,  packet_out;
-  app_data_t *msg_payload = NULL, *serial_msg_payload = NULL;
-  bool sendBusy = FALSE;
-  uint16_t packet_size = 0,serial_packet_size  = 0;
-  uint16_t dest = 0;
 
-  task void appStartDone(){
-    signal Mgmt.startDone(SUCCESS);
-  }
-	
-  void chooseNetwork(bool net){
-    netEnable = net;
-    call SerialSplitControl.start();
-    if (net) { 		/* data to radio */
-      dest = call TestPhidgetAdcAppParams.get_dest();
-      msg_payload = (app_data_t*) 
-		call NetworkAMSend.getPayload(&packet_out,packet_size);
-    } else{ 		/* data to serial */
-      msg_payload = (app_data_t*) 
-		call SerialAMSend.getPayload(&packet_out,packet_size);
+  message_t network_buffer;
+  message_t serial_buffer;
+
+  app_data_t *msg_payload = NULL;
+
+  command error_t Mgmt.start() {
+    sampleCount = call TestPhidgetAdcAppParams.get_sampleCount();
+
+    /* checking for overflow for packet size */
+    if(sampleCount > SAMPLE_COUNT_MAX ){ 
+      sampleCount =  SAMPLE_COUNT_MAX;
     }
-    msg_payload->count = 0;
-    serial_msg_payload = (app_data_t*) call SerialAMSend.getPayload(&packet_in,packet_size);
-    serial_msg_payload->count = 0;
+
+    /* initialize serial */
+    if (TOS_NODE_ID == call TestPhidgetAdcAppParams.get_dest()) {
+      call SerialSplitControl.start();
+    } else {
+      signal SerialSplitControl.startDone(SUCCESS);
+    }
+
+    return SUCCESS;
   }
 
-
-  void initApp(){
-    dbg("Application", "Application ADC Test Module starts\n");
+  event void SerialSplitControl.startDone(error_t error) {
     call Timer.startPeriodic(call TestPhidgetAdcAppParams.get_freq() * 2);
     call SensorCtrl.set_rate(call TestPhidgetAdcAppParams.get_freq());
     call SensorCtrl.set_input_channel(call TestPhidgetAdcAppParams.get_inputChannel());
     call SensorCtrl.set_signaling(TRUE); //can be taken as param from Swift
     call SensorCtrl.start();
-    netEnable = call TestPhidgetAdcAppParams.get_netEnable();
-    packet_size = sizeof(app_data_t) + (sampleCount * sizeof(uint16_t));
-    serial_packet_size = sizeof(app_data_t) + ( SERIAL_PACKET_SIZE * sizeof(uint16_t));
-    chooseNetwork(netEnable); 
-  }
 
-  command error_t Mgmt.start() {
-    sampleCount = call TestPhidgetAdcAppParams.get_sampleCount();
+    msg_payload = (app_data_t*)
+                call NetworkAMSend.getPayload(&network_buffer, 
+			sizeof(app_data_t) + (sampleCount * sizeof(uint16_t)));
 
-    // checking for overflow for packet size
-    if(sampleCount > SAMPLE_COUNT_MAX ){ 
-      sampleCount =  SAMPLE_COUNT_MAX;
-    }
-    else{
-      initApp();
-      post appStartDone();
-    }
-    return SUCCESS;
+    msg_payload->count = 0;
+    signal Mgmt.startDone(SUCCESS);
   }
 
   command error_t Mgmt.stop() {
@@ -120,32 +104,26 @@ implementation {
   }
   
   void sendMessage(uint16_t data) {
-    if ((msg_payload == NULL) | (sendBusy == TRUE)) {
-      return;
-    }  
     msg_payload->data[msg_payload->count++] = data;
-    if(msg_payload->count == sampleCount){
 
-      if(netEnable){
-        if (call NetworkAMSend.send(dest, &packet_out,packet_size ) != SUCCESS) {
-        msg_payload->count = 0;
-        }    
-        else {
-          sendBusy = TRUE;
-        }    
-      } // netEnable == TRUE
-      else{
-        if (call SerialAMSend.send(dest, &packet_in,packet_size ) != SUCCESS) {
-        }   
-        else {
-        sendBusy = TRUE;
-        }
-     } 
+    if (msg_payload->count != sampleCount) {
+      return;
     }
+
+    if (NODE == call TestPhidgetAdcAppParams.get_dest()) {
+      signal NetworkReceive.receive(&network_buffer, 
+	(void*)msg_payload, sizeof(app_data_t) + (sampleCount * sizeof(uint16_t)));
+      return; 
+    }
+
+    if (call NetworkAMSend.send(call TestPhidgetAdcAppParams.get_dest(), 
+					&network_buffer, sizeof(app_data_t) + 
+				(sampleCount * sizeof(uint16_t)) ) != SUCCESS) {
+    }    
+    msg_payload->count = 0;
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    sendBusy = FALSE;
     if(error == SUCCESS){
       msg_payload->count = 0;
     }
@@ -153,9 +131,9 @@ implementation {
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
     app_data_t *payload_data = (app_data_t*) payload;
-    serial_msg_payload->count = 0;
-    serial_msg_payload->data[serial_msg_payload->count++] = payload_data->data[0];
-    call SerialAMSend.send(dest, &packet_in,serial_packet_size);
+    app_data_t *serial_msg_payload = (app_data_t*) call SerialAMSend.getPayload(&serial_buffer, len);
+    memcpy(serial_msg_payload, payload_data, len);
+    call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_buffer, len);
     call LedsBlink.led0Toggle(); /*red led*/
     return msg;
   }
@@ -166,13 +144,10 @@ implementation {
 
 
   event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    //uint8_t *serialData = (uint8_t*) payload;
-    call LedsBlink.led1Toggle(); //red led
     return msg;
   }
 
   event void SerialAMSend.sendDone(message_t *msg, error_t error) {
-    sendBusy = FALSE;
     if(error == SUCCESS){
       msg_payload->count = 0;
     }
@@ -180,7 +155,7 @@ implementation {
 	
   event void Timer.fired() {
     error_t error = call Raw.read();
-      if(error == SUCCESS){
+    if(error == SUCCESS){
     }
   }
 
@@ -193,7 +168,6 @@ implementation {
   }
 
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
-  event void SerialSplitControl.startDone(error_t error) {}
   event void SerialSplitControl.stopDone(error_t errot){}
   event void TestPhidgetAdcAppParams.receive_status(uint16_t status_flag) {}
   event void SensorCtrl.startDone(error_t error){}

@@ -31,13 +31,11 @@
 #define GENERIC_APP_ID 1
 #define SAMPLE_COUNT_DEFAULT 2
 #define SAMPLE_COUNT_MAX  5
-#define SERIAL_PACKET_SIZE 1
 #define DEFAULT_FREQ 50
-enum Network{
-  MoteToSerial, MoteToRadio
-  };
-typedef nx_struct app_data_t{
+
+typedef nx_struct app_data_t {
   nx_uint8_t count;
   nx_uint16_t (COUNT(0) data)[0];
 }app_data_t;
+
 #endif
