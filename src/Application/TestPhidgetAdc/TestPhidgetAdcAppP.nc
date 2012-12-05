@@ -69,12 +69,13 @@ implementation {
     sampleCount = call TestPhidgetAdcAppParams.get_sampleCount();
 
     /* checking for overflow for packet size */
-    if(sampleCount > SAMPLE_COUNT_MAX ){ 
+    if (sampleCount > SAMPLE_COUNT_MAX ){ 
       sampleCount =  SAMPLE_COUNT_MAX;
     }
 
     /* initialize serial */
-    if (TOS_NODE_ID == call TestPhidgetAdcAppParams.get_dest()) {
+    if ((TOS_NODE_ID == call TestPhidgetAdcAppParams.get_dest()) || 
+	        (NODE == call TestPhidgetAdcAppParams.get_dest())) {
       call SerialSplitControl.start();
     } else {
       signal SerialSplitControl.startDone(SUCCESS);
@@ -84,7 +85,6 @@ implementation {
   }
 
   event void SerialSplitControl.startDone(error_t error) {
-    call Timer.startPeriodic(call TestPhidgetAdcAppParams.get_freq() * 2);
     call SensorCtrl.set_rate(call TestPhidgetAdcAppParams.get_freq());
     call SensorCtrl.set_input_channel(call TestPhidgetAdcAppParams.get_inputChannel());
     call SensorCtrl.set_signaling(TRUE); //can be taken as param from Swift
@@ -109,10 +109,12 @@ implementation {
     if (msg_payload->count != sampleCount) {
       return;
     }
+    call LedsBlink.led2Toggle();
 
     if (NODE == call TestPhidgetAdcAppParams.get_dest()) {
       signal NetworkReceive.receive(&network_buffer, 
 	(void*)msg_payload, sizeof(app_data_t) + (sampleCount * sizeof(uint16_t)));
+      signal NetworkAMSend.sendDone(&network_buffer, SUCCESS);
       return; 
     }
 
@@ -120,7 +122,6 @@ implementation {
 					&network_buffer, sizeof(app_data_t) + 
 				(sampleCount * sizeof(uint16_t)) ) != SUCCESS) {
     }    
-    msg_payload->count = 0;
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
@@ -147,17 +148,7 @@ implementation {
     return msg;
   }
 
-  event void SerialAMSend.sendDone(message_t *msg, error_t error) {
-    if(error == SUCCESS){
-      msg_payload->count = 0;
-    }
-  }
-	
-  event void Timer.fired() {
-    error_t error = call Raw.read();
-    if(error == SUCCESS){
-    }
-  }
+  event void SerialAMSend.sendDone(message_t *msg, error_t error) {}
 
   event void Raw.readDone(error_t error, uint16_t data){
     if (error == SUCCESS) {
@@ -165,6 +156,9 @@ implementation {
 	 else appends data to the buffer */
       sendMessage(data);
     }
+  }
+
+  event void Timer.fired() {
   }
 
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
