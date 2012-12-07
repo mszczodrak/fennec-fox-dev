@@ -19,11 +19,11 @@
  */
 
 /*
- * Application: Generic Application Test Module
+ * Application: Phidget Sensor Application for Z1
  * Author: Marcin Szczodrak
- * Author:Dhananjay Palshikar
- * Date: 9/24/2012
+ * Date: 12/7/2012
  */
+
 #include "TestPhidgetAdcApp.h"
 
 configuration TestPhidgetAdcAppC {
@@ -50,6 +50,22 @@ implementation {
   components new TimerMilliC() as TimerImp;
   components TestPhidgetAdcAppC;
   TestPhidgetAdcAppP.Timer -> TimerImp;
+
+  /* Creating a queue for sending messages over the network */
+  components new QueueC(message_t*, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
+  TestPhidgetAdcAppP.NetworkQueue -> NetworkQueueC;
+
+  /* Creating a queue for sending messages over the serial interface */
+  components new QueueC(message_t*, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+  TestPhidgetAdcAppP.SerialQueue -> SerialQueueC;
+
+  /* Creating a pool of message memory for network communication */
+  components new PoolC(message_t, APP_NETWORK_QUEUE_SIZE) as NetworkPoolC;
+  TestPhidgetAdcAppP.NetworkPool -> NetworkPoolC;
+
+  /* Creating a pool of message memory for serial communication */
+  components new PoolC(message_t, APP_SERIAL_QUEUE_SIZE) as SerialPoolC;
+  TestPhidgetAdcAppP.SerialPool -> SerialPoolC;
 
   components LedsC;
   TestPhidgetAdcAppP.LedsBlink -> LedsC;

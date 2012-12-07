@@ -22,20 +22,45 @@
  * Application: ADC Test Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
- * Last Modified: 1/5/2012
+ * Last Modified: 12/7/2012
  */
 
 #ifndef __TestPhidgetAdc_APP_H_
 #define __TestPhidgetAdc_APP_H_
-//#include "printf.h"
+
 #define GENERIC_APP_ID 1
 #define SAMPLE_COUNT_DEFAULT 2
 #define SAMPLE_COUNT_MAX  5
 #define DEFAULT_FREQ 50
 
-typedef nx_struct app_data_t {
-  nx_uint8_t count;
-  nx_uint16_t (COUNT(0) data)[0];
-}app_data_t;
+#define APP_NETWORK_QUEUE_SIZE 4
+#define APP_SERIAL_QUEUE_SIZE 4
+
+/* this is the application structure that we send across the network */
+typedef nx_struct app_network_t {
+//  nx_uint16_t src;    	/* address of the node sending sensor samples */
+				/* we do not need to send the source address;
+				 * we can ask the Network protocol to tell us
+				 * from where the message has arrived */
+  nx_uint32_t seqno;		/* message sequence number */
+  nx_uint8_t sid;		/* sensor ID */
+				/* IDs are encoded following the declarations 
+				 * from the file src/Fennec/ff_sensors.h */
+  nx_uint32_t freq;		/* sampling frequency (ms) */
+  nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
+} app_network_t;
+
+
+/* this is the application structure that we send across the serial (UART) */
+typedef nx_struct app_serial_t {
+  nx_uint16_t src;    		/* address of the node sending sensor samples */
+  nx_uint32_t seqno;		/* message sequence number */
+  nx_uint8_t sid;		/* sensor ID */
+				/* IDs are encoded following the declarations 
+				 * from the file src/Fennec/ff_sensors.h */
+  nx_uint32_t freq;		/* sampling frequency (ms) */
+  nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
+} app_serial_t;
+
 
 #endif

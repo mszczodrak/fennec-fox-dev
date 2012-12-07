@@ -37,6 +37,7 @@ module TestPhidgetAdcAppP {
   uses interface Read<uint16_t> as Raw;
   uses interface Read<bool> as Occurence;
 
+  /* Network interfaces */
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
   uses interface Receive as NetworkSnoop;
@@ -44,8 +45,8 @@ module TestPhidgetAdcAppP {
   uses interface Packet as NetworkPacket;
   uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   uses interface ModuleStatus as NetworkStatus;
-  
-
+ 
+  /* Serial Interfaces */ 
   uses interface AMSend as SerialAMSend;
   uses interface AMPacket as SerialAMPacket;
   uses interface Packet as SerialPacket;
@@ -54,6 +55,15 @@ module TestPhidgetAdcAppP {
 
   uses interface Timer<TMilli> as Timer;
   uses interface Leds as LedsBlink;
+
+  /* Network Queue and Pool */
+  uses interface Queue<message_t*> as NetworkQueue;
+  uses interface Pool<message_t> as NetworkPool;
+
+  /* Serial Queue and Pool */
+  uses interface Queue<message_t*> as SerialQueue;
+  uses interface Pool<message_t> as SerialPool;
+
 }
 
 implementation {
