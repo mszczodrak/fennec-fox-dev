@@ -29,12 +29,12 @@
 #define __TestPhidgetAdc_APP_H_
 
 #define GENERIC_APP_ID 1
-#define SAMPLE_COUNT_DEFAULT 2
-#define SAMPLE_COUNT_MAX  5
-#define DEFAULT_FREQ 50
+#define SAMPLE_COUNT_MAX  20	/* Max number of samples per message */
 
-#define APP_NETWORK_QUEUE_SIZE 4
-#define APP_SERIAL_QUEUE_SIZE 4
+#define APP_MAX_NUMBER_OF_SENSORS	2
+#define APP_NETWORK_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS
+#define APP_SERIAL_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS
+#define APP_MESSAGE_POOL 		APP_NETWORK_QUEUE_SIZE + APP_SERIAL_QUEUE_SIZE
 
 /* this is the application structure that we send across the network */
 typedef nx_struct app_network_t {
@@ -47,6 +47,7 @@ typedef nx_struct app_network_t {
 				/* IDs are encoded following the declarations 
 				 * from the file src/Fennec/ff_sensors.h */
   nx_uint32_t freq;		/* sampling frequency (ms) */
+  nx_uint8_t num;		/* number of samples */
   nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
 } app_network_t;
 
@@ -59,8 +60,16 @@ typedef nx_struct app_serial_t {
 				/* IDs are encoded following the declarations 
 				 * from the file src/Fennec/ff_sensors.h */
   nx_uint32_t freq;		/* sampling frequency (ms) */
+  nx_uint8_t num;		/* number of samples */
   nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
 } app_serial_t;
 
+typedef struct app_network_internal_t {
+  uint8_t sample_count;
+  uint8_t seqno;
+  uint32_t freq;
+  app_network_t *pkt;
+  message_t *msg;
+} app_network_internal_t;
 
 #endif

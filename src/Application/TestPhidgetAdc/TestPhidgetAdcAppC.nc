@@ -59,21 +59,23 @@ implementation {
   components new QueueC(message_t*, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
   TestPhidgetAdcAppP.SerialQueue -> SerialQueueC;
 
-  /* Creating a pool of message memory for network communication */
-  components new PoolC(message_t, APP_NETWORK_QUEUE_SIZE) as NetworkPoolC;
-  TestPhidgetAdcAppP.NetworkPool -> NetworkPoolC;
-
-  /* Creating a pool of message memory for serial communication */
-  components new PoolC(message_t, APP_SERIAL_QUEUE_SIZE) as SerialPoolC;
-  TestPhidgetAdcAppP.SerialPool -> SerialPoolC;
+  /* Creating a pool of message memory for network and serial communication */
+  components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
+  TestPhidgetAdcAppP.MessagePool -> MessagePoolC;
 
   components LedsC;
   TestPhidgetAdcAppP.LedsBlink -> LedsC;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver ;
-  TestPhidgetAdcAppP.SensorCtrl -> PhidgetAdcDriver.SensorCtrl;
-  TestPhidgetAdcAppP.Raw -> PhidgetAdcDriver.Raw;
-  TestPhidgetAdcAppP.Occurence -> PhidgetAdcDriver.Occurence;
+  components new phidget_adc_driverC() as PhidgetAdcDriver_1;
+  TestPhidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
+  TestPhidgetAdcAppP.Sensor_1_Raw -> PhidgetAdcDriver_1.Raw;
+  TestPhidgetAdcAppP.Sensor_1_Occurence -> PhidgetAdcDriver_1.Occurence;
+
+  components new phidget_adc_driverC() as PhidgetAdcDriver_2;
+  TestPhidgetAdcAppP.Sensor_2_Ctrl -> PhidgetAdcDriver_2.SensorCtrl;
+  TestPhidgetAdcAppP.Sensor_2_Raw -> PhidgetAdcDriver_2.Raw;
+  TestPhidgetAdcAppP.Sensor_2_Occurence -> PhidgetAdcDriver_2.Occurence;
+
 
   //serial wiring
   components SerialActiveMessageC;
