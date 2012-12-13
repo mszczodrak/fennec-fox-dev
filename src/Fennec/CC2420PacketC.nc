@@ -39,7 +39,7 @@ configuration CC2420PacketC {
 
   provides {
     interface CC2420Packet;
-    interface PacketAcknowledgements as Acks;
+    interface PacketAcknowledgements as Acks
     interface CC2420PacketBody;
     interface LinkPacketMetadata;
 

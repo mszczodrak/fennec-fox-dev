@@ -197,4 +197,25 @@ implementation {
     (call CC2420PacketBody.getMetadata( msg ))->timesync = FALSE;
   }
 
+
+  void PacketTimeStampclear(message_t* msg) @C()
+  {
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    meta->timesync = FALSE;
+    meta->timestamp = CC2420_INVALID_TIMESTAMP;
+  }
+
+  void PacketTimeStampset(message_t* msg, uint32_t value) @C()
+  {
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    meta->timestamp = value;
+  }
+
+  bool PacketTimeSyncOffsetisSet(message_t* msg) @C()
+  {
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    return (meta->timesync);
+  }
+
+
 }

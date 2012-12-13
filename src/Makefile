@@ -5,7 +5,7 @@ SFC_GEN=$(FENNEC_FOX_LIB)/Fennec/sfc
 #SYSTEM_BUS_FREQUENCY := 104
 PFLAGS+=-DTOSH_DATA_LENGTH=127
 
-CFLAGS+=-I/home/marcin/git/capefox/cape
+#CFLAGS+=-I/home/marcin/git/capefox/cape
 
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
