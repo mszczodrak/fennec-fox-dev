@@ -44,6 +44,7 @@ configuration cc2420RadioC {
 
 implementation {
 
+#ifndef CAPE_FOX
   components cc2420RadioP;
   components cc2420ControlC;
   components cc2420DriverC;
@@ -77,5 +78,31 @@ implementation {
   RadioReceive = cc2420ReceiveC.Receive;
   RadioTransmit = cc2420DriverC.RadioTransmit;
   cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
+
+#else 
+
+  components capeSimRadioC;
+  Mgmt = capeSimRadioC;
+
+  EnergyIndicator = capeSimRadioC.EnergyIndicator;
+  cc2420RadioParams = capeSimRadioC.cc2420RadioParams;
+  ByteIndicator = capeSimRadioC.ByteIndicator;
+
+  cc2420RadioParams = capeSimRadioC;
+  RadioStatus = capeSimRadioC.RadioStatus;
+
+  RadioControl = capeSimRadioC.SplitControl;
+
+  RadioResource = capeSimRadioC.RadioResource;
+  RadioConfig = capeSimRadioC.RadioConfig;
+  RadioPower = capeSimRadioC.RadioPower;
+  ReadRssi = capeSimRadioC.ReadRssi;
+
+  PacketIndicator = capeSimRadioC.PacketIndicator;
+
+  RadioReceive = capeSimRadioC.RadioReceive;
+  RadioTransmit = capeSimRadioC.RadioTransmit;
+
+#endif
 
 }

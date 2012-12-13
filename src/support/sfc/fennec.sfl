@@ -52,10 +52,6 @@ use radio nullRadio $(FENNEC_FOX_LIB)/Radio/null ()
 use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
 	uint8_t channel=26, uint8_t power=31, 
 	uint8_t ack=1, uint8_t crc=1)
-use radio cape $(FENNEC_FOX_LIB)/Radio/cape (uint16_t sink_addr,
-	uint8_t channel, uint8_t power, uint16_t remote_wakeup, 
-	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
-	uint8_t ack, uint8_t cca, uint8_t crc)
 
 use radio glossy $(FENNEC_FOX_LIB)/Radio/glossy ()
 
