@@ -40,7 +40,7 @@ configuration nullRadioC {
   provides interface SplitControl as RadioControl;
 
   provides interface RadioBuffer;
-  provides interface Send as RadioSend;
+  provides interface RadioSend;
 
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;

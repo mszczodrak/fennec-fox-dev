@@ -14,7 +14,7 @@ module cuTransmitP @safe() {
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioBuffer;
-  uses interface Send as RadioSend;
+  uses interface RadioSend;
   uses interface SplitControl as RadioControl;
   uses interface cuMacParams;
   uses interface Random;
@@ -322,7 +322,7 @@ implementation {
     return SUCCESS;
   }
 
-  event void RadioBuffer.loadDone(message_t* msg, error_t error) {
+  async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
     if (error != SUCCESS) {
       sendDoneErr = error;
       post signalSendDone();
@@ -391,7 +391,7 @@ implementation {
     }
   }
       
-  event void RadioSend.sendDone(message_t *msg, error_t error) {
+  async event void RadioSend.sendDone(message_t *msg, error_t error) {
     if (m_state == S_CANCEL){
       sendDoneErr = ECANCEL;
       post signalSendDone();

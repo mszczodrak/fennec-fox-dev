@@ -49,7 +49,7 @@ configuration cuMacC {
 
   uses interface SplitControl as RadioControl;
   uses interface RadioBuffer;
-  uses interface Send as RadioSend;
+  uses interface RadioSend;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;

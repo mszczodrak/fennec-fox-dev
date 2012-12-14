@@ -37,7 +37,7 @@ module cc2420DriverP @safe() {
   uses interface CC2420Receive;
   uses interface cc2420RadioParams;
   provides interface RadioBuffer;
-  provides interface Send as RadioSend;
+  provides interface RadioSend;
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 }
@@ -432,7 +432,7 @@ implementation {
     }
   }
 
-  command error_t RadioBuffer.load(message_t* msg) {
+  async command error_t RadioBuffer.load(message_t* msg) {
     if (radio_state != S_STARTED) {
       failed_load_counter++;
       if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
@@ -449,7 +449,7 @@ implementation {
     return SUCCESS;
   }
 
-  command error_t RadioSend.send(message_t* msg, bool useCca) {
+  async command error_t RadioSend.send(message_t* msg, bool useCca) {
     if ((msg != radio_msg) || (radio_state != S_LOAD))
       return FAIL;
 
@@ -462,7 +462,7 @@ implementation {
     return SUCCESS;
   }
 
-  command error_t RadioSend.cancel(message_t *msg) {
+  async command error_t RadioSend.cancel(message_t *msg) {
     call CSN.clr();
     call SFLUSHTX.strobe();
     call CSN.set();
@@ -471,11 +471,11 @@ implementation {
     return SUCCESS;
   }
 
-  command uint8_t RadioSend.maxPayloadLength() {
+  async command uint8_t RadioSend.maxPayloadLength() {
     return 128;
   }
 
-  command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
+  async command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
     return msg;
   }
 

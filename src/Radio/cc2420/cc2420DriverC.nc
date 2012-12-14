@@ -6,7 +6,7 @@ configuration cc2420DriverC {
   provides interface ReceiveIndicator as ByteIndicator;
 
   provides interface RadioBuffer;
-  provides interface Send as RadioSend;
+  provides interface RadioSend;
 
   uses interface cc2420RadioParams;
 }

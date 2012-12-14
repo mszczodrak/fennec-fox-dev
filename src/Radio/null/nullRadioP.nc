@@ -39,7 +39,7 @@ module nullRadioP @safe() {
   provides interface Read<uint16_t> as ReadRssi;
   provides interface SplitControl as RadioControl;
   provides interface RadioBuffer;
-  provides interface Send as RadioSend;
+  provides interface RadioSend;
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
@@ -219,7 +219,7 @@ implementation {
     signal RadioBuffer.loadDone(m, SUCCESS);
   }
 
-  command error_t RadioBuffer.load(message_t* msg) {
+  async command error_t RadioBuffer.load(message_t* msg) {
     m = msg;
     post load_done();
     return SUCCESS;
@@ -229,20 +229,20 @@ implementation {
     signal RadioSend.sendDone(m, SUCCESS);
   }
 
-  command error_t RadioSend.send(message_t* msg, bool useCca) {
+  async command error_t RadioSend.send(message_t* msg, bool useCca) {
     post send_done();
     return SUCCESS;
   }
 
-  command error_t RadioSend.cancel(message_t *msg) {
+  async command error_t RadioSend.cancel(message_t *msg) {
     return SUCCESS;
   }
 
-  command uint8_t RadioSend.maxPayloadLength() {
+  async command uint8_t RadioSend.maxPayloadLength() {
     return 128;
   }
 
-  command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
+  async command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
     return msg;
   }
 

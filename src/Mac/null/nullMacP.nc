@@ -43,7 +43,7 @@ module nullMacP @safe() {
 
   uses interface nullMacParams;
   uses interface RadioBuffer;
-  uses interface Send as RadioSend;
+  uses interface RadioSend;
 
   uses interface SplitControl as RadioControl;
   uses interface ModuleStatus as RadioStatus;
@@ -459,13 +459,13 @@ implementation {
     }
   }
 
-  event void RadioBuffer.loadDone(message_t* msg, error_t error) {
+  async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
     m_state = S_BEGIN_TRANSMIT;
     call RadioSend.send(m_msg, 0);
   }
 
 
-  event void RadioSend.sendDone(message_t *msg, error_t error) {
+  async event void RadioSend.sendDone(message_t *msg, error_t error) {
     m_state = S_STARTED;
     atomic sendErr = error;
     post sendDone_task();

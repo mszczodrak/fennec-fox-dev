@@ -9,7 +9,7 @@ configuration cuTransmitC {
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
   uses interface RadioBuffer;
-  uses interface Send as RadioSend;
+  uses interface RadioSend;
   uses interface SplitControl as RadioControl;
   uses interface cuMacParams;
   uses interface RadioPower;
