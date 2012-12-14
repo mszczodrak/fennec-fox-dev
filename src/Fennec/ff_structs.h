@@ -41,7 +41,7 @@ typedef nx_struct cc2420_header_t {
   nxle_uint16_t dest;
   nxle_uint16_t src;
   /** CC2420 802.15.4 header ends here */
-  nxle_uint8_t type;
+//  nxle_uint8_t type;
 } cc2420_header_t;
 
 

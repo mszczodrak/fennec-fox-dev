@@ -35,19 +35,7 @@ implementation {
     default: return -100;
     }
   }
-  
-  uint8_t * ONE getNetwork(message_t * ONE msg) {
-    cc2420_header_t *hdr = (cc2420_header_t*)(getHeader( msg ));
-    int offset;
-    
-    offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
-      getAddressLength((hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3) + 
-      offsetof(cc2420_header_t, dest);
-
-    return ((uint8_t *)hdr) + offset;
-  }
-
-
+ 
   /**
 	returns offset of timestamp from the beginning of cc2420 header which is
            sizeof(cc2420_header_t)+datalen-sizeof(timesync_radio_t)

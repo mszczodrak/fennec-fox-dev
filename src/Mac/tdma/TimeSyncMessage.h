@@ -44,7 +44,7 @@ typedef nx_uint32_t timesync_radio_t;
 
 typedef nx_struct timesync_footer_t
 {
-	nx_am_id_t type;
+  nx_am_id_t type;
   timesync_radio_t timestamp;
 } timesync_footer_t;
 
