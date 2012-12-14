@@ -27,7 +27,7 @@
 #ifndef FF_STATES_H
 #define FF_STATES_H
 
-enum {
+typedef enum {
         /* States */
         S_NONE                  = 0,
         S_STOPPED               = 1,
@@ -72,7 +72,7 @@ enum {
         S_RX_LENGTH             = 42,
         S_RX_FCF                = 43,
         S_RX_PAYLOAD            = 44,
-};
+} fennec_state_t;
 
 
 #endif

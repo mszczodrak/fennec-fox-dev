@@ -36,16 +36,6 @@ module cc2420ReceiveP @safe() {
 
 implementation {
 
-  typedef enum {
-    S_STOPPED,
-    S_STARTED,
-    S_RX_LENGTH,
-    S_RX_DEC,
-    S_RX_DEC_WAIT,
-    S_RX_FCF,
-    S_RX_PAYLOAD,
-  } cc2420_receive_state_t;
-
   enum {
     RXFIFO_SIZE = 128,
     TIMESTAMP_QUEUE_SIZE = 8,
@@ -72,7 +62,7 @@ implementation {
   norace message_t* ONE_NOK m_p_rx_buf;
 
   message_t m_rx_buf;
-  cc2420_receive_state_t m_state;
+  fennec_state_t m_state;
 
   /***************** Prototypes ****************/
   void reset_state();
