@@ -122,28 +122,14 @@ conf_t get_active_state();
 
 bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
 
+uint8_t* ONE getHeader( message_t* ONE msg );
+metadata_t* getMetadata( message_t* msg );
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-//#include "CC2420.h"
 #include "message.h"
 #include <Ieee154.h>
-
-
-uint8_t* ONE getHeader( message_t* ONE msg ) {
-  return (uint8_t*) msg->header;
-}
-
-metadata_t* getMetadata( message_t* msg ) {
-  return (metadata_t*)msg->metadata;
-}
-
-uint8_t* getPayload( message_t* msg) {
- return (uint8_t*) msg->data;
-}
-
-
 
 
 #endif

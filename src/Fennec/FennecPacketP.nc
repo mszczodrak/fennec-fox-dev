@@ -6,7 +6,6 @@
 module FennecPacketP @safe() {
 
   provides {
-    interface CC2420PacketBody;
 
     interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
     interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
@@ -20,9 +19,14 @@ module FennecPacketP @safe() {
 
 implementation {
 
+  uint8_t* ONE getHeader( message_t* ONE msg ) @C() {
+    return (uint8_t*) msg->header;
+  }
 
-  /***************** CC2420Packet Commands ****************/
-  
+  metadata_t* getMetadata( message_t* msg ) @C() {
+    return (metadata_t*)msg->metadata;
+  }
+
   int getAddressLength(int type) {
     switch (type) {
     case IEEE154_ADDR_SHORT: return 2;
@@ -42,30 +46,6 @@ implementation {
 
     return ((uint8_t *)hdr) + offset;
   }
-
-  /***************** CC2420PacketBody Commands ****************/
-  async command cc2420_header_t * ONE CC2420PacketBody.getHeader( message_t* ONE msg ) {
-    return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
-  }
-
-  async command uint8_t * CC2420PacketBody.getPayload( message_t* msg) {
-    cc2420_header_t *hdr = (cc2420_header_t*)(getHeader( msg ));
-    int offset;
-    
-    offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
-      getAddressLength((hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3) + 
-      offsetof(cc2420_header_t, dest);
-
-    return ((uint8_t *)hdr) + offset;
-  }
-
-  async command metadata_t *CC2420PacketBody.getMetadata( message_t* msg ) {
-    return (metadata_t*)msg->metadata;
-  }
-
-//  async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
-//    return call CC2420Packet.getLqi(msg) > 105;
-//  }
 
   /***************** PacketTimeStamp32khz Commands ****************/
   async command bool PacketTimeStamp32khz.isValid(message_t* msg)
