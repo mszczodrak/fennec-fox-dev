@@ -74,20 +74,6 @@ implementation {
 
   task void receiveDone_task();
 
-  void PacketTimeStampclear(message_t* msg)
-  {
-    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata(msg);
-    meta->timesync = FALSE;
-    meta->timestamp = CC2420_INVALID_TIMESTAMP;
-  }
-
-  void PacketTimeStampset(message_t* msg, uint32_t value)
-  {
-    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata(msg);
-    meta->timestamp = value;
-  }
-
-
   /***************** Init Commands ****************/
   command error_t Init.init() {
     m_p_rx_buf = &m_rx_buf;
@@ -316,7 +302,7 @@ implementation {
    * get the next packet.
    */
   task void receiveDone_task() {
-    cc2420_metadata_t* metadata = (cc2420_metadata_t*)getMetadata( m_p_rx_buf );
+    metadata_t* metadata = (metadata_t*)getMetadata( m_p_rx_buf );
     cc2420_header_t* header = (cc2420_header_t*)getHeader( m_p_rx_buf);
     uint8_t length = header->length;
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));

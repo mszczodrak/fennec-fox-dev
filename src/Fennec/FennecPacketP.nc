@@ -6,10 +6,7 @@
 module FennecPacketP @safe() {
 
   provides {
-//    interface FennecPacket;
-//    interface PacketAcknowledgements as Acks;
     interface CC2420PacketBody;
-//    interface LinkPacketMetadata;
 
     interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
     interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
@@ -23,21 +20,6 @@ module FennecPacketP @safe() {
 
 implementation {
 
-
-  /***************** PacketAcknowledgement Commands ****************/
-//  async command error_t Acks.requestAck( message_t* p_msg ) {
-//    (call CC2420PacketBody.getHeader( p_msg ))->fcf |= 1 << IEEE154_FCF_ACK_REQ;
-//    return SUCCESS;
-//  }
-
-//  async command error_t Acks.noAck( message_t* p_msg ) {
-//    (call CC2420PacketBody.getHeader( p_msg ))->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
-//    return SUCCESS;
-//  }
-
-//  async command bool Acks.wasAcked( message_t* p_msg ) {
-//    return (call CC2420PacketBody.getMetadata( p_msg ))->ack;
-//  }
 
   /***************** CC2420Packet Commands ****************/
   
@@ -61,41 +43,6 @@ implementation {
     return ((uint8_t *)hdr) + offset;
   }
 
-//  async command void CC2420Packet.setPower( message_t* p_msg, uint8_t power ) {
-//    if ( power > 31 )
-//      power = 31;
-//    (call CC2420PacketBody.getMetadata( p_msg ))->tx_power = power;
-//  }
-
-//  async command uint8_t CC2420Packet.getPower( message_t* p_msg ) {
-//    return (call CC2420PacketBody.getMetadata( p_msg ))->tx_power;
-//  }
-   
-//  async command int8_t CC2420Packet.getRssi( message_t* p_msg ) {
-//    return (call CC2420PacketBody.getMetadata( p_msg ))->rssi;
-//  }
-
-//  async command uint8_t CC2420Packet.getLqi( message_t* p_msg ) {
-//    return (call CC2420PacketBody.getMetadata( p_msg ))->lqi;
-//  }
-
-//  async command uint8_t CC2420Packet.getNetwork( message_t* ONE p_msg ) {
-//#if defined(TFRAMES_ENABLED)
-//    return TINYOS_6LOWPAN_NETWORK_ID;
-//#else
-//    atomic 
-//      return *(getNetwork(p_msg));
-//#endif
-//  }
-
-//  async command void CC2420Packet.setNetwork( message_t* ONE p_msg , uint8_t networkId ) {
-//#if ! defined(TFRAMES_ENABLED)
-//    atomic 
-//      *(getNetwork(p_msg)) = networkId;
-//#endif
-//  }    
-
-
   /***************** CC2420PacketBody Commands ****************/
   async command cc2420_header_t * ONE CC2420PacketBody.getHeader( message_t* ONE msg ) {
     return TCAST(cc2420_header_t* ONE, (uint8_t *)msg + offsetof(message_t, data) - sizeof( cc2420_header_t ));
@@ -112,8 +59,8 @@ implementation {
     return ((uint8_t *)hdr) + offset;
   }
 
-  async command cc2420_metadata_t *CC2420PacketBody.getMetadata( message_t* msg ) {
-    return (cc2420_metadata_t*)msg->metadata;
+  async command metadata_t *CC2420PacketBody.getMetadata( message_t* msg ) {
+    return (metadata_t*)msg->metadata;
   }
 
 //  async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
@@ -200,20 +147,20 @@ implementation {
 
   void PacketTimeStampclear(message_t* msg) @C()
   {
-    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    metadata_t *meta = (metadata_t*)getMetadata( msg );
     meta->timesync = FALSE;
     meta->timestamp = CC2420_INVALID_TIMESTAMP;
   }
 
   void PacketTimeStampset(message_t* msg, uint32_t value) @C()
   {
-    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    metadata_t *meta = (metadata_t*)getMetadata( msg );
     meta->timestamp = value;
   }
 
   bool PacketTimeSyncOffsetisSet(message_t* msg) @C()
   {
-    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    metadata_t *meta = (metadata_t*)getMetadata( msg );
     return (meta->timesync);
   }
 

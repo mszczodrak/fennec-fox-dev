@@ -227,7 +227,7 @@ implementation {
   async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
     cc2420_header_t* ack_header;
     cc2420_header_t* msg_header;
-    cc2420_metadata_t* msg_metadata;
+    metadata_t* msg_metadata;
     uint8_t* ack_buf;
     uint8_t length;
 
@@ -238,7 +238,7 @@ implementation {
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call RadioTimer.stop();
 
-        msg_metadata = (cc2420_metadata_t*)getMetadata( radio_msg );
+        msg_metadata = (metadata_t*)getMetadata( radio_msg );
         ack_buf = (uint8_t *) ack_header;
         length = ack_header->length;
 
@@ -408,7 +408,7 @@ implementation {
    */
   void loadTXFIFO() {
     cc2420_header_t* header = (cc2420_header_t*) getHeader( radio_msg );
-    cc2420_metadata_t* meta = (cc2420_metadata_t*) getMetadata( radio_msg );
+    metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
     uint8_t tx_power = meta->tx_power;
 
     if ( !tx_power ) {

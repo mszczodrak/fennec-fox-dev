@@ -50,7 +50,7 @@ interface CC2420PacketBody {
   /**
    * @return pointer to the cc2420_metadata_t of the given message
    */
-  async command cc2420_metadata_t * ONE getMetadata(message_t * ONE msg);
+  async command metadata_t * ONE getMetadata(message_t * ONE msg);
   
 }
 

@@ -49,15 +49,6 @@ typedef nx_struct cc2420_header_t {
   nxle_uint16_t dest;
   nxle_uint16_t src;
   /** CC2420 802.15.4 header ends here */
-#ifdef CC2420_HW_SECURITY
-  security_header_t secHdr;
-#endif
-
-#ifndef TFRAMES_ENABLED
-  /** I-Frame 6LowPAN interoperability byte */
-  nxle_uint8_t network;
-#endif
-
   nxle_uint8_t type;
 } cc2420_header_t;
 
@@ -72,7 +63,8 @@ typedef nx_struct cc2420_footer_t {
  * Note that the first two bytes automatically take in the values of the
  * FCS when the payload is full. Do not modify the first two bytes of metadata.
  */
-typedef nx_struct cc2420_metadata_t {
+/*
+typedef nx_struct metadata_t {
   nx_uint8_t rssi;
   nx_uint8_t lqi;
   nx_uint8_t tx_power;
@@ -82,12 +74,12 @@ typedef nx_struct cc2420_metadata_t {
   nx_uint32_t timestamp;
   nx_uint16_t rxInterval;
 
-  /** Packet Link Metadata */
 #ifdef PACKET_LINK
   nx_uint16_t maxRetries;
   nx_uint16_t retryDelay;
 #endif
-} cc2420_metadata_t;
+} metadata_t;
+*/
 
 
 typedef nx_struct cc2420_packet_t {
