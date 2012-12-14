@@ -33,7 +33,7 @@ implementation {
   }
   
   uint8_t * ONE getNetwork(message_t * ONE msg) {
-    cc2420_header_t *hdr = (call CC2420PacketBody.getHeader( msg ));
+    cc2420_header_t *hdr = (cc2420_header_t*)(getHeader( msg ));
     int offset;
     
     offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
@@ -49,7 +49,7 @@ implementation {
   }
 
   async command uint8_t * CC2420PacketBody.getPayload( message_t* msg) {
-    cc2420_header_t *hdr = (call CC2420PacketBody.getHeader( msg ));
+    cc2420_header_t *hdr = (cc2420_header_t*)(getHeader( msg ));
     int offset;
     
     offset = getAddressLength((hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3) +
@@ -128,7 +128,7 @@ implementation {
   //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
   async command uint8_t PacketTimeSyncOffset.get(message_t* msg)
   {
-    return (call CC2420PacketBody.getHeader(msg))->length
+    return ((cc2420_header_t*)getHeader(msg))->length
             + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
             - MAC_FOOTER_SIZE
             - sizeof(timesync_radio_t);
