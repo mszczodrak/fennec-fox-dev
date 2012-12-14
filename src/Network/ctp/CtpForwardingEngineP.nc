@@ -616,7 +616,7 @@ implementation {
       }
 
       memset(newMsg, 0, sizeof(message_t));
-      memset(m->metadata, 0, sizeof(message_metadata_t));
+      memset(m->metadata, 0, sizeof(metadata_t));
       
       qe->msg = m;
       qe->client = 0xff;
