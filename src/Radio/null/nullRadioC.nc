@@ -39,7 +39,8 @@ configuration nullRadioC {
 
   provides interface SplitControl as RadioControl;
 
-  provides interface RadioTransmit;
+  provides interface RadioBuffer;
+  provides interface Send as RadioSend;
 
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;
@@ -64,7 +65,8 @@ implementation {
   RadioPower = nullRadioP.RadioPower;
   ReadRssi = nullRadioP.ReadRssi;
 
-  RadioTransmit = nullRadioP.RadioTransmit;
+  RadioBuffer = nullRadioP.RadioBuffer;
+  RadioSend = nullRadioP.RadioSend;
   RadioControl = nullRadioP.RadioControl;
 
 }

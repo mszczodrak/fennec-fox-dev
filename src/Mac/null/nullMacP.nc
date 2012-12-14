@@ -42,7 +42,8 @@ module nullMacP @safe() {
   provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
   uses interface nullMacParams;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface Send as RadioSend;
 
   uses interface SplitControl as RadioControl;
   uses interface ModuleStatus as RadioStatus;
@@ -252,12 +253,12 @@ implementation {
     m_state = S_LOAD;
     m_msg = m_msg;
 
-    call RadioTransmit.load(m_msg);
+    call RadioBuffer.load(m_msg);
     return SUCCESS;
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
-    return SUCCESS;
+    return call RadioSend.cancel(msg);
   }
 
   command uint8_t MacAMSend.maxPayloadLength() {
@@ -458,13 +459,13 @@ implementation {
     }
   }
 
-  async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+  event void RadioBuffer.loadDone(message_t* msg, error_t error) {
     m_state = S_BEGIN_TRANSMIT;
-    call RadioTransmit.send(m_msg, 0);
+    call RadioSend.send(m_msg, 0);
   }
 
 
-  async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
+  event void RadioSend.sendDone(message_t *msg, error_t error) {
     m_state = S_STARTED;
     atomic sendErr = error;
     post sendDone_task();

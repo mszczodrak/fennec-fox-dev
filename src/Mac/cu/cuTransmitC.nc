@@ -8,7 +8,8 @@ configuration cuTransmitC {
 
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface Send as RadioSend;
   uses interface SplitControl as RadioControl;
   uses interface cuMacParams;
   uses interface RadioPower;
@@ -27,7 +28,8 @@ implementation {
   components new MuxAlarm32khz32C() as Alarm;
   cuTransmitP.BackoffTimer -> Alarm;
 
-  RadioTransmit = cuTransmitP.RadioTransmit;
+  RadioBuffer = cuTransmitP.RadioBuffer;
+  RadioSend = cuTransmitP.RadioSend;
 
   cuMacParams = cuTransmitP.cuMacParams;
 

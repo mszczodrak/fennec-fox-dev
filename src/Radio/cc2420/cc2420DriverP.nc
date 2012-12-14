@@ -36,7 +36,8 @@ module cc2420DriverP @safe() {
 
   uses interface CC2420Receive;
   uses interface cc2420RadioParams;
-  provides interface RadioTransmit;
+  provides interface RadioBuffer;
+  provides interface Send as RadioSend;
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 }
@@ -47,6 +48,7 @@ implementation {
   norace bool radio_cca;
   norace uint8_t radio_state = S_STOPPED;
   norace uint8_t failed_load_counter = 0;
+  norace error_t errorSendDone;
 
   /** Byte reception/transmission indicator */
   bool sfdHigh;
@@ -147,14 +149,19 @@ implementation {
     param_tx_power = call cc2420RadioParams.get_power();
   } 
 
+  task void radioSendDone() {
+    signal RadioSend.sendDone(radio_msg, errorSendDone);
+  }
+
   void signalDone( error_t err ) {
+    errorSendDone = err;
+    post radioSendDone();
     atomic {
       radio_state = S_STARTED;
       abortSpiRelease = FALSE;
       failed_load_counter = 0;
       call ChipSpiResource.attemptRelease();
     }
-    signal RadioTransmit.sendDone(radio_msg, err);
   }
 
 
@@ -425,7 +432,7 @@ implementation {
     }
   }
 
-  async command error_t RadioTransmit.load(message_t* msg) {
+  command error_t RadioBuffer.load(message_t* msg) {
     if (radio_state != S_STARTED) {
       failed_load_counter++;
       if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
@@ -442,7 +449,7 @@ implementation {
     return SUCCESS;
   }
 
-  async command error_t RadioTransmit.send(message_t* msg, bool useCca) {
+  command error_t RadioSend.send(message_t* msg, bool useCca) {
     if ((msg != radio_msg) || (radio_state != S_LOAD))
       return FAIL;
 
@@ -455,13 +462,23 @@ implementation {
     return SUCCESS;
   }
 
-  async command void RadioTransmit.cancel(message_t *msg) {
+  command error_t RadioSend.cancel(message_t *msg) {
     call CSN.clr();
     call SFLUSHTX.strobe();
     call CSN.set();
     releaseSpiResource();
     radio_state = S_STARTED;
+    return SUCCESS;
   }
+
+  command uint8_t RadioSend.maxPayloadLength() {
+    return 128;
+  }
+
+  command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
+    return msg;
+  }
+
 
   /***************** SpiResource Events ****************/
   event void SpiResource.granted() {
@@ -492,7 +509,7 @@ implementation {
   async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
     call CSN.set();
     releaseSpiResource();
-    signal RadioTransmit.loadDone(radio_msg, error);
+    signal RadioBuffer.loadDone(radio_msg, error);
   }
 
   async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {

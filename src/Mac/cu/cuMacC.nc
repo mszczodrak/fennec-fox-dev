@@ -48,7 +48,8 @@ configuration cuMacC {
   uses interface Resource as RadioResource;
 
   uses interface SplitControl as RadioControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface Send as RadioSend;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -92,7 +93,8 @@ implementation {
   components RandomC;
   cuMacP.Random -> RandomC;
 
-  RadioTransmit = cuTransmitC.RadioTransmit;
+  RadioBuffer = cuTransmitC.RadioBuffer;
+  RadioSend = cuTransmitC.RadioSend;
   EnergyIndicator = cuTransmitC.EnergyIndicator;
   RadioControl = cuTransmitC.RadioControl;
 }

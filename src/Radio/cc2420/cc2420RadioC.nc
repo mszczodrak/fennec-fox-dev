@@ -36,7 +36,8 @@ configuration cc2420RadioC {
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
   provides interface SplitControl as RadioControl;
-  provides interface RadioTransmit;
+  provides interface Send as RadioSend;
+  provides interface RadioBuffer;
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
@@ -76,7 +77,8 @@ implementation {
   cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
   RadioReceive = cc2420ReceiveC.Receive;
-  RadioTransmit = cc2420DriverC.RadioTransmit;
+  RadioBuffer = cc2420DriverC.RadioBuffer;
+  RadioSend = cc2420DriverC.RadioSend;
   cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
 
 #else 

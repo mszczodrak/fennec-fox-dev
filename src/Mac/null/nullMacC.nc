@@ -47,7 +47,8 @@ configuration nullMacC {
   uses interface Resource as RadioResource;
 
   uses interface SplitControl as RadioControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface Send as RadioSend;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -72,7 +73,8 @@ implementation {
   ReadRssi = nullMacP.ReadRssi;
   RadioResource = nullMacP.RadioResource;
   RadioStatus = nullMacP.RadioStatus;
-  RadioTransmit = nullMacP.RadioTransmit;
+  RadioBuffer = nullMacP.RadioBuffer;
+  RadioSend = nullMacP.RadioSend;
   RadioControl = nullMacP.RadioControl;
   RadioReceive = nullMacP.RadioReceive;
 
