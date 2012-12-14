@@ -48,7 +48,8 @@ configuration csmacaMacC {
   uses interface Resource as RadioResource;
 
   uses interface SplitControl as RadioControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface RadioSend;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -111,7 +112,8 @@ implementation {
   components RandomC;
   csmacaMacP.Random -> RandomC;
 
-  RadioTransmit = CSMATransmitC.RadioTransmit;
+  RadioBuffer = CSMATransmitC.RadioBuffer;
+  RadioSend = CSMATransmitC.RadioSend;
   EnergyIndicator = CSMATransmitC.EnergyIndicator;
   LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
   RadioControl = CSMATransmitC.RadioControl;

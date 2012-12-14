@@ -8,7 +8,8 @@ configuration TDMATransmitC {
 
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface RadioSend;
   uses interface SplitControl as RadioControl;
   uses interface tdmaMacParams;
   uses interface RadioPower;
@@ -27,7 +28,8 @@ implementation {
   components new MuxAlarm32khz32C() as Alarm;
   TDMATransmitP.BackoffTimer -> Alarm;
 
-  RadioTransmit = TDMATransmitP.RadioTransmit;
+  RadioBuffer = TDMATransmitP.RadioBuffer;
+  RadioSend = TDMATransmitP.RadioSend;
 
   tdmaMacParams = TDMATransmitP.tdmaMacParams;
 

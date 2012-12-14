@@ -8,7 +8,8 @@ configuration CSMATransmitC {
 
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface RadioSend;
   uses interface SplitControl as RadioControl;
   uses interface csmacaMacParams;
   uses interface RadioPower;
@@ -27,7 +28,8 @@ implementation {
   components new MuxAlarm32khz32C() as Alarm;
   CSMATransmitP.BackoffTimer -> Alarm;
 
-  RadioTransmit = CSMATransmitP.RadioTransmit;
+  RadioBuffer = CSMATransmitP.RadioBuffer;
+  RadioSend = CSMATransmitP.RadioSend;
 
   csmacaMacParams = CSMATransmitP.csmacaMacParams;
 

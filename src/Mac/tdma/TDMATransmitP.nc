@@ -12,7 +12,8 @@ module TDMATransmitP @safe() {
   uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
   uses interface ReceiveIndicator as EnergyIndicator;
   uses interface StdControl as RadioStdControl;
-  uses interface RadioTransmit;
+  uses interface RadioBuffer;
+  uses interface RadioSend;
   uses interface SplitControl as RadioControl;
   uses interface tdmaMacParams;
   uses interface Random;
@@ -174,7 +175,7 @@ implementation {
     m_msg = m_msg;
     totalCcaChecks = 0;
 
-    sendDoneErr = call RadioTransmit.load(m_msg);
+    sendDoneErr = call RadioBuffer.load(m_msg);
     if (sendDoneErr != SUCCESS) {
       post signalSendDone();
       return sendDoneErr;
@@ -289,15 +290,15 @@ implementation {
         signal BackoffTimer.fired();
       }
     } else {
-      if (call RadioTransmit.send(m_msg, useCca) != SUCCESS) {
-        signal RadioTransmit.sendDone(m_msg, FAIL);
+      if (call RadioSend.send(m_msg, useCca) != SUCCESS) {
+        signal RadioSend.sendDone(m_msg, FAIL);
         return FAIL;
       }
     }
     return SUCCESS;
   }
 
-  async event void RadioTransmit.loadDone(message_t* msg, error_t error) {
+  async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
     if (error != SUCCESS) {
       sendDoneErr = error;
       post signalSendDone();
@@ -305,14 +306,14 @@ implementation {
     }
 
     if ( m_state == S_CANCEL ) {
-      call RadioTransmit.cancel(msg);
+      call RadioSend.cancel(msg);
       sendDoneErr = ECANCEL;
       post signalSendDone();
 
     } else if ( !m_cca ) {
       m_state = S_BEGIN_TRANSMIT;
-      if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
-        signal RadioTransmit.sendDone(m_msg, FAIL);
+      if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
+        signal RadioSend.sendDone(m_msg, FAIL);
       }
     } else {
       m_state = S_SAMPLE_CCA;
@@ -349,13 +350,13 @@ implementation {
       break;
         
     case S_BEGIN_TRANSMIT:
-      if (call RadioTransmit.send(m_msg, m_cca) != SUCCESS) {
-        signal RadioTransmit.sendDone(m_msg, FAIL);
+      if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
+        signal RadioSend.sendDone(m_msg, FAIL);
       }
       break;
 
     case S_CANCEL:
-      call RadioTransmit.cancel(m_msg);
+      call RadioSend.cancel(m_msg);
       m_state = S_STARTED;
       sendDoneErr = ECANCEL;
       post signalSendDone();
@@ -366,7 +367,7 @@ implementation {
     }
   }
       
-  async event void RadioTransmit.sendDone(message_t *msg, error_t error) {
+  async event void RadioSend.sendDone(message_t *msg, error_t error) {
     if (m_state == S_CANCEL){
       sendDoneErr = ECANCEL;
       post signalSendDone();
