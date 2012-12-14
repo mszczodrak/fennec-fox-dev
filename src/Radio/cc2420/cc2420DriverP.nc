@@ -112,19 +112,6 @@ implementation {
   }
 
 
-  //returns offset of timestamp from the beginning of cc2420 header which is
-  //          sizeof(cc2420_header_t)+datalen-sizeof(timesync_radio_t)
-  //uses packet length of the message which is
-  //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
-  uint8_t PacketTimeSyncOffsetget(message_t* msg)
-  {
-    cc2420_header_t *header = (cc2420_header_t*) getHeader(msg);
-    return header->length
-            + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
-            - MAC_FOOTER_SIZE
-            - sizeof(timesync_radio_t);
-  }
-
   error_t releaseSpiResource() {
     call SpiResource.release();
     return SUCCESS;

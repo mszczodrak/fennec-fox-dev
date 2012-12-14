@@ -53,6 +53,8 @@ void PacketTimeStampclear(message_t* msg);
 void PacketTimeStampset(message_t* msg, uint32_t value);
 bool PacketTimeSyncOffsetisSet(message_t* msg);
 
+uint8_t PacketTimeSyncOffsetget(message_t* msg);
+
 
 
 #endif
