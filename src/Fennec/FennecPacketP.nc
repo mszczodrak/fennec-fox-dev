@@ -70,23 +70,23 @@ implementation {
   /***************** PacketTimeStamp32khz Commands ****************/
   async command bool PacketTimeStamp32khz.isValid(message_t* msg)
   {
-    return ((call CC2420PacketBody.getMetadata( msg ))->timestamp != CC2420_INVALID_TIMESTAMP);
+    return ((getMetadata( msg ))->timestamp != CC2420_INVALID_TIMESTAMP);
   }
 
   async command uint32_t PacketTimeStamp32khz.timestamp(message_t* msg)
   {
-    return (call CC2420PacketBody.getMetadata( msg ))->timestamp;
+    return (getMetadata( msg ))->timestamp;
   }
 
   async command void PacketTimeStamp32khz.clear(message_t* msg)
   {
-    (call CC2420PacketBody.getMetadata( msg ))->timesync = FALSE;
-    (call CC2420PacketBody.getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
+    (getMetadata( msg ))->timesync = FALSE;
+    (getMetadata( msg ))->timestamp = CC2420_INVALID_TIMESTAMP;
   }
 
   async command void PacketTimeStamp32khz.set(message_t* msg, uint32_t value)
   {
-    (call CC2420PacketBody.getMetadata( msg ))->timestamp = value;
+    (getMetadata( msg ))->timestamp = value;
   }
 
   /***************** PacketTimeStampMilli Commands ****************/
@@ -119,7 +119,7 @@ implementation {
   /*----------------- PacketTimeSyncOffset -----------------*/
   async command bool PacketTimeSyncOffset.isSet(message_t* msg)
   {
-    return ((call CC2420PacketBody.getMetadata( msg ))->timesync);
+    return ((getMetadata( msg ))->timesync);
   }
 
   //returns offset of timestamp from the beginning of cc2420 header which is
@@ -136,12 +136,12 @@ implementation {
   
   async command void PacketTimeSyncOffset.set(message_t* msg)
   {
-    (call CC2420PacketBody.getMetadata( msg ))->timesync = TRUE;
+    (getMetadata( msg ))->timesync = TRUE;
   }
 
   async command void PacketTimeSyncOffset.cancel(message_t* msg)
   {
-    (call CC2420PacketBody.getMetadata( msg ))->timesync = FALSE;
+    (getMetadata( msg ))->timesync = FALSE;
   }
 
 

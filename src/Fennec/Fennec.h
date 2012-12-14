@@ -135,42 +135,15 @@ uint8_t* ONE getHeader( message_t* ONE msg ) {
   return (uint8_t*) msg->header;
 }
 
-uint8_t* getMetadata( message_t* msg ) {
-  return (uint8_t*)msg->metadata;
+metadata_t* getMetadata( message_t* msg ) {
+  return (metadata_t*)msg->metadata;
 }
 
 uint8_t* getPayload( message_t* msg) {
  return (uint8_t*) msg->data;
 }
 
-/***************** PacketTimeStamp32khz Commands ****************/
-/*
-bool PacketTimeStamp32khz_isValid(message_t* msg)
-{
-  metadata_t *meta = (metadata_t*)getMetadata(msg);
-  return (meta->timestamp != CC2420_INVALID_TIMESTAMP);
-}
 
-uint32_t PacketTimeStamp32khz_timestamp(message_t* msg)
-{
-  metadata_t *meta = (metadata_t*)getMetadata(msg);
-  return meta->timestamp;
-}
-
-void PacketTimeStamp32khz_clear(message_t* msg)
-{
-  metadata_t *meta = (metadata_t*)getMetadata(msg);
-  
-  meta->timesync = FALSE;
-  meta->timestamp = CC2420_INVALID_TIMESTAMP;
-}
-
-void PacketTimeStamp32khz_set(message_t* msg, uint32_t value)
-{
-  metadata_t *meta = (metadata_t*)getMetadata(msg);
-  meta->timestamp = value;
-}
-*/
 
 
 #endif
