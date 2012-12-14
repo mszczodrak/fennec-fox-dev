@@ -32,7 +32,7 @@ typedef uint16_t conf_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 
-
+/*
 typedef nx_struct security_header_t {
   nx_uint8_t secLevel:3;
   nx_uint8_t keyMode:2;
@@ -40,6 +40,7 @@ typedef nx_struct security_header_t {
   nx_uint32_t frameCounter;
   nx_uint8_t keyID[1]; // One byte for now
 } security_header_t;
+*/
 
 typedef nx_struct cc2420_header_t {
   nxle_uint8_t length;
@@ -81,17 +82,12 @@ typedef nx_struct metadata_t {
 } metadata_t;
 */
 
-
+/*
 typedef nx_struct cc2420_packet_t {
   cc2420_header_t packet;
   nx_uint8_t data[];
 } cc2420_packet_t;
-
-
-
-
-
-
+*/
 
 
 typedef nx_struct fennec_header_t {

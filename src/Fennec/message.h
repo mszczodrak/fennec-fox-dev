@@ -46,13 +46,6 @@ typedef nx_struct metadata_t {
 } metadata_t;
 
 
-/*
-typedef union TOSRadioMetadata {
-  metadata_t cc2420;
-  serial_metadata_t serial;
-} message_metadata_t;
-*/
-
 typedef nx_struct message_t {
   nx_uint8_t header[sizeof(message_header_t)];
   nx_uint8_t data[TOSH_DATA_LENGTH];
