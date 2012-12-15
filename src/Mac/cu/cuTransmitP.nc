@@ -198,16 +198,11 @@ implementation {
   }
 
   command void* Send.getPayload(message_t* m, uint8_t len) {
-    if (len <= call Send.maxPayloadLength()) {
-      return (void* COUNT_NOK(len ))(m->data);
-    }
-    else {
-      return NULL;
-    }
+    return call RadioSend.getPayload(m, len);
   }
 
   command uint8_t Send.maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
+    return call RadioSend.maxPayloadLength();
   }
 
   async event void RadioPower.startVRegDone() {}

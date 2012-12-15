@@ -404,16 +404,11 @@ implementation {
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
+    return call RadioSend.maxPayloadLength();
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call MacPacket.maxPayloadLength()) {
-      return msg->data;
-    } else {
-      return NULL;
-    }
-
+    return call RadioSend.getPayload(m, len);
   }
 
 
