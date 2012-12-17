@@ -10,6 +10,7 @@ configuration CSMATransmitC {
   uses interface StdControl as RadioStdControl;
   uses interface RadioBuffer;
   uses interface RadioSend;
+  uses interface RadioPacket;
   uses interface SplitControl as RadioControl;
   uses interface csmacaMacParams;
   uses interface RadioPower;
@@ -30,6 +31,7 @@ implementation {
 
   RadioBuffer = CSMATransmitP.RadioBuffer;
   RadioSend = CSMATransmitP.RadioSend;
+  RadioPacket = CSMATransmitP.RadioPacket;
 
   csmacaMacParams = CSMATransmitP.csmacaMacParams;
 

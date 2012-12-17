@@ -50,6 +50,7 @@ configuration tdmaMacC {
   uses interface SplitControl as RadioControl;
   uses interface RadioBuffer;
   uses interface RadioSend;
+  uses interface RadioPacket;
   uses interface ReceiveIndicator as PacketIndicator;
   uses interface ReceiveIndicator as ByteIndicator;
   uses interface ReceiveIndicator as EnergyIndicator;
@@ -109,6 +110,7 @@ implementation {
 
   RadioBuffer = TDMATransmitC.RadioBuffer;
   RadioSend = TDMATransmitC.RadioSend;
+  RadioPacket = TDMATransmitC.RadioPacket;
   EnergyIndicator = TDMATransmitC.EnergyIndicator;
   RadioControl = TDMATransmitC.RadioControl;
 

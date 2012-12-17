@@ -7,6 +7,7 @@ configuration cc2420DriverC {
 
   provides interface RadioBuffer;
   provides interface RadioSend;
+  provides interface RadioPacket;
 
   uses interface cc2420RadioParams;
 }
@@ -20,7 +21,8 @@ implementation {
   cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
 
   RadioBuffer = cc2420DriverP;
-  RadioSend = cc2420DriverP;
+  RadioSend = cc2420DriverP.RadioSend;
+  RadioPacket = cc2420DriverP.RadioPacket;
 
   components MainC;
   MainC.SoftwareInit -> cc2420DriverP;

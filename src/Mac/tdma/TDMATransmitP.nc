@@ -14,6 +14,7 @@ module TDMATransmitP @safe() {
   uses interface StdControl as RadioStdControl;
   uses interface RadioBuffer;
   uses interface RadioSend;
+  uses interface RadioPacket;
   uses interface SplitControl as RadioControl;
   uses interface tdmaMacParams;
   uses interface Random;
@@ -184,11 +185,11 @@ implementation {
   }
 
   command void* Send.getPayload(message_t* m, uint8_t len) {
-    return call RadioSend.getPayload(m, len);
+    return call RadioPacket.getPayload(m, len);
   }
 
   command uint8_t Send.maxPayloadLength() {
-    return call RadioSend.maxPayloadLength();
+    return call RadioPacket.maxPayloadLength();
   }
 
   async event void RadioPower.startVRegDone() {}

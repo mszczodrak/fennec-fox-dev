@@ -10,6 +10,7 @@ configuration cuTransmitC {
   uses interface StdControl as RadioStdControl;
   uses interface RadioBuffer;
   uses interface RadioSend;
+  uses interface RadioPacket;
   uses interface SplitControl as RadioControl;
   uses interface cuMacParams;
   uses interface RadioPower;
@@ -30,6 +31,7 @@ implementation {
 
   RadioBuffer = cuTransmitP.RadioBuffer;
   RadioSend = cuTransmitP.RadioSend;
+  RadioPacket = cuTransmitP.RadioPacket;
 
   cuMacParams = cuTransmitP.cuMacParams;
 

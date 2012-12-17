@@ -10,6 +10,7 @@ configuration TDMATransmitC {
   uses interface StdControl as RadioStdControl;
   uses interface RadioBuffer;
   uses interface RadioSend;
+  uses interface RadioPacket;
   uses interface SplitControl as RadioControl;
   uses interface tdmaMacParams;
   uses interface RadioPower;
@@ -30,6 +31,7 @@ implementation {
 
   RadioBuffer = TDMATransmitP.RadioBuffer;
   RadioSend = TDMATransmitP.RadioSend;
+  RadioPacket = TDMATransmitP.RadioPacket;
 
   tdmaMacParams = TDMATransmitP.tdmaMacParams;
 

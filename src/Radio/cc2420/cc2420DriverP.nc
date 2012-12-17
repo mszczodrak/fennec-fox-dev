@@ -38,6 +38,7 @@ module cc2420DriverP @safe() {
   uses interface cc2420RadioParams;
   provides interface RadioBuffer;
   provides interface RadioSend;
+  provides interface RadioPacket;
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 }
@@ -458,14 +459,12 @@ implementation {
     return SUCCESS;
   }
 
-  async command uint8_t RadioSend.maxPayloadLength() {
+  async command uint8_t RadioPacket.maxPayloadLength() {
     return TOSH_DATA_LENGTH;
   }
 
-  async command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call RadioSend.maxPayloadLength()) {
-      //return (void* COUNT_NOK(len ))(msg->data);
-      //return (void* COUNT_NOK(len ))(msg->header);
+  async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
+    if (len <= call RadioPacket.maxPayloadLength()) {
       return (void*)msg->header;
     }
     else {
