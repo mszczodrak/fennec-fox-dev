@@ -276,7 +276,7 @@ implementation {
   }
 
   command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     header->src = addr;
   }
 
@@ -288,23 +288,23 @@ implementation {
   }
 
   command am_id_t MacAMPacket.type(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     return header->type;
   }
 
   command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     header->type = type;
   }
 
   command am_group_t MacAMPacket.group(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     return header->destpan;
   }
 
   command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
     // Overridden intentionally when we send()
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     header->destpan = grp;
   }
 
@@ -319,18 +319,18 @@ implementation {
   /***************** Packet Commands ****************/
   command void MacPacket.clear(message_t* msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
     memset(header, 0x0, sizeof(csmaca_header_t));
     memset(metadata, 0x0, sizeof(metadata_t));
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
     return header->length - CC2420_SIZE;
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
     header->length  = len + CC2420_SIZE;
   }
 
