@@ -467,16 +467,10 @@ implementation {
       //return (void* COUNT_NOK(len ))(msg->data);
       //return (void* COUNT_NOK(len ))(msg->header);
       return (void*)msg->header;
-
-//      return getHeader(msg);
-//      printf("cc %d\n", msg);
-//      printfflush();
-//      return &msg;
     }
     else {
       return NULL;
     }
-//    return msg;
   }
 
 
