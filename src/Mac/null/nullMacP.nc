@@ -44,6 +44,7 @@ module nullMacP @safe() {
   uses interface nullMacParams;
   uses interface RadioBuffer;
   uses interface RadioSend;
+  uses interface RadioPacket;
 
   uses interface SplitControl as RadioControl;
   uses interface ModuleStatus as RadioStatus;
@@ -407,7 +408,7 @@ implementation {
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
+    return call RadioPacket.maxPayloadLength()
   }
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {

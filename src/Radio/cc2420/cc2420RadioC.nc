@@ -83,6 +83,8 @@ implementation {
   RadioPacket = cc2420DriverC.RadioPacket;
   cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
 
+  cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
+
 #else 
 
   components capeSimRadioC;

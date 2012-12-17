@@ -44,6 +44,7 @@ configuration cc2420ReceiveC {
   provides interface ReceiveIndicator as PacketIndicator;
 
   uses interface RadioConfig;
+  uses interface RadioPacket;
 
 }
 
@@ -62,6 +63,7 @@ implementation {
   CC2420Receive = cc2420ReceiveP;
   Receive = cc2420ReceiveP;
   PacketIndicator = cc2420ReceiveP.PacketIndicator;
+  RadioPacket = cc2420ReceiveP.RadioPacket;
 
   MainC.SoftwareInit -> cc2420ReceiveP;
   

@@ -21,6 +21,7 @@ module cc2420ReceiveP @safe() {
   uses interface CC2420Strobe as SACK;
   uses interface CC2420Strobe as SFLUSHRX;
   uses interface RadioConfig;
+  uses interface RadioPacket;
 
   uses interface CC2420Strobe as SRXDEC;
   uses interface CC2420Register as SECCTRL0;
@@ -152,7 +153,7 @@ implementation {
  
 
   bool quick_dest_check(message_t *msg) {
-    cc2420_header_t* header = (cc2420_header_t*) getHeader( msg );
+    cc2420_header_t* header = (cc2420_header_t*) call RadioPacket.getPayload( msg, sizeof(cc2420_header_t) );
     return ((header->dest == call RadioConfig.getShortAddr()) || (header->dest == AM_BROADCAST_ADDR));
   }
 
@@ -164,7 +165,7 @@ implementation {
    */
   async event void RXFIFO.readDone( uint8_t* rx_buf, uint8_t rx_len,
                                     error_t error ) {
-    cc2420_header_t* header = (cc2420_header_t*)getHeader( m_p_rx_buf );
+    cc2420_header_t* header = (cc2420_header_t*)call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_header_t) );
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
     rxFrameLength = buf[ 0 ];
@@ -303,7 +304,7 @@ implementation {
    */
   task void receiveDone_task() {
     metadata_t* metadata = (metadata_t*)getMetadata( m_p_rx_buf );
-    cc2420_header_t* header = (cc2420_header_t*)getHeader( m_p_rx_buf);
+    cc2420_header_t* header = (cc2420_header_t*)call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_header_t));
     uint8_t length = header->length;
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_header_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
@@ -371,7 +372,7 @@ implementation {
    */
   void receive() {
     call CSN.clr();
-    call RXFIFO.beginRead( (uint8_t*)(getHeader( m_p_rx_buf )), 1 );
+    call RXFIFO.beginRead( (uint8_t*)(call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_header_t) )), 1 );
   }
 
 
@@ -429,7 +430,7 @@ implementation {
    * @return TRUE if the given message passes address recognition
    */
   bool passesAddressCheck(message_t *msg) {
-    cc2420_header_t *header = (cc2420_header_t*)getHeader( msg );
+    cc2420_header_t *header = (cc2420_header_t*)call RadioPacket.getPayload( msg, sizeof(cc2420_header_t) );
     int mode = (header->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 3;
 //    ieee_eui64_t *ext_addr;  
 
