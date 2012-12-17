@@ -128,7 +128,7 @@ implementation {
 
   command error_t Send.send( message_t* p_msg, uint8_t len ) {
 
-    csmaca_header_t* header = (csmaca_header_t*) getHeader( p_msg );
+    csmaca_header_t* header = (csmaca_header_t*) call Send.getPayload( p_msg, len);
     metadata_t* metadata = (metadata_t*) p_msg->metadata;
 
     if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
@@ -190,7 +190,8 @@ implementation {
   }
 
   command void* Send.getPayload(message_t* m, uint8_t len) {
-    return call RadioSend.getPayload(m, len);
+    return getHeader(m);
+//    return call RadioSend.getPayload(m, len);
   }
 
   command uint8_t Send.maxPayloadLength() {

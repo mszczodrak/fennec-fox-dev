@@ -154,7 +154,7 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader( msg );
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload( msg, len );
 
     call MacAMPacket.setGroup(msg, msg->conf);
 
@@ -261,17 +261,17 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     return header->dest;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     return header->src;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(amsg);
+    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(amsg, sizeof(csmaca_header_t));
     header->dest = addr;
   }
 
@@ -340,6 +340,7 @@ implementation {
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
     if (len <= call SubSend.maxPayloadLength()) {
+//      return call SubSend.getPayload(msg, len);
       return msg->data;
     } else {
       return NULL;

@@ -464,7 +464,9 @@ implementation {
 
   async command void* RadioSend.getPayload(message_t* msg, uint8_t len) {
     if (len <= call RadioSend.maxPayloadLength()) {
-      return (void* COUNT_NOK(len ))(msg->data);
+      //return (void* COUNT_NOK(len ))(msg->data);
+      //return (void* COUNT_NOK(len ))(msg->header);
+      return &msg;
     }
     else {
       return NULL;
