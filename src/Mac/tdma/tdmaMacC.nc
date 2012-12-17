@@ -91,6 +91,8 @@ implementation {
   tdmaMacP.SubSend -> TDMAUniqueSendC;
   tdmaMacP.SubReceive -> TDMAUniqueReceiveC.Receive;
 
+  RadioPacket = TDMAUniqueReceiveC.RadioPacket;
+
   components LedsC;
   tdmaMacP.Leds -> LedsC;
 

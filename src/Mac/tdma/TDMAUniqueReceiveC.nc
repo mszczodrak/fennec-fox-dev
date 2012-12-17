@@ -44,9 +44,8 @@ configuration TDMAUniqueReceiveC {
   }
   provides interface StdControl;
   
-  uses {
-    interface Receive as SubReceive;
-  }
+  uses interface Receive as SubReceive;
+  uses interface RadioPacket;
 }
 
 implementation {
@@ -56,5 +55,6 @@ implementation {
   DuplicateReceive = TDMAUniqueReceiveP.DuplicateReceive;
   SubReceive = TDMAUniqueReceiveP.SubReceive;
   StdControl = TDMAUniqueReceiveP;
+  RadioPacket = TDMAUniqueReceiveP.RadioPacket;
 }
 

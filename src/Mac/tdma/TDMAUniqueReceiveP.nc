@@ -46,9 +46,8 @@ module TDMAUniqueReceiveP @safe() {
   }
   provides interface StdControl;
   
-  uses {
-    interface Receive as SubReceive;
-  }
+  uses interface Receive as SubReceive;
+  uses interface RadioPacket;
 }
 
 implementation {
@@ -90,7 +89,7 @@ implementation {
       uint8_t len) {
 
     uint16_t msgSource = getSourceKey(msg);
-    tdma_header_t* header = (tdma_header_t*)getHeader(msg);
+    tdma_header_t* header = (tdma_header_t*)call RadioPacket.getPayload(msg, len);
     uint8_t msgDsn = header->dsn;
 
     if(hasSeen(msgSource, msgDsn)) {
@@ -167,7 +166,7 @@ implementation {
    * address.
    */
   uint16_t getSourceKey(message_t * ONE msg) {
-    tdma_header_t *hdr = (tdma_header_t*)getHeader(msg);
+    tdma_header_t *hdr = (tdma_header_t*)call RadioPacket.getPayload(msg, sizeof(tdma_header_t));
     int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
     int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
     int s_offset = 2, s_len = 2;

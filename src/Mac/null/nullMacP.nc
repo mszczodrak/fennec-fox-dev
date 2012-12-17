@@ -202,7 +202,7 @@ implementation {
   }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    fennec_header_t* header = (fennec_header_t*)getHeader( msg );
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload( msg, len);
     metadata_t* metadata = (metadata_t*) msg->metadata;
 
     call MacAMPacket.setGroup(msg, msg->conf);
@@ -271,13 +271,13 @@ implementation {
 
   /***************** PacketAcknowledgement Commands ****************/
   async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(p_msg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(p_msg, sizeof(fennec_header_t));
     header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
     return SUCCESS;
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(p_msg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(p_msg, sizeof(fennec_header_t));
     header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     return SUCCESS;
   }
@@ -336,22 +336,22 @@ implementation {
   }
 
   command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
     return header->dest;
   }
 
   command am_addr_t MacAMPacket.source(message_t* amsg) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t))
     return header->src;
   }
 
   command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t))
     header->dest = addr;
   }
 
   command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t))
     header->src = addr;
   }
 
@@ -370,13 +370,13 @@ implementation {
   }
 
   command am_group_t MacAMPacket.group(message_t* amsg) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t))
     return header->destpan;
   }
 
   command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
     // Overridden intentionally when we send()
-    fennec_header_t* header = (fennec_header_t*)getHeader(amsg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t))
     header->destpan = grp;
   }
 
@@ -391,18 +391,18 @@ implementation {
   /***************** Packet Commands ****************/
   command void MacPacket.clear(message_t* msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
-    fennec_header_t* header = (fennec_header_t*)getHeader(msg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t))
     memset(header, 0x0, sizeof(fennec_header_t));
     memset(metadata, 0x0, sizeof(metadata_t));
   }
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(msg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t))
     return header->length - CC2420_SIZE;
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    fennec_header_t* header = (fennec_header_t*)getHeader(msg);
+    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t))
     header->length  = len + CC2420_SIZE;
   }
 
