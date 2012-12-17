@@ -122,7 +122,6 @@ conf_t get_active_state();
 
 bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
 
-uint8_t* ONE getHeader( message_t* ONE msg );
 metadata_t* getMetadata( message_t* msg );
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
