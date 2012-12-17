@@ -190,8 +190,7 @@ implementation {
   }
 
   command void* Send.getPayload(message_t* m, uint8_t len) {
-    return getHeader(m);
-//    return call RadioSend.getPayload(m, len);
+    return call RadioSend.getPayload(m, len);
   }
 
   command uint8_t Send.maxPayloadLength() {
