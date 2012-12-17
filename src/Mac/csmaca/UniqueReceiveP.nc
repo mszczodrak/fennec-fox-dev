@@ -46,9 +46,8 @@ module UniqueReceiveP @safe() {
     interface Init;
   }
   
-  uses {
-    interface Receive as SubReceive;
-  }
+  uses interface Receive as SubReceive;
+  uses interface RadioPacket;
 }
 
 implementation {
@@ -87,7 +86,7 @@ implementation {
       uint8_t len) {
 
     uint16_t msgSource = getSourceKey(msg);
-    csmaca_header_t* header = (csmaca_header_t*)getHeader(msg);
+    csmaca_header_t* header = (csmaca_header_t*)call RadioPacket.getPayload(msg, len);
     uint8_t msgDsn = header->dsn;
 
     if(hasSeen(msgSource, msgDsn)) {
@@ -164,7 +163,7 @@ implementation {
    * address.
    */
   uint16_t getSourceKey(message_t * ONE msg) {
-    csmaca_header_t *hdr = (csmaca_header_t*)getHeader(msg);
+    csmaca_header_t *hdr = (csmaca_header_t*)call RadioPacket.getPayload(msg, sizeof(csmaca_header_t));
     int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
     int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
     int s_offset = 2, s_len = 2;

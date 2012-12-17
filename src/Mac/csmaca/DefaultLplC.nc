@@ -77,7 +77,6 @@ implementation {
   CSMATransmit = DefaultLplP.CSMATransmit;
 
   csmacaMacParams = DefaultLplP.csmacaMacParams;
-  
   SubControl = DefaultLplP.SubControl;
   SubReceive = DefaultLplP.SubReceive;
   SubSend = DefaultLplP.SubSend;

@@ -50,7 +50,7 @@ module csmacaMacP @safe() {
   uses interface SplitControl as RadioControl;
 
   uses interface ModuleStatus as RadioStatus;
-
+  uses interface RadioPacket;
   uses interface RadioConfig;
   uses interface RadioPower;
   uses interface Read<uint16_t> as ReadRssi;
@@ -196,13 +196,13 @@ implementation {
 
   /***************** PacketAcknowledgement Commands ****************/
   async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(p_msg, sizeof(csmaca_header_t));
+    csmaca_header_t* header = (csmaca_header_t*)call RadioPacket.getPayload(p_msg, sizeof(csmaca_header_t));
     header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
     return SUCCESS;
   }
 
   async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-    csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(p_msg, sizeof(csmaca_header_t));
+    csmaca_header_t* header = (csmaca_header_t*)call RadioPacket.getPayload(p_msg, sizeof(csmaca_header_t));
     header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
     return SUCCESS;
   }

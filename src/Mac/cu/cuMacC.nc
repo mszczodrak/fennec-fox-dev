@@ -74,6 +74,7 @@ implementation {
   RadioPower = cuMacP.RadioPower;
   ReadRssi = cuMacP.ReadRssi;
   RadioResource = cuMacP.RadioResource;
+  RadioPacket = cuMacP.RadioPacket;
 
   RadioStatus = cuMacP.RadioStatus;
 

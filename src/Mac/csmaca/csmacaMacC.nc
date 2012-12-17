@@ -74,7 +74,7 @@ implementation {
   RadioPower = csmacaMacP.RadioPower;
   ReadRssi = csmacaMacP.ReadRssi;
   RadioResource = csmacaMacP.RadioResource;
-
+  RadioPacket = csmacaMacP.RadioPacket;
   RadioStatus = csmacaMacP.RadioStatus;
 
   components CSMATransmitC;
@@ -86,6 +86,8 @@ implementation {
 
   components UniqueSendC;
   components UniqueReceiveC;
+
+  RadioPacket = UniqueReceiveC.RadioPacket;
 
   csmacaMacP.SubSend -> UniqueSendC;
   csmacaMacP.SubReceive -> LplC;

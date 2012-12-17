@@ -40,9 +40,7 @@ configuration UniqueSendC {
     interface Send;
   }
   
-  uses {
-    interface Send as SubSend;
-  }
+  uses interface Send as SubSend;
 }
 
 implementation {
@@ -53,7 +51,6 @@ implementation {
       
   Send = UniqueSendP.Send;
   SubSend = UniqueSendP.SubSend;
-  
   MainC.SoftwareInit -> UniqueSendP;
   
   UniqueSendP.State -> StateC;

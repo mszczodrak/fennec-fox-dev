@@ -359,7 +359,7 @@ implementation {
   void initializeSend() {
     if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) 
       > ONE_MESSAGE) {
-      csmaca_header_t* header = (csmaca_header_t*)getHeader(currentSendMsg); 
+      csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(currentSendMsg, sizeof(csmaca_header_t)); 
       if(header->dest == IEEE154_BROADCAST_ADDR) {
         call PacketAcknowledgements.noAck(currentSendMsg);
       } else {
