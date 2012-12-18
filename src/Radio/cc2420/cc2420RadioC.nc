@@ -1,5 +1,5 @@
 /*
- *  Null radio module for Fennec Fox platform.
+ *  cc2420 radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Null Radio Protocol
+ * Network: cc2420 Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -31,26 +31,22 @@ configuration cc2420RadioC {
   provides interface ModuleStatus as RadioStatus;
 
   uses interface cc2420RadioParams;
-
   provides interface Resource as RadioResource;
   provides interface RadioConfig;
   provides interface RadioPower;
   provides interface Read<uint16_t> as ReadRssi;
-
   provides interface SplitControl as RadioControl;
-
-  provides interface RadioBuffer;
   provides interface RadioSend;
   provides interface RadioPacket;
-
+  provides interface RadioBuffer;
   provides interface ReceiveIndicator as PacketIndicator;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
-
 }
 
 implementation {
 
+#ifndef CAPE_FOX
   components cc2420RadioP;
   components cc2420ControlC;
   components cc2420DriverC;
@@ -86,5 +82,33 @@ implementation {
   RadioSend = cc2420DriverC.RadioSend;
   RadioPacket = cc2420DriverC.RadioPacket;
   cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
+
+  cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
+
+#else 
+
+  components capeSimRadioC;
+  Mgmt = capeSimRadioC;
+
+  EnergyIndicator = capeSimRadioC.EnergyIndicator;
+  cc2420RadioParams = capeSimRadioC.cc2420RadioParams;
+  ByteIndicator = capeSimRadioC.ByteIndicator;
+
+  cc2420RadioParams = capeSimRadioC;
+  RadioStatus = capeSimRadioC.RadioStatus;
+
+  RadioControl = capeSimRadioC.SplitControl;
+
+  RadioResource = capeSimRadioC.RadioResource;
+  RadioConfig = capeSimRadioC.RadioConfig;
+  RadioPower = capeSimRadioC.RadioPower;
+  ReadRssi = capeSimRadioC.ReadRssi;
+
+  PacketIndicator = capeSimRadioC.PacketIndicator;
+
+  RadioReceive = capeSimRadioC.RadioReceive;
+  RadioTransmit = capeSimRadioC.RadioTransmit;
+
+#endif
 
 }

@@ -1,5 +1,5 @@
 /*
- *  Dummy radio module for Fennec Fox platform.
+ *  cc2420 radio module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Network: Dummy Radio Protocol
+ * Network: cc2420 Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
@@ -32,49 +32,48 @@
 module cc2420RadioP @safe() {
   provides interface Mgmt;
   provides interface ModuleStatus as RadioStatus;
+  provides interface SplitControl;
 
   uses interface cc2420RadioParams;
   uses interface RadioConfig;
-
   uses interface StdControl as ReceiveControl;
   uses interface StdControl as TransmitControl;
-
   uses interface RadioPower;
   uses interface Resource as RadioResource;
-
-  provides interface SplitControl;
 }
 
 implementation {
 
   norace uint8_t state = S_STOPPED;
   uint8_t mgmt = FALSE;
+  norace error_t err;
 
   task void start_done() {
-    state = S_STARTED;
-    //printf("Radio task start done\n");
-    //printfflush();
-
-    signal SplitControl.startDone(SUCCESS);
+    if (err == SUCCESS) {
+      state = S_STARTED;
+    } else {
+      state = S_STOPPED;
+      call ReceiveControl.stop();
+      call TransmitControl.stop();
+      call RadioPower.stopVReg();
+    }
+    signal SplitControl.startDone(err);
     if (mgmt == TRUE) {
-      signal Mgmt.startDone(SUCCESS);
+      signal Mgmt.startDone(err);
       mgmt = FALSE;
     }
   }
 
   task void finish_starting_radio() {
-    call RadioPower.rxOn();
-    call RadioResource.release();
-    call ReceiveControl.start();
-    call TransmitControl.start();
+    if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
+    if (call RadioResource.release() != SUCCESS) err = FAIL;
+    if (call ReceiveControl.start() != SUCCESS) err = FAIL;
+    if (call TransmitControl.start() != SUCCESS) err = FAIL;
     post start_done();
   }
 
-
   task void stop_done() {
     state = S_STOPPED;
-    //printf("Radio task stop done\n");
-    //printfflush();
     signal SplitControl.stopDone(SUCCESS);
     if (mgmt == TRUE) {
       signal Mgmt.stopDone(SUCCESS);
@@ -83,50 +82,42 @@ implementation {
   }
 
   command error_t Mgmt.start() {
-    //printf("Radio mgmt start\n");
     mgmt = TRUE;
     call SplitControl.start();
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    //printf("Radio mgmt stop\n");
     mgmt = TRUE;
     call SplitControl.stop();
     return SUCCESS;
   }
 
   command error_t SplitControl.start() {
+    err = SUCCESS;
     if (state == S_STOPPED) {
       state = S_STARTING;
-      //printf("Radio split start 1\n");
-      //printfflush();
-      call RadioPower.startVReg();
+      if (call RadioPower.startVReg() != SUCCESS) err = FAIL;
       return SUCCESS;
 
     } else if(state == S_STARTED) {
-      //printf("Radio split start 2\n");
-      //printfflush();
       post start_done();
       return EALREADY;
 
     } else if(state == S_STARTING) {
-      //printf("Radio split start 3\n");
-      //printfflush();
       return SUCCESS;
     }
-    //printf("Radio split start 4\n");
-    //printfflush();
 
     return EBUSY;
   }
 
   command error_t SplitControl.stop() {
+    err = SUCCESS;
     if (state == S_STARTED) {
       state = S_STOPPING;
-      call ReceiveControl.stop();
-      call TransmitControl.stop();
-      call RadioPower.stopVReg();
+      if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+      if (call TransmitControl.stop() != SUCCESS) err = FAIL;
+      if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
       post stop_done();
       return SUCCESS;
 
