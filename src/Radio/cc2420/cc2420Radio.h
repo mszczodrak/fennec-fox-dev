@@ -32,7 +32,6 @@
 enum {
         cc2420_MIN_MESSAGE_SIZE        	= 5,
         cc2420_MAX_MESSAGE_SIZE        	= 127,
-	CC2420_MAX_FAILED_LOADS		= 3,
 };
 
 #endif

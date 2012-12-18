@@ -82,6 +82,55 @@ typedef uint8_t cc2420_status_t;
  * when you attempt to send a message.
  */
 
+typedef nx_struct cc2420_header_t {
+  nxle_uint8_t length;
+  nxle_uint16_t fcf;
+  nxle_uint8_t dsn;
+  nxle_uint16_t destpan;
+  nxle_uint16_t dest;
+  nxle_uint16_t src;
+  /** CC2420 802.15.4 header ends here */
+  /** I-Frame 6LowPAN interoperability byte */
+  nxle_uint8_t network;
+  nxle_uint8_t type;
+} cc2420_header_t;
+
+/**
+ * CC2420 Packet Footer
+ */
+typedef nx_struct cc2420_footer_t {
+} cc2420_footer_t;
+
+/**
+ * CC2420 Packet metadata. Contains extra information about the message
+ * that will not be transmitted.
+ *
+ * Note that the first two bytes automatically take in the values of the
+ * FCS when the payload is full. Do not modify the first two bytes of metadata.
+ */
+typedef nx_struct cc2420_metadata_t {
+  nx_uint8_t rssi;
+  nx_uint8_t lqi;
+  nx_uint8_t tx_power;
+  nx_bool crc;
+  nx_bool ack;
+  nx_bool timesync;
+  nx_uint32_t timestamp;
+  nx_uint16_t rxInterval;
+
+  /** Packet Link Metadata */
+#ifdef PACKET_LINK
+  nx_uint16_t maxRetries;
+  nx_uint16_t retryDelay;
+#endif
+} cc2420_metadata_t;
+
+
+typedef nx_struct cc2420_packet_t {
+  cc2420_header_t packet;
+  nx_uint8_t data[];
+} cc2420_packet_t;
+
 
 #ifndef TOSH_DATA_LENGTH
 #define TOSH_DATA_LENGTH 28

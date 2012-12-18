@@ -36,8 +36,8 @@ module cc2420DriverP @safe() {
 
   uses interface CC2420Receive;
   uses interface cc2420RadioParams;
-  provides interface RadioBuffer;
   provides interface RadioSend;
+  provides interface RadioBuffer;
   provides interface RadioPacket;
   uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
@@ -48,8 +48,6 @@ implementation {
   norace message_t * ONE_NOK radio_msg;
   norace bool radio_cca;
   norace uint8_t radio_state = S_STOPPED;
-  norace uint8_t failed_load_counter = 0;
-  norace error_t errorSendDone;
 
   /** Byte reception/transmission indicator */
   bool sfdHigh;
@@ -83,7 +81,6 @@ implementation {
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
-    failed_load_counter = 0;
     param_tx_power = call cc2420RadioParams.get_power();
     call CaptureSFD.captureRisingEdge();
     abortSpiRelease = FALSE;
@@ -112,6 +109,39 @@ implementation {
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }
 
+  void PacketTimeStampclear(message_t* msg)
+  {
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    meta->timesync = FALSE;
+    meta->timestamp = CC2420_INVALID_TIMESTAMP;
+  }
+
+  void PacketTimeStampset(message_t* msg, uint32_t value)
+  {
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    meta->timestamp = value;
+  }
+
+  bool PacketTimeSyncOffsetisSet(message_t* msg)
+  {
+    cc2420_metadata_t *meta = (cc2420_metadata_t*)getMetadata( msg );
+    return (meta->timesync);
+  }
+
+
+
+  //returns offset of timestamp from the beginning of cc2420 header which is
+  //          sizeof(cc2420_header_t)+datalen-sizeof(timesync_radio_t)
+  //uses packet length of the message which is
+  //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
+  uint8_t PacketTimeSyncOffsetget(message_t* msg)
+  {
+    cc2420_header_t *header = (cc2420_header_t*) getHeader(msg);
+    return header->length
+            + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
+            - MAC_FOOTER_SIZE
+            - sizeof(timesync_radio_t);
+  }
 
   error_t releaseSpiResource() {
     call SpiResource.release();
@@ -137,19 +167,11 @@ implementation {
     param_tx_power = call cc2420RadioParams.get_power();
   } 
 
-  task void radioSendDone() {
-    signal RadioSend.sendDone(radio_msg, errorSendDone);
-  }
-
   void signalDone( error_t err ) {
-    errorSendDone = err;
-    post radioSendDone();
-    atomic {
-      radio_state = S_STARTED;
-      abortSpiRelease = FALSE;
-      failed_load_counter = 0;
-      call ChipSpiResource.attemptRelease();
-    }
+    radio_state = S_STARTED;
+    abortSpiRelease = FALSE;
+    call ChipSpiResource.attemptRelease();
+    signal RadioSend.sendDone(radio_msg, err);
   }
 
 
@@ -197,8 +219,8 @@ implementation {
       call CSN.set();
 
     if ( congestion ) {
+      signal RadioSend.sendDone(radio_msg, EBUSY);
       releaseSpiResource();
-      signalDone( EBUSY );
     } else {
       radio_state = S_SFD;
       call RadioTimer.start(CC2420_ABORT_PERIOD);
@@ -215,18 +237,18 @@ implementation {
   async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
     cc2420_header_t* ack_header;
     cc2420_header_t* msg_header;
-    metadata_t* msg_metadata;
+    cc2420_metadata_t* msg_metadata;
     uint8_t* ack_buf;
     uint8_t length;
 
     if ( type == IEEE154_TYPE_ACK && radio_msg) {
-      ack_header = (cc2420_header_t*) call RadioPacket.getPayload(ack_msg, sizeof(cc2420_header_t));
-      msg_header = (cc2420_header_t*) call RadioPacket.getPayload(radio_msg, sizeof(cc2420_header_t));
+      ack_header = (cc2420_header_t*) getHeader(ack_msg);
+      msg_header = (cc2420_header_t*) getHeader(radio_msg);
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call RadioTimer.stop();
 
-        msg_metadata = (metadata_t*)getMetadata( radio_msg );
+        msg_metadata = (cc2420_metadata_t*)getMetadata( radio_msg );
         ack_buf = (uint8_t *) ack_header;
         length = ack_header->length;
 
@@ -281,7 +303,7 @@ implementation {
   async event void CaptureSFD.captured( uint16_t time ) {
     uint32_t time32;
     uint8_t sfd_state = 0;
-    cc2420_header_t* header = (cc2420_header_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_header_t));
+    cc2420_header_t* header = (cc2420_header_t*) getHeader( radio_msg );
 
     atomic {
       time32 = getTime32(time);
@@ -296,7 +318,7 @@ implementation {
         call CaptureSFD.captureFallingEdge();
         PacketTimeStampset(radio_msg, time32);
         if (PacketTimeSyncOffsetisSet(radio_msg)) {
-           uint8_t absOffset = sizeof(cc2420_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(radio_msg);
+           uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(radio_msg);
            timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
            // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
            *timesync  -= time32;
@@ -395,8 +417,8 @@ implementation {
    * the same CRC polynomial as the CC2420's AUTOCRC functionality.
    */
   void loadTXFIFO() {
-    cc2420_header_t* header = (cc2420_header_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_header_t) );
-    metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
+    cc2420_header_t* header = (cc2420_header_t*) getHeader( radio_msg );
+    cc2420_metadata_t* meta = (cc2420_metadata_t*) getMetadata( radio_msg );
     uint8_t tx_power = meta->tx_power;
 
     if ( !tx_power ) {
@@ -421,13 +443,6 @@ implementation {
   }
 
   async command error_t RadioBuffer.load(message_t* msg) {
-    if (radio_state != S_STARTED) {
-      failed_load_counter++;
-      if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
-        signalDone(FAIL);
-      }
-      return FAIL;
-    }
     radio_msg = msg;
     radio_state = S_LOAD;
     post updateTXPower();
@@ -438,7 +453,7 @@ implementation {
   }
 
   async command error_t RadioSend.send(message_t* msg, bool useCca) {
-    if ((msg != radio_msg) || (radio_state != S_LOAD))
+    if (msg != radio_msg)
       return FAIL;
 
     radio_cca = useCca;
@@ -460,16 +475,11 @@ implementation {
   }
 
   async command uint8_t RadioPacket.maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
+    return 127;
   }
 
-  async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call RadioPacket.maxPayloadLength()) {
-      return (void*)msg->header;
-    }
-    else {
-      return NULL;
-    }
+  async command void* RadioPacket.getPayload(message_t *msg, uint8_t len) {
+    return msg->header;
   }
 
 

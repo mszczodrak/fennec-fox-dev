@@ -123,6 +123,7 @@ conf_t get_active_state();
 bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
 
 metadata_t* getMetadata( message_t* msg );
+uint8_t *getHeader(message_t *msg);
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
