@@ -48,6 +48,9 @@ implementation {
   norace message_t * ONE_NOK radio_msg;
   norace bool radio_cca;
   norace uint8_t radio_state = S_STOPPED;
+  norace uint8_t failed_load_counter = 0;
+  norace error_t errorSendDone;
+
 
   /** Byte reception/transmission indicator */
   bool sfdHigh;
@@ -81,6 +84,7 @@ implementation {
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
+    failed_load_counter = 0;
     param_tx_power = call cc2420RadioParams.get_power();
     call CaptureSFD.captureRisingEdge();
     abortSpiRelease = FALSE;
@@ -134,13 +138,20 @@ implementation {
     param_tx_power = call cc2420RadioParams.get_power();
   } 
 
-  void signalDone( error_t err ) {
-    radio_state = S_STARTED;
-    abortSpiRelease = FALSE;
-    call ChipSpiResource.attemptRelease();
-    signal RadioSend.sendDone(radio_msg, err);
+  task void radioSendDone() {
+    signal RadioSend.sendDone(radio_msg, errorSendDone);
   }
 
+  void signalDone( error_t err ) {
+    errorSendDone = err;
+    post radioSendDone();
+    atomic {
+      radio_state = S_STARTED;
+      abortSpiRelease = FALSE;
+      failed_load_counter = 0;
+      call ChipSpiResource.attemptRelease();
+    }
+  }
 
 
   // this method converts a 16-bit timestamp into a 32-bit one
