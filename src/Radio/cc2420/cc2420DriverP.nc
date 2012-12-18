@@ -420,7 +420,15 @@ implementation {
     }
   }
 
+
   async command error_t RadioBuffer.load(message_t* msg) {
+    if (radio_state != S_STARTED) {
+      failed_load_counter++;
+      if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
+        signalDone(FAIL);
+      }
+      return FAIL;
+    }
     radio_msg = msg;
     radio_state = S_LOAD;
     post updateTXPower();
@@ -429,6 +437,7 @@ implementation {
     }
     return SUCCESS;
   }
+
 
   async command error_t RadioSend.send(message_t* msg, bool useCca) {
     if (msg != radio_msg)
