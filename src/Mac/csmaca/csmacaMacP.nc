@@ -173,13 +173,7 @@ implementation {
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
     header->length = len + CC2420_SIZE;
 
-    {
-      error_t rc;
-
-      rc = call SubSend.send( msg, len );
-
-      return rc;
-    }
+    return call SubSend.send( msg, len );
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {

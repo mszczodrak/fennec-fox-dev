@@ -81,7 +81,6 @@ implementation {
 
 
   command error_t StdControl.start() {
-    //dbgs(F_RADIO, S_STARTING, 0, radio_state, radio_state);
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
@@ -147,7 +146,6 @@ implementation {
     errorSendDone = err;
     post radioSendDone();
     atomic {
-      dbgs(F_RADIO, S_SEND_DONE, 0, radio_state, radio_state);
       radio_state = S_STARTED;
       abortSpiRelease = FALSE;
       failed_load_counter = 0;
@@ -448,7 +446,6 @@ implementation {
       return FAIL;
 
     if (radio_state != S_LOAD) {
-      dbgs(F_RADIO, S_LOAD, 0, radio_state, radio_state);
     }
 
     radio_cca = useCca;
