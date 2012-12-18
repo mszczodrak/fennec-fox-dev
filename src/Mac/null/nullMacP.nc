@@ -221,7 +221,7 @@ implementation {
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-    header->length = len + CC2420_SIZE;
+    header->length = len + sizeof(fennec_header_t);
 
     if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
       header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
@@ -399,12 +399,12 @@ implementation {
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
     fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t))
-    return header->length - CC2420_SIZE;
+    return header->length - sizeof(fennec_header_t);
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
     fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t))
-    header->length  = len + CC2420_SIZE;
+    header->length  = len + sizeof(fennec_header_t);
   }
 
   command uint8_t MacPacket.maxPayloadLength() {

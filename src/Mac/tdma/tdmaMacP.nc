@@ -333,7 +333,7 @@ implementation {
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-    header->length = len + CC2420_SIZE;
+    header->length = len + sizeof(tdma_header_t);
 
     if ((ftsp_sync_message != NULL) && (ftsp_sync_message != msg)) {
       if (call SendQueue.enqueue(msg) == SUCCESS) {
@@ -487,12 +487,12 @@ implementation {
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
     tdma_header_t* header = (tdma_header_t*)call SubSend.getPayload(msg, sizeof(tdma_header_t));
-    return header->length - CC2420_SIZE;
+    return header->length - sizeof(tdma_header_t);
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
     tdma_header_t* header = (tdma_header_t*)call SubSend.getPayload(msg, sizeof(tdma_header_t));
-    header->length  = len + CC2420_SIZE;
+    header->length  = len + sizeof(tdma_header_t);
   }
 
   command uint8_t MacPacket.maxPayloadLength() {

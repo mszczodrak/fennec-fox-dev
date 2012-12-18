@@ -171,7 +171,7 @@ implementation {
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-    header->length = len + CC2420_SIZE;
+    header->length = len + sizeof(csmaca_header_t);
 
     return call SubSend.send( msg, len );
   }
@@ -320,12 +320,12 @@ implementation {
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
     csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
-    return header->length - CC2420_SIZE;
+    return header->length - sizeof(csmaca_header_t);
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
     csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
-    header->length  = len + CC2420_SIZE;
+    header->length  = len + sizeof(csmaca_header_t);
   }
 
   command uint8_t MacPacket.maxPayloadLength() {
@@ -365,10 +365,10 @@ implementation {
     msg->crc = metadata->crc;
 
     if (call MacAMPacket.isForMe(msg)) {
-      return signal MacReceive.receive(msg, payload, len);
+      return signal MacReceive.receive(msg, payload, len - sizeof(csmaca_header_t));
     }
     else {
-      return signal MacSnoop.receive(msg, payload, len);
+      return signal MacSnoop.receive(msg, payload, len - sizeof(csmaca_header_t));
     }
   }
 

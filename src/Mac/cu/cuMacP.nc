@@ -163,15 +163,9 @@ implementation {
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-    header->length = len + CC2420_SIZE;
+    header->length = len + sizeof(cu_header_t);
 
-    {
-      error_t rc;
-
-      rc = call SubSend.send( msg, len );
-
-      return rc;
-    }
+    return call SubSend.send( msg, len );
   }
 
   command error_t MacAMSend.cancel(message_t* msg) {
@@ -318,12 +312,12 @@ implementation {
 
   command uint8_t MacPacket.payloadLength(message_t* msg) {
     cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
-    return header->length - CC2420_SIZE;
+    return header->length - sizeof(cu_header_t);
   }
 
   command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
     cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
-    header->length  = len + CC2420_SIZE;
+    header->length  = len + sizeof(cu_header_t);
   }
 
   command uint8_t MacPacket.maxPayloadLength() {

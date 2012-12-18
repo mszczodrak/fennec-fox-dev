@@ -320,8 +320,7 @@ implementation {
       /* set conf before signaling receive */
       m_p_rx_buf->conf = header->destpan;
 
-      m_p_rx_buf = signal Receive.receive( m_p_rx_buf, m_p_rx_buf->data,
-					   length - CC2420_SIZE);
+      m_p_rx_buf = signal Receive.receive( m_p_rx_buf, m_p_rx_buf->data, length);
     }
     atomic receivingPacket = FALSE;
     waitForNextPacket();
