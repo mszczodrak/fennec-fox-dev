@@ -39,7 +39,7 @@ UNKNOWN_LAYER           = 255
 
 
 #        /* States */
-S_NONE                  = 0
+S_NONE            	= 0
 S_STOPPED               = 1
 S_STARTING              = 2
 S_STARTED               = 3
@@ -67,15 +67,21 @@ S_TURN_ON               = 24
 S_TURN_OFF              = 25
 S_PREAMBLE              = 26
 S_RECEIVING		= 27
+S_BEGIN_TRANSMIT	= 28
+S_LOAD			= 29
+S_RECONFIGURING         = 30
+S_RECONF_ENABLED        = 31
+S_COMPLETED             = 32
+
 
 #                /* tx */
-S_SFD                   = 28
-S_EFD                   = 29
+S_SFD                   = 40
+S_EFD                   = 41
 
 #                /* rx */
-S_RX_LENGTH             = 30
-S_RX_FCF                = 31
-S_RX_PAYLOAD            = 32
+S_RX_LENGTH             = 42
+S_RX_FCF                = 43
+S_RX_PAYLOAD            = 44
 
 
 #	/* Panic Levels */

@@ -81,6 +81,7 @@ implementation {
 
 
   command error_t StdControl.start() {
+    //dbgs(F_RADIO, S_STARTING, 0, radio_state, radio_state);
     radio_state = S_STARTED;
     m_tx_power = 0;
     m_receiving = FALSE;
@@ -146,6 +147,7 @@ implementation {
     errorSendDone = err;
     post radioSendDone();
     atomic {
+      dbgs(F_RADIO, S_SEND_DONE, 0, radio_state, radio_state);
       radio_state = S_STARTED;
       abortSpiRelease = FALSE;
       failed_load_counter = 0;
@@ -429,8 +431,10 @@ implementation {
       }
       return FAIL;
     }
-    radio_msg = msg;
-    radio_state = S_LOAD;
+    atomic {
+      radio_state = S_LOAD;
+      radio_msg = msg;
+    }
     post updateTXPower();
     if ( acquireSpiResource() == SUCCESS ) {
       loadTXFIFO();
@@ -442,6 +446,10 @@ implementation {
   async command error_t RadioSend.send(message_t* msg, bool useCca) {
     if (msg != radio_msg)
       return FAIL;
+
+    if (radio_state != S_LOAD) {
+      dbgs(F_RADIO, S_LOAD, 0, radio_state, radio_state);
+    }
 
     radio_cca = useCca;
     radio_state = S_BEGIN_TRANSMIT;
