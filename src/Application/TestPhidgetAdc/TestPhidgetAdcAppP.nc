@@ -43,10 +43,12 @@ module TestPhidgetAdcAppP {
   uses interface ModuleStatus as NetworkStatus;
 
   uses interface SensorCtrl as Sensor_1_Ctrl;
+  uses interface SensorSetup as Sensor_1_Setup;
   uses interface Read<uint16_t> as Sensor_1_Raw;
   uses interface Read<bool> as Sensor_1_Occurence;
 
   uses interface SensorCtrl as Sensor_2_Ctrl;
+  uses interface SensorSetup as Sensor_2_Setup;
   uses interface Read<uint16_t> as Sensor_2_Raw;
   uses interface Read<bool> as Sensor_2_Occurence;
  
@@ -122,15 +124,15 @@ implementation {
     uint8_t i;
 
     call Sensor_1_Ctrl.set_rate(call TestPhidgetAdcAppParams.get_s1_freq());
-    call Sensor_1_Ctrl.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
     call Sensor_1_Ctrl.set_signaling(TRUE); 
+    call Sensor_1_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
     sensors[0].sample_count = call TestPhidgetAdcAppParams.get_s1_sampleCount();
     sensors[0].freq = call TestPhidgetAdcAppParams.get_s1_freq();
     sensors[0].seqno = 0;
 
     call Sensor_2_Ctrl.set_rate(call TestPhidgetAdcAppParams.get_s2_freq());
-    call Sensor_2_Ctrl.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
     call Sensor_2_Ctrl.set_signaling(TRUE); 
+    call Sensor_2_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
     sensors[1].sample_count = call TestPhidgetAdcAppParams.get_s2_sampleCount();
     sensors[1].freq = call TestPhidgetAdcAppParams.get_s2_freq();
     sensors[1].seqno = 0;

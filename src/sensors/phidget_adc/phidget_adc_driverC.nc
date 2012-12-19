@@ -22,17 +22,15 @@
 
 generic configuration phidget_adc_driverC() {
    provides interface SensorCtrl;
+   provides interface SensorSetup;
    provides interface Read<uint16_t> as Raw;
-   provides interface Read<uint16_t> as Calibrated;
-   provides interface Read<bool> as Occurence;
 }
 
 implementation {
    components phidget_adc_driverP;
    SensorCtrl = phidget_adc_driverP.SensorCtrl;
+   SensorSetup = phidget_adc_driverP.SensorSetup;
    Raw = phidget_adc_driverP.Raw;
-   Calibrated = phidget_adc_driverP.Calibrated;
-   Occurence = phidget_adc_driverP.Occurence;
 
    components new Msp430Adc12ClientC();
    phidget_adc_driverP.Msp430Adc12SingleChannel -> Msp430Adc12ClientC;
