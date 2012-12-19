@@ -13,9 +13,6 @@ include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 
 PFLAGS+=-D__DBGS__
 
-# CapeFox printf
-#CFLAGS+=-DENABLE_CAPE_PRINTF
-
 # 2. TinyOS printf
 #CFLAGS += -I$(TOSDIR)/lib/printf
 #CFLAGS += -DPRINTF_BUFFER_SIZE=2000
@@ -23,7 +20,6 @@ PFLAGS+=-D__DBGS__
 
 #CFLAGS+=-D_H_IMB400_CAMERA_H
 #CFLAGS+=-D_H_IMB400_AUDIO_H
-
 
 clean: FORCE
 	rm -rf build $(CLEAN_EXTRA) pp

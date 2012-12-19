@@ -19,10 +19,6 @@ module FennecPacketP @safe() {
 
 implementation {
 
-//  uint8_t* ONE getHeader( message_t* ONE msg ) @C() {
-//    return (uint8_t*) msg->header;
-//  }
-
   metadata_t* getMetadata( message_t* msg ) @C() {
     return (metadata_t*)msg->metadata;
   }
