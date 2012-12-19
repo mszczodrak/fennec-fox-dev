@@ -29,6 +29,8 @@
 
 #include "message.h"
 
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 /* Forces a change in configuration */
 void force_new_configuration(uint8_t new_conf);
 
@@ -45,9 +47,8 @@ void check_configuration(conf_t conf_id);
 
 bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
 
+metadata_t* getMetadata( message_t* msg );
 
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#define max(a, b) (((a) > (b)) ? (a) : (b))
 
 void PacketTimeStampclear(message_t* msg);
 void PacketTimeStampset(message_t* msg, uint32_t value);
