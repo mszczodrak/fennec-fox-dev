@@ -27,6 +27,8 @@
 #ifndef FF_STRUCTURES_H
 #define FF_STRUCTURES_H
 
+#include "ff_consts.h"
+
 typedef uint16_t state_t;
 typedef uint16_t conf_t;
 typedef uint16_t module_t;
@@ -94,8 +96,7 @@ typedef metadata_t cc2420_metadata_t;
 
 typedef nx_struct message_t {
   nx_uint8_t header[sizeof(message_header_t)];
-  nx_uint8_t data[TOSH_DATA_LENGTH];
-//  nx_uint8_t footer[sizeof(message_footer_t)];
+  nx_uint8_t data[FENNEC_MSG_DATA_LEN];
   nx_uint8_t metadata[sizeof(metadata_t)];
   nx_uint16_t conf;
   nx_uint8_t rssi;
