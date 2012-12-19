@@ -215,7 +215,7 @@ implementation {
   async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
     cc2420_header_t* ack_header;
     cc2420_header_t* msg_header;
-    cc2420_metadata_t* msg_metadata;
+    metadata_t* msg_metadata;
     uint8_t* ack_buf;
     uint8_t length;
 

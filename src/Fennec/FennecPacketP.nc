@@ -19,9 +19,9 @@ module FennecPacketP @safe() {
 
 implementation {
 
-  uint8_t* ONE getHeader( message_t* ONE msg ) @C() {
-    return (uint8_t*) msg->header;
-  }
+//  uint8_t* ONE getHeader( message_t* ONE msg ) @C() {
+//    return (uint8_t*) msg->header;
+//  }
 
   metadata_t* getMetadata( message_t* msg ) @C() {
     return (metadata_t*)msg->metadata;
@@ -44,7 +44,7 @@ implementation {
   */
   uint8_t PacketTimeSyncOffsetget(message_t* msg) @C() 
   {
-    cc2420_header_t *header = (cc2420_header_t*) getHeader(msg);
+    cc2420_header_t *header = (cc2420_header_t*) msg->data;
     return header->length
             + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
             - MAC_FOOTER_SIZE
@@ -113,7 +113,7 @@ implementation {
   //          MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
   async command uint8_t PacketTimeSyncOffset.get(message_t* msg)
   {
-    return ((cc2420_header_t*)getHeader(msg))->length
+    return ((cc2420_header_t*)msg->data)->length
             + (sizeof(cc2420_header_t) - MAC_HEADER_SIZE)
             - MAC_FOOTER_SIZE
             - sizeof(timesync_radio_t);

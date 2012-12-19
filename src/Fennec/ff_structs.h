@@ -92,7 +92,6 @@ typedef nx_struct metadata_t {
   nx_uint16_t retryDelay;
 } metadata_t;
 
-typedef metadata_t cc2420_metadata_t;
 
 typedef nx_struct message_t {
   nx_uint8_t header[sizeof(message_header_t)];
