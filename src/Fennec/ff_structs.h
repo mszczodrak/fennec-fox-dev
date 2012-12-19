@@ -40,13 +40,11 @@ typedef nx_struct cc2420_header_t {
   nxle_uint16_t destpan;
   nxle_uint16_t dest;
   nxle_uint16_t src;
-  /** CC2420 802.15.4 header ends here */
-//  nxle_uint8_t type;
 } cc2420_header_t;
 
 
-typedef nx_struct cc2420_footer_t {
-} cc2420_footer_t;
+//typedef nx_struct cc2420_footer_t {
+//} cc2420_footer_t;
 
 
 typedef nx_struct fennec_header_t {
@@ -62,13 +60,13 @@ typedef nx_struct fennec_header_t {
 #include <Serial.h>
 
 typedef union message_header {
-  cc2420_header_t cc2420;
+//  cc2420_header_t cc2420;
   serial_header_t serial;
 } message_header_t;
 
-typedef union TOSRadioFooter {
-  cc2420_footer_t cc2420;
-} message_footer_t;
+//typedef union TOSRadioFooter {
+//  cc2420_footer_t cc2420;
+//} message_footer_t;
 
 
 
