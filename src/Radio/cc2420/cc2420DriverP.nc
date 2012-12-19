@@ -472,7 +472,7 @@ implementation {
 
   async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
     if (len <= call RadioPacket.maxPayloadLength()) {
-      return (void*)msg->header;
+      return (void*)msg->data;
     }
     else {
       return NULL;

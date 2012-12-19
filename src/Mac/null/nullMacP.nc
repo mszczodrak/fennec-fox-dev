@@ -413,7 +413,8 @@ implementation {
 
   command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
     if (len <= call MacPacket.maxPayloadLength()) {
-      return msg->data;
+      uint8_t *p = call SubSend.getPayload(msg, len);
+      return (p + sizeof(fennec_header_t));
     } else {
       return NULL;
     }
