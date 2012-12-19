@@ -33,8 +33,6 @@ use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backof
 #	uint8_t ack, uint8_t cca, uint8_t crc)
 
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
-use mac broadcast $(FENNEC_FOX_LIB)/Mac/tests/broadcast ()
-use mac link $(FENNEC_FOX_LIB)/Mac/tests/linkquality (uint16_t src, uint16_t delay_ms)
 
 use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (uint16_t sink_addr,
 	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
@@ -53,7 +51,7 @@ use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
 	uint8_t channel=26, uint8_t power=31, 
 	uint8_t ack=1, uint8_t crc=1)
 
-use radio glossy $(FENNEC_FOX_LIB)/Radio/glossy ()
+use radio cape /home/marcin/git/capefox/cape ()
 
 
 #use application temp $(FENNEC_FOX_LIB)/Application/tests/Temperature ()

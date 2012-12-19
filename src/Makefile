@@ -5,7 +5,7 @@ SFC_GEN=$(FENNEC_FOX_LIB)/Fennec/sfc
 #SYSTEM_BUS_FREQUENCY := 104
 PFLAGS+=-DTOSH_DATA_LENGTH=127
 
-#CFLAGS+=-I/home/marcin/git/capefox/cape
+CFLAGS+=-I/home/marcin/git/capefox/cape
 
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
@@ -13,7 +13,7 @@ include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 #PFLAGS+=-DENABLE_SPI0_DMA
 #
 
-PFLAGS+=-D__DBGS__
+#PFLAGS+=-D__DBGS__
 
 # CapeFox printf
 #CFLAGS+=-DENABLE_CAPE_PRINTF
