@@ -28,6 +28,7 @@
 #ifndef __H_NULL_MAC_H_
 #define __H_NULL_MAC_H_
 
+#define NULL_INVALID_TIMESTAMP 0x80000000L
 
 
 #endif

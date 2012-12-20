@@ -84,16 +84,16 @@ implementation {
 
   task void send_serial_message();
   task void send_network_message();
+  task void setup_app();
 
-  bool busy_network;
   bool busy_serial;
 
   /**
    * starting point for this module
    */
   command error_t Mgmt.start() {
-    busy_network = FALSE;
     busy_serial = FALSE;
+    printf("dst %d\n", call TestPhidgetAdcAppParams.get_destination());
     /* check if this node will be sending messages over the serial */
     if ((TOS_NODE_ID == call TestPhidgetAdcAppParams.get_destination()) || 
 	        (NODE == call TestPhidgetAdcAppParams.get_destination())) {
@@ -104,44 +104,11 @@ implementation {
       signal SerialSplitControl.startDone(SUCCESS);
     }
 
+    post setup_app();
+
     return SUCCESS;
   }
 
-  event void SerialSplitControl.startDone(error_t error) {
-    /* initialize sensors */
-    uint8_t i;
-
-    call Sensor_1_Ctrl.set_rate(call TestPhidgetAdcAppParams.get_s1_freq());
-    call Sensor_1_Ctrl.set_signaling(TRUE); 
-    call Sensor_1_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
-    sensors[0].sample_count = call TestPhidgetAdcAppParams.get_s1_sampleCount();
-    sensors[0].freq = call TestPhidgetAdcAppParams.get_s1_freq();
-    sensors[0].seqno = 0;
-
-    call Sensor_2_Ctrl.set_rate(call TestPhidgetAdcAppParams.get_s2_freq());
-    call Sensor_2_Ctrl.set_signaling(TRUE); 
-    call Sensor_2_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
-    sensors[1].sample_count = call TestPhidgetAdcAppParams.get_s2_sampleCount();
-    sensors[1].freq = call TestPhidgetAdcAppParams.get_s2_freq();
-    sensors[1].seqno = 0;
-
-    for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
-      clean_sensor_record(i);
-    }
-
-    if (call Sensor_1_Ctrl.start() != SUCCESS) {
-      signal Mgmt.startDone(FAIL);
-      call Leds.led0On();
-      return;
-    }  
-    if (call Sensor_2_Ctrl.start() != SUCCESS) {
-      signal Mgmt.startDone(FAIL);
-      call Leds.led0On();
-      return;
-    }  
-
-    signal Mgmt.startDone(SUCCESS);
-  }
 
   command error_t Mgmt.stop() {
     signal Mgmt.stopDone(SUCCESS);
@@ -153,7 +120,7 @@ implementation {
     if(error == SUCCESS){
       app_network_internal_t nm = call NetworkQueue.dequeue();
       call MessagePool.put(nm.msg);
-      busy_network = FALSE;
+      nm.msg = NULL;
     } 
     post send_network_message();
   }
@@ -221,9 +188,7 @@ implementation {
     post send_serial_message();
   }
 
-  event void Sensor_1_Raw.readDone(error_t error, uint16_t data){
-//    printf("rd 1\n");
-//    printfflush();
+  event void Sensor_1_Raw.readDone(error_t error, uint16_t data) {
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
@@ -231,10 +196,7 @@ implementation {
     }
   }
 
-  event void Sensor_2_Raw.readDone(error_t error, uint16_t data){
-    call Leds.led1Toggle();
-//    printf("rd 2\n");
-//    printfflush();
+  event void Sensor_2_Raw.readDone(error_t error, uint16_t data) {
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
@@ -249,13 +211,12 @@ implementation {
 
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
   event void SerialSplitControl.stopDone(error_t errot){}
+  event void SerialSplitControl.startDone(error_t error) {}
   event void TestPhidgetAdcAppParams.receive_status(uint16_t status_flag) {}
   event void Sensor_1_Ctrl.startDone(error_t error){}
   event void Sensor_1_Ctrl.stopDone(error_t error){}
   event void Sensor_2_Ctrl.startDone(error_t error){}
   event void Sensor_2_Ctrl.stopDone(error_t error){}
-
-
 
   void clean_sensor_record(uint8_t id) {
      memset(sensors[id].pkt.data, 0, (sensors[id].sample_count * sizeof(uint16_t)));
@@ -264,36 +225,31 @@ implementation {
      sensors[id].pkt.freq = sensors[id].freq;
   }
 
-
-  void setup_sensor_record(uint8_t id) {
-     clean_sensor_record(id);
-  }
-
-
-
   void save_sensor_data(uint16_t data, uint8_t id) {
     app_data_t *msg_ptr;
-    call Leds.led0Toggle();
-    /* check if message buffer is available */
-    if (sensors[id].msg == NULL) {
-      /* something is wrong with this sensor record */
-      setup_sensor_record(id);
-      return;
-    }
 
-    sensors[id].pkt.data[ sensors[id].pkt.num ] = data;
+    sensors[id].pkt.data[sensors[id].pkt.num ] = data;
 
+    printf("sd %d %d %d\n", sensors[id].pkt.num, id, sensors[id].sample_count);
 
     if (sensors[id].pkt.num < (sensors[id].sample_count - 1)) {
       sensors[id].pkt.num++;
+      printf("more\n");
       return;
     }
 
-    call Leds.led2Toggle();
-
+    printfflush();
     /* Check if there is a space in queue */
     if (call NetworkQueue.full()) {
+      printf("nq full\n");
       /* Queue is full, give up sending the serial message */
+      call Leds.led0On();
+      return;
+    }
+
+    /* check if it's not sending an old message */
+    if (sensors[id].msg != NULL) {
+      printf("nq busy\n");
       call Leds.led0On();
       return;
     }
@@ -303,8 +259,9 @@ implementation {
 
     /* prepare network message */
     if (call MessagePool.empty()) {
-       call Leds.led0On();
-       return;
+      printf("mp empty\n");
+      call Leds.led0On();
+      return;
     }
 
     sensors[id].msg = call MessagePool.get();
@@ -322,6 +279,7 @@ implementation {
     }
 
     memcpy(msg_ptr, &sensors[id].pkt, sensors[id].len);
+    clean_sensor_record(id);
 
     call NetworkQueue.enqueue(sensors[id]);
 
@@ -330,6 +288,9 @@ implementation {
 
 
   task void send_serial_message() {
+    printf("ss\n");
+    printfflush();
+
     /* Check if there is anything to send */
     if (call SerialQueue.empty()) {
       return;
@@ -357,10 +318,6 @@ implementation {
       return;
     }
 
-    if (busy_network == TRUE) {
-      return;
-    }
-
     ptr = call NetworkQueue.headptr();
 
 
@@ -368,21 +325,63 @@ implementation {
      * if the sensor samples should be send to this node
      * (meaning, this node is the gatway), signal message receive.
      */
-    if (NODE == call TestPhidgetAdcAppParams.get_destination()) {
-        signal NetworkReceive.receive(ptr->msg,
-		call NetworkAMSend.getPayload(ptr->msg, ptr->len), ptr->len);
-      busy_network = TRUE;
-      signal NetworkAMSend.sendDone(ptr->msg, SUCCESS);
-      return;
-    }
+//    if (NODE == call TestPhidgetAdcAppParams.get_destination()) {
+//        signal NetworkReceive.receive(ptr->msg,
+//		call NetworkAMSend.getPayload(ptr->msg, ptr->len), ptr->len);
+//      signal NetworkAMSend.sendDone(ptr->msg, SUCCESS);
+//      return;
+//    }
 
+    printf("sn\n");
 
     if (call NetworkAMSend.send(call TestPhidgetAdcAppParams.get_destination(),
 				                ptr->msg, ptr->len) != SUCCESS) {
       /* Failed to send */
       signal NetworkAMSend.sendDone(ptr->msg, FAIL);
-    } else {
-      busy_network = TRUE;
     }
   }
+
+  task void setup_app() {
+    /* initialize sensors */
+    uint8_t i;
+
+    sensors[0].sample_count = call TestPhidgetAdcAppParams.get_s1_sampleCount();
+    printf("sc0 %d\n", call TestPhidgetAdcAppParams.get_s1_sampleCount());
+    sensors[0].freq = call TestPhidgetAdcAppParams.get_s1_freq();
+    sensors[0].seqno = 0;
+    call Sensor_1_Ctrl.set_rate(sensors[0].freq);
+    call Sensor_1_Ctrl.set_signaling(TRUE);
+    call Sensor_1_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s1_inputChannel());
+
+    printf("S0 - %d %d %d\n",sensors[0].sample_count, sensors[0].freq, sensors[0].seqno);
+
+    sensors[1].sample_count = call TestPhidgetAdcAppParams.get_s2_sampleCount();
+    sensors[1].freq = call TestPhidgetAdcAppParams.get_s2_freq();
+    sensors[1].seqno = 0;
+    call Sensor_2_Ctrl.set_rate(sensors[1].freq);
+    call Sensor_2_Ctrl.set_signaling(TRUE);
+    call Sensor_2_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
+
+    printf("S1 - %d %d %d\n", sensors[1].sample_count, sensors[1].freq, sensors[1].seqno);
+    printfflush();
+
+    for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
+      clean_sensor_record(i);
+      sensors[i].msg = NULL;
+    }
+
+    if (call Sensor_1_Ctrl.start() != SUCCESS) {
+      signal Mgmt.startDone(FAIL);
+      call Leds.led0On();
+      return;
+    }
+    if (call Sensor_2_Ctrl.start() != SUCCESS) {
+      signal Mgmt.startDone(FAIL);
+      call Leds.led0On();
+      return;
+    }
+
+    signal Mgmt.startDone(SUCCESS);
+  }
+
 }

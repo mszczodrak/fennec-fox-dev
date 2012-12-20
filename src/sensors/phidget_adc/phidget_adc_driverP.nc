@@ -112,7 +112,7 @@ implementation {
    }
 
    task void signal_readDone() {
-     signal Raw.readDone(raw_data, SUCCESS);
+     signal Raw.readDone(SUCCESS, raw_data);
    }
 
    async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data) {

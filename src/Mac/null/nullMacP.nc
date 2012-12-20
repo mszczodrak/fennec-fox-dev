@@ -245,7 +245,7 @@ implementation {
     metadata->ack = 1;
     metadata->rssi = 0;
     metadata->lqi = 0;
-    metadata->timestamp = CC2420_INVALID_TIMESTAMP;
+    metadata->timestamp = NULL_INVALID_TIMESTAMP;
 
     if ( m_state != S_STARTED ) {
       return FAIL;
