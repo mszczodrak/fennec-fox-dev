@@ -45,12 +45,10 @@ module TestPhidgetAdcAppP {
   uses interface SensorCtrl as Sensor_1_Ctrl;
   uses interface SensorSetup as Sensor_1_Setup;
   uses interface Read<uint16_t> as Sensor_1_Raw;
-  uses interface Read<bool> as Sensor_1_Occurence;
 
   uses interface SensorCtrl as Sensor_2_Ctrl;
   uses interface SensorSetup as Sensor_2_Setup;
   uses interface Read<uint16_t> as Sensor_2_Raw;
-  uses interface Read<bool> as Sensor_2_Occurence;
  
   /* Serial Interfaces */ 
   uses interface AMSend as SerialAMSend;
@@ -60,7 +58,7 @@ module TestPhidgetAdcAppP {
   uses interface SplitControl as SerialSplitControl;
 
   uses interface Timer<TMilli> as Timer;
-  uses interface Leds as LedsBlink;
+  uses interface Leds;
 
   /* Network Queue */
   uses interface Queue<message_t*> as NetworkQueue;
@@ -75,32 +73,51 @@ module TestPhidgetAdcAppP {
 
 implementation {
 
-  /* array of the sensors we are handling; max we can keep track 
-   * of APP_MAX_NUMBER_OF_SENSORS sensors */
-
+  /** 
+   * array of the sensors we are handling; max we can keep track 
+   * of APP_MAX_NUMBER_OF_SENSORS sensors 
+   */
   app_network_internal_t sensors[APP_MAX_NUMBER_OF_SENSORS];
 
-  void setup_sensor_record(uint8_t i) {
-     if (call MessagePool.empty()) {
-       return;
-     }
+  uint8_t state = S_STOPPED;
 
-     sensors[i].msg = call MessagePool.get();
-
-     if (sensors[i].msg == NULL) {
-       return;
-     }
-
-     sensors[i].pkt = (app_network_t*) call NetworkAMSend.getPayload(
-					sensors[i].msg, sizeof(app_network_t) + 
-					sensors[i].sample_count * sizeof(nx_uint16_t));
-
-     sensors[i].pkt->num = 0;
-     sensors[i].pkt->sid = 0;
-     sensors[i].pkt->freq = sensors[i].freq;
+  void clean_sensor_record(uint8_t id) {
+     memset(sensors[id].pkt->data, 0, (sensors[id].sample_count * sizeof(uint16_t)));
+     sensors[id].pkt->num = 0;
+     sensors[id].pkt->sid = id;
+     sensors[id].pkt->freq = sensors[id].freq;
   }
 
+  void setup_sensor_record(uint8_t id) {
+     if (call MessagePool.empty()) {
+       call Leds.led0On();
+       return;
+     }
+
+     sensors[id].msg = call MessagePool.get();
+
+     if (sensors[id].msg == NULL) {
+       call Leds.led0On();
+       return;
+     }
+
+     sensors[id].pkt = (app_network_t*) call NetworkAMSend.getPayload(
+					sensors[id].msg, sizeof(app_network_t) + 
+					sensors[id].sample_count * sizeof(nx_uint16_t));
+
+     if (sensors[id].pkt == NULL) {
+       call Leds.led0On();
+       return;
+     }
+
+     clean_sensor_record(id);
+  }
+
+  /**
+   * starting point for this module
+   */
   command error_t Mgmt.start() {
+    state = S_STARTING;
     /* check if this node will be sending messages over the serial */
     if ((TOS_NODE_ID == call TestPhidgetAdcAppParams.get_destination()) || 
 	        (NODE == call TestPhidgetAdcAppParams.get_destination())) {
@@ -111,11 +128,6 @@ implementation {
       signal SerialSplitControl.startDone(SUCCESS);
     }
 
-    return SUCCESS;
-  }
-
-  command error_t Mgmt.stop() {
-    signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
 
@@ -141,9 +153,25 @@ implementation {
       setup_sensor_record(i);
     }
 
-    call Sensor_1_Ctrl.start();
-    call Sensor_2_Ctrl.start();
+    if (call Sensor_1_Ctrl.start() != SUCCESS) {
+      signal Mgmt.startDone(FAIL);
+      call Leds.led0On();
+      return;
+    }  
+    if (call Sensor_2_Ctrl.start() != SUCCESS) {
+      signal Mgmt.startDone(FAIL);
+      call Leds.led0On();
+      return;
+    }  
+
+    state = S_STARTED;
     signal Mgmt.startDone(SUCCESS);
+  }
+
+  command error_t Mgmt.stop() {
+    state = S_STOPPED;
+    signal Mgmt.stopDone(SUCCESS);
+    return SUCCESS;
   }
 
   void send_serial_message(message_t *msg, uint8_t len) {
@@ -159,7 +187,7 @@ implementation {
       /* we're ready to send - add message to queue and send it */
       call SerialQueue.enqueue(msg);
       call SerialAMSend.send(AM_BROADCAST_ADDR, msg, len);
-      call LedsBlink.led0Toggle(); /*red led*/
+      call Leds.led1Toggle(); /*red led*/
       return;
     }
 
@@ -167,25 +195,41 @@ implementation {
     call SerialQueue.enqueue(msg);
   }
 
+  /**
+   * sends sensor message over the network
+   */
+  void network_msg_tx(uint8_t id) {
+    if (call NetworkAMSend.send(call TestPhidgetAdcAppParams.get_destination(),
+                sensors[id].msg, sizeof(app_network_t) +
+                (sensors[id].sample_count * sizeof(uint16_t)) ) != SUCCESS) {
+      /* Failed to send */
+      signal NetworkAMSend.sendDone(sensors[id].msg, FAIL);
+    }
+  }
 
 
-  
-  void send_network_message(uint16_t data, uint8_t id) {
-    /* check if ready to send */
+  void save_sensor_data(uint16_t data, uint8_t id) {
+    /* check if message buffer is available */
     if (sensors[id].msg == NULL) {
       /* something is wrong with this sensor record */
       setup_sensor_record(id);
       return;
     }
     
-    sensors[id].pkt->data[ sensors[id].pkt->num++ ] = data;
+    sensors[id].pkt->data[ sensors[id].pkt->num ] = data;
 
-    if (sensors[id].pkt->num++ != sensors[id].sample_count) {
+    sensors[id].pkt->num++;
+
+    if (sensors[id].pkt->num != sensors[id].sample_count) {
       return;
     }
 
-    call LedsBlink.led2Toggle();
+    call Leds.led2Toggle();
 
+    /**
+     * if the sensor samples should be send to this node 
+     * (meaning, this node is the gatway), signal message receive.
+     */
     if (NODE == call TestPhidgetAdcAppParams.get_destination()) {
 	signal NetworkReceive.receive(sensors[id].msg, 
 				(void*)sensors[id].pkt, sizeof(app_network_t) + 
@@ -194,17 +238,18 @@ implementation {
       return; 
     }
 
-    if (call NetworkAMSend.send(call TestPhidgetAdcAppParams.get_destination(), 
-		sensors[id].msg, sizeof(app_network_t) + 
-		(sensors[id].sample_count * sizeof(uint16_t)) ) != SUCCESS) {
-      /* Failed to send */
-      signal NetworkAMSend.sendDone(sensors[id].msg, FAIL);
-    }    
+    /**
+     * send sensor samples over the network
+     */
+    network_msg_tx(id);
   }
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+    app_network_t *s = (app_network_t*) msg;
     if(error == SUCCESS){
-      msg_payload->count = 0;
+      clean_sensor_record(s->sid);
+    } else {
+      network_msg_tx(s->sid);
     }
   }
 
@@ -250,13 +295,23 @@ implementation {
 
   event void SerialAMSend.sendDone(message_t *msg, error_t error) {}
 
-  event void Raw.readDone(error_t error, uint16_t data){
+  event void Sensor_1_Raw.readDone(error_t error, uint16_t data){
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
-      sendMessage(data);
+      save_sensor_data(data, 0);
     }
   }
+
+  event void Sensor_2_Raw.readDone(error_t error, uint16_t data){
+    if (error == SUCCESS) {
+      /* sends packet if data count equals sampleCount, 
+	 else appends data to the buffer */
+      save_sensor_data(data, 1);
+    }
+  }
+
+
 
   event void Timer.fired() {
   }
@@ -264,8 +319,9 @@ implementation {
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
   event void SerialSplitControl.stopDone(error_t errot){}
   event void TestPhidgetAdcAppParams.receive_status(uint16_t status_flag) {}
-  event void SensorCtrl.startDone(error_t error){}
-  event void SensorCtrl.stopDone(error_t error){}
-  event void Occurence.readDone(error_t error, bool data){}
+  event void Sensor_1_Ctrl.startDone(error_t error){}
+  event void Sensor_1_Ctrl.stopDone(error_t error){}
+  event void Sensor_2_Ctrl.startDone(error_t error){}
+  event void Sensor_2_Ctrl.stopDone(error_t error){}
 
 }
