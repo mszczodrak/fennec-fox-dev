@@ -62,6 +62,8 @@ typedef enum {
 	S_RECONFIGURING		= 30,
 	S_RECONF_ENABLED	= 31,
         S_COMPLETED		= 32,
+	S_BUSY			= 33,
+	S_SERIAL		= 34,
 
 
                 /* tx */

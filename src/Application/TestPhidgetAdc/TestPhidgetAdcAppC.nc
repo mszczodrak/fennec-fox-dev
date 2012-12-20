@@ -56,7 +56,7 @@ implementation {
   TestPhidgetAdcAppP.NetworkQueue -> NetworkQueueC;
 
   /* Creating a queue for sending messages over the serial interface */
-  components new QueueC(message_t*, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+  components new QueueC(app_serial_internal_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
   TestPhidgetAdcAppP.SerialQueue -> SerialQueueC;
 
   /* Creating a pool of message memory for network and serial communication */

@@ -64,7 +64,7 @@ module TestPhidgetAdcAppP {
   uses interface Queue<message_t*> as NetworkQueue;
 
   /* Serial Queue */
-  uses interface Queue<message_t*> as SerialQueue;
+  uses interface Queue<app_serial_internal_t> as SerialQueue;
 
   /* Message Pool */
   uses interface Pool<message_t> as MessagePool;
@@ -85,6 +85,8 @@ implementation {
   void setup_sensor_record(uint8_t id);
   void network_msg_tx(uint8_t id);
   void save_sensor_data(uint16_t data, uint8_t id);
+
+  task void send_serial_message();
 
 
   /**
@@ -148,30 +150,9 @@ implementation {
     return SUCCESS;
   }
 
-  void send_serial_message(message_t *msg, uint8_t len) {
-    /* Check if there is a space in queue */
-    if (call SerialQueue.full()) {
-      /* Queue is full, give up sending the serial message */
-      call MessagePool.put(msg);
-      return;
-    }
-
-    /* Check for outstanding serial transmissions */
-    if (call SerialQueue.empty()) {
-      /* we're ready to send - add message to queue and send it */
-      call SerialQueue.enqueue(msg);
-      call SerialAMSend.send(AM_BROADCAST_ADDR, msg, len);
-      call Leds.led1Toggle(); /*red led*/
-      return;
-    }
-
-    /* Just add the message to the queue and wait */
-    call SerialQueue.enqueue(msg);
-  }
-
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    app_network_t *s = (app_network_t*) msg;
+    app_data_t *s = (app_data_t*) msg;
     if(error == SUCCESS){
       clean_sensor_record(s->sid);
     } else {
@@ -181,31 +162,46 @@ implementation {
 
   event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
     message_t *serial_message;
-    app_serial_t *serial_data_payload;
+    app_data_t *serial_data_payload; 
+    app_serial_internal_t sm;
 
     if (call MessagePool.empty()) {
       /* well, there is not more memory space ... maybe increase pool queue */
+      call Leds.led0On();
       return msg;
     }
 
     serial_message = call MessagePool.get();
     if (serial_message == NULL) {
       /* something went wrong.... this should never happen */
+      call Leds.led0On();
       return msg;
     }
    
-    serial_data_payload = (app_serial_t*)
-			call SerialAMSend.getPayload(serial_message, 
-			len + sizeof(uint16_t)); /* add space for src field */
+    serial_data_payload = (app_data_t*)
+			call SerialAMSend.getPayload(serial_message, len); 
  
     /* Get the message source node ID */
     serial_data_payload->src = call NetworkAMPacket.address(); 
     
     /* Copy the message data starting from the seqno field 
-     * (for app_network_t it is the beginning of the message */
+     * (for app_data_t it is the beginning of the message */
     memcpy(&(serial_data_payload->seqno), payload, len);
 
-    send_serial_message(serial_message, len);
+    /* Check if there is a space in queue */
+    if (call SerialQueue.full()) {
+      /* Queue is full, give up sending the serial message */
+      call Leds.led0On();
+      call MessagePool.put(msg);
+      return msg;
+    }
+
+    /* Just add the message to the queue and wait */
+    sm.msg = serial_message;
+    sm.len = len;
+    call SerialQueue.enqueue(sm);
+
+    post send_serial_message();
 
     return msg;
   }
@@ -214,12 +210,13 @@ implementation {
     return msg;
   }
 
-
   event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
     return msg;
   }
 
-  event void SerialAMSend.sendDone(message_t *msg, error_t error) {}
+  event void SerialAMSend.sendDone(message_t *msg, error_t error) {
+
+  }
 
   event void Sensor_1_Raw.readDone(error_t error, uint16_t data){
     if (error == SUCCESS) {
@@ -273,8 +270,8 @@ implementation {
        return;
      }
 
-     sensors[id].pkt = (app_network_t*) call NetworkAMSend.getPayload(
-                                        sensors[id].msg, sizeof(app_network_t) +
+     sensors[id].pkt = (app_data_t*) call NetworkAMSend.getPayload(
+                                        sensors[id].msg, sizeof(app_data_t) +
                                         sensors[id].sample_count * sizeof(nx_uint16_t));
 
      if (sensors[id].pkt == NULL) {
@@ -291,7 +288,7 @@ implementation {
    */
   void network_msg_tx(uint8_t id) {
     if (call NetworkAMSend.send(call TestPhidgetAdcAppParams.get_destination(),
-                sensors[id].msg, sizeof(app_network_t) +
+                sensors[id].msg, sizeof(app_data_t) +
                 (sensors[id].sample_count * sizeof(uint16_t)) ) != SUCCESS) {
       /* Failed to send */
       signal NetworkAMSend.sendDone(sensors[id].msg, FAIL);
@@ -323,7 +320,7 @@ implementation {
      */
     if (NODE == call TestPhidgetAdcAppParams.get_destination()) {
         signal NetworkReceive.receive(sensors[id].msg,
-                                (void*)sensors[id].pkt, sizeof(app_network_t) +
+                                (void*)sensors[id].pkt, sizeof(app_data_t) +
                                 (sensors[id].sample_count * sizeof(uint16_t)));
       signal NetworkAMSend.sendDone(sensors[id].msg, SUCCESS);
       return;
@@ -333,6 +330,21 @@ implementation {
      * send sensor samples over the network
      */
     network_msg_tx(id);
+  }
+
+
+  task void send_serial_message() {
+    /* Check if there is anything to send */
+    if (call SerialQueue.empty()) {
+      return;
+    }
+
+    /* Send message */
+    if (call SerialAMSend.send(AM_BROADCAST_ADDR, (call SerialQueue.head()).msg,
+				(call SerialQueue.head()).len) != SUCCESS) {
+      post send_serial_message();
+    }
+    call Leds.led1Toggle(); /*red led*/
   }
 
 

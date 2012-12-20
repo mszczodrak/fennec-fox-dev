@@ -37,23 +37,7 @@
 #define APP_MESSAGE_POOL 		APP_NETWORK_QUEUE_SIZE + APP_SERIAL_QUEUE_SIZE
 
 /* this is the application structure that we send across the network */
-typedef nx_struct app_network_t {
-//  nx_uint16_t src;    	/* address of the node sending sensor samples */
-				/* we do not need to send the source address;
-				 * we can ask the Network protocol to tell us
-				 * from where the message has arrived */
-  nx_uint32_t seqno;		/* message sequence number */
-  nx_uint8_t sid;		/* sensor ID */
-				/* IDs are encoded following the declarations 
-				 * from the file src/Fennec/ff_sensors.h */
-  nx_uint32_t freq;		/* sampling frequency (ms) */
-  nx_uint8_t num;		/* number of samples */
-  nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
-} app_network_t;
-
-
-/* this is the application structure that we send across the serial (UART) */
-typedef nx_struct app_serial_t {
+typedef nx_struct app_data_t {
   nx_uint16_t src;    		/* address of the node sending sensor samples */
   nx_uint32_t seqno;		/* message sequence number */
   nx_uint8_t sid;		/* sensor ID */
@@ -62,13 +46,20 @@ typedef nx_struct app_serial_t {
   nx_uint32_t freq;		/* sampling frequency (ms) */
   nx_uint8_t num;		/* number of samples */
   nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
-} app_serial_t;
+} app_data_t;
+
+
+typedef struct app_serial_internal_t {
+  uint8_t len;
+  message_t *msg;
+} app_serial_internal_t;
+
 
 typedef struct app_network_internal_t {
   uint8_t sample_count;
   uint8_t seqno;
   uint32_t freq;
-  app_network_t *pkt;
+  app_data_t *pkt;
   message_t *msg;
 } app_network_internal_t;
 

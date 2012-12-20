@@ -39,7 +39,7 @@ implementation {
    norace uint16_t battery = 0;
 
    uint32_t rate = PHIDGET_ADC_DEFAULT_RATE;
-   bool signaling = PHIDGET_ADC_DEFAULT_SIGNALING;
+   norace bool signaling = PHIDGET_ADC_DEFAULT_SIGNALING;
    norace bool read_request = 0;
 
    command error_t SensorCtrl.start() {
@@ -119,7 +119,7 @@ implementation {
       s *= battery;
       s /= 4096;    
       raw_data = s;
-      if (read_request) {
+      if (read_request || signaling) {
         post signal_readDone();
         read_request = 0;
       }
