@@ -66,15 +66,15 @@ implementation {
   components LedsC;
   TestPhidgetAdcAppP.Leds -> LedsC;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_1;
-  TestPhidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
-  TestPhidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_1.SensorSetup;
-  TestPhidgetAdcAppP.Sensor_1_Raw -> PhidgetAdcDriver_1.Raw;
+  components new phidget_adc_driverC() as PhidgetAdcDriver_0;
+  TestPhidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
+  TestPhidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_0.SensorSetup;
+  TestPhidgetAdcAppP.Sensor_1_Raw -> PhidgetAdcDriver_0.Raw;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_2;
-  TestPhidgetAdcAppP.Sensor_2_Ctrl -> PhidgetAdcDriver_2.SensorCtrl;
-  TestPhidgetAdcAppP.Sensor_2_Setup -> PhidgetAdcDriver_2.SensorSetup;
-  TestPhidgetAdcAppP.Sensor_2_Raw -> PhidgetAdcDriver_2.Raw;
+  components new phidget_adc_driverC() as PhidgetAdcDriver_1;
+  TestPhidgetAdcAppP.Sensor_0_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
+  TestPhidgetAdcAppP.Sensor_0_Setup -> PhidgetAdcDriver_1.SensorSetup;
+  TestPhidgetAdcAppP.Sensor_0_Raw -> PhidgetAdcDriver_1.Raw;
 
 
   //serial wiring

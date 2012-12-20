@@ -42,13 +42,13 @@ module TestPhidgetAdcAppP {
   uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   uses interface ModuleStatus as NetworkStatus;
 
+  uses interface SensorCtrl as Sensor_0_Ctrl;
+  uses interface SensorSetup as Sensor_0_Setup;
+  uses interface Read<uint16_t> as Sensor_0_Raw;
+
   uses interface SensorCtrl as Sensor_1_Ctrl;
   uses interface SensorSetup as Sensor_1_Setup;
   uses interface Read<uint16_t> as Sensor_1_Raw;
-
-  uses interface SensorCtrl as Sensor_2_Ctrl;
-  uses interface SensorSetup as Sensor_2_Setup;
-  uses interface Read<uint16_t> as Sensor_2_Raw;
  
   /* Serial Interfaces */ 
   uses interface AMSend as SerialAMSend;
@@ -188,7 +188,8 @@ implementation {
     post send_serial_message();
   }
 
-  event void Sensor_1_Raw.readDone(error_t error, uint16_t data) {
+  event void Sensor_0_Raw.readDone(error_t error, uint16_t data) {
+    printf("smsg1a ms %d %d\n", sensors[0].msg, sensors[1].msg);
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
@@ -196,7 +197,8 @@ implementation {
     }
   }
 
-  event void Sensor_2_Raw.readDone(error_t error, uint16_t data) {
+  event void Sensor_1_Raw.readDone(error_t error, uint16_t data) {
+    printf("smsg1b ms %d %d\n", sensors[0].msg, sensors[1].msg);
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
@@ -213,10 +215,10 @@ implementation {
   event void SerialSplitControl.stopDone(error_t errot){}
   event void SerialSplitControl.startDone(error_t error) {}
   event void TestPhidgetAdcAppParams.receive_status(uint16_t status_flag) {}
+  event void Sensor_0_Ctrl.startDone(error_t error){}
+  event void Sensor_0_Ctrl.stopDone(error_t error){}
   event void Sensor_1_Ctrl.startDone(error_t error){}
   event void Sensor_1_Ctrl.stopDone(error_t error){}
-  event void Sensor_2_Ctrl.startDone(error_t error){}
-  event void Sensor_2_Ctrl.stopDone(error_t error){}
 
   void clean_sensor_record(uint8_t id) {
      memset(sensors[id].pkt.data, 0, (sensors[id].sample_count * sizeof(uint16_t)));
@@ -229,6 +231,7 @@ implementation {
     app_data_t *msg_ptr;
 
     sensors[id].pkt.data[sensors[id].pkt.num ] = data;
+    printf("smsg2 ms %d %d\n", sensors[0].msg, sensors[1].msg);
 
     printf("sd %d %d %d\n", sensors[id].pkt.num, id, sensors[id].sample_count);
 
@@ -241,7 +244,6 @@ implementation {
     printfflush();
     /* Check if there is a space in queue */
     if (call NetworkQueue.full()) {
-      printf("nq full\n");
       /* Queue is full, give up sending the serial message */
       call Leds.led0On();
       return;
@@ -249,7 +251,7 @@ implementation {
 
     /* check if it's not sending an old message */
     if (sensors[id].msg != NULL) {
-      printf("nq busy\n");
+      printf("nq busy %d\n", sensors[id].msg);
       call Leds.led0On();
       return;
     }
@@ -281,6 +283,8 @@ implementation {
     memcpy(msg_ptr, &sensors[id].pkt, sensors[id].len);
     clean_sensor_record(id);
 
+    printf("enquing\n");
+    printfflush();
     call NetworkQueue.enqueue(sensors[id]);
 
     post send_network_message();
@@ -346,36 +350,34 @@ implementation {
     uint8_t i;
 
     sensors[0].sample_count = call TestPhidgetAdcAppParams.get_s1_sampleCount();
-    printf("sc0 %d\n", call TestPhidgetAdcAppParams.get_s1_sampleCount());
     sensors[0].freq = call TestPhidgetAdcAppParams.get_s1_freq();
     sensors[0].seqno = 0;
-    call Sensor_1_Ctrl.set_rate(sensors[0].freq);
-    call Sensor_1_Ctrl.set_signaling(TRUE);
-    call Sensor_1_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s1_inputChannel());
-
-    printf("S0 - %d %d %d\n",sensors[0].sample_count, sensors[0].freq, sensors[0].seqno);
+    sensors[0].msg = NULL;
+    call Sensor_0_Ctrl.set_rate(sensors[0].freq);
+    call Sensor_0_Ctrl.set_signaling(TRUE);
+    call Sensor_0_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s1_inputChannel());
 
     sensors[1].sample_count = call TestPhidgetAdcAppParams.get_s2_sampleCount();
     sensors[1].freq = call TestPhidgetAdcAppParams.get_s2_freq();
     sensors[1].seqno = 0;
-    call Sensor_2_Ctrl.set_rate(sensors[1].freq);
-    call Sensor_2_Ctrl.set_signaling(TRUE);
-    call Sensor_2_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
+    sensors[1].msg = NULL;
+    call Sensor_1_Ctrl.set_rate(sensors[1].freq);
+    call Sensor_1_Ctrl.set_signaling(TRUE);
+    call Sensor_1_Setup.set_input_channel(call TestPhidgetAdcAppParams.get_s2_inputChannel());
 
-    printf("S1 - %d %d %d\n", sensors[1].sample_count, sensors[1].freq, sensors[1].seqno);
-    printfflush();
+    printf("smsg0 ms %d %d\n", sensors[0].msg, sensors[1].msg);
 
     for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
       clean_sensor_record(i);
       sensors[i].msg = NULL;
     }
 
-    if (call Sensor_1_Ctrl.start() != SUCCESS) {
+    if (call Sensor_0_Ctrl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
       call Leds.led0On();
       return;
     }
-    if (call Sensor_2_Ctrl.start() != SUCCESS) {
+    if (call Sensor_1_Ctrl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
       call Leds.led0On();
       return;
