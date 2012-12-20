@@ -79,8 +79,6 @@ implementation {
    */
   app_network_internal_t sensors[APP_MAX_NUMBER_OF_SENSORS];
 
-  uint8_t state = S_STOPPED;
-
   void clean_sensor_record(uint8_t id);
   void setup_sensor_record(uint8_t id);
   void network_msg_tx(uint8_t id);
@@ -88,12 +86,15 @@ implementation {
 
   task void send_serial_message();
 
+  bool busy_network;
+  bool busy_serial;
 
   /**
    * starting point for this module
    */
   command error_t Mgmt.start() {
-    state = S_STARTING;
+    busy_network = FALSE;
+    busy_serial = FALSE;
     /* check if this node will be sending messages over the serial */
     if ((TOS_NODE_ID == call TestPhidgetAdcAppParams.get_destination()) || 
 	        (NODE == call TestPhidgetAdcAppParams.get_destination())) {
@@ -140,12 +141,10 @@ implementation {
       return;
     }  
 
-    state = S_STARTED;
     signal Mgmt.startDone(SUCCESS);
   }
 
   command error_t Mgmt.stop() {
-    state = S_STOPPED;
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -154,6 +153,7 @@ implementation {
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
     app_data_t *s = (app_data_t*) msg;
     if(error == SUCCESS){
+      busy_network = FALSE;
       clean_sensor_record(s->sid);
     } else {
       network_msg_tx(s->sid);
@@ -215,7 +215,8 @@ implementation {
   }
 
   event void SerialAMSend.sendDone(message_t *msg, error_t error) {
-
+    busy_serial = FALSE;
+    post send_serial_message();
   }
 
   event void Sensor_1_Raw.readDone(error_t error, uint16_t data){
@@ -292,6 +293,8 @@ implementation {
                 (sensors[id].sample_count * sizeof(uint16_t)) ) != SUCCESS) {
       /* Failed to send */
       signal NetworkAMSend.sendDone(sensors[id].msg, FAIL);
+    } else {
+      busy_network = TRUE;
     }
   }
 
@@ -339,12 +342,18 @@ implementation {
       return;
     }
 
+    if (busy_serial == TRUE) {
+      return;
+    }
+
     /* Send message */
     if (call SerialAMSend.send(AM_BROADCAST_ADDR, (call SerialQueue.head()).msg,
 				(call SerialQueue.head()).len) != SUCCESS) {
       post send_serial_message();
+    } else {
+      busy_serial = TRUE;
+      call Leds.led1Toggle(); /*red led*/
     }
-    call Leds.led1Toggle(); /*red led*/
   }
 
 
