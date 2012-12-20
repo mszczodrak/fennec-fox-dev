@@ -61,7 +61,7 @@ module TestPhidgetAdcAppP {
   uses interface Leds;
 
   /* Network Queue */
-  uses interface Queue<message_t*> as NetworkQueue;
+  uses interface Queue<app_network_internal_t> as NetworkQueue;
 
   /* Serial Queue */
   uses interface Queue<app_serial_internal_t> as SerialQueue;
@@ -85,6 +85,7 @@ implementation {
   void save_sensor_data(uint16_t data, uint8_t id);
 
   task void send_serial_message();
+  task void send_network_message();
 
   bool busy_network;
   bool busy_serial;
@@ -355,6 +356,28 @@ implementation {
       call Leds.led1Toggle(); /*red led*/
     }
   }
+
+
+  task void send_network_message() {
+    /* Check if there is anything to send */
+    if (call NetworkQueue.empty()) {
+      return;
+    }
+
+    if (busy_network == TRUE) {
+      return;
+    }
+
+    /* Send message */
+    if (call SerialAMSend.send(AM_BROADCAST_ADDR, (call NetworkQueue.head()).msg,
+                                (call NetworkQueue.head()).len) != SUCCESS) {
+      post send_network_message();
+    } else {
+      busy_network = TRUE;
+      call Leds.led2Toggle(); /*red led*/
+    }
+  }
+
 
 
 }
