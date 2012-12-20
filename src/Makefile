@@ -11,7 +11,7 @@ include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 #PFLAGS+=-DENABLE_SPI0_DMA
 #
 
-PFLAGS+=-D__DBGS__
+#PFLAGS+=-D__DBGS__
 
 # 2. TinyOS printf
 #CFLAGS += -I$(TOSDIR)/lib/printf

@@ -222,6 +222,9 @@ implementation {
   }
 
   event void Sensor_1_Raw.readDone(error_t error, uint16_t data){
+    call Leds.led0Toggle();
+//    printf("rd 1\n");
+//    printfflush();
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
@@ -230,6 +233,9 @@ implementation {
   }
 
   event void Sensor_2_Raw.readDone(error_t error, uint16_t data){
+    call Leds.led1Toggle();
+//    printf("rd 2\n");
+//    printfflush();
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */

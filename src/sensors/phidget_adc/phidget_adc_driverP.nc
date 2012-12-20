@@ -24,14 +24,15 @@
 #include "phidget_adc_driver.h"
 
 generic module phidget_adc_driverP() @safe() {
-   provides interface SensorCtrl;
-   provides interface SensorSetup;
-   provides interface Read<uint16_t> as Raw;
+  provides interface SensorCtrl;
+  provides interface SensorSetup;
+  provides interface Read<uint16_t> as Raw;
 
-   uses interface Msp430Adc12SingleChannel;
-   uses interface Resource;
-   uses interface Read<uint16_t> as Battery;
-   uses interface Timer<TMilli> as Timer;
+  uses interface Msp430Adc12SingleChannel;
+  uses interface Resource;
+  uses interface Read<uint16_t> as Battery;
+  uses interface Timer<TMilli> as Timer;
+  uses interface Leds;
 }
 
 implementation {
@@ -100,9 +101,9 @@ implementation {
    }
 
    event void Timer.fired() {
-      call Battery.read();
-      call Resource.request();
-      call Resource.release();
+     call Battery.read();
+     call Resource.request();
+     call Resource.release();
    }
 
    event void Resource.granted() {
@@ -111,7 +112,7 @@ implementation {
    }
 
    task void signal_readDone() {
-     signal Raw.readDone(SUCCESS, raw_data);
+     signal Raw.readDone(raw_data, SUCCESS);
    }
 
    async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data) {

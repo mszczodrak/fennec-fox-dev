@@ -27,19 +27,22 @@ generic configuration phidget_adc_driverC() {
 }
 
 implementation {
-   components new phidget_adc_driverP();
-   SensorCtrl = phidget_adc_driverP.SensorCtrl;
-   SensorSetup = phidget_adc_driverP.SensorSetup;
-   Raw = phidget_adc_driverP.Raw;
+  components new phidget_adc_driverP();
+  SensorCtrl = phidget_adc_driverP.SensorCtrl;
+  SensorSetup = phidget_adc_driverP.SensorSetup;
+  Raw = phidget_adc_driverP.Raw;
 
-   components new Msp430Adc12ClientC();
-   phidget_adc_driverP.Msp430Adc12SingleChannel -> Msp430Adc12ClientC;
-   phidget_adc_driverP.Resource -> Msp430Adc12ClientC;
+  components new Msp430Adc12ClientC();
+  phidget_adc_driverP.Msp430Adc12SingleChannel -> Msp430Adc12ClientC;
+  phidget_adc_driverP.Resource -> Msp430Adc12ClientC;
 
-   components new BatteryC();
-   phidget_adc_driverP.Battery -> BatteryC.Read;
+  components new BatteryC();
+  phidget_adc_driverP.Battery -> BatteryC.Read;
 
-   components new TimerMilliC() as Timer;
-   phidget_adc_driverP.Timer -> Timer;
+  components new TimerMilliC() as Timer;
+  phidget_adc_driverP.Timer -> Timer;
+
+  components LedsC;
+  phidget_adc_driverP.Leds -> LedsC;
 }
 
