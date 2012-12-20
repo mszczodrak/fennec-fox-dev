@@ -59,7 +59,7 @@ typedef struct app_network_internal_t {
   uint8_t sample_count;
   uint8_t seqno;
   uint32_t freq;
-  app_data_t *pkt;
+  app_data_t pkt;
   uint8_t len;
   message_t *msg;
 } app_network_internal_t;
