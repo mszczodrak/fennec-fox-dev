@@ -222,7 +222,6 @@ implementation {
   }
 
   event void Sensor_1_Raw.readDone(error_t error, uint16_t data){
-    call Leds.led0Toggle();
 //    printf("rd 1\n");
 //    printfflush();
     if (error == SUCCESS) {
@@ -274,6 +273,7 @@ implementation {
 
   void save_sensor_data(uint16_t data, uint8_t id) {
     app_data_t *msg_ptr;
+    call Leds.led0Toggle();
     /* check if message buffer is available */
     if (sensors[id].msg == NULL) {
       /* something is wrong with this sensor record */
@@ -288,6 +288,8 @@ implementation {
       sensors[id].pkt.num++;
       return;
     }
+
+    call Leds.led2Toggle();
 
     /* Check if there is a space in queue */
     if (call NetworkQueue.full()) {
