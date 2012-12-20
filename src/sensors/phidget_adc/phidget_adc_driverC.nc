@@ -27,7 +27,7 @@ generic configuration phidget_adc_driverC() {
 }
 
 implementation {
-   components phidget_adc_driverP;
+   components new phidget_adc_driverP();
    SensorCtrl = phidget_adc_driverP.SensorCtrl;
    SensorSetup = phidget_adc_driverP.SensorSetup;
    Raw = phidget_adc_driverP.Raw;

@@ -23,7 +23,7 @@
 #include <Fennec.h>
 #include "phidget_adc_driver.h"
 
-module phidget_adc_driverP @safe() {
+generic module phidget_adc_driverP() @safe() {
    provides interface SensorCtrl;
    provides interface SensorSetup;
    provides interface Read<uint16_t> as Raw;
@@ -40,7 +40,7 @@ implementation {
 
    uint32_t rate = PHIDGET_ADC_DEFAULT_RATE;
    bool signaling = PHIDGET_ADC_DEFAULT_SIGNALING;
-   bool read_request = 0;
+   norace bool read_request = 0;
 
    command error_t SensorCtrl.start() {
       battery = 0;
@@ -110,13 +110,17 @@ implementation {
       call Msp430Adc12SingleChannel.getData();
    }
 
-   async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data){
+   task void signal_readDone() {
+     signal Raw.readDone(SUCCESS, raw_data);
+   }
+
+   async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data) {
       uint32_t s = data;
       s *= battery;
       s /= 4096;    
       raw_data = s;
       if (read_request) {
-        signal Raw.readDone(SUCCESS, raw_data);
+        post signal_readDone();
         read_request = 0;
       }
       return 0;
