@@ -130,7 +130,6 @@ implementation {
     app_data_t *serial_data_payload; 
     msg_queue_t sm;
 
-
     if (call MessagePool.empty()) {
       /* well, there is not more memory space ... maybe increase pool queue */
       call Leds.led0On();
@@ -147,12 +146,9 @@ implementation {
     serial_data_payload = (app_data_t*)
 			call SerialAMSend.getPayload(serial_message, len); 
  
-    /* Get the message source node ID */
-    serial_data_payload->src = call NetworkAMPacket.address(); 
-    
     /* Copy the message data starting from the seqno field 
      * (for app_data_t it is the beginning of the message */
-    memcpy(&(serial_data_payload->seqno), payload, len);
+    memcpy(serial_data_payload, payload, len);
 
     /* Check if there is a space in queue */
     if (call SerialQueue.full()) {
@@ -303,6 +299,7 @@ implementation {
     sm = call SerialQueue.headptr();
 
     /* Send message */
+
     if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) != SUCCESS) {
       signal SerialAMSend.sendDone(sm->msg, FAIL);
     } else {
