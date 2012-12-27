@@ -52,11 +52,11 @@ implementation {
   TestPhidgetAdcAppP.Timer -> TimerImp;
 
   /* Creating a queue for sending messages over the network */
-  components new QueueC(app_network_internal_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
+  components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
   TestPhidgetAdcAppP.NetworkQueue -> NetworkQueueC;
 
   /* Creating a queue for sending messages over the serial interface */
-  components new QueueC(app_serial_internal_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+  components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
   TestPhidgetAdcAppP.SerialQueue -> SerialQueueC;
 
   /* Creating a pool of message memory for network and serial communication */
