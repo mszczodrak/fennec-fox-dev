@@ -267,6 +267,7 @@ implementation {
 
   void save_sensor_data(uint16_t data, uint8_t id) {
     if ((sensors[id].pkt == NULL) || (sensors[id].msg == NULL)) {
+      call Leds.led0On();
       return;
     }
 
