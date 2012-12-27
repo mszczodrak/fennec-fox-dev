@@ -122,6 +122,7 @@ implementation {
     nm.msg = NULL;
     nm.len = 0;
     nm.addr = 0;
+    printf("network send done - size %d\n", call MessagePool.size());
 
     post send_network_message();
   }
@@ -142,6 +143,7 @@ implementation {
     }
 
     serial_message = call MessagePool.get();
+    printf("rec gets ser size %d\n", call MessagePool.size());
     if (serial_message == NULL) {
       /* something went wrong.... this should never happen */
       printf("nr pool empty.... ?\n");
@@ -165,6 +167,7 @@ implementation {
       /* Queue is full, give up sending the serial message */
       call Leds.led0On();
       call MessagePool.put(msg);
+      printf("return mem size %d\n", call MessagePool.size());
       return msg;
     }
 
@@ -194,6 +197,7 @@ implementation {
     sm.len = 0;
     sm.addr = 0;
     busy_serial = FALSE;
+    printf("serial send done - size %d\n", call MessagePool.size());
     post send_serial_message();
   }
 
@@ -227,21 +231,26 @@ implementation {
 
 
   void clean_sensor_record(uint8_t id) {
-    printf("clean sensor record - %d\n", id);
 
+    sensors[id].msg = NULL;
+    sensors[id].pkt = NULL;
     sensors[id].len = sizeof(app_data_t) + (sensors[id].sample_count * sizeof(uint16_t));
 
     sensors[id].msg = call MessagePool.get();
     if (sensors[id].msg == NULL) {
+      printf("clean sensor record - %d - no mem\n", id);
       // ERROR
       return;
     }
     sensors[id].pkt = call NetworkAMSend.getPayload(sensors[id].msg, sensors[id].len);
 
     if (sensors[id].pkt == NULL) {
+      printf("clean sensor record - %d - null\n", id);
       // ERROR
       return;
     }
+
+    printf("clean sensor record - %d - size %d\n", id, call MessagePool.size());
 
     sensors[id].pkt->num = 0;
     sensors[id].pkt->sid = id;
@@ -279,6 +288,7 @@ implementation {
     sensors[id].pkt->data[sensors[id].pkt->num ] = data;
 
     printf("sd %d %d %d %d\n", sensors[id].pkt->num, id, sensors[id].sample_count, data);
+    printfflush();
 
     if (sensors[id].pkt->num < (sensors[id].sample_count - 1)) {
       sensors[id].pkt->num++;
@@ -294,8 +304,6 @@ implementation {
 
     /* Check if there is anything to send */
     if (call SerialQueue.empty()) {
-      printf("nothing to send over the serial\n");
-      printfflush();
       return;
     }
 
@@ -308,12 +316,12 @@ implementation {
     sm = call SerialQueue.headptr();
 
     /* Send message */
-    if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) == SUCCESS) {
+    if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) != SUCCESS) {
       printf("serial send fail\n");
+      signal SerialAMSend.sendDone(sm->msg, FAIL);
+    } else {
       busy_serial = TRUE;
       call Leds.led2Toggle();
-    } else {
-      signal SerialAMSend.sendDone(sm->msg, FAIL);
     }
   }
 
@@ -359,7 +367,6 @@ implementation {
 
     for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
       clean_sensor_record(i);
-      sensors[i].msg = NULL;
     }
 
     if (call Sensor_0_Ctrl.start() != SUCCESS) {
