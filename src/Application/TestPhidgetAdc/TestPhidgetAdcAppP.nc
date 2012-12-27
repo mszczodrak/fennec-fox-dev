@@ -99,9 +99,6 @@ implementation {
 	        (NODE == call TestPhidgetAdcAppParams.get_destination())) {
       /* if serial needed, initialize it */
       call SerialSplitControl.start();
-    } else {
-      /* if serial not needed, fake the readiness of the serial and move on */
-      signal SerialSplitControl.startDone(SUCCESS);
     }
 
     post setup_app();
@@ -138,6 +135,8 @@ implementation {
 
     if (call MessagePool.empty()) {
       /* well, there is not more memory space ... maybe increase pool queue */
+      printf("nr pool empty\n");
+      printfflush();
       call Leds.led0On();
       return msg;
     }
@@ -145,6 +144,8 @@ implementation {
     serial_message = call MessagePool.get();
     if (serial_message == NULL) {
       /* something went wrong.... this should never happen */
+      printf("nr pool empty.... ?\n");
+      printfflush();
       call Leds.led0On();
       return msg;
     }
@@ -211,8 +212,6 @@ implementation {
       save_sensor_data(data, 1);
     }
   }
-
-
 
   event void Timer.fired() {
   }
@@ -283,39 +282,38 @@ implementation {
 
     if (sensors[id].pkt->num < (sensors[id].sample_count - 1)) {
       sensors[id].pkt->num++;
-      printf("more\n");
       return;
     }
 
     prepare_network_message(id);
-
-    printfflush();
-
-    clean_sensor_record(id);
-
   }
 
 
   task void send_serial_message() {
-    printf("ss\n");
-    printfflush();
+    msg_queue_t *sm;
 
     /* Check if there is anything to send */
     if (call SerialQueue.empty()) {
+      printf("nothing to send over the serial\n");
+      printfflush();
       return;
     }
 
     if (busy_serial == TRUE) {
+      printf("serial busy\n");
+      printfflush();
       return;
     }
 
+    sm = call SerialQueue.headptr();
+
     /* Send message */
-    if (call SerialAMSend.send(AM_BROADCAST_ADDR, (call SerialQueue.head()).msg,
-				(call SerialQueue.head()).len) != SUCCESS) {
-      post send_serial_message();
-    } else {
+    if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) == SUCCESS) {
+      printf("serial send fail\n");
       busy_serial = TRUE;
-      call Leds.led1Toggle(); /*red led*/
+      call Leds.led2Toggle();
+    } else {
+      signal SerialAMSend.sendDone(sm->msg, FAIL);
     }
   }
 
