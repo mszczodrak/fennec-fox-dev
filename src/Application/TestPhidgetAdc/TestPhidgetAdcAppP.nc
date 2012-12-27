@@ -93,7 +93,6 @@ implementation {
    */
   command error_t Mgmt.start() {
     busy_serial = FALSE;
-    printf("dst %d\n", call TestPhidgetAdcAppParams.get_destination());
     /* check if this node will be sending messages over the serial */
     if ((TOS_NODE_ID == call TestPhidgetAdcAppParams.get_destination()) || 
 	        (NODE == call TestPhidgetAdcAppParams.get_destination())) {
@@ -122,7 +121,6 @@ implementation {
     nm.msg = NULL;
     nm.len = 0;
     nm.addr = 0;
-    printf("network send done - size %d\n", call MessagePool.size());
 
     post send_network_message();
   }
@@ -132,22 +130,16 @@ implementation {
     app_data_t *serial_data_payload; 
     msg_queue_t sm;
 
-    printf("network receive\n");
 
     if (call MessagePool.empty()) {
       /* well, there is not more memory space ... maybe increase pool queue */
-      printf("nr pool empty\n");
-      printfflush();
       call Leds.led0On();
       return msg;
     }
 
     serial_message = call MessagePool.get();
-    printf("rec gets ser size %d\n", call MessagePool.size());
     if (serial_message == NULL) {
       /* something went wrong.... this should never happen */
-      printf("nr pool empty.... ?\n");
-      printfflush();
       call Leds.led0On();
       return msg;
     }
@@ -167,7 +159,6 @@ implementation {
       /* Queue is full, give up sending the serial message */
       call Leds.led0On();
       call MessagePool.put(msg);
-      printf("return mem size %d\n", call MessagePool.size());
       return msg;
     }
 
@@ -197,7 +188,6 @@ implementation {
     sm.len = 0;
     sm.addr = 0;
     busy_serial = FALSE;
-    printf("serial send done - size %d\n", call MessagePool.size());
     post send_serial_message();
   }
 
@@ -238,19 +228,13 @@ implementation {
 
     sensors[id].msg = call MessagePool.get();
     if (sensors[id].msg == NULL) {
-      printf("clean sensor record - %d - no mem\n", id);
-      // ERROR
       return;
     }
     sensors[id].pkt = call NetworkAMSend.getPayload(sensors[id].msg, sensors[id].len);
 
     if (sensors[id].pkt == NULL) {
-      printf("clean sensor record - %d - null\n", id);
-      // ERROR
       return;
     }
-
-    printf("clean sensor record - %d - size %d\n", id, call MessagePool.size());
 
     sensors[id].pkt->num = 0;
     sensors[id].pkt->sid = id;
@@ -260,7 +244,6 @@ implementation {
 
   void prepare_network_message(uint8_t id) {
     msg_queue_t q;
-    printf("send network message %d\n", id);
 
     /* Check if there is a space in queue */
     if (call NetworkQueue.full()) {
@@ -273,8 +256,6 @@ implementation {
     q.addr = call TestPhidgetAdcAppParams.get_destination();
     q.msg = sensors[id].msg;
 
-    printf("enquing\n");
-    printfflush();
     call NetworkQueue.enqueue(q);
 
     post send_network_message();
@@ -285,10 +266,11 @@ implementation {
 
 
   void save_sensor_data(uint16_t data, uint8_t id) {
-    sensors[id].pkt->data[sensors[id].pkt->num ] = data;
+    if ((sensors[id].pkt == NULL) || (sensors[id].msg == NULL)) {
+      return;
+    }
 
-    printf("sd %d %d %d %d\n", sensors[id].pkt->num, id, sensors[id].sample_count, data);
-    printfflush();
+    sensors[id].pkt->data[sensors[id].pkt->num ] = data;
 
     if (sensors[id].pkt->num < (sensors[id].sample_count - 1)) {
       sensors[id].pkt->num++;
@@ -308,8 +290,6 @@ implementation {
     }
 
     if (busy_serial == TRUE) {
-      printf("serial busy\n");
-      printfflush();
       return;
     }
 
@@ -317,7 +297,6 @@ implementation {
 
     /* Send message */
     if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) != SUCCESS) {
-      printf("serial send fail\n");
       signal SerialAMSend.sendDone(sm->msg, FAIL);
     } else {
       busy_serial = TRUE;
@@ -336,11 +315,8 @@ implementation {
 
     nm = call NetworkQueue.headptr();
 
-    printf("sn\n");
-
     if (call NetworkAMSend.send(nm->addr, nm->msg, nm->len) != SUCCESS) {
       /* Failed to send */
-      printf("failed to send\n");
       signal NetworkAMSend.sendDone(nm->msg, FAIL);
     }
   }
