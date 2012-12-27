@@ -228,17 +228,23 @@ implementation {
 
     sensors[id].msg = call MessagePool.get();
     if (sensors[id].msg == NULL) {
+      call Leds.led0On();
       return;
     }
     sensors[id].pkt = call NetworkAMSend.getPayload(sensors[id].msg, sensors[id].len);
 
     if (sensors[id].pkt == NULL) {
+      call Leds.led0On();
       return;
     }
 
-    sensors[id].pkt->num = 0;
+    sensors[id].seqno++;
+
+    sensors[id].pkt->src = TOS_NODE_ID;
+    sensors[id].pkt->seqno = sensors[id].seqno;
     sensors[id].pkt->sid = id;
     sensors[id].pkt->freq = sensors[id].freq;
+    sensors[id].pkt->num = 0;
     memset(sensors[id].pkt->data, 0, (sensors[id].len));
   }
 
@@ -273,8 +279,8 @@ implementation {
 
     sensors[id].pkt->data[sensors[id].pkt->num ] = data;
 
-    if (sensors[id].pkt->num < (sensors[id].sample_count - 1)) {
-      sensors[id].pkt->num++;
+    sensors[id].pkt->num++;
+    if (sensors[id].pkt->num < (sensors[id].sample_count)) {
       return;
     }
 

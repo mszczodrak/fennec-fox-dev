@@ -40,10 +40,10 @@
 typedef nx_struct app_data_t {
   nx_uint16_t src;    		/* address of the node sending sensor samples */
   nx_uint32_t seqno;		/* message sequence number */
+  nx_uint32_t freq;		/* sampling frequency (ms) */
   nx_uint8_t sid;		/* sensor ID */
 				/* IDs are encoded following the declarations 
 				 * from the file src/Fennec/ff_sensors.h */
-  nx_uint32_t freq;		/* sampling frequency (ms) */
   nx_uint8_t num;		/* number of samples */
   nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
 } app_data_t;
