@@ -44,11 +44,11 @@ module phidgetAdcAppP {
   uses interface ModuleStatus as NetworkStatus;
 
   uses interface SensorCtrl as Sensor_0_Ctrl;
-  uses interface SensorSetup as Sensor_0_Setup;
+  uses interface AdcSetup as Sensor_0_Setup;
   uses interface Read<uint16_t> as Sensor_0_Raw;
 
   uses interface SensorCtrl as Sensor_1_Ctrl;
-  uses interface SensorSetup as Sensor_1_Setup;
+  uses interface AdcSetup as Sensor_1_Setup;
   uses interface Read<uint16_t> as Sensor_1_Raw;
  
   /* Serial Interfaces */ 

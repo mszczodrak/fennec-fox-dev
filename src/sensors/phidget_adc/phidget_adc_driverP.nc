@@ -25,7 +25,7 @@
 
 generic module phidget_adc_driverP() @safe() {
   provides interface SensorCtrl;
-  provides interface SensorSetup;
+  provides interface AdcSetup;
   provides interface Read<uint16_t> as Raw;
 
   uses interface Msp430Adc12SingleChannel;
@@ -73,7 +73,7 @@ implementation {
       return SUCCESS;
    }
 
-   command error_t SensorSetup.set_input_channel(uint8_t new_input_channel) {
+   command error_t AdcSetup.set_input_channel(uint8_t new_input_channel) {
       phidget_adc_config.inch = new_input_channel;  
       return SUCCESS;
    }
@@ -90,7 +90,7 @@ implementation {
       return signaling;
    }
 
-   command uint8_t SensorSetup.get_input_channel(){
+   command uint8_t AdcSetup.get_input_channel(){
       return phidget_adc_config.inch;
    }
 

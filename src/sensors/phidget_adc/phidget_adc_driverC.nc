@@ -22,14 +22,14 @@
 
 generic configuration phidget_adc_driverC() {
    provides interface SensorCtrl;
-   provides interface SensorSetup;
+   provides interface AdcSetup;
    provides interface Read<uint16_t> as Raw;
 }
 
 implementation {
   components new phidget_adc_driverP();
   SensorCtrl = phidget_adc_driverP.SensorCtrl;
-  SensorSetup = phidget_adc_driverP.SensorSetup;
+  AdcSetup = phidget_adc_driverP.AdcSetup;
   Raw = phidget_adc_driverP.Raw;
 
   components new Msp430Adc12ClientC();

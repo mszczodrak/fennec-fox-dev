@@ -73,12 +73,12 @@ implementation {
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_0;
   phidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
-  phidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_0.SensorSetup;
+  phidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_0.AdcSetup;
   phidgetAdcAppP.Sensor_1_Raw -> PhidgetAdcDriver_0.Raw;
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_1;
   phidgetAdcAppP.Sensor_0_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
-  phidgetAdcAppP.Sensor_0_Setup -> PhidgetAdcDriver_1.SensorSetup;
+  phidgetAdcAppP.Sensor_0_Setup -> PhidgetAdcDriver_1.AdcSetup;
   phidgetAdcAppP.Sensor_0_Raw -> PhidgetAdcDriver_1.Raw;
 
   components SerialActiveMessageC;
