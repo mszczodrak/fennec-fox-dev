@@ -293,6 +293,7 @@ implementation {
     }
 
     if (busy_serial == TRUE) {
+      call Leds.led1On();
       return;
     }
 
@@ -301,6 +302,7 @@ implementation {
     /* Send message */
 
     if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) != SUCCESS) {
+      call Leds.led1On();
       signal SerialAMSend.sendDone(sm->msg, FAIL);
     } else {
       busy_serial = TRUE;
