@@ -191,6 +191,7 @@ implementation {
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
+      call Leds.led1Toggle();
       save_sensor_data(data, 0);
     }
   }
@@ -199,6 +200,7 @@ implementation {
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
+      call Leds.led2Toggle();
       save_sensor_data(data, 1);
     }
   }
@@ -293,7 +295,7 @@ implementation {
     }
 
     if (busy_serial == TRUE) {
-      call Leds.led1On();
+      call Leds.led0On();
       return;
     }
 
@@ -302,11 +304,10 @@ implementation {
     /* Send message */
 
     if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) != SUCCESS) {
-      call Leds.led1On();
+      call Leds.led0On();
       signal SerialAMSend.sendDone(sm->msg, FAIL);
     } else {
       busy_serial = TRUE;
-      call Leds.led2Toggle();
     }
   }
 
