@@ -1,5 +1,5 @@
 /*
- *  ADC Test Application module for Fennec Fox platform.
+ *  Phidget ADC Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,17 +19,14 @@
  */
 
 /*
- * Application: ADC Test Application Module
+ * Application: Phidget ADC Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
- * Last Modified: 12/7/2012
+ * Last Modified: 12/28/2012
  */
 
-#ifndef __TestPhidgetAdc_APP_H_
-#define __TestPhidgetAdc_APP_H_
-
-#define GENERIC_APP_ID 1
-#define SAMPLE_COUNT_MAX  20	/* Max number of samples per message */
+#ifndef __PhidgetAdc_APP_H_
+#define __PhidgetAdc_APP_H_
 
 #define APP_MAX_NUMBER_OF_SENSORS	2
 #define APP_NETWORK_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS

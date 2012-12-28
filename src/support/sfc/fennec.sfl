@@ -9,7 +9,7 @@ use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter (
 use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 use application cuApp $(FENNEC_FOX_LIB)/Application/ControlUnit ()
 
-use application phidget_adc $(FENNEC_FOX_LIB)/Application/TestPhidgetAdc (
+use application phidget_adc $(FENNEC_FOX_LIB)/Application/tests/phidgetAdc (
 	uint32_t s1_freq = 0, 
 	uint8_t s1_inputChannel = 0,
 	uint8_t s1_sampleCount = 0,
