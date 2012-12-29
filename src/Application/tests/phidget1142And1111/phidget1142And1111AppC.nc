@@ -72,14 +72,15 @@ implementation {
   phidget1142And1111AppP.Leds -> LedsC;
 
   components phidget_1142_0_driverC;
-  phidget1142And1111AppP.Sensor_1_Ctrl -> phidget_1142_0_driverC.SensorCtrl;
-  phidget1142And1111AppP.Sensor_1_Setup -> phidget_1142_0_driverC.AdcSetup;
-  phidget1142And1111AppP.Sensor_1_Raw -> phidget_1142_0_driverC.Raw;
+  phidget1142And1111AppP.Phidget_1142_Ctrl -> phidget_1142_0_driverC.SensorCtrl;
+  phidget1142And1111AppP.Phidget_1142_Setup -> phidget_1142_0_driverC.AdcSetup;
+  phidget1142And1111AppP.Phidget_1142_Raw -> phidget_1142_0_driverC.Raw;
+  phidget1142And1111AppP.Phidget_1142_Calibrated -> phidget_1142_0_driverC.Calibrated;
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_1;
-  phidget1142And1111AppP.Sensor_0_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
-  phidget1142And1111AppP.Sensor_0_Setup -> PhidgetAdcDriver_1.AdcSetup;
-  phidget1142And1111AppP.Sensor_0_Raw -> PhidgetAdcDriver_1.Raw;
+  phidget1142And1111AppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
+  phidget1142And1111AppP.Sensor_1_Setup -> PhidgetAdcDriver_1.AdcSetup;
+  phidget1142And1111AppP.Sensor_1_Raw -> PhidgetAdcDriver_1.Raw;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);

@@ -44,9 +44,10 @@ module phidget1142And1111AppP {
   uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   uses interface ModuleStatus as NetworkStatus;
 
-  uses interface SensorCtrl as Sensor_0_Ctrl;
-  uses interface AdcSetup as Sensor_0_Setup;
-  uses interface Read<uint16_t> as Sensor_0_Raw;
+  uses interface SensorCtrl as Phidget_1142_Ctrl;
+  uses interface AdcSetup as Phidget_1142_Setup;
+  uses interface Read<uint16_t> as Phidget_1142_Raw;
+  uses interface Read<uint16_t> as Phidget_1142_Calibrated;
 
   uses interface SensorCtrl as Sensor_1_Ctrl;
   uses interface AdcSetup as Sensor_1_Setup;
@@ -189,7 +190,10 @@ implementation {
     post send_serial_message();
   }
 
-  event void Sensor_0_Raw.readDone(error_t error, uint16_t data) {
+  event void Phidget_1142_Raw.readDone(error_t error, uint16_t data) {
+  }
+
+  event void Phidget_1142_Calibrated.readDone(error_t error, uint16_t data) {
     if (error == SUCCESS) {
       /* sends packet if data count equals sampleCount, 
 	 else appends data to the buffer */
@@ -214,8 +218,8 @@ implementation {
   event void SerialSplitControl.stopDone(error_t errot){}
   event void SerialSplitControl.startDone(error_t error) {}
   event void phidget1142And1111AppParams.receive_status(uint16_t status_flag) {}
-  event void Sensor_0_Ctrl.startDone(error_t error){}
-  event void Sensor_0_Ctrl.stopDone(error_t error){}
+  event void Phidget_1142_Ctrl.startDone(error_t error){}
+  event void Phidget_1142_Ctrl.stopDone(error_t error){}
   event void Sensor_1_Ctrl.startDone(error_t error){}
   event void Sensor_1_Ctrl.stopDone(error_t error){}
 
@@ -338,9 +342,9 @@ implementation {
     sensors[0].freq = call phidget1142And1111AppParams.get_s1_freq();
     sensors[0].seqno = 0;
     sensors[0].msg = NULL;
-    call Sensor_0_Ctrl.set_rate(sensors[0].freq);
-    call Sensor_0_Ctrl.set_signaling(TRUE);
-    call Sensor_0_Setup.set_input_channel(call phidget1142And1111AppParams.get_s1_inputChannel());
+    call Phidget_1142_Ctrl.set_rate(sensors[0].freq);
+    call Phidget_1142_Ctrl.set_signaling(TRUE);
+    call Phidget_1142_Setup.set_input_channel(call phidget1142And1111AppParams.get_s1_inputChannel());
 
     sensors[1].sample_count = call phidget1142And1111AppParams.get_s2_sampleCount();
     sensors[1].freq = call phidget1142And1111AppParams.get_s2_freq();
@@ -354,7 +358,7 @@ implementation {
       clean_sensor_record(i);
     }
 
-    if (call Sensor_0_Ctrl.start() != SUCCESS) {
+    if (call Phidget_1142_Ctrl.start() != SUCCESS) {
       signal Mgmt.startDone(FAIL);
       call Leds.led0On();
       return;
