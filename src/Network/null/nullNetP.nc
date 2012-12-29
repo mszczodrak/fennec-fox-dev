@@ -65,7 +65,15 @@ implementation {
   }
 
   command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    return call MacAMSend.send(addr, msg, len);
+    if (addr == TOS_NODE_ID) {
+      signal NetworkAMSend.sendDone(msg, SUCCESS);
+      signal NetworkReceive.receive(msg, 
+		call NetworkAMSend.getPayload(msg, len), 
+		len - sizeof(nx_struct null_header));
+      return SUCCESS;
+    }
+
+    return call MacAMSend.send(addr, msg, len + sizeof(nx_struct null_header));
   }
 
   command error_t NetworkAMSend.cancel(message_t* msg) {
@@ -73,11 +81,13 @@ implementation {
   }
 
   command uint8_t NetworkAMSend.maxPayloadLength() {
-    return call MacAMSend.maxPayloadLength();
+    return (call MacAMSend.maxPayloadLength() - sizeof(nx_struct null_header));
   }
 
   command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
-    return call MacAMSend.getPayload(msg, len);
+    uint8_t *ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
+				len + sizeof(nx_struct null_header));
+    return (void*) (ptr + sizeof(nx_struct null_header));
   }
 
   event void MacAMSend.sendDone(message_t *msg, error_t error) {
@@ -85,7 +95,10 @@ implementation {
   }
 
   event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    return signal NetworkReceive.receive(msg, payload, len);
+    uint8_t *ptr = (uint8_t*) payload;
+    return signal NetworkReceive.receive(msg, 
+			ptr + sizeof(nx_struct null_header), 
+			len - sizeof(nx_struct null_header));
   }
 
   event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
