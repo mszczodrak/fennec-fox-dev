@@ -1,3 +1,30 @@
+/*
+ *  Phidget 1142 driver.
+ *
+ *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/*
+ * Application: Phidget 1142 driver
+ * Author: Marcin Szczodrak
+ * Date: 12/28/2012
+ * Last Modified: 12/28/2012
+ */
+
 #include <Fennec.h>
 #include "phidget_1142_0_driver.h"
 
@@ -26,7 +53,7 @@ implementation {
   command error_t SensorCtrl.start() {
     read_request = FALSE;
     if (adc_channel_set == FALSE) {
-      call SubAdcSetup.set_input_channel(PHIDGET_1142_DEFAULT_ADC_CHANNEL);
+      call SubAdcSetup.set_input_channel(PHIDGET_1142_0_DEFAULT_ADC_CHANNEL);
     }
     return call AdcSensorCtrl.start();
   }

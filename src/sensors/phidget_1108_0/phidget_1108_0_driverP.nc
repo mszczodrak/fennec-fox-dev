@@ -1,146 +1,138 @@
+/*
+ *  Phidget 1108 driver.
+ *
+ *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/*
+ * Application: Phidget 1108 driver
+ * Author: Marcin Szczodrak
+ * Date: 12/28/2012
+ * Last Modified: 12/28/2012
+ */
+
 #include <Fennec.h>
 #include "phidget_1108_0_driver.h"
 
 module phidget_1108_0_driverP @safe() {
+  provides interface AdcSetup;
   provides interface SensorCtrl;
   provides interface Read<uint16_t> as Raw;
   provides interface Read<uint16_t> as Calibrated;
-  provides interface Read<bool> as Occurence;
 
-  uses interface Msp430Adc12SingleChannel;
-  uses interface Resource;
-  uses interface Read<uint16_t> as Battery;
+  uses interface SensorCtrl as AdcSensorCtrl;
+  uses interface AdcSetup as SubAdcSetup;
+  uses interface Read<uint16_t> as AdcSensorRaw;
+
   uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
 
-  norace uint16_t raw_data = 0;
-  norace uint16_t battery = 0;
+  uint16_t calibrated_data[PHIDGET_1108_0_SENSOR_HIST_LEN] = {0};
+  uint8_t index = 0;
 
-  uint16_t calibrated_data;
-  bool occurence_data = 0;
-
-  uint16_t sensitivity = PHIDGET_1108_0_DEFAULT_SENSITIVITY;
-  uint32_t rate = PHIDGET_1108_0_DEFAULT_RATE;
-  uint8_t signaling = PHIDGET_1108_0_DEFAULT_SIGNALING;
+  norace bool signaling = PHIDGET_1108_0_DEFAULT_SIGNALING;
+  norace bool read_request = FALSE;
+  norace bool adc_channel_set = FALSE;
 
   command error_t SensorCtrl.start() {
-    battery = 0;
-    raw_data = 0;
-    occurence_data = 0;
-    call Timer.startPeriodic(rate);
-    signal SensorCtrl.startDone(SUCCESS);
-    return SUCCESS;
+    read_request = FALSE;
+    if (adc_channel_set == FALSE) {
+      call SubAdcSetup.set_input_channel(PHIDGET_1108_0_DEFAULT_ADC_CHANNEL);
+    }
+    return call AdcSensorCtrl.start();
+  }
+
+  event void AdcSensorCtrl.startDone(error_t error) {
+    signal SensorCtrl.startDone(error);
   }
 
   command error_t SensorCtrl.stop() {
     call Timer.stop();
-    signal SensorCtrl.stopDone(SUCCESS);
-    return SUCCESS;
+    return call AdcSensorCtrl.stop();
+  }
+
+  event void AdcSensorCtrl.stopDone(error_t error) {
+    signal SensorCtrl.stopDone(error);
   }
 
   command error_t SensorCtrl.set_sensitivity(uint16_t new_sensitivity) {
-    sensitivity = new_sensitivity;
-    return SUCCESS;
+    return call AdcSensorCtrl.set_sensitivity(new_sensitivity);
   }
 
   command error_t SensorCtrl.set_rate(uint32_t new_rate) {
-    rate = new_rate;
-    call Timer.startPeriodic(rate);
-    return SUCCESS;
+    return call AdcSensorCtrl.set_rate(new_rate);
   }
 
   command error_t SensorCtrl.set_signaling(bool new_signaling) {
+    call AdcSensorCtrl.set_signaling(new_signaling);
     signaling = new_signaling;
     return SUCCESS;
   }
 
   command uint16_t SensorCtrl.get_sensitivity() {
-    return sensitivity;
+    return call AdcSensorCtrl.get_sensitivity();
   }
 
   command uint32_t SensorCtrl.get_rate() {
-    return rate;
+    return call AdcSensorCtrl.get_rate();
   }
 
   command bool SensorCtrl.get_signaling() {
     return signaling;
   }
 
+  command uint8_t AdcSetup.get_input_channel() {
+    return call SubAdcSetup.get_input_channel();
+  }
+
+  command error_t AdcSetup.set_input_channel(uint8_t new_channel) {
+    adc_channel_set = TRUE;
+    return call SubAdcSetup.set_input_channel(new_channel);
+  }
+
   command error_t Raw.read() {
-    signal Raw.readDone(SUCCESS, raw_data);
-    return SUCCESS;
+    read_request = TRUE;
+    return call AdcSensorRaw.read();
   }
 
   command error_t Calibrated.read() {
-    signal Calibrated.readDone(SUCCESS, calibrated_data);
-    return SUCCESS;
+    read_request = TRUE;
+    return call AdcSensorRaw.read();
   }
 
-  command error_t Occurence.read() {
-    signal Occurence.readDone(SUCCESS, occurence_data);
-    return SUCCESS;
-  }
-
-  event void Timer.fired() {
-    call Battery.read();
-    call Resource.request();
-    call Resource.release();
-  }
-
-  event void Resource.granted() {
-    call Msp430Adc12SingleChannel.configureSingle(&phidget_1108_0_adc_config);
-    call Msp430Adc12SingleChannel.getData();
-  }
-
-  task void check_event() {
-    uint16_t delta = sensitivity * PHIDGET_1108_0_SENSOR_MAGNETIC_STEP;
-
-    if ((calibrated_data < (PHIDGET_1108_0_SENSOR_NO_MAGNETIC - delta)) || 
-	(calibrated_data  > (PHIDGET_1108_0_SENSOR_NO_MAGNETIC + delta))) {
-      occurence_data = 1;
-    } else {
-      occurence_data = 0;
-    }
-
-    if (signaling) { 
-      signal Raw.readDone(SUCCESS, raw_data);
-      signal Calibrated.readDone(SUCCESS, calibrated_data);
-      signal Occurence.readDone(SUCCESS, occurence_data);
-    }
-  }
-
-  task void calibrate() {
-    /* No calibration for phidget_1108_0 */
-    calibrated_data = raw_data;
-    post check_event();
-  }
-
-  async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data){
-    uint32_t s = data;
-    s *= battery;
-    s /= 4096;    
-    raw_data = s;
-    post calibrate();
-    return 0;
-  }
-
-  event void Battery.readDone(error_t error, uint16_t data){
+  event void AdcSensorRaw.readDone(error_t error, uint16_t data) {
     if (error == SUCCESS) {
-      uint32_t b = data;
-      b *= 3000;
-      b /= 4096;
-      battery = b;
-    } 
+      /* No calibration for phidget_1108_0 */
+      index++;
+      index %= PHIDGET_1108_0_SENSOR_HIST_LEN;
+      calibrated_data[index] = data;
+      if (read_request || signaling) {
+        signal Raw.readDone(error, data);
+        signal Calibrated.readDone(error, calibrated_data[index]);
+        read_request = 0;
+      }
+    }
   }
 
-  async event uint16_t *Msp430Adc12SingleChannel.multipleDataReady(uint16_t *buffer, uint16_t numSamples){
-    return 0;
-  }
+  event void Timer.fired() {}
 
   default event void Raw.readDone(error_t err, uint16_t data) {}
   default event void Calibrated.readDone(error_t err, uint16_t data) {}
-  default event void Occurence.readDone(error_t err, bool data) {}
 }
 

@@ -77,10 +77,11 @@ implementation {
   phidget1142And1111AppP.Phidget_1142_Raw -> phidget_1142_0_driverC.Raw;
   phidget1142And1111AppP.Phidget_1142_Calibrated -> phidget_1142_0_driverC.Calibrated;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_1;
-  phidget1142And1111AppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
-  phidget1142And1111AppP.Sensor_1_Setup -> PhidgetAdcDriver_1.AdcSetup;
-  phidget1142And1111AppP.Sensor_1_Raw -> PhidgetAdcDriver_1.Raw;
+  components phidget_1111_0_driverC;
+  phidget1142And1111AppP.Phidget_1111_Ctrl -> phidget_1111_0_driverC.SensorCtrl;
+  phidget1142And1111AppP.Phidget_1111_Setup -> phidget_1111_0_driverC.AdcSetup;
+  phidget1142And1111AppP.Phidget_1111_Raw -> phidget_1111_0_driverC.Raw;
+  phidget1142And1111AppP.Phidget_1111_Calibrated -> phidget_1111_0_driverC.Calibrated;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);
