@@ -121,7 +121,8 @@ implementation {
       /* No calibration for phidget_1133_0 */
       index++;
       index %= PHIDGET_1133_0_SENSOR_HIST_LEN;
-      calibrated_data[index] = data;
+      calibrated_data[index] = data * 16.801;
+      calibrated_data[index] += 9.872;
       if (read_request || signaling) {
         signal Raw.readDone(error, data);
         signal Calibrated.readDone(error, calibrated_data[index]);
