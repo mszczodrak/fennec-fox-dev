@@ -29,7 +29,7 @@
 #ifndef __null_NET_H_
 #define __null_NET_H_
 
-nx_struct null_header {
+nx_struct null_net_header {
 };
 
 #endif
