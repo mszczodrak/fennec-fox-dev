@@ -1,5 +1,5 @@
 /*
- *  Phidget ADC Application module for Fennec Fox platform.
+ *  Phidget Light and Motion Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,19 +19,19 @@
  */
 
 /*
- * Application: Phidget ADC Application Module
+ * Application: Phidget Light and Motion Application Module
  * Author: Marcin Szczodrak
- * Date: 8/20/2010
+ * Date: 12/28/2012
  * Last Modified: 12/28/2012
  */
 
-#include "phidgetAdcApp.h"
+#include "phidgetLightAndMotionApp.h"
 
-configuration phidgetAdcAppC {
+configuration phidgetLightAndMotionAppC {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface phidgetAdcAppParams;
+  uses interface phidgetLightAndMotionAppParams;
    
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -48,55 +48,55 @@ implementation {
     SERIAL_PORT = 1
   };
  
-  components phidgetAdcAppP;
-  Mgmt = phidgetAdcAppP;
-  Module = phidgetAdcAppP;
-  phidgetAdcAppParams = phidgetAdcAppP;
+  components phidgetLightAndMotionAppP;
+  Mgmt = phidgetLightAndMotionAppP;
+  Module = phidgetLightAndMotionAppP;
+  phidgetLightAndMotionAppParams = phidgetLightAndMotionAppP;
   
   components new TimerMilliC() as TimerImp;
-  phidgetAdcAppP.Timer -> TimerImp;
+  phidgetLightAndMotionAppP.Timer -> TimerImp;
 
   /* Creating a queue for sending messages over the network */
   components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
-  phidgetAdcAppP.NetworkQueue -> NetworkQueueC;
+  phidgetLightAndMotionAppP.NetworkQueue -> NetworkQueueC;
 
   /* Creating a queue for sending messages over the serial interface */
   components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
-  phidgetAdcAppP.SerialQueue -> SerialQueueC;
+  phidgetLightAndMotionAppP.SerialQueue -> SerialQueueC;
 
   /* Creating a pool of message memory for network and serial communication */
   components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
-  phidgetAdcAppP.MessagePool -> MessagePoolC;
+  phidgetLightAndMotionAppP.MessagePool -> MessagePoolC;
 
   components LedsC;
-  phidgetAdcAppP.Leds -> LedsC;
+  phidgetLightAndMotionAppP.Leds -> LedsC;
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_0;
-  phidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
-  phidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_0.AdcSetup;
-  phidgetAdcAppP.Sensor_1_Raw -> PhidgetAdcDriver_0.Raw;
+  phidgetLightAndMotionAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
+  phidgetLightAndMotionAppP.Sensor_1_Setup -> PhidgetAdcDriver_0.AdcSetup;
+  phidgetLightAndMotionAppP.Sensor_1_Raw -> PhidgetAdcDriver_0.Raw;
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_1;
-  phidgetAdcAppP.Sensor_0_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
-  phidgetAdcAppP.Sensor_0_Setup -> PhidgetAdcDriver_1.AdcSetup;
-  phidgetAdcAppP.Sensor_0_Raw -> PhidgetAdcDriver_1.Raw;
+  phidgetLightAndMotionAppP.Sensor_0_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
+  phidgetLightAndMotionAppP.Sensor_0_Setup -> PhidgetAdcDriver_1.AdcSetup;
+  phidgetLightAndMotionAppP.Sensor_0_Raw -> PhidgetAdcDriver_1.Raw;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);
   components new SerialAMReceiverC(SERIAL_PORT);
-  phidgetAdcAppP.SerialAMSend -> SerialAMSenderC.AMSend;
-  phidgetAdcAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-  phidgetAdcAppP.SerialPacket -> SerialAMSenderC.Packet; 
-  phidgetAdcAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
-  phidgetAdcAppP.SerialReceive -> SerialAMReceiverC.Receive;
+  phidgetLightAndMotionAppP.SerialAMSend -> SerialAMSenderC.AMSend;
+  phidgetLightAndMotionAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+  phidgetLightAndMotionAppP.SerialPacket -> SerialAMSenderC.Packet; 
+  phidgetLightAndMotionAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+  phidgetLightAndMotionAppP.SerialReceive -> SerialAMReceiverC.Receive;
  
-  NetworkAMSend = phidgetAdcAppP.NetworkAMSend;
-  NetworkReceive = phidgetAdcAppP.NetworkReceive;
-  NetworkSnoop = phidgetAdcAppP.NetworkSnoop;
-  NetworkAMPacket = phidgetAdcAppP.NetworkAMPacket;
-  NetworkPacket = phidgetAdcAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = phidgetAdcAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = phidgetAdcAppP.NetworkStatus;
+  NetworkAMSend = phidgetLightAndMotionAppP.NetworkAMSend;
+  NetworkReceive = phidgetLightAndMotionAppP.NetworkReceive;
+  NetworkSnoop = phidgetLightAndMotionAppP.NetworkSnoop;
+  NetworkAMPacket = phidgetLightAndMotionAppP.NetworkAMPacket;
+  NetworkPacket = phidgetLightAndMotionAppP.NetworkPacket;
+  NetworkPacketAcknowledgements = phidgetLightAndMotionAppP.NetworkPacketAcknowledgements;
+  NetworkStatus = phidgetLightAndMotionAppP.NetworkStatus;
 
 }
 
