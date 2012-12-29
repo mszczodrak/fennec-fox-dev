@@ -71,10 +71,10 @@ implementation {
   components LedsC;
   phidget1142And1111AppP.Leds -> LedsC;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_0;
-  phidget1142And1111AppP.Sensor_1_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
-  phidget1142And1111AppP.Sensor_1_Setup -> PhidgetAdcDriver_0.AdcSetup;
-  phidget1142And1111AppP.Sensor_1_Raw -> PhidgetAdcDriver_0.Raw;
+  components phidget_1142_0_driverC;
+  phidget1142And1111AppP.Sensor_1_Ctrl -> phidget_1142_0_driverC.SensorCtrl;
+  phidget1142And1111AppP.Sensor_1_Setup -> phidget_1142_0_driverC.AdcSetup;
+  phidget1142And1111AppP.Sensor_1_Raw -> phidget_1142_0_driverC.Raw;
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_1;
   phidget1142And1111AppP.Sensor_0_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
