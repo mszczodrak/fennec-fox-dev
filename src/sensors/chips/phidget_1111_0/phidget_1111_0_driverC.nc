@@ -27,27 +27,31 @@
 
 
 configuration phidget_1111_0_driverC {
-  provides interface SensorCtrl;
-  provides interface SensorInfo;
-  provides interface AdcSetup;
-  provides interface Read<uint16_t> as Raw;
-  provides interface Read<uint16_t> as Calibrated;
+
+provides interface SensorCtrl;
+provides interface SensorInfo;
+provides interface AdcSetup;
+provides interface Read<uint16_t> as Raw;
+provides interface Read<uint16_t> as Calibrated;
+
 }
 
 implementation {
-  components phidget_1111_0_driverP;
-  AdcSetup = phidget_1111_0_driverP.AdcSetup;
-  SensorCtrl = phidget_1111_0_driverP.SensorCtrl;
-  SensorInfo = phidget_1111_0_driverP.SensorInfo;
-  Raw = phidget_1111_0_driverP.Raw;
-  Calibrated = phidget_1111_0_driverP.Calibrated;
 
-  components new phidget_adc_driverC();
-  phidget_1111_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
-  phidget_1111_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
-  phidget_1111_0_driverP.AdcSensorRaw -> phidget_adc_driverC.Raw;
+components phidget_1111_0_driverP;
+AdcSetup = phidget_1111_0_driverP.AdcSetup;
+SensorCtrl = phidget_1111_0_driverP.SensorCtrl;
+SensorInfo = phidget_1111_0_driverP.SensorInfo;
+Raw = phidget_1111_0_driverP.Raw;
+Calibrated = phidget_1111_0_driverP.Calibrated;
 
-  components new TimerMilliC() as Timer;
-  phidget_1111_0_driverP.Timer -> Timer;
+components new phidget_adc_driverC();
+phidget_1111_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
+phidget_1111_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
+phidget_1111_0_driverP.AdcSensorRaw -> phidget_adc_driverC.Raw;
+
+components new TimerMilliC() as Timer;
+phidget_1111_0_driverP.Timer -> Timer;
+
 }
 

@@ -28,6 +28,8 @@
 #define FF_STRUCTURES_H
 
 #include "ff_consts.h"
+#include "ff_sensor_ids.h"
+#include "ff_sensor_type.h"
 
 typedef uint16_t state_t;
 typedef uint16_t conf_t;
@@ -71,7 +73,20 @@ typedef union message_header {
 //} message_footer_t;
 
 
+typedef struct ff_sensor_conf {
+	uint32_t sensitivity;
+	uint32_t rate;
+	uint8_t signaling;
+	uint8_t channel;
+} ff_sensor_conf_t;
 
+typedef struct ff_sensor_data {
+	uint8_t size;
+	void *raw;
+	void *calibrated;
+	sensor_type_t type;
+	sensor_id_t id;
+} ff_sensor_data_t;
 
 typedef nx_struct metadata_t {
   nx_uint8_t rssi;

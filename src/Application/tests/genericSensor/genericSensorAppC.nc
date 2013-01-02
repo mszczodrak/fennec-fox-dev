@@ -55,12 +55,13 @@ implementation {
   components LedsC;
   genericSensorAppP.Leds -> LedsC;
 
-  components phidget_1142_0_driverC as GenericSensorC;
+  //components phidget_1142_0_driverC as GenericSensorC;
+  components adxl345_0_driverC as GenericSensorC;
+
   genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
   genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;
-  genericSensorAppP.AdcSetup -> GenericSensorC.AdcSetup;
-  genericSensorAppP.Raw -> GenericSensorC.Raw;
-  genericSensorAppP.Calibrated -> GenericSensorC.Calibrated;
+  //genericSensorAppP.AdcSetup -> GenericSensorC.AdcSetup;
+  genericSensorAppP.Read -> GenericSensorC.Read;
 
   NetworkAMSend = genericSensorAppP.NetworkAMSend;
   NetworkReceive = genericSensorAppP.NetworkReceive;

@@ -28,7 +28,6 @@
 
 #include <Fennec.h>
 #include "genericSensorApp.h"
-#include <inttypes.h>
 
 module genericSensorAppP {
 provides interface Mgmt;
@@ -48,8 +47,7 @@ uses interface ModuleStatus as NetworkStatus;
 uses interface SensorCtrl;
 uses interface SensorInfo;
 uses interface AdcSetup;
-uses interface Read<uint16_t> as Raw;
-uses interface Read<uint16_t> as Calibrated;
+uses interface Read<ff_sensor_data_t>;
 
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
@@ -58,15 +56,13 @@ uses interface Leds;
 
 implementation {
 
-uint16_t raw = 0;
-uint16_t calibrated = 0;
+ff_sensor_data_t data;
 
 task void printf_sensor_info() {
-	printf("Sensor ID: %d\t\tSensor Type: %d\n", 
-		call SensorInfo.getId(), call SensorInfo.getType());
+	printf("Sensor ID: %d\t\tSensor Type: %d\n", data.id, data.type);
 	printf("Sampling Frequency: %u\n", call genericSensorAppParams.get_freq());
-	printf("Raw measurement: %d\n", raw);
-	printf("Calibrated measurement: %d\n", calibrated);
+	//printf("Raw measurement: %d\n", *data.raw);
+	//printf("Calibrated measurement: %d\n", *data.calibrated);
 	printfflush();
 }
 
@@ -107,13 +103,8 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 	return msg;
 }
 
-event void Raw.readDone(error_t error, uint16_t data) {
-	raw = data;
-}
-
-event void Calibrated.readDone(error_t error, uint16_t data) {
-	calibrated = data;
-	post printf_sensor_info();
+event void Read.readDone(error_t error, ff_sensor_data_t new_data) {
+	memcpy(&new_data, &data, sizeof(ff_sensor_data_t));
 }
 
 event void Timer.fired() {
