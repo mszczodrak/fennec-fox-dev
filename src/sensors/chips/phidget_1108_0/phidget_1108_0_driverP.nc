@@ -31,6 +31,7 @@
 module phidget_1108_0_driverP @safe() {
   provides interface AdcSetup;
   provides interface SensorCtrl;
+  provides interface SensorInfo;
   provides interface Read<uint16_t> as Raw;
   provides interface Read<uint16_t> as Calibrated;
 
@@ -96,6 +97,14 @@ implementation {
   command bool SensorCtrl.get_signaling() {
     return signaling;
   }
+
+command sensor_type_t SensorInfo.getType() {
+        return F_SENSOR_MAGNETIC;
+}
+
+command sensor_id_t SensorInfo.getId() {
+        return FS_PHIDGET_1108_0;
+}
 
   command uint8_t AdcSetup.get_input_channel() {
     return call SubAdcSetup.get_input_channel();

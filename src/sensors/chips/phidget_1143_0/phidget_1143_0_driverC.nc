@@ -27,6 +27,7 @@
 
 configuration phidget_1143_0_driverC {
   provides interface SensorCtrl;
+  provides interface SensorInfo;
   provides interface AdcSetup;
   provides interface Read<uint16_t> as Raw;
   provides interface Read<uint16_t> as Calibrated;
@@ -36,6 +37,7 @@ implementation {
   components phidget_1143_0_driverP;
   AdcSetup = phidget_1143_0_driverP.AdcSetup;
   SensorCtrl = phidget_1143_0_driverP.SensorCtrl;
+  SensorInfo = phidget_1143_0_driverP.SensorInfo;
   Raw = phidget_1143_0_driverP.Raw;
   Calibrated = phidget_1143_0_driverP.Calibrated;
 

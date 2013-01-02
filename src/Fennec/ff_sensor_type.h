@@ -15,6 +15,8 @@ typedef enum {
   F_SENSOR_VIBRATION    = 7,
   F_SENSOR_MAGNETIC     = 8,
   F_SENSOR_ACCELERATION = 9,
+  F_SENSOR_TOUCH	= 10,
+  F_SENSOR_THIN_FORCE	= 11,
 } sensor_type_t;
 
 #endif
