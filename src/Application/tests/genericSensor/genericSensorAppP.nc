@@ -28,30 +28,31 @@
 
 #include <Fennec.h>
 #include "genericSensorApp.h"
+#include <inttypes.h>
 
 module genericSensorAppP {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
+provides interface Module;
 
-  uses interface genericSensorAppParams ;
+uses interface genericSensorAppParams ;
 
-  /* Network interfaces */
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+/* Network interfaces */
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
-  uses interface SensorCtrl;
-  uses interface SensorInfo;
-  uses interface AdcSetup;
-  uses interface Read<uint16_t> as Raw;
-  uses interface Read<uint16_t> as Calibrated;
+uses interface SensorCtrl;
+uses interface SensorInfo;
+uses interface AdcSetup;
+uses interface Read<uint16_t> as Raw;
+uses interface Read<uint16_t> as Calibrated;
 
-  uses interface Timer<TMilli> as Timer;
-  uses interface Leds;
+uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 
 }
 
@@ -59,6 +60,15 @@ implementation {
 
 uint16_t raw = 0;
 uint16_t calibrated = 0;
+
+task void printf_sensor_info() {
+	printf("Sensor ID: %d\t\tSensor Type: %d\n", 
+		call SensorInfo.getId(), call SensorInfo.getType());
+	printf("Sampling Frequency: %u\n", call genericSensorAppParams.get_freq());
+	printf("Raw measurement: %d\n", raw);
+	printf("Calibrated measurement: %d\n", calibrated);
+	printfflush();
+}
 
 command error_t Mgmt.start() {
 	call SensorCtrl.set_rate(call genericSensorAppParams.get_freq());
@@ -103,6 +113,7 @@ event void Raw.readDone(error_t error, uint16_t data) {
 
 event void Calibrated.readDone(error_t error, uint16_t data) {
 	calibrated = data;
+	post printf_sensor_info();
 }
 
 event void Timer.fired() {
