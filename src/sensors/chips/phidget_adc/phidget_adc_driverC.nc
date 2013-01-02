@@ -23,12 +23,14 @@
 generic configuration phidget_adc_driverC() {
    provides interface SensorCtrl;
    provides interface AdcSetup;
+   provides interface SensorInfo;
    provides interface Read<uint16_t> as Raw;
 }
 
 implementation {
   components new phidget_adc_driverP();
   SensorCtrl = phidget_adc_driverP.SensorCtrl;
+  SensorInfo = phidget_adc_driverP.SensorInfo;
   AdcSetup = phidget_adc_driverP.AdcSetup;
   Raw = phidget_adc_driverP.Raw;
 

@@ -3,6 +3,7 @@
 
 typedef enum {
   FS_UNKNOWN			= 0,
+  FS_GENERIC			= 1,
   
   FS_HAMAMATSU_S1087		= 100,
   FS_HAMAMATSU_S1087_01		= 101,

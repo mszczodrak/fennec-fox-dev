@@ -25,6 +25,7 @@
 
 generic module phidget_adc_driverP() @safe() {
   provides interface SensorCtrl;
+  provides interface SensorInfo;
   provides interface AdcSetup;
   provides interface Read<uint16_t> as Raw;
 
@@ -36,111 +37,120 @@ generic module phidget_adc_driverP() @safe() {
 }
 
 implementation {
-   norace uint16_t raw_data = 0;
-   norace uint16_t battery = 0;
 
-   uint32_t rate = PHIDGET_ADC_DEFAULT_RATE;
-   norace bool signaling = PHIDGET_ADC_DEFAULT_SIGNALING;
-   norace bool read_request = 0;
+norace uint16_t raw_data = 0;
+norace uint16_t battery = 0;
 
-   command error_t SensorCtrl.start() {
-      battery = 0;
-      raw_data = 0;
-      read_request = 0;
-      call Timer.startPeriodic(rate);
-      signal SensorCtrl.startDone(SUCCESS);
-      return SUCCESS;
-   }
+uint32_t rate = PHIDGET_ADC_DEFAULT_RATE;
+norace bool signaling = PHIDGET_ADC_DEFAULT_SIGNALING;
+norace bool read_request = 0;
 
-   command error_t SensorCtrl.stop() {
-      call Timer.stop();
-      signal SensorCtrl.stopDone(SUCCESS);
-      return SUCCESS;
-   }
+command error_t SensorCtrl.start() {
+	battery = 0;
+	raw_data = 0;
+	read_request = 0;
+	call Timer.startPeriodic(rate);
+	signal SensorCtrl.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-   command error_t SensorCtrl.set_sensitivity(uint16_t new_sensitivity) {
-      return SUCCESS;
-   }
+command error_t SensorCtrl.stop() {
+	call Timer.stop();
+	signal SensorCtrl.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-   command error_t SensorCtrl.set_rate(uint32_t new_rate) {
-      rate = new_rate;
-      call Timer.startPeriodic(rate);
-      return SUCCESS;
-   }
+command error_t SensorCtrl.set_sensitivity(uint16_t new_sensitivity) {
+	return SUCCESS;
+}
 
-   command error_t SensorCtrl.set_signaling(bool new_signaling) {
-      signaling = new_signaling;
-      return SUCCESS;
-   }
+command error_t SensorCtrl.set_rate(uint32_t new_rate) {
+	rate = new_rate;
+	call Timer.startPeriodic(rate);
+	return SUCCESS;
+}
 
-   command error_t AdcSetup.set_input_channel(uint8_t new_input_channel) {
-      phidget_adc_config.inch = new_input_channel;  
-      return SUCCESS;
-   }
+command error_t SensorCtrl.set_signaling(bool new_signaling) {
+	signaling = new_signaling;
+	return SUCCESS;
+}
 
-   command uint16_t SensorCtrl.get_sensitivity() {
-      return 0;
-   }
+command sensor_type_t SensorInfo.getType() {
+	return F_SENSOR_UNKNOWN;
+}
 
-   command uint32_t SensorCtrl.get_rate() {
-      return rate;
-   }
+command sensor_id_t SensorInfo.getId() {
+	return FS_GENERIC;
+} 
 
-   command bool SensorCtrl.get_signaling() {
-      return signaling;
-   }
+command error_t AdcSetup.set_input_channel(uint8_t new_input_channel) {
+	phidget_adc_config.inch = new_input_channel;  
+	return SUCCESS;
+}
 
-   command uint8_t AdcSetup.get_input_channel(){
-      return phidget_adc_config.inch;
-   }
+command uint16_t SensorCtrl.get_sensitivity() {
+	return 0;
+}
 
-   command error_t Raw.read() {
-      read_request = 1;
-      signal Timer.fired();
-      return SUCCESS;
-   }
+command uint32_t SensorCtrl.get_rate() {
+	return rate;
+}
 
-   event void Timer.fired() {
-     call Battery.read();
-     call Resource.request();
-     call Resource.release();
-   }
+command bool SensorCtrl.get_signaling() {
+	return signaling;
+}
 
-   event void Resource.granted() {
-      call Msp430Adc12SingleChannel.configureSingle(&phidget_adc_config);
-      call Msp430Adc12SingleChannel.getData();
-   }
+command uint8_t AdcSetup.get_input_channel(){
+	return phidget_adc_config.inch;
+}
 
-   task void signal_readDone() {
-     signal Raw.readDone(SUCCESS, raw_data);
-   }
+command error_t Raw.read() {
+	read_request = 1;
+	signal Timer.fired();
+	return SUCCESS;
+}
 
-   async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data) {
-      uint32_t s = data;
-      s *= battery;
-      s /= 4096;    
-      raw_data = s;
-      if (read_request || signaling) {
-        post signal_readDone();
-        read_request = 0;
-      }
-      return 0;
-   }
+event void Timer.fired() {
+	call Battery.read();
+	call Resource.request();
+	call Resource.release();
+}
 
-   event void Battery.readDone(error_t error, uint16_t data){
-      if (error == SUCCESS) {
-        uint32_t b = data;
-        b *= 3000;
-        b /= 4096;
-        battery = b;
-      } 
-   }
+event void Resource.granted() {
+	call Msp430Adc12SingleChannel.configureSingle(&phidget_adc_config);
+	call Msp430Adc12SingleChannel.getData();
+}
 
-   async event uint16_t *Msp430Adc12SingleChannel.multipleDataReady(uint16_t 
-						*buffer, uint16_t numSamples){
-      return 0;
-   }
+task void signal_readDone() {
+	signal Raw.readDone(SUCCESS, raw_data);
+}
 
-   default event void Raw.readDone(error_t err, uint16_t data) {}
+async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data) {
+	uint32_t s = data;
+	s *= battery;
+	s /= 4096;    
+	raw_data = s;
+	if (read_request || signaling) {
+		post signal_readDone();
+		read_request = 0;
+	}
+	return 0;
+}
+
+event void Battery.readDone(error_t error, uint16_t data){
+	if (error == SUCCESS) {
+		uint32_t b = data;
+		b *= 3000;
+		b /= 4096;
+		battery = b;
+	} 
+}
+
+async event uint16_t *Msp430Adc12SingleChannel.multipleDataReady(
+			uint16_t *buffer, uint16_t numSamples){
+	return 0;
+}
+
+default event void Raw.readDone(error_t err, uint16_t data) {}
 }
 
