@@ -89,6 +89,19 @@ task void readDone() {
 		}
 	}
 
+	if (freq == 0) {
+		return;
+	}
+
+	for(i = 0; i < NUM_CLIENTS; i++) {
+		if (clients[i].rate == 0) {
+			continue;
+		}
+
+		if (sequence % (clients[i].rate / freq) == 0) {
+			signal Read.readDone[i](status, return_data);
+		}
+	}
 }
 
 task void getMeasurement() {
