@@ -1,7 +1,7 @@
 /*
  *  Phidget 1111 driver.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 /*
  * Application: Phidget 1111 driver
  * Author: Marcin Szczodrak
- * Date: 12/28/2012
- * Last Modified: 2/3/2013
+ * Date: 12/28/2010
+ * Last Modified: 1/3/2013
  */
 
 #include "phidget_1111_0_driver.h"
@@ -33,7 +33,6 @@ provides interface SensorCtrl;
 provides interface SensorInfo;
 provides interface AdcSetup;
 provides interface Read<ff_sensor_data_t>;
-
 }
 
 implementation {
@@ -43,19 +42,11 @@ enum {
 };
 
 
-components phidget_1111_0_driverP;
-AdcSetup = phidget_1111_0_driverP.AdcSetup;
-SensorCtrl = phidget_1111_0_driverP.SensorCtrl[CLIENT_ID];
-SensorInfo = phidget_1111_0_driverP.SensorInfo;
-Read = phidget_1111_0_driverP.Read[CLIENT_ID];
-
-components new phidget_adc_driverC();
-phidget_1111_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
-phidget_1111_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
-phidget_1111_0_driverP.AdcSensorRead -> phidget_adc_driverC.Read;
-
-components new TimerMilliC() as Timer;
-phidget_1111_0_driverP.Timer -> Timer;
+components phidget_1111_0_driverC_;
+AdcSetup = phidget_1111_0_driverC_.AdcSetup;
+SensorCtrl = phidget_1111_0_driverC_.SensorCtrl[CLIENT_ID];
+SensorInfo = phidget_1111_0_driverC_.SensorInfo;
+Read = phidget_1111_0_driverC_.Read[CLIENT_ID];
 
 }
 

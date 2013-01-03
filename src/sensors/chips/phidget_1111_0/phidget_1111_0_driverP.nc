@@ -1,7 +1,7 @@
 /*
  *  Phidget 1111 driver.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 /*
  * Application: Phidget 1111 driver
  * Author: Marcin Szczodrak
- * Date: 12/28/2012
- * Last Modified: 12/28/2012
+ * Date: 12/28/2010
+ * Last Modified: 1/3/2013
  */
 
 #include <Fennec.h>
@@ -73,6 +73,7 @@ task void new_freq() {
 
                 freq = gcdr(freq, clients[i].rate);
         }
+
         if (freq) {
                 call Timer.startPeriodic(freq);
         } else {
@@ -85,6 +86,7 @@ task void readDone() {
 
         for(i = 0; i < NUM_CLIENTS; i++) {
                 if (clients[i].read) {
+			clients[i].read = 0;
                         signal Read.readDone[i](status, return_data);
                 }
         }
@@ -106,6 +108,8 @@ task void readDone() {
 
 task void getMeasurement() {
         //call Battery.read();
+
+	call Timer.getNow();
 
         if (call AdcSensorRead.read() == FAIL) {
                 status = FAIL;
