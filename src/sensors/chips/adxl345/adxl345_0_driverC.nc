@@ -27,23 +27,28 @@
 
 #include "adxl345_0_driver.h"
 
-configuration adxl345_0_driverC {
+generic configuration adxl345_0_driverC() {
 
 provides interface SensorInfo;
+provides interface SensorCtrl;
 provides interface Read<ff_sensor_data_t>;
 
 }
 
 implementation {
 
+enum {
+	CLIENT_ID = unique(UQ_ADXL345),
+};
+
 components adxl345_0_driverP;
 SensorInfo = adxl345_0_driverP.SensorInfo;
-Read = adxl345_0_driverP.Read;
+SensorCtrl = adxl345_0_driverP.SensorCtrl[CLIENT_ID];
+Read = adxl345_0_driverP.Read[CLIENT_ID];
 
 components new ADXL345C();
 adxl345_0_driverP.XYZ -> ADXL345C.XYZ;
 adxl345_0_driverP.XYZControl -> ADXL345C.SplitControl;
-
 
 components new BatteryC();
 adxl345_0_driverP.Battery -> BatteryC.Read;

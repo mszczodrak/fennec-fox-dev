@@ -82,11 +82,19 @@ typedef struct ff_sensor_conf {
 
 typedef struct ff_sensor_data {
 	uint8_t size;
+	uint32_t seq;
 	void *raw;
 	void *calibrated;
 	sensor_type_t type;
 	sensor_id_t id;
 } ff_sensor_data_t;
+
+typedef struct ff_sensor_client {
+	uint8_t id;
+	uint8_t read;
+	uint32_t rate;
+	uint32_t signaling;
+} ff_sensor_client_t;
 
 typedef nx_struct metadata_t {
   nx_uint8_t rssi;

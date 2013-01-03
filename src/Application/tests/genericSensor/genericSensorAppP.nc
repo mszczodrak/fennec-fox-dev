@@ -44,6 +44,7 @@ uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
 
+uses interface SensorCtrl;
 uses interface SensorInfo;
 uses interface AdcSetup;
 uses interface Read<ff_sensor_data_t>;

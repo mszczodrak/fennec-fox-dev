@@ -33,7 +33,8 @@
 module adxl345_0_driverP @safe() {
 
 provides interface SensorInfo;
-provides interface Read<ff_sensor_data_t>;
+provides interface SensorCtrl[uint8_t client_id];
+provides interface Read<ff_sensor_data_t> as Read[uint8_t client_id];
 
 uses interface Read<adxl345_readxyt_t> as XYZ;
 uses interface SplitControl as XYZControl;
@@ -45,24 +46,46 @@ implementation {
 
 norace uint16_t battery = 0;
 
-uint32_t rate = ADXL345_0_DEFAULT_RATE;
-uint8_t signaling = ADXL345_0_DEFAULT_SIGNALING;
-
 adxl345_readxyt_t xyz_data;
 ff_sensor_data_t return_data;
+norace error_t status = SUCCESS;
+norace uint32_t sequence = 0;
+
+enum {
+	NUM_CLIENTS = uniqueCount(UQ_ADXL345)
+};
+
+ff_sensor_client_t clients[NUM_CLIENTS];
+
+uint32_t gcdr (uint32_t a, uint32_t b ) {
+	if ( a==0 ) return b;
+	return gcdr ( b%a, a );
+}
+
+task void readDone() {
+	uint8_t i;
+
+	for(i = 0; i < NUM_CLIENTS; i++) {
+		if (clients[i].read) {
+			signal Read.readDone[i](status, return_data);
+		}
+	}
+
+}
 
 task void getMeasurement() {
 	//call Battery.read();
 
 	if (call XYZControl.start() == FAIL) { 
-		signal Read.readDone(FAIL, return_data);
+		status = FAIL;
+		post readDone();
 	}
 }
 
-
 event void XYZControl.startDone(error_t error) {
 	if ((error != SUCCESS) || (call XYZ.read() != SUCCESS)) {
-		signal Read.readDone(FAIL, return_data);
+		status = FAIL;
+		post readDone();
 	}
 }
 
@@ -79,12 +102,25 @@ command sensor_id_t SensorInfo.getId() {
         return FS_ADXL345;
 }
 
-command error_t Read.read() {
+command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {
+	clients[id].read = 0;
+	clients[id].rate = newRate;
+	return SUCCESS;
+}
+
+command uint32_t SensorCtrl.getRate[uint8_t id]() {
+	return clients[id].rate;
+}
+
+command error_t Read.read[uint8_t id]() {
+	printf("got read %d\n", id);
+	clients[id].read = 1;
 	post getMeasurement();
 	return SUCCESS;
 }
 
 event void Timer.fired() {
+	post getMeasurement();
 }
 
 event void Battery.readDone(error_t error, uint16_t data){
@@ -100,7 +136,8 @@ event void XYZ.readDone(error_t error, adxl345_readxyt_t data){
 	call XYZControl.stop();
 
 	if (error != SUCCESS) {
-		signal Read.readDone(FAIL, return_data);
+		status = error;
+		post readDone();
 		return;
 	}
 
@@ -109,11 +146,11 @@ event void XYZ.readDone(error_t error, adxl345_readxyt_t data){
 	return_data.calibrated = &return_data;
 	return_data.type = call SensorInfo.getType();
 	return_data.id = call SensorInfo.getId();
-
-	signal Read.readDone(SUCCESS, return_data);
+	status = SUCCESS;
+	post readDone();
 }
 
-default event void Read.readDone(error_t error, ff_sensor_data_t data) {}
+default event void Read.readDone[uint8_t id](error_t error, ff_sensor_data_t data) {}
 
 }
 
