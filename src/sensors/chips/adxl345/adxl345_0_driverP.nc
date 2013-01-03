@@ -50,6 +50,7 @@ adxl345_readxyt_t xyz_data;
 ff_sensor_data_t return_data;
 norace error_t status = SUCCESS;
 norace uint32_t sequence = 0;
+uint32_t freq = 0;
 
 enum {
 	NUM_CLIENTS = uniqueCount(UQ_ADXL345)
@@ -57,10 +58,27 @@ enum {
 
 ff_sensor_client_t clients[NUM_CLIENTS];
 
-uint32_t gcdr (uint32_t a, uint32_t b ) {
-	if ( a==0 ) return b;
-	return gcdr ( b%a, a );
-}
+task void new_freq() {
+	uint8_t i;
+	freq = 0;
+	for(i = 0; i < NUM_CLIENTS; i++) {
+		if (clients[i].rate == 0) {
+			continue;
+		}
+
+		if (freq == 0) {
+			freq = clients[i].rate;
+			continue;
+		}
+
+		freq = gcdr(freq, clients[i].rate);
+	}
+	if (freq) {
+		call Timer.startPeriodic(freq);
+	} else {
+		call Timer.stop();
+	}
+};
 
 task void readDone() {
 	uint8_t i;
@@ -105,6 +123,7 @@ command sensor_id_t SensorInfo.getId() {
 command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {
 	clients[id].read = 0;
 	clients[id].rate = newRate;
+	post new_freq();
 	return SUCCESS;
 }
 

@@ -57,5 +57,12 @@ bool PacketTimeSyncOffsetisSet(message_t* msg);
 uint8_t PacketTimeSyncOffsetget(message_t* msg);
 
 
+uint32_t gcdr (uint32_t a, uint32_t b )@C() {
+        if ( a==0 ) return b;
+        return gcdr ( b%a, a );
+}
+
+
+
 
 #endif
