@@ -1,5 +1,5 @@
 /*
- *  Phidget 1111 driver.
+ *  Phidget 1104 driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Application: Phidget 1111 driver
+ * Application: Phidget 1104 driver
  * Author: Marcin Szczodrak
  * Date: 12/28/2010
  * Last Modified: 1/3/2013
  */
 
 
-#include "phidget_1111_0_driver.h"
+#include "phidget_1104_0_driver.h"
 
-configuration phidget_1111_0_driverC_ {
+configuration phidget_1104_0_driverC_ {
 
 provides interface SensorCtrl[uint8_t id];
 provides interface SensorInfo;
@@ -39,19 +39,19 @@ provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 
 implementation {
 
-components phidget_1111_0_driverP;
-AdcSetup = phidget_1111_0_driverP.AdcSetup;
-SensorCtrl = phidget_1111_0_driverP.SensorCtrl;
-SensorInfo = phidget_1111_0_driverP.SensorInfo;
-Read = phidget_1111_0_driverP.Read;
+components phidget_1104_0_driverP;
+AdcSetup = phidget_1104_0_driverP.AdcSetup;
+SensorCtrl = phidget_1104_0_driverP.SensorCtrl;
+SensorInfo = phidget_1104_0_driverP.SensorInfo;
+Read = phidget_1104_0_driverP.Read;
 
 components new phidget_adc_driverC();
-phidget_1111_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
-phidget_1111_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
-phidget_1111_0_driverP.AdcSensorRead -> phidget_adc_driverC.Read;
+phidget_1104_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
+phidget_1104_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
+phidget_1104_0_driverP.AdcSensorRead -> phidget_adc_driverC.Read;
 
 components new TimerMilliC() as Timer;
-phidget_1111_0_driverP.Timer -> Timer;
+phidget_1104_0_driverP.Timer -> Timer;
 
 }
 
