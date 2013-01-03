@@ -55,8 +55,8 @@ implementation {
   components LedsC;
   genericSensorAppP.Leds -> LedsC;
 
-  //components phidget_1142_0_driverC as GenericSensorC;
-  components new adxl345_0_driverC() as GenericSensorC;
+  components new phidget_1142_0_driverC() as GenericSensorC;
+  //components new adxl345_0_driverC() as GenericSensorC;
 
   genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
   genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;
