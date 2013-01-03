@@ -29,7 +29,6 @@
 
 configuration adxl345_0_driverC {
 
-provides interface SensorCtrl;
 provides interface SensorInfo;
 provides interface Read<ff_sensor_data_t>;
 
@@ -38,14 +37,13 @@ provides interface Read<ff_sensor_data_t>;
 implementation {
 
 components adxl345_0_driverP;
-SensorCtrl = adxl345_0_driverP.SensorCtrl;
 SensorInfo = adxl345_0_driverP.SensorInfo;
 Read = adxl345_0_driverP.Read;
 
-components new Msp430I2C1C() as I2C;
-adxl345_0_driverP.Resource -> I2C;
-adxl345_0_driverP.ResourceRequested -> I2C;
-adxl345_0_driverP.I2CBasicAddr -> I2C;
+components new ADXL345C();
+adxl345_0_driverP.XYZ -> ADXL345C.XYZ;
+adxl345_0_driverP.XYZControl -> ADXL345C.SplitControl;
+
 
 components new BatteryC();
 adxl345_0_driverP.Battery -> BatteryC.Read;

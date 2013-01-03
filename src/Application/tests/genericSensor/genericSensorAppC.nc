@@ -58,7 +58,6 @@ implementation {
   //components phidget_1142_0_driverC as GenericSensorC;
   components adxl345_0_driverC as GenericSensorC;
 
-  genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
   genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;
   //genericSensorAppP.AdcSetup -> GenericSensorC.AdcSetup;
   genericSensorAppP.Read -> GenericSensorC.Read;

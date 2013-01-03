@@ -44,7 +44,6 @@ uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
 
-uses interface SensorCtrl;
 uses interface SensorInfo;
 uses interface AdcSetup;
 uses interface Read<ff_sensor_data_t>;
@@ -67,29 +66,14 @@ task void printf_sensor_info() {
 }
 
 command error_t Mgmt.start() {
-	call SensorCtrl.set_rate(call genericSensorAppParams.get_freq());
-	call SensorCtrl.set_signaling(TRUE);
-	call AdcSetup.set_input_channel(0);
-
-	if (call SensorCtrl.start() != SUCCESS) {
-		signal Mgmt.startDone(FAIL);
-		call Leds.led0On();
-		return FAIL;
-	}
-
-	return SUCCESS;
-}
-
-event void SensorCtrl.startDone(error_t error) {
+	call Timer.startPeriodic(call genericSensorAppParams.get_freq());
 	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
-	return SUCCESS;
-}
-
-event void SensorCtrl.stopDone(error_t error) {
 	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
@@ -104,10 +88,18 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void Read.readDone(error_t error, ff_sensor_data_t new_data) {
-	memcpy(&new_data, &data, sizeof(ff_sensor_data_t));
+	if (error == SUCCESS) {
+		memcpy(&data, &new_data, sizeof(ff_sensor_data_t));
+		post printf_sensor_info();
+	} else {
+		call Leds.led0On();
+	}
 }
 
 event void Timer.fired() {
+	if (call Read.read() != SUCCESS) {
+		call Leds.led0On();
+	}
 }
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
