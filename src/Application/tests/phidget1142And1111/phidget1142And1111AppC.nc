@@ -71,17 +71,15 @@ implementation {
   components LedsC;
   phidget1142And1111AppP.Leds -> LedsC;
 
-  components phidget_1142_0_driverC;
+  components new phidget_1142_0_driverC();
   phidget1142And1111AppP.Phidget_1142_Ctrl -> phidget_1142_0_driverC.SensorCtrl;
   phidget1142And1111AppP.Phidget_1142_Setup -> phidget_1142_0_driverC.AdcSetup;
-  phidget1142And1111AppP.Phidget_1142_Raw -> phidget_1142_0_driverC.Raw;
-  phidget1142And1111AppP.Phidget_1142_Calibrated -> phidget_1142_0_driverC.Calibrated;
+  phidget1142And1111AppP.Phidget_1142_Read -> phidget_1142_0_driverC.Read;
 
-  components phidget_1111_0_driverC;
+  components new phidget_1111_0_driverC();
   phidget1142And1111AppP.Phidget_1111_Ctrl -> phidget_1111_0_driverC.SensorCtrl;
   phidget1142And1111AppP.Phidget_1111_Setup -> phidget_1111_0_driverC.AdcSetup;
-  phidget1142And1111AppP.Phidget_1111_Raw -> phidget_1111_0_driverC.Raw;
-  phidget1142And1111AppP.Phidget_1111_Calibrated -> phidget_1111_0_driverC.Calibrated;
+  phidget1142And1111AppP.Phidget_1111_Read -> phidget_1111_0_driverC.Read;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);

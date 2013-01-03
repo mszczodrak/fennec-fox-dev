@@ -22,33 +22,37 @@
  * Application: Phidget 1111 driver
  * Author: Marcin Szczodrak
  * Date: 12/28/2012
- * Last Modified: 12/28/2012
+ * Last Modified: 2/3/2013
  */
 
+#include "phidget_1111_0_driver.h"
 
-configuration phidget_1111_0_driverC {
+generic configuration phidget_1111_0_driverC() {
 
 provides interface SensorCtrl;
 provides interface SensorInfo;
 provides interface AdcSetup;
-provides interface Read<uint16_t> as Raw;
-provides interface Read<uint16_t> as Calibrated;
+provides interface Read<ff_sensor_data_t>;
 
 }
 
 implementation {
 
+enum {
+        CLIENT_ID = unique(UQ_PHIDGET_1111),
+};
+
+
 components phidget_1111_0_driverP;
 AdcSetup = phidget_1111_0_driverP.AdcSetup;
-SensorCtrl = phidget_1111_0_driverP.SensorCtrl;
+SensorCtrl = phidget_1111_0_driverP.SensorCtrl[CLIENT_ID];
 SensorInfo = phidget_1111_0_driverP.SensorInfo;
-Raw = phidget_1111_0_driverP.Raw;
-Calibrated = phidget_1111_0_driverP.Calibrated;
+Read = phidget_1111_0_driverP.Read[CLIENT_ID];
 
 components new phidget_adc_driverC();
 phidget_1111_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
 phidget_1111_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
-phidget_1111_0_driverP.AdcSensorRaw -> phidget_adc_driverC.Raw;
+phidget_1111_0_driverP.AdcSensorRead -> phidget_adc_driverC.Read;
 
 components new TimerMilliC() as Timer;
 phidget_1111_0_driverP.Timer -> Timer;
