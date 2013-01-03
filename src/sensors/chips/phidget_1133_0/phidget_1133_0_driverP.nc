@@ -1,5 +1,5 @@
 /*
- *  Phidget 1111 driver.
+ *  Phidget 1133 driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Application: Phidget 1111 driver
+ * Application: Phidget 1133 driver
  * Author: Marcin Szczodrak
  * Date: 12/28/2010
  * Last Modified: 1/3/2013
  */
 
 #include <Fennec.h>
-#include "phidget_1111_0_driver.h"
+#include "phidget_1133_0_driver.h"
 
-module phidget_1111_0_driverP @safe() {
+module phidget_1133_0_driverP @safe() {
 provides interface AdcSetup;
 provides interface SensorCtrl[uint8_t client_id];
 provides interface SensorInfo;
@@ -43,7 +43,7 @@ uses interface Timer<TMilli> as Timer;
 
 implementation {
 
-uint16_t calibrated_data[PHIDGET_1111_0_SENSOR_HIST_LEN] = {0};
+uint16_t calibrated_data[PHIDGET_1133_0_SENSOR_HIST_LEN] = {0};
 uint8_t index = 0;
 ff_sensor_data_t return_data;
 norace error_t status = SUCCESS;
@@ -53,7 +53,7 @@ uint32_t freq = 0;
 norace bool adc_channel_set = FALSE;
 
 enum {
-        NUM_CLIENTS = uniqueCount(UQ_PHIDGET_1111)
+        NUM_CLIENTS = uniqueCount(UQ_PHIDGET_1133)
 };
 
 ff_sensor_client_t clients[NUM_CLIENTS];
@@ -120,7 +120,7 @@ task void getMeasurement() {
 
 command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {
 	if (adc_channel_set == FALSE) {
-		call SubAdcSetup.set_input_channel(PHIDGET_1111_0_DEFAULT_ADC_CHANNEL);
+		call SubAdcSetup.set_input_channel(PHIDGET_1133_0_DEFAULT_ADC_CHANNEL);
 		adc_channel_set = TRUE;
 	}
         clients[id].read = 0;
@@ -134,11 +134,11 @@ command uint32_t SensorCtrl.getRate[uint8_t id]() {
 }
 
 command sensor_type_t SensorInfo.getType() {
-        return F_SENSOR_MOTION;
+        return F_SENSOR_SOUND;
 }
 
 command sensor_id_t SensorInfo.getId() {
-        return FS_PHIDGET_1111_0;
+        return FS_PHIDGET_1133_0;
 }
 
 command uint8_t AdcSetup.get_input_channel() {
@@ -152,7 +152,7 @@ command error_t AdcSetup.set_input_channel(uint8_t new_channel) {
 
 command error_t Read.read[uint8_t id]() {
 	if (adc_channel_set == FALSE) {
-		call SubAdcSetup.set_input_channel(PHIDGET_1111_0_DEFAULT_ADC_CHANNEL);
+		call SubAdcSetup.set_input_channel(PHIDGET_1133_0_DEFAULT_ADC_CHANNEL);
 		adc_channel_set = TRUE;
 	}
         clients[id].read = 1;
@@ -171,9 +171,9 @@ event void AdcSensorRead.readDone(error_t error, ff_sensor_data_t data) {
 		return;
 	}		
 
-	/* No calibration for phidget_1111_0 */
+	/* No calibration for phidget_1133_0 */
 	index++;
-	index %= PHIDGET_1111_0_SENSOR_HIST_LEN;
+	index %= PHIDGET_1133_0_SENSOR_HIST_LEN;
 	memcpy(&calibrated_data[index], data.raw, sizeof(data.size));
 
 	return_data.size = data.size;

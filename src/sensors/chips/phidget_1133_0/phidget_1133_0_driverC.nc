@@ -1,5 +1,5 @@
 /*
- *  Phidget 1111 driver.
+ *  Phidget 1133 driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,15 +19,15 @@
  */
 
 /*
- * Application: Phidget 1111 driver
+ * Application: Phidget 1133 driver
  * Author: Marcin Szczodrak
  * Date: 12/28/2010
  * Last Modified: 1/3/2013
  */
 
-#include "phidget_1111_0_driver.h"
+#include "phidget_1133_0_driver.h"
 
-generic configuration phidget_1111_0_driverC() {
+generic configuration phidget_1133_0_driverC() {
 
 provides interface SensorCtrl;
 provides interface SensorInfo;
@@ -38,15 +38,15 @@ provides interface Read<ff_sensor_data_t>;
 implementation {
 
 enum {
-        CLIENT_ID = unique(UQ_PHIDGET_1111),
+        CLIENT_ID = unique(UQ_PHIDGET_1133),
 };
 
 
-components phidget_1111_0_driverC_;
-AdcSetup = phidget_1111_0_driverC_.AdcSetup;
-SensorCtrl = phidget_1111_0_driverC_.SensorCtrl[CLIENT_ID];
-SensorInfo = phidget_1111_0_driverC_.SensorInfo;
-Read = phidget_1111_0_driverC_.Read[CLIENT_ID];
+components phidget_1133_0_driverC_;
+AdcSetup = phidget_1133_0_driverC_.AdcSetup;
+SensorCtrl = phidget_1133_0_driverC_.SensorCtrl[CLIENT_ID];
+SensorInfo = phidget_1133_0_driverC_.SensorInfo;
+Read = phidget_1133_0_driverC_.Read[CLIENT_ID];
 
 }
 
