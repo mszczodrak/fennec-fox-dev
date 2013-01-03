@@ -1,7 +1,7 @@
 /*
  *  Phidget 1142 driver.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,9 +21,10 @@
 /*
  * Application: Phidget 1142 driver
  * Author: Marcin Szczodrak
- * Date: 12/28/2012
- * Last Modified: 2/3/2013
+ * Date: 12/28/2010
+ * Last Modified: 1/3/2013
  */
+
 
 #include "phidget_1142_0_driver.h"
 
