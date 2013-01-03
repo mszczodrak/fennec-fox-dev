@@ -82,6 +82,7 @@ task void new_freq() {
 
 task void readDone() {
         uint8_t i;
+	sequence++;
 
         for(i = 0; i < NUM_CLIENTS; i++) {
                 if (clients[i].read) {
@@ -114,15 +115,19 @@ task void getMeasurement() {
 }
 
 
-command error_t SensorCtrl.setRate[uint8_t id](uint32_t new_rate) {
+command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {
 	if (adc_channel_set == FALSE) {
 		call SubAdcSetup.set_input_channel(PHIDGET_1111_0_DEFAULT_ADC_CHANNEL);
+		adc_channel_set = TRUE;
 	}
-	return call AdcSensorCtrl.setRate(new_rate);
+        clients[id].read = 0;
+        clients[id].rate = newRate;
+        post new_freq();
+        return SUCCESS;
 }
 
 command uint32_t SensorCtrl.getRate[uint8_t id]() {
-	return call AdcSensorCtrl.getRate();
+	return clients[id].rate;
 }
 
 command sensor_type_t SensorInfo.getType() {
@@ -145,9 +150,11 @@ command error_t AdcSetup.set_input_channel(uint8_t new_channel) {
 command error_t Read.read[uint8_t id]() {
 	if (adc_channel_set == FALSE) {
 		call SubAdcSetup.set_input_channel(PHIDGET_1111_0_DEFAULT_ADC_CHANNEL);
+		adc_channel_set = TRUE;
 	}
-	post getMeasurement();
-	return SUCCESS;
+        clients[id].read = 1;
+        post getMeasurement();
+        return SUCCESS;
 }
 
 event void Timer.fired() {
@@ -167,6 +174,7 @@ event void AdcSensorRead.readDone(error_t error, ff_sensor_data_t data) {
 	memcpy(&calibrated_data[index], data.raw, sizeof(data.size));
 
 	return_data.size = data.size;
+	return_data.seq = ++sequence;
 	return_data.raw = data.raw;
 	/* apply calibrate function */
 	return_data.calibrated = data.calibrated;
@@ -176,7 +184,7 @@ event void AdcSensorRead.readDone(error_t error, ff_sensor_data_t data) {
         post readDone();
 }
 
-
 default event void Read.readDone[uint8_t id](error_t err, ff_sensor_data_t data) {}
+
 }
 

@@ -174,6 +174,7 @@ event void XYZ.readDone(error_t error, adxl345_readxyt_t data){
 	}
 
 	return_data.size = sizeof(adxl345_readxyt_t);
+	return_data.seq = ++sequence;
 	return_data.raw = &return_data;
 	return_data.calibrated = &return_data;
 	return_data.type = call SensorInfo.getType();
