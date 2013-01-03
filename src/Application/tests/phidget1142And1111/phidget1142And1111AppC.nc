@@ -76,7 +76,7 @@ implementation {
   phidget1142And1111AppP.Phidget_1142_Setup -> phidget_1142_0_driverC.AdcSetup;
   phidget1142And1111AppP.Phidget_1142_Read -> phidget_1142_0_driverC.Read;
 
-  components new phidget_1111_0_driverC();
+  components new phidget_1142_0_driverC() as phidget_1111_0_driverC;
   phidget1142And1111AppP.Phidget_1111_Ctrl -> phidget_1111_0_driverC.SensorCtrl;
   phidget1142And1111AppP.Phidget_1111_Setup -> phidget_1111_0_driverC.AdcSetup;
   phidget1142And1111AppP.Phidget_1111_Read -> phidget_1111_0_driverC.Read;

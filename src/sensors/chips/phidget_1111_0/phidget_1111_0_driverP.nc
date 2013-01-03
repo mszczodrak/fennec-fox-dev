@@ -82,7 +82,6 @@ task void new_freq() {
 
 task void readDone() {
         uint8_t i;
-	sequence++;
 
         for(i = 0; i < NUM_CLIENTS; i++) {
                 if (clients[i].read) {

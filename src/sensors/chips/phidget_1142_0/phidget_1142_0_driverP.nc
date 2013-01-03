@@ -73,6 +73,9 @@ task void new_freq() {
 
                 freq = gcdr(freq, clients[i].rate);
         }
+
+	printf("new freq %d\n", freq);
+
         if (freq) {
                 call Timer.startPeriodic(freq);
         } else {
@@ -82,10 +85,14 @@ task void new_freq() {
 
 task void readDone() {
         uint8_t i;
-	sequence++;
+
+	printf("read done\n");
+	printfflush();
 
         for(i = 0; i < NUM_CLIENTS; i++) {
                 if (clients[i].read) {
+			printf("clieat got read\n");
+			clients[i].read = 0;
                         signal Read.readDone[i](status, return_data);
                 }
         }
@@ -100,6 +107,7 @@ task void readDone() {
                 }
 
                 if (sequence % (clients[i].rate / freq) == 0) {
+			printf("clieat got report\n");
                         signal Read.readDone[i](status, return_data);
                 }
         }
@@ -107,6 +115,8 @@ task void readDone() {
 
 task void getMeasurement() {
         //call Battery.read();
+
+	call Timer.getNow();
 
         if (call AdcSensorRead.read() == FAIL) {
                 status = FAIL;

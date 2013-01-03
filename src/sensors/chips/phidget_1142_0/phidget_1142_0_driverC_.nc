@@ -27,26 +27,30 @@
 
 #include "phidget_1142_0_driver.h"
 
-generic configuration phidget_1142_0_driverC() {
+configuration phidget_1142_0_driverC_ {
 
-provides interface SensorCtrl;
+provides interface SensorCtrl[uint8_t id];
 provides interface SensorInfo;
 provides interface AdcSetup;
-provides interface Read<ff_sensor_data_t>;
+provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
+
 }
 
 implementation {
 
-enum {
-        CLIENT_ID = unique(UQ_PHIDGET_1142),
-};
+components phidget_1142_0_driverP;
+AdcSetup = phidget_1142_0_driverP.AdcSetup;
+SensorCtrl = phidget_1142_0_driverP.SensorCtrl;
+SensorInfo = phidget_1142_0_driverP.SensorInfo;
+Read = phidget_1142_0_driverP.Read;
 
+components new phidget_adc_driverC();
+phidget_1142_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
+phidget_1142_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
+phidget_1142_0_driverP.AdcSensorRead -> phidget_adc_driverC.Read;
 
-components phidget_1142_0_driverC_;
-AdcSetup = phidget_1142_0_driverC_.AdcSetup;
-SensorCtrl = phidget_1142_0_driverC_.SensorCtrl[CLIENT_ID];
-SensorInfo = phidget_1142_0_driverC_.SensorInfo;
-Read = phidget_1142_0_driverC_.Read[CLIENT_ID];
+components new TimerMilliC() as Timer;
+phidget_1142_0_driverP.Timer -> Timer;
 
 }
 
