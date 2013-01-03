@@ -26,12 +26,32 @@
  */
 
 
-#ifndef _PHIDGET_1111_0_DRIVER_H_
-#define _PHIDGET_1111_0_DRIVER_H_
+#include "phidget_1111_0_driver.h"
 
-#define PHIDGET_1111_0_SENSOR_HIST_LEN 		2
-#define PHIDGET_1111_0_DEFAULT_ADC_CHANNEL 	0
+configuration phidget_1111_0_driverC_ {
 
-#define UQ_PHIDGET_1111 "UQ_PHIDGET_1111"
+provides interface SensorCtrl[uint8_t id];
+provides interface SensorInfo;
+provides interface AdcSetup;
+provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 
-#endif
+}
+
+implementation {
+
+components phidget_1111_0_driverP;
+AdcSetup = phidget_1111_0_driverP.AdcSetup;
+SensorCtrl = phidget_1111_0_driverP.SensorCtrl;
+SensorInfo = phidget_1111_0_driverP.SensorInfo;
+Read = phidget_1111_0_driverP.Read;
+
+components new phidget_adc_driverC();
+phidget_1111_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
+phidget_1111_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
+phidget_1111_0_driverP.AdcSensorRead -> phidget_adc_driverC.Read;
+
+components new TimerMilliC() as Timer;
+phidget_1111_0_driverP.Timer -> Timer;
+
+}
+

@@ -1,7 +1,7 @@
 /*
- *  Phidget 1108 driver.
+ *  Phidget 1111 driver.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,129 +19,175 @@
  */
 
 /*
- * Application: Phidget 1108 driver
+ * Application: Phidget 1111 driver
  * Author: Marcin Szczodrak
- * Date: 12/28/2012
- * Last Modified: 12/28/2012
+ * Date: 12/28/2010
+ * Last Modified: 1/3/2013
  */
 
 #include <Fennec.h>
-#include "phidget_1108_0_driver.h"
+#include "phidget_1111_0_driver.h"
 
-module phidget_1108_0_driverP @safe() {
-  provides interface AdcSetup;
-  provides interface SensorCtrl;
-  provides interface SensorInfo;
-  provides interface Read<uint16_t> as Raw;
-  provides interface Read<uint16_t> as Calibrated;
+module phidget_1111_0_driverP @safe() {
+provides interface AdcSetup;
+provides interface SensorCtrl[uint8_t client_id];
+provides interface SensorInfo;
+provides interface Read<ff_sensor_data_t> as Read[uint8_t client_id];
 
-  uses interface SensorCtrl as AdcSensorCtrl;
-  uses interface AdcSetup as SubAdcSetup;
-  uses interface Read<uint16_t> as AdcSensorRaw;
+uses interface SensorCtrl as AdcSensorCtrl;
+uses interface AdcSetup as SubAdcSetup;
+uses interface Read<ff_sensor_data_t> as AdcSensorRead;
 
-  uses interface Timer<TMilli> as Timer;
+uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
 
-  uint16_t calibrated_data[PHIDGET_1108_0_SENSOR_HIST_LEN] = {0};
-  uint8_t index = 0;
+uint16_t calibrated_data[PHIDGET_1111_0_SENSOR_HIST_LEN] = {0};
+uint8_t index = 0;
+ff_sensor_data_t return_data;
+norace error_t status = SUCCESS;
+norace uint32_t sequence = 0;
+uint32_t freq = 0;
 
-  norace bool signaling = PHIDGET_1108_0_DEFAULT_SIGNALING;
-  norace bool read_request = FALSE;
-  norace bool adc_channel_set = FALSE;
+norace bool adc_channel_set = FALSE;
 
-  command error_t SensorCtrl.start() {
-    read_request = FALSE;
-    if (adc_channel_set == FALSE) {
-      call SubAdcSetup.set_input_channel(PHIDGET_1108_0_DEFAULT_ADC_CHANNEL);
-    }
-    return call AdcSensorCtrl.start();
-  }
+enum {
+        NUM_CLIENTS = uniqueCount(UQ_PHIDGET_1111)
+};
 
-  event void AdcSensorCtrl.startDone(error_t error) {
-    signal SensorCtrl.startDone(error);
-  }
+ff_sensor_client_t clients[NUM_CLIENTS];
 
-  command error_t SensorCtrl.stop() {
-    call Timer.stop();
-    return call AdcSensorCtrl.stop();
-  }
+task void new_freq() {
+        uint8_t i;
+        freq = 0;
+        for(i = 0; i < NUM_CLIENTS; i++) {
+                if (clients[i].rate == 0) {
+                        continue;
+                }
 
-  event void AdcSensorCtrl.stopDone(error_t error) {
-    signal SensorCtrl.stopDone(error);
-  }
+                if (freq == 0) {
+                        freq = clients[i].rate;
+                        continue;
+                }
 
-  command error_t SensorCtrl.set_sensitivity(uint16_t new_sensitivity) {
-    return call AdcSensorCtrl.set_sensitivity(new_sensitivity);
-  }
+                freq = gcdr(freq, clients[i].rate);
+        }
 
-  command error_t SensorCtrl.set_rate(uint32_t new_rate) {
-    return call AdcSensorCtrl.set_rate(new_rate);
-  }
+        if (freq) {
+                call Timer.startPeriodic(freq);
+        } else {
+                call Timer.stop();
+        }
+};
 
-  command error_t SensorCtrl.set_signaling(bool new_signaling) {
-    call AdcSensorCtrl.set_signaling(new_signaling);
-    signaling = new_signaling;
-    return SUCCESS;
-  }
+task void readDone() {
+        uint8_t i;
 
-  command uint16_t SensorCtrl.get_sensitivity() {
-    return call AdcSensorCtrl.get_sensitivity();
-  }
+        for(i = 0; i < NUM_CLIENTS; i++) {
+                if (clients[i].read) {
+			clients[i].read = 0;
+                        signal Read.readDone[i](status, return_data);
+                }
+        }
 
-  command uint32_t SensorCtrl.get_rate() {
-    return call AdcSensorCtrl.get_rate();
-  }
+        if (freq == 0) {
+                return;
+        }
 
-  command bool SensorCtrl.get_signaling() {
-    return signaling;
-  }
+        for(i = 0; i < NUM_CLIENTS; i++) {
+                if (clients[i].rate == 0) {
+                        continue;
+                }
+
+                if (sequence % (clients[i].rate / freq) == 0) {
+                        signal Read.readDone[i](status, return_data);
+                }
+        }
+}
+
+task void getMeasurement() {
+        //call Battery.read();
+
+	call Timer.getNow();
+
+        if (call AdcSensorRead.read() == FAIL) {
+                status = FAIL;
+                post readDone();
+        }
+}
+
+
+command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {
+	if (adc_channel_set == FALSE) {
+		call SubAdcSetup.set_input_channel(PHIDGET_1111_0_DEFAULT_ADC_CHANNEL);
+		adc_channel_set = TRUE;
+	}
+        clients[id].read = 0;
+        clients[id].rate = newRate;
+        post new_freq();
+        return SUCCESS;
+}
+
+command uint32_t SensorCtrl.getRate[uint8_t id]() {
+	return clients[id].rate;
+}
 
 command sensor_type_t SensorInfo.getType() {
-        return F_SENSOR_MAGNETIC;
+        return F_SENSOR_MOTION;
 }
 
 command sensor_id_t SensorInfo.getId() {
-        return FS_PHIDGET_1108_0;
+        return FS_PHIDGET_1111_0;
 }
 
-  command uint8_t AdcSetup.get_input_channel() {
-    return call SubAdcSetup.get_input_channel();
-  }
+command uint8_t AdcSetup.get_input_channel() {
+	return call SubAdcSetup.get_input_channel();
+}
 
-  command error_t AdcSetup.set_input_channel(uint8_t new_channel) {
-    adc_channel_set = TRUE;
-    return call SubAdcSetup.set_input_channel(new_channel);
-  }
+command error_t AdcSetup.set_input_channel(uint8_t new_channel) {
+	adc_channel_set = TRUE;
+	return call SubAdcSetup.set_input_channel(new_channel);
+}
 
-  command error_t Raw.read() {
-    read_request = TRUE;
-    return call AdcSensorRaw.read();
-  }
+command error_t Read.read[uint8_t id]() {
+	if (adc_channel_set == FALSE) {
+		call SubAdcSetup.set_input_channel(PHIDGET_1111_0_DEFAULT_ADC_CHANNEL);
+		adc_channel_set = TRUE;
+	}
+        clients[id].read = 1;
+        post getMeasurement();
+        return SUCCESS;
+}
 
-  command error_t Calibrated.read() {
-    read_request = TRUE;
-    return call AdcSensorRaw.read();
-  }
+event void Timer.fired() {
+	post getMeasurement();
+}
 
-  event void AdcSensorRaw.readDone(error_t error, uint16_t data) {
-    if (error == SUCCESS) {
-      /* No calibration for phidget_1108_0 */
-      index++;
-      index %= PHIDGET_1108_0_SENSOR_HIST_LEN;
-      calibrated_data[index] = data;
-      if (read_request || signaling) {
-        signal Raw.readDone(error, data);
-        signal Calibrated.readDone(error, calibrated_data[index]);
-        read_request = 0;
-      }
-    }
-  }
+event void AdcSensorRead.readDone(error_t error, ff_sensor_data_t data) {
+	if (error != SUCCESS) {
+		status = error;
+		post readDone();
+		return;
+	}		
 
-  event void Timer.fired() {}
+	/* No calibration for phidget_1111_0 */
+	index++;
+	index %= PHIDGET_1111_0_SENSOR_HIST_LEN;
+	memcpy(&calibrated_data[index], data.raw, sizeof(data.size));
 
-  default event void Raw.readDone(error_t err, uint16_t data) {}
-  default event void Calibrated.readDone(error_t err, uint16_t data) {}
+	return_data.size = data.size;
+	return_data.seq = ++sequence;
+	return_data.raw = data.raw;
+	/* apply calibrate function */
+	return_data.calibrated = data.calibrated;
+        return_data.type = call SensorInfo.getType();
+        return_data.id = call SensorInfo.getId();
+        status = SUCCESS;
+        post readDone();
+}
+
+default event void Read.readDone[uint8_t id](error_t err, ff_sensor_data_t data) {}
+
 }
 

@@ -1,7 +1,7 @@
 /*
- *  Phidget 1129 driver.
+ *  Phidget 1111 driver.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,17 +19,19 @@
  */
 
 /*
- * Application: Phidget 1129 driver
+ * Application: Phidget 1111 driver
  * Author: Marcin Szczodrak
- * Date: 12/28/2012
- * Last Modified: 12/28/2012
+ * Date: 12/28/2010
+ * Last Modified: 1/3/2013
  */
 
-#ifndef _PHIDGET_1129_0_DRIVER_H_
-#define _PHIDGET_1129_0_DRIVER_H_
 
-#define PHIDGET_1129_0_DEFAULT_SIGNALING 	0
-#define PHIDGET_1129_0_SENSOR_HIST_LEN 		2
-#define PHIDGET_1129_0_DEFAULT_ADC_CHANNEL 	0
+#ifndef _PHIDGET_1111_0_DRIVER_H_
+#define _PHIDGET_1111_0_DRIVER_H_
+
+#define PHIDGET_1111_0_SENSOR_HIST_LEN 		2
+#define PHIDGET_1111_0_DEFAULT_ADC_CHANNEL 	0
+
+#define UQ_PHIDGET_1111 "UQ_PHIDGET_1111"
 
 #endif

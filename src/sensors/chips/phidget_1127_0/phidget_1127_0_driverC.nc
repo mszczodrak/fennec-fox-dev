@@ -1,7 +1,7 @@
 /*
- *  Phidget 1127 driver.
+ *  Phidget 1111 driver.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,35 +19,34 @@
  */
 
 /*
- * Application: Phidget 1127 driver
+ * Application: Phidget 1111 driver
  * Author: Marcin Szczodrak
- * Date: 12/28/2012
- * Last Modified: 12/28/2012
+ * Date: 12/28/2010
+ * Last Modified: 1/3/2013
  */
 
+#include "phidget_1111_0_driver.h"
 
-configuration phidget_1127_0_driverC {
-  provides interface SensorCtrl;
-  provides interface SensorInfo;
-  provides interface AdcSetup;
-  provides interface Read<uint16_t> as Raw;
-  provides interface Read<uint16_t> as Calibrated;
+generic configuration phidget_1111_0_driverC() {
+
+provides interface SensorCtrl;
+provides interface SensorInfo;
+provides interface AdcSetup;
+provides interface Read<ff_sensor_data_t>;
 }
 
 implementation {
-  components phidget_1127_0_driverP;
-  AdcSetup = phidget_1127_0_driverP.AdcSetup;
-  SensorCtrl = phidget_1127_0_driverP.SensorCtrl;
-  SensorInfo = phidget_1127_0_driverP.SensorInfo;
-  Raw = phidget_1127_0_driverP.Raw;
-  Calibrated = phidget_1127_0_driverP.Calibrated;
 
-  components new phidget_adc_driverC();
-  phidget_1127_0_driverP.AdcSensorCtrl -> phidget_adc_driverC.SensorCtrl;
-  phidget_1127_0_driverP.SubAdcSetup -> phidget_adc_driverC.AdcSetup;
-  phidget_1127_0_driverP.AdcSensorRaw -> phidget_adc_driverC.Raw;
+enum {
+        CLIENT_ID = unique(UQ_PHIDGET_1111),
+};
 
-  components new TimerMilliC() as Timer;
-  phidget_1127_0_driverP.Timer -> Timer;
+
+components phidget_1111_0_driverC_;
+AdcSetup = phidget_1111_0_driverC_.AdcSetup;
+SensorCtrl = phidget_1111_0_driverC_.SensorCtrl[CLIENT_ID];
+SensorInfo = phidget_1111_0_driverC_.SensorInfo;
+Read = phidget_1111_0_driverC_.Read[CLIENT_ID];
+
 }
 
