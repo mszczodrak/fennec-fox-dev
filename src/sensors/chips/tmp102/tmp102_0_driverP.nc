@@ -53,7 +53,7 @@ norace uint8_t mode;  /* Mode   * 0 -> 12-bit format 	 * 1 -> 13-bit format  */
 
 norace uint16_t battery = 0;
 
-uint16_t raw_data;
+norace uint16_t raw_data;
 uint16_t calibrated_data;
 ff_sensor_data_t return_data;
 norace error_t status = SUCCESS;

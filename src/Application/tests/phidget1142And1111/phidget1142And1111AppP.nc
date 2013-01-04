@@ -166,7 +166,7 @@ implementation {
     sm.addr = AM_BROADCAST_ADDR; 
     call SerialQueue.enqueue(sm);
 
-    //post send_serial_message();
+    post send_serial_message();
 
     return msg;
   }
