@@ -29,36 +29,28 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE
  */
 
-#include "Msp430Adc12.h"
-
 /**
- * HamamatsuS1087ParP is a driver for a photosynthetically-active
- * radiation sensor available on the telosb platform. 
+ * HamamatsuS10871TsrC is a driver for a total solar radiation sensor
+ * available on the telosb platform.
  *
  * @author Gilman Tolle <gtolle@archrock.com>
  * @version $Revision: 1.5 $ $Date: 2007-04-13 21:46:18 $
  */
 
-module HamamatsuS1087ParP {
+generic configuration HamamatsuS10871TsrC() {
   provides interface DeviceMetadata;
-  provides interface AdcConfigure<const msp430adc12_channel_config_t*>;
+  provides interface Read<uint16_t>;
+  provides interface ReadStream<uint16_t>;
 }
 implementation {
+  components new AdcReadClientC();
+  Read = AdcReadClientC;
 
-  msp430adc12_channel_config_t config = {
-    inch: INPUT_CHANNEL_A4,
-    sref: REFERENCE_VREFplus_AVss,
-    ref2_5v: REFVOLT_LEVEL_1_5,
-    adc12ssel: SHT_SOURCE_ACLK,
-    adc12div: SHT_CLOCK_DIV_1,
-    sht: SAMPLE_HOLD_4_CYCLES,
-    sampcon_ssel: SAMPCON_SOURCE_SMCLK,
-    sampcon_id: SAMPCON_CLOCK_DIV_1
-  };
+  components new AdcReadStreamClientC();
+  ReadStream = AdcReadStreamClientC;
 
-  command uint8_t DeviceMetadata.getSignificantBits() { return 12; }
-
-  async command const msp430adc12_channel_config_t* AdcConfigure.getConfiguration() {
-    return &config;
-  }
+  components HamamatsuS10871TsrP;
+  DeviceMetadata = HamamatsuS10871TsrP;
+  AdcReadClientC.AdcConfigure -> HamamatsuS10871TsrP;
+  AdcReadStreamClientC.AdcConfigure -> HamamatsuS10871TsrP;
 }

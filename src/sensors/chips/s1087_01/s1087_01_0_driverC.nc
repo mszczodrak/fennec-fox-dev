@@ -1,5 +1,5 @@
 /*
- *  HAMAMATSU S1087 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR  driver.
+ *  HAMAMATSU S1087_01 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR  driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Application: HAMAMATSU S1087 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR
+ * Application: HAMAMATSU S1087_01 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR
  * Author: Marcin Szczodrak
  * Date: 8/16/2009
  * Last Modified: 1/4/2013
@@ -36,7 +36,7 @@ provides interface Read<ff_sensor_data_t>;
 implementation {
 
 enum {
-        CLIENT_ID = unique(UQ_S1087),
+        CLIENT_ID = unique(UQ_S1087_01),
 };
 
 components s1087_0_driverC_;

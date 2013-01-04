@@ -1,5 +1,5 @@
 /*
- *  HAMAMATSU S1087 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR  driver.
+ *  HAMAMATSU S1087_01 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR  driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Application: HAMAMATSU S1087 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR
+ * Application: HAMAMATSU S1087_01 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR
  * Author: Marcin Szczodrak
  * Date: 8/16/2009
  * Last Modified: 1/4/2013
@@ -49,7 +49,7 @@ norace uint32_t sequence = 0;
 uint32_t freq = 0;
 
 enum {
-	NUM_CLIENTS = uniqueCount(UQ_S1087)
+	NUM_CLIENTS = uniqueCount(UQ_S1087_01)
 };
 
 ff_sensor_client_t clients[NUM_CLIENTS];
@@ -133,7 +133,7 @@ command sensor_type_t SensorInfo.getType() {
 }
 
 command sensor_id_t SensorInfo.getId() {
-        return FS_HAMAMATSU_S1087;
+        return FS_HAMAMATSU_S1087_01;
 }
 
 command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {

@@ -1,5 +1,5 @@
 /*
- *  HAMAMATSU S1087 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR  driver.
+ *  HAMAMATSU S1087_01 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR  driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,7 +19,7 @@
  */
 
 /*
- * Application: HAMAMATSU S1087 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR
+ * Application: HAMAMATSU S1087_01 PHOTOSYNTHETICALLY-ACTIVE RADIATION SENSOR
  * Author: Marcin Szczodrak
  * Date: 8/16/2009
  * Last Modified: 1/4/2013
@@ -40,8 +40,8 @@ SensorInfo = s1087_0_driverP.SensorInfo;
 SensorCtrl = s1087_0_driverP.SensorCtrl;
 Read = s1087_0_driverP.Read;
 
-components new HamamatsuS1087ParC();
-s1087_0_driverP.ParticleRead -> HamamatsuS1087ParC.Read;
+components new HamamatsuS1087_01ParC();
+s1087_0_driverP.ParticleRead -> HamamatsuS1087_01ParC.Read;
 
 components new TimerMilliC() as Timer;
 s1087_0_driverP.Timer -> Timer;

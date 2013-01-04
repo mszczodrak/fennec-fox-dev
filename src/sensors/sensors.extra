@@ -27,7 +27,7 @@ CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/adxl345
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/sht11temp
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/sht11hum
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/s1087
-CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/s10871
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/s1087_01
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Camera
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Camera/ov7670
