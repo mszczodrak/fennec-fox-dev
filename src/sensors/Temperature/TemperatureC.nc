@@ -1,6 +1,6 @@
 #include <ff_sensors.h>
 configuration TemperatureC {
-  provides interface Read<struct ff_sensor_temperature>;
+  provides interface Read<struct ff_sensor_data>;
 }
 
 implementation {
