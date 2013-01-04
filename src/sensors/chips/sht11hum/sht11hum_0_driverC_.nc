@@ -41,7 +41,7 @@ SensorCtrl = sht11hum_0_driverP.SensorCtrl;
 Read = sht11hum_0_driverP.Read;
 
 components new SensirionSht11C();
-sht11hum_0_driverP.Temperature -> SensirionSht11C.Temperature;
+sht11hum_0_driverP.Humidity -> SensirionSht11C.Humidity;
 
 components new TimerMilliC() as Timer;
 sht11hum_0_driverP.Timer -> Timer;

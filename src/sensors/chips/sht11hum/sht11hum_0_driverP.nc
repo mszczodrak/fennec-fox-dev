@@ -34,7 +34,7 @@ provides interface SensorInfo;
 provides interface SensorCtrl[uint8_t client_id];
 provides interface Read<ff_sensor_data_t> as Read[uint8_t client_id];
 
-uses interface Read<uint16_t> as Temperature;
+uses interface Read<uint16_t> as Humidity;
 uses interface Timer<TMilli> as Timer;
 }
 
@@ -100,21 +100,26 @@ task void readDone() {
 }
 
 task void getMeasurement() {
-	if (call Temperature.read() == FAIL) { 
+	if (call Humidity.read() == FAIL) { 
 		status = FAIL;
 		post readDone();
 	}
 }
 
-event void Temperature.readDone(error_t error, uint16_t data) {
+event void Humidity.readDone(error_t error, uint16_t data) {
         if (error != SUCCESS) {
                 status = error;
                 post readDone();
                 return;
         }
 
-	calibrated_data = raw_data;
+	raw_data = data;
+	/* Calibrate data */
+	calibrated_data = -4 + 0.0405 * raw_data + (-2.8 * 1e-6) * 
+							(raw_data) * (raw_data);
 
+	if (calibrated_data > 99) 
+		calibrated_data = 100;
         return_data.size = sizeof(uint16_t);
         return_data.seq = ++sequence;
         return_data.raw = &raw_data;
