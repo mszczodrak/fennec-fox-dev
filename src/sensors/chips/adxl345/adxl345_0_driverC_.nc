@@ -1,5 +1,5 @@
 /*
- *  TMP102 driver.
+ *  ADXL345 driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,27 +19,37 @@
  */
 
 /*
- * Application: TMP102 driver
+ * Application: ADXL345 driver
  * Author: Marcin Szczodrak
- * Date: 3/16/2012
+ * Date: 3/14/2012
  * Last Modified: 1/4/2013
  */
 
-#include "tmp102_0_driver.h"
+#include "adxl345_0_driver.h"
 
-generic configuration tmp102_0_driverC() {
+configuration adxl345_0_driverC_ {
+
 provides interface SensorInfo;
-provides interface SensorCtrl;
-provides interface Read<ff_sensor_data_t>;
+provides interface SensorCtrl[uint8_t id];
+provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
+
 }
+
 implementation {
 
-enum {
-        CLIENT_ID = unique(UQ_TMP102),
-};
+components adxl345_0_driverP;
+SensorInfo = adxl345_0_driverP.SensorInfo;
+SensorCtrl = adxl345_0_driverP.SensorCtrl;
+Read = adxl345_0_driverP.Read;
 
-components tmp102_0_driverC_;
-SensorInfo = tmp102_0_driverC_.SensorInfo;
-SensorCtrl = tmp102_0_driverC_.SensorCtrl[CLIENT_ID];
-Read = tmp102_0_driverC_.Read[CLIENT_ID];
+components new ADXL345C();
+adxl345_0_driverP.XYZ -> ADXL345C.XYZ;
+adxl345_0_driverP.XYZControl -> ADXL345C.SplitControl;
+
+components new BatteryC();
+adxl345_0_driverP.Battery -> BatteryC.Read;
+
+components new TimerMilliC() as Timer;
+adxl345_0_driverP.Timer -> Timer;
 }
+

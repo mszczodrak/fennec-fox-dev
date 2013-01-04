@@ -145,7 +145,6 @@ command uint32_t SensorCtrl.getRate[uint8_t id]() {
 }
 
 command error_t Read.read[uint8_t id]() {
-	printf("got read %d\n", id);
 	clients[id].read = 1;
 	post getMeasurement();
 	return SUCCESS;
@@ -175,8 +174,8 @@ event void XYZ.readDone(error_t error, adxl345_readxyt_t data){
 
 	return_data.size = sizeof(adxl345_readxyt_t);
 	return_data.seq = ++sequence;
-	return_data.raw = &return_data;
-	return_data.calibrated = &return_data;
+	return_data.raw = &xyz_data;
+	return_data.calibrated = &xyz_data;
 	return_data.type = call SensorInfo.getType();
 	return_data.id = call SensorInfo.getId();
 	status = SUCCESS;

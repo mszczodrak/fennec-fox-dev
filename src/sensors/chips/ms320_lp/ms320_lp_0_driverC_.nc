@@ -1,5 +1,5 @@
 /*
- *  TMP102 driver.
+ *  MS320_LP driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,27 +19,33 @@
  */
 
 /*
- * Application: TMP102 driver
+ * Application: MS320_LP driver
  * Author: Marcin Szczodrak
  * Date: 3/16/2012
  * Last Modified: 1/4/2013
  */
 
-#include "tmp102_0_driver.h"
+#include "ms320_lp_0_driver.h"
 
-generic configuration tmp102_0_driverC() {
+configuration ms320_lp_0_driverC_ {
+provides interface SensorCtrl[uint8_t id];
 provides interface SensorInfo;
-provides interface SensorCtrl;
-provides interface Read<ff_sensor_data_t>;
+provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 }
+
 implementation {
+components ms320_lp_0_driverP;
+SensorInfo = ms320_lp_0_driverP.SensorInfo;
+SensorCtrl = ms320_lp_0_driverP.SensorCtrl;
+Read = ms320_lp_0_driverP.Read;
 
-enum {
-        CLIENT_ID = unique(UQ_TMP102),
-};
+components HplMsp430GeneralIOC as GeneralIOC;
+components new Msp430GpioC() as MotionImpl;
 
-components tmp102_0_driverC_;
-SensorInfo = tmp102_0_driverC_.SensorInfo;
-SensorCtrl = tmp102_0_driverC_.SensorCtrl[CLIENT_ID];
-Read = tmp102_0_driverC_.Read[CLIENT_ID];
+MotionImpl -> GeneralIOC.Port42;
+ms320_lp_0_driverP.MotionPin -> MotionImpl;
+
+components new TimerMilliC() as Timer;
+ms320_lp_0_driverP.Timer -> Timer;
 }
+

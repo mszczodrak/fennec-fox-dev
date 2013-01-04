@@ -1,5 +1,5 @@
 /*
- *  TMP102 driver.
+ *  MS320_LP driver.
  *
  *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
@@ -19,27 +19,30 @@
  */
 
 /*
- * Application: TMP102 driver
+ * Application: MS320_LP driver
  * Author: Marcin Szczodrak
  * Date: 3/16/2012
  * Last Modified: 1/4/2013
  */
 
-#include "tmp102_0_driver.h"
+#include "ms320_lp_0_driver.h"
 
-generic configuration tmp102_0_driverC() {
-provides interface SensorInfo;
+generic configuration ms320_lp_0_driverC() {
 provides interface SensorCtrl;
+provides interface SensorInfo;
 provides interface Read<ff_sensor_data_t>;
 }
+
 implementation {
 
 enum {
-        CLIENT_ID = unique(UQ_TMP102),
+        CLIENT_ID = unique(UQ_MS320_LP),
 };
 
-components tmp102_0_driverC_;
-SensorInfo = tmp102_0_driverC_.SensorInfo;
-SensorCtrl = tmp102_0_driverC_.SensorCtrl[CLIENT_ID];
-Read = tmp102_0_driverC_.Read[CLIENT_ID];
+components ms320_lp_0_driverC_;
+SensorInfo = ms320_lp_0_driverC_.SensorInfo;
+SensorCtrl = ms320_lp_0_driverC_.SensorCtrl[CLIENT_ID];
+Read = ms320_lp_0_driverC_.Read[CLIENT_ID];
+
 }
+

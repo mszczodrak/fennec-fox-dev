@@ -27,19 +27,28 @@
 
 #include "tmp102_0_driver.h"
 
-generic configuration tmp102_0_driverC() {
+configuration tmp102_0_driverC_ {
 provides interface SensorInfo;
-provides interface SensorCtrl;
-provides interface Read<ff_sensor_data_t>;
+provides interface SensorCtrl[uint8_t id];
+provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 }
 implementation {
+components tmp102_0_driverP;
+SensorInfo = tmp102_0_driverP.SensorInfo;
+SensorCtrl = tmp102_0_driverP.SensorCtrl;
+Read = tmp102_0_driverP.Read;
 
-enum {
-        CLIENT_ID = unique(UQ_TMP102),
-};
+components new Msp430I2C1C() as I2C;
+tmp102_0_driverP.Resource -> I2C;
+tmp102_0_driverP.ResourceRequested -> I2C;
+tmp102_0_driverP.I2CBasicAddr -> I2C;    
 
-components tmp102_0_driverC_;
-SensorInfo = tmp102_0_driverC_.SensorInfo;
-SensorCtrl = tmp102_0_driverC_.SensorCtrl[CLIENT_ID];
-Read = tmp102_0_driverC_.Read[CLIENT_ID];
+components new BatteryC();
+tmp102_0_driverP.Battery -> BatteryC.Read;
+
+components new TimerMilliC() as Timer;
+tmp102_0_driverP.Timer -> Timer;
+
+components new TimerMilliC() as TimerSensor;
+tmp102_0_driverP.TimerSensor -> TimerSensor;
 }

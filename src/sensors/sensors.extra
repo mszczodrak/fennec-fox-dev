@@ -21,7 +21,6 @@ CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/phidget_1133_0
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/phidget_1142_0
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/phidget_1143_0
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/phidget_adc
-
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/ms320_lp
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/tmp102
 CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/chips/adxl345
