@@ -113,7 +113,9 @@ event void Temperature.readDone(error_t error, uint16_t data) {
                 return;
         }
 
-	calibrated_data = raw_data;
+	raw_data = data;
+	/* Calibrate data */
+	calibrated_data = -39.60 + raw_data * 0.01;
 
         return_data.size = sizeof(uint16_t);
         return_data.seq = ++sequence;
@@ -121,6 +123,7 @@ event void Temperature.readDone(error_t error, uint16_t data) {
         return_data.calibrated = &calibrated_data;
         return_data.type = call SensorInfo.getType();
         return_data.id = call SensorInfo.getId();
+
         status = SUCCESS;
         post readDone();
 }
