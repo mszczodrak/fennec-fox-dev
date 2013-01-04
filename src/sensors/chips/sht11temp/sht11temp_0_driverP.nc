@@ -35,13 +35,10 @@ provides interface SensorCtrl[uint8_t client_id];
 provides interface Read<ff_sensor_data_t> as Read[uint8_t client_id];
 
 uses interface Read<uint16_t> as Temperature;
-uses interface Read<uint16_t> as Battery;
 uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
-
-norace uint16_t battery = 0;
 
 uint16_t raw_data;
 uint16_t calibrated_data;
@@ -103,8 +100,6 @@ task void readDone() {
 }
 
 task void getMeasurement() {
-	//call Battery.read();
-
 	if (call Temperature.read() == FAIL) { 
 		status = FAIL;
 		post readDone();
@@ -157,15 +152,6 @@ command error_t Read.read[uint8_t id]() {
 
 event void Timer.fired() {
 	post getMeasurement();
-}
-
-event void Battery.readDone(error_t error, uint16_t data){
-	if (error == SUCCESS) {
-		uint32_t b = data;
-		b *= 3000;
-		b /= 4096;
-		battery = b;
-	} 
 }
 
 default event void Read.readDone[uint8_t id](error_t error, ff_sensor_data_t data) {}

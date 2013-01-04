@@ -43,9 +43,6 @@ Read = sht11hum_0_driverP.Read;
 components new SensirionSht11C();
 sht11hum_0_driverP.Temperature -> SensirionSht11C.Temperature;
 
-components new BatteryC();
-sht11hum_0_driverP.Battery -> BatteryC.Read;
-
 components new TimerMilliC() as Timer;
 sht11hum_0_driverP.Timer -> Timer;
 
