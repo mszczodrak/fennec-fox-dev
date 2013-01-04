@@ -57,7 +57,7 @@ implementation {
 
   //components new phidget_1142_0_driverC() as GenericSensorC;
   //components new adxl345_0_driverC() as GenericSensorC;
-  components new sht11_0_driverC() as GenericSensorC;
+  components new sht11temp_0_driverC() as GenericSensorC;
 
   genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
   genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;

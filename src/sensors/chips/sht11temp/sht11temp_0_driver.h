@@ -1,0 +1,7 @@
+#ifndef _SHT11TEMP_0_DRIVER_H_
+#define _SHT11TEMP_0_DRIVER_H_
+
+#define UQ_SHT11TEMP "UQ_SHT11TEMP"
+
+#endif
+

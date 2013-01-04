@@ -37,15 +37,17 @@ implementation {
 
 components sht11temp_0_driverP;
 SensorInfo = sht11temp_0_driverP.SensorInfo;
-SensorCtrl = sht11temp_0_driverP.SensorCtrl[CLIENT_ID];
-Read = sht11temp_0_driverP.Read[CLIENT_ID];
+SensorCtrl = sht11temp_0_driverP.SensorCtrl;
+Read = sht11temp_0_driverP.Read;
 
-components new SensirionSht11ReaderP();
+components new SensirionSht11C();
+sht11temp_0_driverP.Temperature -> SensirionSht11C.Temperature;
 
+components new BatteryC();
+sht11temp_0_driverP.Battery -> BatteryC.Read;
 
 components new TimerMilliC() as Timer;
-ms320_lp_0_driverP.Timer -> Timer;
-
+sht11temp_0_driverP.Timer -> Timer;
 
 }
 

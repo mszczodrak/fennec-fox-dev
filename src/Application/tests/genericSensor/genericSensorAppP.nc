@@ -61,8 +61,9 @@ ff_sensor_data_t data;
 task void printf_sensor_info() {
 	printf("Sensor ID: %d\t\tSensor Type: %d\n", data.id, data.type);
 	printf("Sampling Frequency: %u\n", call genericSensorAppParams.get_freq());
-	//printf("Raw measurement: %d\n", *data.raw);
-	//printf("Calibrated measurement: %d\n", *data.calibrated);
+	printf("Sequence: %d\t\tMeasurement Size: %d\n", data.seq, data.size);
+	printf("Raw measurement: %d\n", *(uint16_t*)data.raw);
+	printf("Calibrated measurement: %d\n", *(uint16_t*)data.calibrated);
 	printfflush();
 }
 
