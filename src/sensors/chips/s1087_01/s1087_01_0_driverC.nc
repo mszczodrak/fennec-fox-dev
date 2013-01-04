@@ -25,9 +25,9 @@
  * Last Modified: 1/4/2013
  */
 
-#include "s1087_0_driver.h"
+#include "s1087_01_0_driver.h"
 
-generic configuration s1087_0_driverC() {
+generic configuration s1087_01_0_driverC() {
 provides interface SensorCtrl;
 provides interface SensorInfo;
 provides interface Read<ff_sensor_data_t>;
@@ -39,10 +39,10 @@ enum {
         CLIENT_ID = unique(UQ_S1087_01),
 };
 
-components s1087_0_driverC_;
-SensorInfo = s1087_0_driverC_.SensorInfo;
-SensorCtrl = s1087_0_driverC_.SensorCtrl[CLIENT_ID];
-Read = s1087_0_driverC_.Read[CLIENT_ID];
+components s1087_01_0_driverC_;
+SensorInfo = s1087_01_0_driverC_.SensorInfo;
+SensorCtrl = s1087_01_0_driverC_.SensorCtrl[CLIENT_ID];
+Read = s1087_01_0_driverC_.Read[CLIENT_ID];
 
 }
 

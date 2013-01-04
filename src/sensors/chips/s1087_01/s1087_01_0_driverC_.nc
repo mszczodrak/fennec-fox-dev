@@ -25,9 +25,9 @@
  * Last Modified: 1/4/2013
  */
 
-#include "s1087_0_driver.h"
+#include "s1087_01_0_driver.h"
 
-configuration s1087_0_driverC_ {
+configuration s1087_01_0_driverC_ {
 provides interface SensorCtrl[uint8_t id];
 provides interface SensorInfo;
 provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
@@ -35,16 +35,16 @@ provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 
 implementation {
 
-components s1087_0_driverP;
-SensorInfo = s1087_0_driverP.SensorInfo;
-SensorCtrl = s1087_0_driverP.SensorCtrl;
-Read = s1087_0_driverP.Read;
+components s1087_01_0_driverP;
+SensorInfo = s1087_01_0_driverP.SensorInfo;
+SensorCtrl = s1087_01_0_driverP.SensorCtrl;
+Read = s1087_01_0_driverP.Read;
 
-components new HamamatsuS1087_01ParC();
-s1087_0_driverP.ParticleRead -> HamamatsuS1087_01ParC.Read;
+components new HamamatsuS10871TsrC();
+s1087_01_0_driverP.TotalSolarRead -> HamamatsuS10871TsrC.Read;
 
 components new TimerMilliC() as Timer;
-s1087_0_driverP.Timer -> Timer;
+s1087_01_0_driverP.Timer -> Timer;
 
 }
 

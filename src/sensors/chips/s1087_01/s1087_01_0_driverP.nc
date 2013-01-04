@@ -26,16 +26,16 @@
  */
 
 
-#include "s1087_0_driver.h"
+#include "s1087_01_0_driver.h"
 #include <Fennec.h>
 
-module s1087_0_driverP @safe() {
+module s1087_01_0_driverP @safe() {
 
 provides interface SensorInfo;
 provides interface SensorCtrl[uint8_t client_id];
 provides interface Read<ff_sensor_data_t> as Read[uint8_t client_id];
 
-uses interface Read<uint16_t> as ParticleRead;
+uses interface Read<uint16_t> as TotalSolarRead;
 uses interface Timer<TMilli> as Timer;
 }
 
@@ -101,13 +101,13 @@ task void readDone() {
 }
 
 task void getMeasurement() {
-	if (call ParticleRead.read() == FAIL) { 
+	if (call TotalSolarRead.read() == FAIL) { 
 		status = FAIL;
 		post readDone();
 	}
 }
 
-event void ParticleRead.readDone(error_t error, uint16_t data) {
+event void TotalSolarRead.readDone(error_t error, uint16_t data) {
         if (error != SUCCESS) {
                 status = error;
                 post readDone();
