@@ -15,8 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Authors: Dhananjay Palshikar (dp2575@columbia.edu)
-             Marcin Szczodrak  (marcin@ieee.org)
+    Authors: Marcin Szczodrak  (marcin@ieee.org)
 
 */
 
@@ -24,16 +23,16 @@
 #include "phidget_adc_driver.h"
 
 generic module phidget_adc_driverP() @safe() {
-  provides interface SensorCtrl;
-  provides interface SensorInfo;
-  provides interface AdcSetup;
-  provides interface Read<ff_sensor_data_t>;
+provides interface SensorCtrl;
+provides interface SensorInfo;
+provides interface AdcSetup;
+provides interface Read<ff_sensor_data_t>;
 
-  uses interface Msp430Adc12SingleChannel;
-  uses interface Resource;
-  uses interface Read<uint16_t> as Battery;
-  uses interface Timer<TMilli> as Timer;
-  uses interface Leds;
+uses interface Msp430Adc12SingleChannel;
+uses interface Resource;
+uses interface Read<uint16_t> as Battery;
+uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 }
 
 implementation {
@@ -44,6 +43,17 @@ norace uint16_t battery = 0;
 uint32_t rate;
 
 ff_sensor_data_t return_data;
+
+msp430adc12_channel_config_t phidget_adc_config = {
+	INPUT_CHANNEL_A7,           // input channel
+	REFERENCE_AVcc_AVss,        // reference voltage
+	REFVOLT_LEVEL_NONE,         // reference voltage level
+	SHT_SOURCE_ACLK,            // clock source sample-hold-time
+	SHT_CLOCK_DIV_1,            // clock divider sample-hold-time
+	SAMPLE_HOLD_4_CYCLES,       // sample-hold-time
+	SAMPCON_SOURCE_SMCLK,       // clock source sampcon signal
+	SAMPCON_CLOCK_DIV_1         // clock divider sampcon
+};
 
 task void signal_readDone() {
 	return_data.size = sizeof(raw_data);

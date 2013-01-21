@@ -15,36 +15,35 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Authors: Dhananjay Palshikar (dp2575@columbia.edu)
-             Marcin Szczodrak  (marcin@ieee.org)
+    Authors: Marcin Szczodrak  (marcin@ieee.org)
 
 */
 
 generic configuration phidget_adc_driverC() {
-   provides interface SensorCtrl;
-   provides interface AdcSetup;
-   provides interface SensorInfo;
-   provides interface Read<ff_sensor_data_t>;
+provides interface SensorCtrl;
+provides interface AdcSetup;
+provides interface SensorInfo;
+provides interface Read<ff_sensor_data_t>;
 }
 
 implementation {
-  components new phidget_adc_driverP();
-  SensorCtrl = phidget_adc_driverP.SensorCtrl;
-  SensorInfo = phidget_adc_driverP.SensorInfo;
-  AdcSetup = phidget_adc_driverP.AdcSetup;
-  Read = phidget_adc_driverP.Read;
+components new phidget_adc_driverP();
+SensorCtrl = phidget_adc_driverP.SensorCtrl;
+SensorInfo = phidget_adc_driverP.SensorInfo;
+AdcSetup = phidget_adc_driverP.AdcSetup;
+Read = phidget_adc_driverP.Read;
 
-  components new Msp430Adc12ClientC();
-  phidget_adc_driverP.Msp430Adc12SingleChannel -> Msp430Adc12ClientC;
-  phidget_adc_driverP.Resource -> Msp430Adc12ClientC;
+components new Msp430Adc12ClientC();
+phidget_adc_driverP.Msp430Adc12SingleChannel -> Msp430Adc12ClientC;
+phidget_adc_driverP.Resource -> Msp430Adc12ClientC;
 
-  components new BatteryC();
-  phidget_adc_driverP.Battery -> BatteryC.Read;
+components new BatteryC();
+phidget_adc_driverP.Battery -> BatteryC.Read;
 
-  components new TimerMilliC() as Timer;
-  phidget_adc_driverP.Timer -> Timer;
+components new TimerMilliC() as Timer;
+phidget_adc_driverP.Timer -> Timer;
 
-  components LedsC;
-  phidget_adc_driverP.Leds -> LedsC;
+components LedsC;
+phidget_adc_driverP.Leds -> LedsC;
 }
 

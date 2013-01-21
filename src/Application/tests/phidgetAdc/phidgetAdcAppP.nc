@@ -74,14 +74,14 @@ module phidgetAdcAppP {
 
 implementation {
 
-  /** 
-   * array of the sensors we are handling; max we can keep track 
-   * of APP_MAX_NUMBER_OF_SENSORS sensors 
-   */
-  app_network_internal_t sensors[APP_MAX_NUMBER_OF_SENSORS];
+/** 
+ * array of the sensors we are handling; max we can keep track 
+ * of APP_MAX_NUMBER_OF_SENSORS sensors 
+ */
+app_network_internal_t sensors[APP_MAX_NUMBER_OF_SENSORS];
 
-  void clean_sensor_record(uint8_t id);
-  void save_sensor_data(uint16_t data, uint8_t id);
+void clean_sensor_record(uint8_t id);
+void save_sensor_data(uint16_t data, uint8_t id);
 
 task void send_serial_message();
 task void send_network_message();
@@ -193,7 +193,7 @@ event void Sensor_0_Read.readDone(error_t error, ff_sensor_data_t data) {
 	if (error == SUCCESS) {
 		/* sends packet if data count equals sampleCount, 
 		 * else appends data to the buffer */
-		call Leds.led1Toggle();
+		//call Leds.led1Toggle();
 		save_sensor_data(*(uint16_t*)data.raw, 0);
 	}
 }
@@ -202,7 +202,7 @@ event void Sensor_1_Read.readDone(error_t error, ff_sensor_data_t data) {
 	if (error == SUCCESS) {
 		/* sends packet if data count equals sampleCount, 
 		 * else appends data to the buffer */
-		call Leds.led2Toggle();
+		//call Leds.led2Toggle();
 		save_sensor_data(*(uint16_t*)data.raw, 1);
 	}
 }
@@ -226,6 +226,9 @@ void clean_sensor_record(uint8_t id) {
 		call Leds.led0On();
 		return;
 	}
+
+	memset(sensors[id].msg, 0, sizeof(message_t));
+
 	sensors[id].pkt = call NetworkAMSend.getPayload(sensors[id].msg, sensors[id].len);
 
 	if (sensors[id].pkt == NULL) {
