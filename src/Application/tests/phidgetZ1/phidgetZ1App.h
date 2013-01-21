@@ -1,5 +1,5 @@
 /*
- *  Phidget ADC Application module for Fennec Fox platform.
+ *  Phidget Z1 Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,14 +19,14 @@
  */
 
 /*
- * Application: Phidget ADC Application Module
+ * Application: Phidget Z1 Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 12/28/2012
  */
 
-#ifndef __PhidgetAdc_APP_H_
-#define __PhidgetAdc_APP_H_
+#ifndef __PhidgetZ1_APP_H_
+#define __PhidgetZ1_APP_H_
 
 #define APP_MAX_NUMBER_OF_SENSORS	2
 #define APP_NETWORK_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS + 6

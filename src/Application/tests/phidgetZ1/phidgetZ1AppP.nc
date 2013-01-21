@@ -1,5 +1,5 @@
 /*
- *  Phidget ADC Application module for Fennec Fox platform.
+ *  Phidget Z1 Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,20 +19,20 @@
  */
 
 /*
- * Application: Phidget ADC Application Module
+ * Application: Phidget Z1 Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 12/28/2012
  */
 
 #include <Fennec.h>
-#include "phidgetAdcApp.h"
+#include "phidgetZ1App.h"
 
-module phidgetAdcAppP {
+module phidgetZ1AppP {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface phidgetAdcAppParams ;
+  uses interface phidgetZ1AppParams ;
 
   /* Network interfaces */
   uses interface AMSend as NetworkAMSend;
@@ -44,11 +44,11 @@ module phidgetAdcAppP {
   uses interface ModuleStatus as NetworkStatus;
 
   uses interface SensorCtrl as Sensor_0_Ctrl;
-  uses interface AdcSetup as Sensor_0_Setup;
+  uses interface Z1Setup as Sensor_0_Setup;
   uses interface Read<ff_sensor_data_t> as Sensor_0_Read;
 
   uses interface SensorCtrl as Sensor_1_Ctrl;
-  uses interface AdcSetup as Sensor_1_Setup;
+  uses interface Z1Setup as Sensor_1_Setup;
   uses interface Read<ff_sensor_data_t> as Sensor_1_Read;
  
   /* Serial Interfaces */ 
@@ -95,8 +95,8 @@ bool busy_serial;
 command error_t Mgmt.start() {
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
-	if ((TOS_NODE_ID == call phidgetAdcAppParams.get_destination()) || 
-	        (NODE == call phidgetAdcAppParams.get_destination())) {
+	if ((TOS_NODE_ID == call phidgetZ1AppParams.get_destination()) || 
+	        (NODE == call phidgetZ1AppParams.get_destination())) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
@@ -213,7 +213,7 @@ event void Timer.fired() {
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 event void SerialSplitControl.stopDone(error_t errot){}
 event void SerialSplitControl.startDone(error_t error) {}
-event void phidgetAdcAppParams.receive_status(uint16_t status_flag) {}
+event void phidgetZ1AppParams.receive_status(uint16_t status_flag) {}
 
 void clean_sensor_record(uint8_t id) {
 
@@ -257,7 +257,7 @@ void prepare_network_message(uint8_t id) {
 	}
 
 	q.len = sensors[id].len;
-	q.addr = call phidgetAdcAppParams.get_destination();
+	q.addr = call phidgetZ1AppParams.get_destination();
 	q.msg = sensors[id].msg;
 
 	call NetworkQueue.enqueue(q);
@@ -329,19 +329,19 @@ task void setup_app() {
 	/* initialize sensors */
 	uint8_t i;
 
-	sensors[0].sample_count = call phidgetAdcAppParams.get_s1_sampleCount();
-	sensors[0].freq = call phidgetAdcAppParams.get_s1_freq();
+	sensors[0].sample_count = call phidgetZ1AppParams.get_s1_sampleCount();
+	sensors[0].freq = call phidgetZ1AppParams.get_s1_freq();
 	sensors[0].seqno = 0;
 	sensors[0].msg = NULL;
 	call Sensor_0_Ctrl.setRate(sensors[0].freq);
-	call Sensor_0_Setup.set_input_channel(call phidgetAdcAppParams.get_s1_inputChannel());
+	call Sensor_0_Setup.set_input_channel(call phidgetZ1AppParams.get_s1_inputChannel());
 
-	sensors[1].sample_count = call phidgetAdcAppParams.get_s2_sampleCount();
-	sensors[1].freq = call phidgetAdcAppParams.get_s2_freq();
+	sensors[1].sample_count = call phidgetZ1AppParams.get_s2_sampleCount();
+	sensors[1].freq = call phidgetZ1AppParams.get_s2_freq();
 	sensors[1].seqno = 0;
 	sensors[1].msg = NULL;
 	call Sensor_1_Ctrl.setRate(sensors[1].freq);
-	call Sensor_1_Setup.set_input_channel(call phidgetAdcAppParams.get_s2_inputChannel());
+	call Sensor_1_Setup.set_input_channel(call phidgetZ1AppParams.get_s2_inputChannel());
 
 	for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
 		clean_sensor_record(i);

@@ -99,7 +99,6 @@ command error_t Read.read() {
 event void Timer.fired() {
 	call Battery.read();
 	call Resource.request();
-	call Resource.release();
 }
 
 event void Resource.granted() {
@@ -112,6 +111,7 @@ async event error_t Msp430Adc12SingleChannel.singleDataReady(uint16_t data) {
 	s *= battery;
 	s /= 4096;    
 	raw_data = s;
+	call Resource.release();
 	post signal_readDone();
 	return 0;
 }
