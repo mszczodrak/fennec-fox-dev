@@ -44,11 +44,11 @@ module phidgetZ1AppP {
   uses interface ModuleStatus as NetworkStatus;
 
   uses interface SensorCtrl as Sensor_0_Ctrl;
-  uses interface Z1Setup as Sensor_0_Setup;
+  uses interface AdcSetup as Sensor_0_Setup;
   uses interface Read<ff_sensor_data_t> as Sensor_0_Read;
 
   uses interface SensorCtrl as Sensor_1_Ctrl;
-  uses interface Z1Setup as Sensor_1_Setup;
+  uses interface AdcSetup as Sensor_1_Setup;
   uses interface Read<ff_sensor_data_t> as Sensor_1_Read;
  
   /* Serial Interfaces */ 

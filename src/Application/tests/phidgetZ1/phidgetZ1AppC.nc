@@ -71,15 +71,15 @@ implementation {
   components LedsC;
   phidgetZ1AppP.Leds -> LedsC;
 
-  components new phidget_adc_driverC() as PhidgetZ1Driver_0;
-  phidgetZ1AppP.Sensor_0_Ctrl -> PhidgetZ1Driver_0.SensorCtrl;
-  phidgetZ1AppP.Sensor_0_Setup -> PhidgetZ1Driver_0.Z1Setup;
-  phidgetZ1AppP.Sensor_0_Read -> PhidgetZ1Driver_0.Read;
+  components new phidget_adc_driverC() as PhidgetAdcDriver_0;
+  phidgetZ1AppP.Sensor_0_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
+  phidgetZ1AppP.Sensor_0_Setup -> PhidgetAdcDriver_0.AdcSetup;
+  phidgetZ1AppP.Sensor_0_Read -> PhidgetAdcDriver_0.Read;
 
-  components new phidget_adc_driverC() as PhidgetZ1Driver_1;
-  phidgetZ1AppP.Sensor_1_Ctrl -> PhidgetZ1Driver_1.SensorCtrl;
-  phidgetZ1AppP.Sensor_1_Setup -> PhidgetZ1Driver_1.Z1Setup;
-  phidgetZ1AppP.Sensor_1_Read -> PhidgetZ1Driver_1.Read;
+  components new phidget_adc_driverC() as PhidgetAdcDriver_1;
+  phidgetZ1AppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
+  phidgetZ1AppP.Sensor_1_Setup -> PhidgetAdcDriver_1.AdcSetup;
+  phidgetZ1AppP.Sensor_1_Read -> PhidgetAdcDriver_1.Read;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);

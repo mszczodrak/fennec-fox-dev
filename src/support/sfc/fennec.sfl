@@ -21,6 +21,17 @@ use application phidget_adc $(FENNEC_FOX_LIB)/Application/tests/phidgetAdc (
 	uint8_t s2_sampleCount = 0,
 	uint16_t destination = 0)
 
+use application phidget_z1 $(FENNEC_FOX_LIB)/Application/tests/phidgetZ1 (
+	uint32_t temp_freq = 0,
+	uint8_t temp_sampleCount = 0,
+	uint32_t s1_freq = 0, 
+	uint8_t s1_inputChannel = 0,
+	uint8_t s1_sampleCount = 0,
+	uint32_t s2_freq = 0, 
+	uint8_t s2_inputChannel = 0,
+	uint8_t s2_sampleCount = 0,
+	uint16_t destination = 0)
+
 use application phidget_lam $(FENNEC_FOX_LIB)/Application/tests/phidgetLightAndMotion (
 	uint32_t s1_freq = 0, 
 	uint8_t s1_inputChannel = 0,
