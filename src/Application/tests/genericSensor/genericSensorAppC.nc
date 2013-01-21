@@ -60,7 +60,8 @@ implementation {
   //components new sht11temp_0_driverC() as GenericSensorC;
   //components new sht11hum_0_driverC() as GenericSensorC;
   //components new s1087_0_driverC() as GenericSensorC;
-  components new s1087_01_0_driverC() as GenericSensorC;
+  //components new s1087_01_0_driverC() as GenericSensorC;
+  components new tmp102_0_driverC() as GenericSensorC;
 
   genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
   genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;

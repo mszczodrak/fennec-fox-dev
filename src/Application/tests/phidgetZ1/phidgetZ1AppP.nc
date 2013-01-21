@@ -43,13 +43,19 @@ module phidgetZ1AppP {
   uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   uses interface ModuleStatus as NetworkStatus;
 
-  uses interface SensorCtrl as Sensor_0_Ctrl;
-  uses interface AdcSetup as Sensor_0_Setup;
-  uses interface Read<ff_sensor_data_t> as Sensor_0_Read;
+  uses interface SensorCtrl as Temperature_Ctrl;
+  uses interface SensorInfo as Temperature_Info;
+  uses interface Read<ff_sensor_data_t> as Temperature_Read;
 
   uses interface SensorCtrl as Sensor_1_Ctrl;
+  uses interface SensorInfo as Sensor_1_Info;
   uses interface AdcSetup as Sensor_1_Setup;
   uses interface Read<ff_sensor_data_t> as Sensor_1_Read;
+
+  uses interface SensorCtrl as Sensor_2_Ctrl;
+  uses interface SensorInfo as Sensor_2_Info;
+  uses interface AdcSetup as Sensor_2_Setup;
+  uses interface Read<ff_sensor_data_t> as Sensor_2_Read;
  
   /* Serial Interfaces */ 
   uses interface AMSend as SerialAMSend;
@@ -107,8 +113,8 @@ command error_t Mgmt.start() {
 
 command error_t Mgmt.stop() {
 	call Timer.stop();
-	call Sensor_0_Ctrl.setRate(0);
 	call Sensor_1_Ctrl.setRate(0);
+	call Sensor_2_Ctrl.setRate(0);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -189,7 +195,7 @@ event void SerialAMSend.sendDone(message_t *msg, error_t error) {
 	post send_serial_message();
 }
 
-event void Sensor_0_Read.readDone(error_t error, ff_sensor_data_t data) {
+event void Temperature_Read.readDone(error_t error, ff_sensor_data_t data) {
 	if (error == SUCCESS) {
 		/* sends packet if data count equals sampleCount, 
 		 * else appends data to the buffer */
@@ -202,8 +208,17 @@ event void Sensor_1_Read.readDone(error_t error, ff_sensor_data_t data) {
 	if (error == SUCCESS) {
 		/* sends packet if data count equals sampleCount, 
 		 * else appends data to the buffer */
-		//call Leds.led2Toggle();
+		//call Leds.led1Toggle();
 		save_sensor_data(*(uint16_t*)data.raw, 1);
+	}
+}
+
+event void Sensor_2_Read.readDone(error_t error, ff_sensor_data_t data) {
+	if (error == SUCCESS) {
+		/* sends packet if data count equals sampleCount, 
+		 * else appends data to the buffer */
+		//call Leds.led2Toggle();
+		save_sensor_data(*(uint16_t*)data.raw, 2);
 	}
 }
 
@@ -329,19 +344,25 @@ task void setup_app() {
 	/* initialize sensors */
 	uint8_t i;
 
-	sensors[0].sample_count = call phidgetZ1AppParams.get_s1_sampleCount();
-	sensors[0].freq = call phidgetZ1AppParams.get_s1_freq();
+	sensors[0].sample_count = call phidgetZ1AppParams.get_temp_sampleCount();
+	sensors[0].freq = call phidgetZ1AppParams.get_temp_freq();
 	sensors[0].seqno = 0;
 	sensors[0].msg = NULL;
-	call Sensor_0_Ctrl.setRate(sensors[0].freq);
-	call Sensor_0_Setup.set_input_channel(call phidgetZ1AppParams.get_s1_inputChannel());
+	call Temperature_Ctrl.setRate(sensors[0].freq);
 
-	sensors[1].sample_count = call phidgetZ1AppParams.get_s2_sampleCount();
-	sensors[1].freq = call phidgetZ1AppParams.get_s2_freq();
+	sensors[1].sample_count = call phidgetZ1AppParams.get_s1_sampleCount();
+	sensors[1].freq = call phidgetZ1AppParams.get_s1_freq();
 	sensors[1].seqno = 0;
 	sensors[1].msg = NULL;
 	call Sensor_1_Ctrl.setRate(sensors[1].freq);
-	call Sensor_1_Setup.set_input_channel(call phidgetZ1AppParams.get_s2_inputChannel());
+	call Sensor_1_Setup.set_input_channel(call phidgetZ1AppParams.get_s1_inputChannel());
+
+	sensors[2].sample_count = call phidgetZ1AppParams.get_s2_sampleCount();
+	sensors[2].freq = call phidgetZ1AppParams.get_s2_freq();
+	sensors[2].seqno = 0;
+	sensors[2].msg = NULL;
+	call Sensor_2_Ctrl.setRate(sensors[2].freq);
+	call Sensor_2_Setup.set_input_channel(call phidgetZ1AppParams.get_s2_inputChannel());
 
 	for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
 		clean_sensor_record(i);

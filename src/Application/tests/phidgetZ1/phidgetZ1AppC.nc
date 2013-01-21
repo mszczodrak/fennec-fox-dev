@@ -71,15 +71,22 @@ implementation {
   components LedsC;
   phidgetZ1AppP.Leds -> LedsC;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_0;
-  phidgetZ1AppP.Sensor_0_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
-  phidgetZ1AppP.Sensor_0_Setup -> PhidgetAdcDriver_0.AdcSetup;
-  phidgetZ1AppP.Sensor_0_Read -> PhidgetAdcDriver_0.Read;
+  components new tmp102_0_driverC() as TemperatureSensorC;
+  phidgetZ1AppP.Temperature_Ctrl -> TemperatureSensorC.SensorCtrl;
+  phidgetZ1AppP.Temperature_Info -> TemperatureSensorC.SensorInfo;
+  phidgetZ1AppP.Temperature_Read -> TemperatureSensorC.Read;
 
   components new phidget_adc_driverC() as PhidgetAdcDriver_1;
   phidgetZ1AppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
   phidgetZ1AppP.Sensor_1_Setup -> PhidgetAdcDriver_1.AdcSetup;
+  phidgetZ1AppP.Sensor_1_Info -> PhidgetAdcDriver_1.SensorInfo;
   phidgetZ1AppP.Sensor_1_Read -> PhidgetAdcDriver_1.Read;
+
+  components new phidget_adc_driverC() as PhidgetAdcDriver_2;
+  phidgetZ1AppP.Sensor_2_Ctrl -> PhidgetAdcDriver_2.SensorCtrl;
+  phidgetZ1AppP.Sensor_2_Setup -> PhidgetAdcDriver_2.AdcSetup;
+  phidgetZ1AppP.Sensor_2_Info -> PhidgetAdcDriver_2.SensorInfo;
+  phidgetZ1AppP.Sensor_2_Read -> PhidgetAdcDriver_2.Read;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);
