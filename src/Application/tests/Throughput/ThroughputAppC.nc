@@ -56,6 +56,10 @@ implementation {
   components new TimerMilliC() as TimerImp;
   ThroughputAppP.Timer -> TimerImp;
 
+  /* Creating a queue for sending messages over the network interface */
+  components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
+  ThroughputAppP.NetworkQueue -> NetworkQueueC;
+
   /* Creating a queue for sending messages over the serial interface */
   components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
   ThroughputAppP.SerialQueue -> SerialQueueC;

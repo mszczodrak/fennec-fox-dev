@@ -26,42 +26,49 @@
  */
 
 module ThroughputAppP {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
+provides interface Module;
 
-  uses interface ThroughputAppParams ;
+uses interface ThroughputAppParams ;
 
-  /* Network interfaces */
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+/* Network interfaces */
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
-  /* Serial Interfaces */ 
-  uses interface AMSend as SerialAMSend;
-  uses interface AMPacket as SerialAMPacket;
-  uses interface Packet as SerialPacket;
-  uses interface Receive as SerialReceive;
-  uses interface SplitControl as SerialSplitControl;
+/* Serial Interfaces */ 
+uses interface AMSend as SerialAMSend;
+uses interface AMPacket as SerialAMPacket;
+uses interface Packet as SerialPacket;
+uses interface Receive as SerialReceive;
+uses interface SplitControl as SerialSplitControl;
 
-  uses interface Timer<TMilli> as Timer;
-  uses interface Leds;
+uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 
-  /* Serial Queue */
-  uses interface Queue<msg_queue_t> as SerialQueue;
+/* Network Queue */
+uses interface Queue<msg_queue_t> as NetworkQueue;
 
-  /* Message Pool */
-  uses interface Pool<message_t> as MessagePool;
+/* Serial Queue */
+uses interface Queue<msg_queue_t> as SerialQueue;
+
+/* Message Pool */
+uses interface Pool<message_t> as MessagePool;
 
 }
 
 implementation {
 
 bool busy_serial;
+
 task void send_serial_message();
+task void send_network_message();
+void prepare_network_message();
+
 uint32_t seqno = 0;
 
 /**
@@ -89,10 +96,61 @@ command error_t Mgmt.stop() {
 }
 
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+        /* we do not check for error, if failed to send a message, we drop
+         * that message anyway
+         */
+        msg_queue_t nm = call NetworkQueue.dequeue();
+        call MessagePool.put(nm.msg);
+        nm.msg = NULL;
+        nm.len = 0;
+        nm.addr = 0;
+
+        post send_network_message();
+}
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	return msg;
+        message_t *serial_message;
+        app_data_t *serial_data_payload;
+        msg_queue_t sm;
+
+        if (call MessagePool.empty()) {
+        /* well, there is not more memory space ... maybe increase pool queue */
+                call Leds.led0On();
+                return msg;
+        }
+
+        serial_message = call MessagePool.get();
+        if (serial_message == NULL) {
+        /* something went wrong.... this should never happen */
+                call Leds.led0On();
+                return msg;
+        }
+
+        serial_data_payload = (app_data_t*)
+                        call SerialAMSend.getPayload(serial_message, len);
+
+        /* Copy the message data starting from the seqno field
+         * (for app_data_t it is the beginning of the message */
+        memcpy(serial_data_payload, payload, len);
+
+        /* Check if there is a space in queue */
+        if (call SerialQueue.full()) {
+                /* Queue is full, give up sending the serial message */
+                call Leds.led0On();
+                call MessagePool.put(serial_message);
+                return msg;
+        }
+
+        /* Just add the message to the queue and wait */
+        sm.msg = serial_message;
+        sm.len = len;
+        sm.addr = AM_BROADCAST_ADDR;
+        call SerialQueue.enqueue(sm);
+
+        post send_serial_message();
+
+        return msg;
 }
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
@@ -114,55 +172,64 @@ event void SerialAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event void Timer.fired() {
-        message_t *serial_message;
-        app_data_t *serial_data_payload;
-        msg_queue_t sm;
-	seqno++;
-
-        if (call MessagePool.empty()) {
-        /* well, there is not more memory space ... maybe increase pool queue */
-                call Leds.led0On();
-		return;
-        }
-
-        serial_message = call MessagePool.get();
-        if (serial_message == NULL) {
-        /* something went wrong.... this should never happen */
-                call Leds.led0On();
-		return;
-        }
-
-        serial_data_payload = (app_data_t*)
-		call SerialAMSend.getPayload(serial_message, sizeof(app_data_t) 
-					+ call ThroughputAppParams.get_size());
-
-	/* set serial message content */
-	serial_data_payload->src = TOS_NODE_ID;
-	serial_data_payload->seqno = seqno;
-	serial_data_payload->freq = call ThroughputAppParams.get_freq();
-	memset(serial_data_payload->data, 0, call ThroughputAppParams.get_size());
-
-        /* Check if there is a space in queue */
-        if (call SerialQueue.full()) {
-                /* Queue is full, give up sending the serial message */
-                call Leds.led0On();
-                call MessagePool.put(serial_message);
-                return;
-        }
-
-        /* Just add the message to the queue and wait */
-        sm.msg = serial_message;
-        sm.len = sizeof(app_data_t) + call ThroughputAppParams.get_size();
-        sm.addr = AM_BROADCAST_ADDR;
-        call SerialQueue.enqueue(sm);
-
-        post send_serial_message();
+	prepare_network_message();
 }
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 event void SerialSplitControl.stopDone(error_t errot){}
 event void SerialSplitControl.startDone(error_t error) {}
 event void ThroughputAppParams.receive_status(uint16_t status_flag) {}
+
+void prepare_network_message() {
+        message_t *network_message;
+        app_data_t *network_data_payload;
+        msg_queue_t nm;
+        seqno++;
+
+        if (call MessagePool.empty()) {
+        /* well, there is not more memory space ... maybe increase pool queue */
+                call Leds.led0On();
+                return;
+        }
+
+        network_message = call MessagePool.get();
+        if (network_message == NULL) {
+        /* something went wrong.... this should never happen */
+                call Leds.led0On();
+                return;
+        }
+
+        network_data_payload = (app_data_t*)
+                call NetworkAMSend.getPayload(network_message, sizeof(app_data_t)
+                                        + call ThroughputAppParams.get_size());
+
+        /* set network message content */
+	if (call ThroughputAppParams.get_destination() == NODE) {
+        	network_data_payload->src = TOS_NODE_ID;
+	} else {
+        	network_data_payload->src = call ThroughputAppParams.get_destination();
+	}
+        network_data_payload->seqno = seqno;
+        network_data_payload->freq = call ThroughputAppParams.get_freq();
+        memset(network_data_payload->data, 0, call ThroughputAppParams.get_size());
+
+        /* Check if there is a space in queue */
+        if (call NetworkQueue.full()) {
+                /* Queue is full, give up sending the serial message */
+                call Leds.led0On();
+                call MessagePool.put(network_message);
+                return;
+        }
+
+        /* Just add the message to the queue and wait */
+        nm.msg = network_message;
+        nm.len = sizeof(app_data_t) + call ThroughputAppParams.get_size();
+        nm.addr = AM_BROADCAST_ADDR;
+        call NetworkQueue.enqueue(nm);
+
+        post send_network_message();
+}
+
 
 task void send_serial_message() {
 	msg_queue_t *sm;
@@ -187,6 +254,22 @@ task void send_serial_message() {
 	} else {
 		busy_serial = TRUE;
 	}
+}
+
+task void send_network_message() {
+        msg_queue_t *nm;
+
+        /* Check if there is anything to send */
+        if (call NetworkQueue.empty()) {
+                return;
+        }
+
+        nm = call NetworkQueue.headptr();
+
+        if (call NetworkAMSend.send(nm->addr, nm->msg, nm->len) != SUCCESS) {
+                /* Failed to send */
+                signal NetworkAMSend.sendDone(nm->msg, FAIL);
+        }
 }
 
 
