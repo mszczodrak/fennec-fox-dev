@@ -59,7 +59,7 @@ ff_sensor_data_t return_data;
 norace error_t status = SUCCESS;
 norace uint32_t sequence = 0;
 uint32_t freq = 0;
-
+norace bool busy = FALSE;
 
 enum {
         NUM_CLIENTS = uniqueCount(UQ_TMP102)
@@ -145,6 +145,7 @@ command error_t SensorCtrl.setRate[uint8_t id](uint32_t newRate) {
         clients[id].read = 0;
         clients[id].rate = newRate;
         post new_freq();
+
         return SUCCESS;
 }
 
@@ -159,8 +160,10 @@ command error_t Read.read[uint8_t id]() {
 }
 
 event void Timer.fired() {
+	if (busy == TRUE) return;
+	busy = TRUE;
 	post getMeasurement();
-	call TimerSensor.startOneShot(100);
+	call TimerSensor.startOneShot(2);
 }
 
 void write_to_i2c() {
@@ -168,7 +171,9 @@ void write_to_i2c() {
 	pointer = TMP102_TEMPREG;
 	i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP),
                         TMP102_ADDRESS, 1, &pointer);
+
 	if (i2c_err) {
+		busy = FALSE;
 		call Resource.release();
 	}
 }
@@ -204,6 +209,7 @@ async event void I2CBasicAddr.readDone(error_t error, uint16_t addr,
 		tmp = tmp + data[1];
 		tmp = tmp >> 4;
 	}
+	busy = FALSE;
 	call Resource.release();
 	atomic raw_data = tmp;
 	post data_ready();
@@ -218,6 +224,7 @@ async event void I2CBasicAddr.writeDone(error_t error, uint16_t addr,
 	i2c_err = call I2CBasicAddr.read((I2C_START | I2C_STOP),  
 			TMP102_ADDRESS, 2, temperaturebuff);
 	if (i2c_err) {
+		busy = FALSE;
 		call Resource.release();
 	}
 }   

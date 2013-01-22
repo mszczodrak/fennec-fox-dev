@@ -348,6 +348,7 @@ task void setup_app() {
 	sensors[0].freq = call phidgetZ1AppParams.get_temp_freq();
 	sensors[0].seqno = 0;
 	sensors[0].msg = NULL;
+
 	call Temperature_Ctrl.setRate(sensors[0].freq);
 
 	sensors[1].sample_count = call phidgetZ1AppParams.get_s1_sampleCount();
