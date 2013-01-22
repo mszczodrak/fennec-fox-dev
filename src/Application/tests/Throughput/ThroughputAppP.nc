@@ -1,5 +1,5 @@
 /*
- *  Serial Test Application module for Fennec Fox platform.
+ *  Throughput Test Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,17 +19,17 @@
  */
 
 /*
- * Application: Serial Test Application Module
+ * Application: Throughput Test Application Module
  * Author: Marcin Szczodrak
  * Date: 1/21/2013
  * Last Modified: 1/21/2013
  */
 
-module SerialAppP {
+module ThroughputAppP {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface SerialAppParams ;
+  uses interface ThroughputAppParams ;
 
   /* Network interfaces */
   uses interface AMSend as NetworkAMSend;
@@ -40,20 +40,6 @@ module SerialAppP {
   uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   uses interface ModuleStatus as NetworkStatus;
 
-  uses interface SensorCtrl as Temperature_Ctrl;
-  uses interface SensorInfo as Temperature_Info;
-  uses interface Read<ff_sensor_data_t> as Temperature_Read;
-
-  uses interface SensorCtrl as Sensor_1_Ctrl;
-  uses interface SensorInfo as Sensor_1_Info;
-  uses interface AdcSetup as Sensor_1_Setup;
-  uses interface Read<ff_sensor_data_t> as Sensor_1_Read;
-
-  uses interface SensorCtrl as Sensor_2_Ctrl;
-  uses interface SensorInfo as Sensor_2_Info;
-  uses interface AdcSetup as Sensor_2_Setup;
-  uses interface Read<ff_sensor_data_t> as Sensor_2_Read;
- 
   /* Serial Interfaces */ 
   uses interface AMSend as SerialAMSend;
   uses interface AMPacket as SerialAMPacket;
@@ -75,19 +61,23 @@ module SerialAppP {
 implementation {
 
 bool busy_serial;
+task void send_serial_message();
+uint32_t seqno = 0;
 
 /**
   * starting point for this module
   */
 command error_t Mgmt.start() {
+	seqno = 0;
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
-	if ((TOS_NODE_ID == call SerialAppParams.get_destination()) || 
-	        (NODE == call SerialAppParams.get_destination())) {
+	if ((TOS_NODE_ID == call ThroughputAppParams.get_destination()) || 
+	        (NODE == call ThroughputAppParams.get_destination())) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
 
+	call Timer.startPeriodic(call ThroughputAppParams.get_freq());
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -127,38 +117,42 @@ event void Timer.fired() {
         message_t *serial_message;
         app_data_t *serial_data_payload;
         msg_queue_t sm;
+	seqno++;
 
         if (call MessagePool.empty()) {
         /* well, there is not more memory space ... maybe increase pool queue */
                 call Leds.led0On();
-                return msg;
+		return;
         }
 
         serial_message = call MessagePool.get();
         if (serial_message == NULL) {
         /* something went wrong.... this should never happen */
                 call Leds.led0On();
-                return msg;
+		return;
         }
 
         serial_data_payload = (app_data_t*)
-                        call SerialAMSend.getPayload(serial_message, len);
+		call SerialAMSend.getPayload(serial_message, sizeof(app_data_t) 
+					+ call ThroughputAppParams.get_size());
 
-        /* Copy the message data starting from the seqno field
-         * (for app_data_t it is the beginning of the message */
-        memcpy(serial_data_payload, payload, len);
+	/* set serial message content */
+	serial_data_payload->src = TOS_NODE_ID;
+	serial_data_payload->seqno = seqno;
+	serial_data_payload->freq = call ThroughputAppParams.get_freq();
+	memset(serial_data_payload->data, 0, call ThroughputAppParams.get_size());
 
         /* Check if there is a space in queue */
         if (call SerialQueue.full()) {
                 /* Queue is full, give up sending the serial message */
                 call Leds.led0On();
-                call MessagePool.put(msg);
-                return msg;
+                call MessagePool.put(serial_message);
+                return;
         }
 
         /* Just add the message to the queue and wait */
         sm.msg = serial_message;
-        sm.len = len;
+        sm.len = sizeof(app_data_t) + call ThroughputAppParams.get_size();
         sm.addr = AM_BROADCAST_ADDR;
         call SerialQueue.enqueue(sm);
 
@@ -168,7 +162,7 @@ event void Timer.fired() {
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 event void SerialSplitControl.stopDone(error_t errot){}
 event void SerialSplitControl.startDone(error_t error) {}
-event void SerialAppParams.receive_status(uint16_t status_flag) {}
+event void ThroughputAppParams.receive_status(uint16_t status_flag) {}
 
 task void send_serial_message() {
 	msg_queue_t *sm;

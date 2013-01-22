@@ -156,7 +156,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	if (call SerialQueue.full()) {
 		/* Queue is full, give up sending the serial message */
 		call Leds.led0On();
-		call MessagePool.put(msg);
+		call MessagePool.put(serial_message);
 		return msg;
 	}
 

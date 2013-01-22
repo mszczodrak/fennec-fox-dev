@@ -1,5 +1,5 @@
 /*
- *  Phidget Z1 Application module for Fennec Fox platform.
+ *  Throughput Test Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,14 +19,15 @@
  */
 
 /*
- * Application: Phidget Z1 Application Module
+ * Application: Throughput Test Application Module
  * Author: Marcin Szczodrak
- * Date: 8/20/2010
- * Last Modified: 12/28/2012
+ * Date: 1/21/2013
+ * Last Modified: 1/21/2013
  */
 
-#ifndef __PhidgetZ1_APP_H_
-#define __PhidgetZ1_APP_H_
+
+#ifndef __THROUGHPUT_APP_H_
+#define __THROUGHPUT_APP_H_
 
 #define APP_MAX_NUMBER_OF_SENSORS	3
 #define APP_NETWORK_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS + 3
@@ -38,10 +39,6 @@ typedef nx_struct app_data_t {
   nx_uint16_t src;    		/* address of the node sending sensor samples */
   nx_uint32_t seqno;		/* message sequence number */
   nx_uint32_t freq;		/* sampling frequency (ms) */
-  nx_uint8_t sid;		/* sensor ID */
-				/* IDs are encoded following the declarations 
-				 * from the file src/Fennec/ff_sensors.h */
-  nx_uint8_t num;		/* number of samples */
   nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
 } app_data_t;
 

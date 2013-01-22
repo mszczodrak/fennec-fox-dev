@@ -1,5 +1,5 @@
 /*
- *  Serial Test Application module for Fennec Fox platform.
+ *  Throughput Test Application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,19 +19,19 @@
  */
 
 /*
- * Application: Serial Test Application Module
+ * Application: Throughput Test Application Module
  * Author: Marcin Szczodrak
  * Date: 1/21/2013
  * Last Modified: 1/21/2013
  */
 
-#include "SerialApp.h"
+#include "ThroughputApp.h"
 
-configuration SerialAppC {
+configuration ThroughputAppC {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface SerialAppParams;
+  uses interface ThroughputAppParams;
    
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -48,41 +48,41 @@ implementation {
     SERIAL_PORT = 1
   };
  
-  components SerialAppP;
-  Mgmt = SerialAppP;
-  Module = SerialAppP;
-  SerialAppParams = SerialAppP;
+  components ThroughputAppP;
+  Mgmt = ThroughputAppP;
+  Module = ThroughputAppP;
+  ThroughputAppParams = ThroughputAppP;
   
   components new TimerMilliC() as TimerImp;
-  SerialAppP.Timer -> TimerImp;
+  ThroughputAppP.Timer -> TimerImp;
 
   /* Creating a queue for sending messages over the serial interface */
   components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
-  SerialAppP.SerialQueue -> SerialQueueC;
+  ThroughputAppP.SerialQueue -> SerialQueueC;
 
   /* Creating a pool of message memory for network and serial communication */
   components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
-  SerialAppP.MessagePool -> MessagePoolC;
+  ThroughputAppP.MessagePool -> MessagePoolC;
 
   components LedsC;
-  SerialAppP.Leds -> LedsC;
+  ThroughputAppP.Leds -> LedsC;
 
   components SerialActiveMessageC;
   components new SerialAMSenderC(SERIAL_PORT);
   components new SerialAMReceiverC(SERIAL_PORT);
-  SerialAppP.SerialAMSend -> SerialAMSenderC.AMSend;
-  SerialAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-  SerialAppP.SerialPacket -> SerialAMSenderC.Packet; 
-  SerialAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
-  SerialAppP.SerialReceive -> SerialAMReceiverC.Receive;
+  ThroughputAppP.SerialAMSend -> SerialAMSenderC.AMSend;
+  ThroughputAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+  ThroughputAppP.SerialPacket -> SerialAMSenderC.Packet; 
+  ThroughputAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+  ThroughputAppP.SerialReceive -> SerialAMReceiverC.Receive;
  
-  NetworkAMSend = SerialAppP.NetworkAMSend;
-  NetworkReceive = SerialAppP.NetworkReceive;
-  NetworkSnoop = SerialAppP.NetworkSnoop;
-  NetworkAMPacket = SerialAppP.NetworkAMPacket;
-  NetworkPacket = SerialAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = SerialAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = SerialAppP.NetworkStatus;
+  NetworkAMSend = ThroughputAppP.NetworkAMSend;
+  NetworkReceive = ThroughputAppP.NetworkReceive;
+  NetworkSnoop = ThroughputAppP.NetworkSnoop;
+  NetworkAMPacket = ThroughputAppP.NetworkAMPacket;
+  NetworkPacket = ThroughputAppP.NetworkPacket;
+  NetworkPacketAcknowledgements = ThroughputAppP.NetworkPacketAcknowledgements;
+  NetworkStatus = ThroughputAppP.NetworkStatus;
 
 }
 

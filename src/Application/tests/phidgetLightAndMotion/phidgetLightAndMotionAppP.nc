@@ -155,7 +155,7 @@ implementation {
     if (call SerialQueue.full()) {
       /* Queue is full, give up sending the serial message */
       call Leds.led0On();
-      call MessagePool.put(msg);
+      call MessagePool.put(serial_message);
       return msg;
     }
 
