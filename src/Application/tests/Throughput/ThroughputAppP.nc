@@ -114,6 +114,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
         app_data_t *serial_data_payload;
         msg_queue_t sm;
 
+
         if (call MessagePool.empty()) {
         /* well, there is not more memory space ... maybe increase pool queue */
                 call Leds.led0On();
@@ -172,6 +173,8 @@ event void SerialAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event void Timer.fired() {
+	call Leds.led2Toggle();
+        seqno++;
 	prepare_network_message();
 }
 
@@ -184,7 +187,6 @@ void prepare_network_message() {
         message_t *network_message;
         app_data_t *network_data_payload;
         msg_queue_t nm;
-        seqno++;
 
         if (call MessagePool.empty()) {
         /* well, there is not more memory space ... maybe increase pool queue */
@@ -204,10 +206,9 @@ void prepare_network_message() {
                                         + call ThroughputAppParams.get_size());
 
         /* set network message content */
-	if (call ThroughputAppParams.get_destination() == NODE) {
+        network_data_payload->src = call ThroughputAppParams.get_destination();
+	if (network_data_payload->src == NODE) {
         	network_data_payload->src = TOS_NODE_ID;
-	} else {
-        	network_data_payload->src = call ThroughputAppParams.get_destination();
 	}
         network_data_payload->seqno = seqno;
         network_data_payload->freq = call ThroughputAppParams.get_freq();
@@ -224,7 +225,7 @@ void prepare_network_message() {
         /* Just add the message to the queue and wait */
         nm.msg = network_message;
         nm.len = sizeof(app_data_t) + call ThroughputAppParams.get_size();
-        nm.addr = AM_BROADCAST_ADDR;
+        nm.addr = network_data_payload->src;
         call NetworkQueue.enqueue(nm);
 
         post send_network_message();
@@ -240,7 +241,6 @@ task void send_serial_message() {
 	}
 
 	if (busy_serial == TRUE) {
-		//call Leds.led0On();
 		return;
 	}
 
