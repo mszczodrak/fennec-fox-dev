@@ -70,11 +70,13 @@ task void send_network_message();
 void prepare_network_message();
 
 uint32_t seqno = 0;
+bool init = 1;
 
 /**
   * starting point for this module
   */
 command error_t Mgmt.start() {
+	init = 1;
 	seqno = 0;
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
@@ -84,7 +86,7 @@ command error_t Mgmt.start() {
 		call SerialSplitControl.start();
 	}
 
-	call Timer.startPeriodic(call ThroughputAppParams.get_freq());
+	call Timer.startOneShot(10000);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -173,6 +175,10 @@ event void SerialAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event void Timer.fired() {
+	if (init) {
+		call Timer.startPeriodic(call ThroughputAppParams.get_freq());
+		init = 0;
+	}
 	call Leds.led2Toggle();
         seqno++;
 	prepare_network_message();
