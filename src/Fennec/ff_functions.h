@@ -62,9 +62,12 @@ uint32_t gcdr (uint32_t a, uint32_t b )@C() {
 
 /* Debugging functions */
 bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
+
+#ifdef FENNEC_LOGGER
 void insertLog(uint16_t from, uint16_t message);
 void cleanLog();
 void printLog();
+#endif
 
 
 
