@@ -212,10 +212,7 @@ void prepare_network_message() {
                                         + call ThroughputAppParams.get_size());
 
         /* set network message content */
-        network_data_payload->src = call ThroughputAppParams.get_destination();
-	if (network_data_payload->src == NODE) {
-        	network_data_payload->src = TOS_NODE_ID;
-	}
+        network_data_payload->src = TOS_NODE_ID;
         network_data_payload->seqno = seqno;
         network_data_payload->freq = call ThroughputAppParams.get_freq();
         memset(network_data_payload->data, 0, call ThroughputAppParams.get_size());
@@ -231,7 +228,7 @@ void prepare_network_message() {
         /* Just add the message to the queue and wait */
         nm.msg = network_message;
         nm.len = sizeof(app_data_t) + call ThroughputAppParams.get_size();
-        nm.addr = network_data_payload->src;
+        nm.addr = call ThroughputAppParams.get_destination();
         call NetworkQueue.enqueue(nm);
 
         post send_network_message();
