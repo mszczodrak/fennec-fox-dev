@@ -1,4 +1,4 @@
-configuration LoggerP {
+configuration LoggerC {
 provides interface Logger;
 }
 

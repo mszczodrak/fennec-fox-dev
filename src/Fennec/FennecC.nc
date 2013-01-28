@@ -33,6 +33,10 @@ implementation {
   components SerialStartC;
 #endif
 
+#ifdef FENNEC_LOGGER
+  components LoggerC;
+#endif
+
   components FennecPacketC;
 }
 
