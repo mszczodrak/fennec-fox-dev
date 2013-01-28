@@ -45,8 +45,6 @@ conf_t get_active_state();
 
 void check_configuration(conf_t conf_id);
 
-bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
-
 metadata_t* getMetadata( message_t* msg );
 
 
@@ -56,12 +54,17 @@ bool PacketTimeSyncOffsetisSet(message_t* msg);
 
 uint8_t PacketTimeSyncOffsetget(message_t* msg);
 
-
 uint32_t gcdr (uint32_t a, uint32_t b )@C() {
         if ( a==0 ) return b;
         return gcdr ( b%a, a );
 }
 
+
+/* Debugging functions */
+bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
+void insertLog(uint16_t from, uint16_t message);
+void cleanLog();
+void printLog();
 
 
 

@@ -17,6 +17,18 @@ typedef struct log_msg {
 
 log_msg_t logs[MAX_NUM_LOGS];
 
+void insertLog(uint16_t from, uint16_t message) @C() {
+	call Logger.insert(from, message);
+}
+
+void cleanLog() @C() {
+	call Logger.clean();
+}
+
+void printLog() @C() {
+	call Logger.print();
+}
+
 
 command void Logger.insert(uint16_t from, uint16_t message) {
 	logs[log_count].time = call Timer.getNow();
