@@ -14,102 +14,94 @@
 #define SAME_MSG_COUNTER_THRESHOLD 1
 
 module ControlUnitAppP @safe() {
-  provides interface SimpleStart;
-  provides interface Mgmt;
+provides interface SimpleStart;
+provides interface Mgmt;
 
-  uses interface ControlUnitAppParams;
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface ControlUnitAppParams;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
-  uses interface Mgmt as FennecEngine;
-  uses interface Mgmt as EventsMgmt;
+uses interface Mgmt as FennecEngine;
+uses interface Mgmt as EventsMgmt;
 
-  uses interface EventCache;
-  uses interface PolicyCache;
+uses interface EventCache;
+uses interface PolicyCache;
 
-  uses interface Random;
-  uses interface Timer<TMilli> as Timer;
+uses interface Random;
+uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
 
-  uint16_t configuration_id = UNKNOWN_CONFIGURATION;
-  uint16_t configuration_seq = 0;
-  uint8_t same_msg_counter = 0;
-  uint16_t resend_confs = POLICY_RESEND_RECONF;
-  bool busy_sending = FALSE;
+uint16_t configuration_id = UNKNOWN_CONFIGURATION;
+uint16_t configuration_seq = 0;
+uint8_t same_msg_counter = 0;
+uint16_t resend_confs = POLICY_RESEND_RECONF;
+bool busy_sending = FALSE;
 
-  message_t confmsg;
+message_t confmsg;
 
-  norace uint8_t status = S_NONE;
-  task void sendConfigurationMsg();
+norace uint8_t status = S_NONE;
+task void sendConfigurationMsg();
 
-  task void report_new_configuration() {
-    dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_AND_RECONFIGURE,
-                                configuration_id, configuration_seq);
-  }
+task void report_new_configuration() {
+  dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_AND_RECONFIGURE,
+                              configuration_id, configuration_seq);
+}
 
-  void start_policy_send() {
-    atomic same_msg_counter = 0;
-    call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
-  }
+void start_policy_send() {
+	atomic same_msg_counter = 0;
+	call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
+}
 
-  void reset_control() {
-    resend_confs = POLICY_RESEND_RECONF;
-    start_policy_send();
-  }
+void reset_control() {
+	resend_confs = POLICY_RESEND_RECONF;
+	start_policy_send();
+}
 
-  void set_new_state(state_t conf, uint16_t seq) {
-    configuration_seq = seq;
-    configuration_id = conf;
-    call Timer.stop();
-    //printf("set new state %d\n", status);
-    //printfflush();
-    switch(status) {
-      case S_STOPPED:
-        status = S_STARTING;
-        resend_confs = POLICY_RESEND_RECONF;
-        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-        call FennecEngine.start();
-        break;
+void set_new_state(state_t conf, uint16_t seq) {
+	configuration_seq = seq;
+	configuration_id = conf;
+	call Timer.stop();
+	switch(status) {
+	case S_STOPPED:
+		status = S_STARTING;
+		resend_confs = POLICY_RESEND_RECONF;
+		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call FennecEngine.start();
+		break;
 
-      case S_NONE:
-        resend_confs = 0;  /* skip resending at the first time */
-        call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-        call FennecEngine.start();
-        break;
+	case S_NONE:
+		resend_confs = 0;  /* skip resending at the first time */
+		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call FennecEngine.start();
+		break;
 
-      case S_COMPLETED:
-        status = S_INIT;
-        post report_new_configuration();
-        call EventsMgmt.stop();
-        reset_control();
-        break;
+	case S_COMPLETED:
+		status = S_INIT;
+		post report_new_configuration();
+		call EventsMgmt.stop();
+		reset_control();
+		break;
 
-      case S_INIT:
-        status = S_STOPPING;
-        //printf("stopping\n");
-        //printfflush();
-        call EventCache.clearMask();
-        call FennecEngine.stop();
-        break;
-    }
-  }
+	case S_INIT:
+		status = S_STOPPING;
+		call EventCache.clearMask();
+		call FennecEngine.stop();
+		break;
+	}
+}
 
-  task void continue_reconfiguration() {
+task void continue_reconfiguration() {
     atomic if (resend_confs > 0) resend_confs--;
     if (resend_confs > 0) {
-      //printf("continue %d\n", resend_confs);
-      //printfflush();
       start_policy_send();
     } else {
-      //printf("that's it continue %d\n", resend_confs);
-      //printfflush();
       switch(status) {
         case S_INIT:
           set_new_state(configuration_id, configuration_seq);
