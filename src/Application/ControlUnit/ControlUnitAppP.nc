@@ -261,6 +261,7 @@ event void FennecEngine.startDone(error_t err) {
 		post report_new_configuration();
 
 	case S_STARTING:
+		insertLog(F_CONTROL_UNIT, S_STARTED);
 		status = S_STARTED;
 		call PolicyCache.set_active_configuration(configuration_id);
 		post continue_reconfiguration();
