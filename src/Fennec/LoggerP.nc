@@ -41,13 +41,15 @@ command void Logger.clean() {
 	for (log_count = 0; log_count < MAX_NUM_LOGS; log_count++) {
 		memset(logs + log_count, 0, sizeof(log_msg_t));
 	}
+	log_count = 0;
 }
 
 command void Logger.print() {
 	uint16_t i;
 	for (i = 0; i < log_count; i++) {
-		printf("%d %d %d\n", logs[i].time, logs[i].from, logs[i].msg);
+		printf("%lu %d %d\n", logs[i].time, logs[i].from, logs[i].msg);
 	}
+	printf("\n");
 	printfflush();
 	call Logger.clean();
 }
