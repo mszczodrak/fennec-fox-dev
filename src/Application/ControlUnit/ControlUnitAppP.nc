@@ -83,6 +83,7 @@ void set_new_state(state_t conf, uint16_t seq) {
 		break;
 
 	case S_COMPLETED:
+		insertLog(F_CONTROL_UNIT, S_INIT);
 		status = S_INIT;
 		post report_new_configuration();
 		call EventsMgmt.stop();
@@ -98,38 +99,38 @@ void set_new_state(state_t conf, uint16_t seq) {
 }
 
 task void continue_reconfiguration() {
-    atomic if (resend_confs > 0) resend_confs--;
-    if (resend_confs > 0) {
-      start_policy_send();
-    } else {
-      switch(status) {
-        case S_INIT:
-          set_new_state(configuration_id, configuration_seq);
-          break;
+	atomic if (resend_confs > 0) resend_confs--;
+	if (resend_confs > 0) {
+		start_policy_send();
+		return;
+	}
 
-        case S_STARTED:
-          call PolicyCache.set_active_configuration(configuration_id);
-          call EventsMgmt.start();
-          call FennecEngine.start();
-          break;
+	switch(status) {
+	case S_INIT:
+		set_new_state(configuration_id, configuration_seq);
+		break;
 
-        case S_COMPLETED:
-          /* stay here... no change */
+	case S_STARTED:
+		call PolicyCache.set_active_configuration(configuration_id);
+		call EventsMgmt.start();
+		call FennecEngine.start();
+		break;
 
-        default:
-      }
-    }
-  }
+	case S_COMPLETED:
+		/* stay here... no change */
 
+	default:
+	}
+}
 
-  command void SimpleStart.start() {
-    configuration_id = UNKNOWN_CONFIGURATION;
-    configuration_seq = 0;
-    confmsg.conf = POLICY_CONFIGURATION;
-    busy_sending = FALSE;
-    status = S_NONE;
-    signal SimpleStart.startDone(SUCCESS);
-  }
+command void SimpleStart.start() {
+	configuration_id = UNKNOWN_CONFIGURATION;
+	configuration_seq = 0;
+	confmsg.conf = POLICY_CONFIGURATION;
+	busy_sending = FALSE;
+	status = S_NONE;
+	signal SimpleStart.startDone(SUCCESS);
+}
 
   event void PolicyCache.newConf(conf_t new_conf) {
     //printf("new conf %d\n", new_conf);
