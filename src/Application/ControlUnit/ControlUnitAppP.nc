@@ -289,36 +289,36 @@ event void FennecEngine.stopDone(error_t err) {
 
 
 task void sendConfigurationMsg() {
-    nx_struct FFControl *cu_msg;
-    confmsg.conf = POLICY_CONFIGURATION;
+	nx_struct FFControl *cu_msg;
+	confmsg.conf = POLICY_CONFIGURATION;
 
-    cu_msg = (nx_struct FFControl*) 
-    call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
+	cu_msg = (nx_struct FFControl*) 
+	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
    
-    if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      post continue_reconfiguration();
-      return;
-    }
+	if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
+		post continue_reconfiguration();
+		return;
+	}
 
-    if (cu_msg == NULL) {
-      post continue_reconfiguration();
-      return;
-    }
+	if (cu_msg == NULL) {
+		post continue_reconfiguration();
+		return;
+	}
 
-    cu_msg->seq = (nx_uint16_t) configuration_seq;
-    cu_msg->conf_id = (nx_uint8_t) configuration_id;
+	cu_msg->seq = (nx_uint16_t) configuration_seq;
+	cu_msg->conf_id = (nx_uint8_t) configuration_id;
 
-    // get crc of the FFControl and address
-    cu_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq,
+	// get crc of the FFControl and address
+	cu_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq,
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
-    if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      start_policy_send();
-      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
-    } else {
-      busy_sending = TRUE;
-      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
-    }
+	if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
+		start_policy_send();
+		//dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
+	} else {
+		busy_sending = TRUE;
+		//dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
+	}
 }
 
 
