@@ -111,6 +111,7 @@ void set_new_state(state_t conf, uint16_t seq) {
 task void continue_reconfiguration() {
 	atomic if (resend_confs > 0) resend_confs--;
 	if (resend_confs > 0) {
+		insertLog(F_CONTROL_UNIT, S_TRANSMITTING);
 		start_policy_send();
 		return;
 	}
@@ -297,7 +298,7 @@ event void FennecEngine.stopDone(error_t err) {
 
 	switch(status) {
 	case S_STOPPING:
-		insertLog(F_RADIO, S_STOPPED);
+		insertLog(F_CONTROL_UNIT, S_STOPPED);
 		/* The configuration has been stopped, now stop the control state */
 		status = S_STOPPED;
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
