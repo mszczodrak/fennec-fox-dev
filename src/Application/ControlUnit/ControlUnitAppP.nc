@@ -297,6 +297,7 @@ event void FennecEngine.stopDone(error_t err) {
 
 	switch(status) {
 	case S_STOPPING:
+		insertLog(F_RADIO, S_STOPPED);
 		/* The configuration has been stopped, now stop the control state */
 		status = S_STOPPED;
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);

@@ -59,6 +59,7 @@ implementation {
     }
     signal SplitControl.startDone(err);
     if (mgmt == TRUE) {
+      insertLog(F_RADIO, S_STARTED);
       signal Mgmt.startDone(err);
       mgmt = FALSE;
     }
@@ -76,22 +77,25 @@ implementation {
     state = S_STOPPED;
     signal SplitControl.stopDone(SUCCESS);
     if (mgmt == TRUE) {
+      insertLog(F_RADIO, S_STOPPED);
       signal Mgmt.stopDone(SUCCESS);
       mgmt = FALSE;
     }
   }
 
-  command error_t Mgmt.start() {
-    mgmt = TRUE;
-    call SplitControl.start();
-    return SUCCESS;
-  }
+command error_t Mgmt.start() {
+	insertLog(F_RADIO, S_STARTING);
+	mgmt = TRUE;
+	call SplitControl.start();
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    mgmt = TRUE;
-    call SplitControl.stop();
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	insertLog(F_RADIO, S_STOPPING);
+	mgmt = TRUE;
+	call SplitControl.stop();
+	return SUCCESS;
+}
 
   command error_t SplitControl.start() {
     err = SUCCESS;

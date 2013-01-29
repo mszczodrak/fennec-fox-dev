@@ -148,12 +148,12 @@ implementation {
   }
 
 task void start_done() {
-	insertLog(F_MAC, F_STARTED);
+	insertLog(F_MAC, S_STARTED);
 	signal Mgmt.startDone(err);
 }
 
 task void stop_done() {
-	insertLog(F_MAC, F_STOPPED);
+	insertLog(F_MAC, S_STOPPED);
 	signal Mgmt.stopDone(err);
 }
 
