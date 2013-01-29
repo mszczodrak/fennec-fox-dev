@@ -91,6 +91,9 @@ void set_new_state(state_t conf, uint16_t seq) {
 		break;
 
 	case S_INIT:
+		/* Here we are done with sending control messages and we
+		 * moving into stopping all modules of the stack */
+		insertLog(F_CONTROL_UNIT, S_STOPPING);
 		status = S_STOPPING;
 		call EventCache.clearMask();
 		call FennecEngine.stop();
@@ -132,119 +135,113 @@ command void SimpleStart.start() {
 	signal SimpleStart.startDone(SUCCESS);
 }
 
-  event void PolicyCache.newConf(conf_t new_conf) {
-    //printf("new conf %d\n", new_conf);
-    //printfflush();
-    set_new_state(new_conf, configuration_seq + 1);
-  }
+event void PolicyCache.newConf(conf_t new_conf) {
+	insertLog(F_CONTROL_UNIT, S_NEW_STATE);
+	set_new_state(new_conf, configuration_seq + 1);
+}
 
-  event void PolicyCache.wrong_conf() {
-    dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
+event void PolicyCache.wrong_conf() {
+	dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
 					configuration_id, configuration_seq);
-    reset_control();
-  }
+	reset_control();
+}
 
-  event void EventsMgmt.stopDone(error_t err) {
-    if (err != SUCCESS) { 
-      call EventsMgmt.stop();
-    }
-  }
+event void EventsMgmt.stopDone(error_t err) {
+	if (err != SUCCESS) { 
+		call EventsMgmt.stop();
+	}
+}
 
-  event void EventsMgmt.startDone(error_t err) {
-    if (err != SUCCESS) { 
-      call EventsMgmt.start();
-    }
-  }
+event void EventsMgmt.startDone(error_t err) {
+	if (err != SUCCESS) { 
+		call EventsMgmt.start();
+	}
+}
 
-  event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
+event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
 
-    if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
+	if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
-      goto done_receive;
-    }
+		goto done_receive;
+	}
 
-    //dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
+	//dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
-    if (!call PolicyCache.valid_policy_msg(cu_msg)) {
-      goto done_receive;
-    }
+	if (!call PolicyCache.valid_policy_msg(cu_msg)) {
+		goto done_receive;
+	}
 
-    if ((status != S_STARTED) && (status != S_COMPLETED)) {
-      goto done_receive;
-    }
+	if ((status != S_STARTED) && (status != S_COMPLETED)) {
+		goto done_receive;
+	}
 
-    // First time receives Configuration
-    if ( configuration_seq == CONFIGURATION_SEQ_UNKNOWN && cu_msg->seq != CONFIGURATION_SEQ_UNKNOWN ) {
-      goto reconfigure;
-    } 
+	// First time receives Configuration
+	if ( configuration_seq == CONFIGURATION_SEQ_UNKNOWN && cu_msg->seq != CONFIGURATION_SEQ_UNKNOWN ) {
+		goto reconfigure;
+	} 
 
-    /* Received configuration message with unknown sequence */
-    if ( cu_msg->seq == CONFIGURATION_SEQ_UNKNOWN && configuration_seq != CONFIGURATION_SEQ_UNKNOWN ) {
-      goto reset;
-    }
+	/* Received configuration message with unknown sequence */
+	if ( cu_msg->seq == CONFIGURATION_SEQ_UNKNOWN && configuration_seq != CONFIGURATION_SEQ_UNKNOWN ) {
+		goto reset;
+	}
 
-    /* Received configuration message with lower sequence */
-    if (cu_msg->seq < configuration_seq) {
-      goto reset;
-    }
+	/* Received configuration message with lower sequence */
+	if (cu_msg->seq < configuration_seq) {
+		goto reset;
+	}
 
-    /* Received configuration message with the same sequence number */
-    if (cu_msg->seq == configuration_seq) {
+	/* Received configuration message with the same sequence number */
+	if (cu_msg->seq == configuration_seq) {
       
-      if (cu_msg->conf_id == configuration_id) {
-        /* Received same sequence with the same configuration id */
-	same_msg_counter++;
-	
-        goto done_receive;
-      }
+		/* Received same sequence with the same configuration id */
+		if (cu_msg->conf_id == configuration_id) {
+			same_msg_counter++;
+			goto done_receive;
+		}
 
-      /* there is an inconsistency in a network */
-      configuration_seq += (call Random.rand16() % POLICY_RAND_MOD) + POLICY_RAND_OFFSET;
-      goto reset;
-    }
+		/* there is an inconsistency in a network */
+		configuration_seq += (call Random.rand16() % POLICY_RAND_MOD) + POLICY_RAND_OFFSET;
+		goto reset;
+	}
 
-    /* Received configuration message with larger sequence number */
-    if (cu_msg->seq > configuration_seq) {
-      goto reconfigure;
-    }
-
+	/* Received configuration message with larger sequence number */
+	if (cu_msg->seq > configuration_seq) {
+		goto reconfigure;
+	}
 
 reset:
-    reset_control();
-    goto done_receive;
+	reset_control();
+	goto done_receive;
 
 reconfigure:
-    if ((cu_msg->conf_id != configuration_id) && 
-	(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
-      set_new_state(cu_msg->conf_id, cu_msg->seq);
-    }
+	if ((cu_msg->conf_id != configuration_id) && 
+		(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
+		set_new_state(cu_msg->conf_id, cu_msg->seq);
+	}
 
 done_receive:
-    return msg;
-  }
+	return msg;
+}
 
-  event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-    atomic busy_sending = FALSE;
-    if (error != SUCCESS) {
-      //printf("sendDone failed\n");
-      //printfflush();
-      //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
-      start_policy_send();
-    } else {
-      post continue_reconfiguration();
-    }
-  }
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+	atomic busy_sending = FALSE;
+	if (error != SUCCESS) {
+		start_policy_send();
+	} else {
+		post continue_reconfiguration();
+	}
+}
 
-  event void Timer.fired() {
-    if (busy_sending == TRUE) {
-      start_policy_send();
-    } else {
-      post sendConfigurationMsg();
-    }
-  }
+event void Timer.fired() {
+	if (busy_sending == TRUE) {
+		start_policy_send();
+	} else {
+		post sendConfigurationMsg();
+	}
+}
 
-  event void FennecEngine.startDone(error_t err) {
+event void FennecEngine.startDone(error_t err) {
     if (err == SUCCESS) {
       switch(status) {
         case S_NONE:
