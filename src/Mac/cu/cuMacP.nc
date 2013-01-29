@@ -75,47 +75,37 @@ implementation {
 
   uint8_t localSendId;
 
-//  enum {
-//    S_IDLE,
-//    S_SENDING,
-//  };
+command error_t Mgmt.start() {
+	insertLog(F_MAC, S_STARTING);
+	if (status == S_STARTED) {
+		insertLog(F_MAC, S_STARTED);
+		signal Mgmt.startDone(SUCCESS);
+		return SUCCESS;
+	}
 
+	localSendId = call Random.rand16();
 
-  /* Functions */
+	if (call RadioControl.start() == FAIL) {
+		signal Mgmt.startDone(FAIL);
+	}
+	status = S_STARTING;
+	return SUCCESS;
+}
 
-  command error_t Mgmt.start() {
-    if (status == S_STARTED) {
-      dbg("Mac", "Mac cu already started\n");
-      signal Mgmt.startDone(SUCCESS);
-      return SUCCESS;
-    }
+command error_t Mgmt.stop() {
+	insertLog(F_MAC, S_STOPPING);
+	if (status == S_STOPPED) {
+		insertLog(F_MAC, S_STOPPED);
+		signal Mgmt.stopDone(SUCCESS);
+		return SUCCESS;
+	}
 
-    localSendId = call Random.rand16();
-
-    dbg("Mac", "Mac cu starts\n");
-
-    if (call RadioControl.start() == FAIL) {
-      signal Mgmt.startDone(FAIL);
-    }
-    status = S_STARTING;
-    return SUCCESS;
-  }
-
-  command error_t Mgmt.stop() {
-    if (status == S_STOPPED) {
-      dbg("Mac", "Mac cu  already stopped\n");
-      signal Mgmt.stopDone(SUCCESS);
-      return SUCCESS;
-    }
-
-    dbg("Mac", "Mac cu stops\n");
-
-    if (call RadioControl.stop() == FAIL) {
-      signal Mgmt.stopDone(FAIL);
-    }
-    status = S_STOPPING;
-    return SUCCESS;
-  }
+	if (call RadioControl.stop() == FAIL) {
+		signal Mgmt.stopDone(FAIL);
+	}
+	status = S_STOPPING;
+	return SUCCESS;
+}
 
 
   event void RadioControl.startDone(error_t err) {
@@ -126,6 +116,7 @@ implementation {
         dbg("Mac", "Mac cu got RadioControl startDone\n");
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
+	insertLog(F_MAC, S_STARTED);
         signal Mgmt.startDone(SUCCESS);
       }
     }
@@ -140,6 +131,7 @@ implementation {
         dbg("Mac", "Mac cu got RadioControl stopDone\n");
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
+	insertLog(F_MAC, S_STOPPED);
         signal Mgmt.stopDone(SUCCESS);
       }
     }

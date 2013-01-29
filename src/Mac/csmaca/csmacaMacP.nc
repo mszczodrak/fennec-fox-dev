@@ -73,9 +73,9 @@ uint8_t localSendId;
 
 command error_t Mgmt.start() {
 	error_t e;
-	insertLog(F_NETWORK, S_STARTING);
+	insertLog(F_MAC, S_STARTING);
 	if (status == S_STARTED) {
-		insertLog(F_NETWORK, S_STARTED);
+		insertLog(F_MAC, S_STARTED);
 		signal Mgmt.startDone(SUCCESS);
 		return SUCCESS;
 	}
@@ -100,9 +100,9 @@ command error_t Mgmt.start() {
 
 command error_t Mgmt.stop() {
 	error_t e;
-	insertLog(F_NETWORK, S_STOPPING);
+	insertLog(F_MAC, S_STOPPING);
 	if (status == S_STOPPED) {
-		insertLog(F_NETWORK, S_STOPPED);
+		insertLog(F_MAC, S_STOPPED);
 		signal Mgmt.stopDone(SUCCESS);
 		return SUCCESS;
 	}
@@ -131,7 +131,7 @@ command error_t Mgmt.stop() {
       if (status == S_STARTING) {
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
-	insertLog(F_NETWORK, S_STARTED);
+	insertLog(F_MAC, S_STARTED);
         signal Mgmt.startDone(SUCCESS);
       }
     }
@@ -145,7 +145,7 @@ command error_t Mgmt.stop() {
       if (status == S_STOPPING) {
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
-	insertLog(F_NETWORK, S_STOPPED);
+	insertLog(F_MAC, S_STOPPED);
         signal Mgmt.stopDone(SUCCESS);
       }
     }

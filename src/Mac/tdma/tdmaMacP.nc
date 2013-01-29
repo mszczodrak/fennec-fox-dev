@@ -147,13 +147,15 @@ implementation {
     }
   }
 
-  task void start_done() {
-    signal Mgmt.startDone(err);
-  }
+task void start_done() {
+	insertLog(F_MAC, F_STARTED);
+	signal Mgmt.startDone(err);
+}
 
-  task void stop_done() {
-    signal Mgmt.stopDone(err);
-  }
+task void stop_done() {
+	insertLog(F_MAC, F_STOPPED);
+	signal Mgmt.stopDone(err);
+}
 
   task void try_send_network_message() {
     tdma_header_t* header;
@@ -180,70 +182,72 @@ implementation {
     }
   }
 
-  command error_t Mgmt.start() {
-    busy_sending = FALSE;
-    local = global = 0;
-    radio_status = OFF;
-    received_beacon = TRUE;
+command error_t Mgmt.start() {
+	insertLog(F_MAC, S_STARTING);
 
-    active_time = call tdmaMacParams.get_active_time();
-    sleep_time = call tdmaMacParams.get_sleep_time();
-    tdma_time = active_time + sleep_time;
+	busy_sending = FALSE;
+	local = global = 0;
+	radio_status = OFF;
+	received_beacon = TRUE;
 
-    if (status == S_STARTED) {
-      err = SUCCESS;
-      post start_done();
-      return SUCCESS;
-    }
+	active_time = call tdmaMacParams.get_active_time();
+	sleep_time = call tdmaMacParams.get_sleep_time();
+	tdma_time = active_time + sleep_time;
 
-    localSendId = call Random.rand16();
+	if (status == S_STARTED) {
+		err = SUCCESS;
+		post start_done();
+		return SUCCESS;
+	}
 
-    err = call RadioControl.start();
+	localSendId = call Random.rand16();
 
-    if (err == FAIL) {
-      post start_done();
-      return FAIL;
-    }
+	err = call RadioControl.start();
 
-    call TimerControl.start();
+	if (err == FAIL) {
+		post start_done();
+		return FAIL;
+	}
+
+	call TimerControl.start();
 
 //    if (call TimeSyncInfo.getNumEntries() < MGMT_MIN_ENTRIES) {
-    if (the_init) {
-      call PeriodTimer.startOneShot(tdma_time * 3);
-      the_init = 0;
-    } else {
-      call PeriodTimer.startOneShot(tdma_time);
-    }
+	if (the_init) {
+		call PeriodTimer.startOneShot(tdma_time * 3);
+		the_init = 0;
+	} else {
+		call PeriodTimer.startOneShot(tdma_time);
+	}
 
-    status = S_STARTING;
-    return SUCCESS;
-  }
+	status = S_STARTING;
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    call PeriodTimer.stop();
-    call FrameTimer.stop();
-    call TimerControl.stop();
+command error_t Mgmt.stop() {
+	insertLog(F_MAC, S_STOPPING);
 
-    if (status == S_STOPPED) {
-      err = SUCCESS;
-      post stop_done();
-      return SUCCESS;
-    }
+	call PeriodTimer.stop();
+	call FrameTimer.stop();
+	call TimerControl.stop();
 
-    err = call RadioControl.stop();
+	if (status == S_STOPPED) {
+		err = SUCCESS;
+		post stop_done();
+		return SUCCESS;
+	}
 
-    if (err == FAIL) {
-      err = FAIL;
-      post stop_done();
-    }
+	err = call RadioControl.stop();
 
-    status = S_STOPPING;
-    return SUCCESS;
-  }
+	if (err == FAIL) {
+		err = FAIL;
+		post stop_done();
+	}
+
+	status = S_STOPPING;
+	return SUCCESS;
+}
 
   event void RadioControl.startDone(error_t error) {
-    //printf("radio start done\n");
-    //printfflush();
     switch(error){
     case EALREADY:
       radio_status = ON;
