@@ -50,7 +50,7 @@ norace uint8_t status = S_NONE;
 task void sendConfigurationMsg();
 
 task void report_new_configuration() {
-  dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_AND_RECONFIGURE,
+	dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_AND_RECONFIGURE,
                               configuration_id, configuration_seq);
 }
 
@@ -242,67 +242,53 @@ event void Timer.fired() {
 }
 
 event void FennecEngine.startDone(error_t err) {
-    if (err == SUCCESS) {
-      switch(status) {
-        case S_NONE:
-          //printf("FE start done S_NONE\n");
-          //printfflush();
-          status = S_STARTING;
-	  post report_new_configuration();
+	if (err != SUCCESS) {
+		call FennecEngine.start();
+		return;
+	}
 
-        case S_STARTING:
-          //printf("FE start done S_STARTING\n");
-          //printfflush();
-          status = S_STARTED;
-          call PolicyCache.set_active_configuration(configuration_id);
-          post continue_reconfiguration();
-          break;
+	switch(status) {
+	case S_NONE:
+		status = S_STARTING;
+		post report_new_configuration();
 
-        case S_STARTED:
-          //printf("FE start done S_STARTED\n");
-          //printfflush();
-          status = S_COMPLETED;
-          break;
+	case S_STARTING:
+		status = S_STARTED;
+		call PolicyCache.set_active_configuration(configuration_id);
+		post continue_reconfiguration();
+		break;
+
+	case S_STARTED:
+		status = S_COMPLETED;
+		break;
 
 	default:
-          //printf("FE start done def %d\n", status);
-          //printfflush();
+	}
+}
 
-      }
-    } else {
-      call FennecEngine.start();
-    }
-  }
+event void FennecEngine.stopDone(error_t err) {
+	if (err != SUCCESS) {
+		call FennecEngine.stop();
+		return;
+	}
 
-  event void FennecEngine.stopDone(error_t err) {
-    if (err == SUCCESS) {
-      switch(status) {
-        case S_STOPPING:
-          //printf("FE stop done\n");
-          //printfflush();
-          status = S_STOPPED;
-          call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-          call FennecEngine.stop();
-          break;
+	switch(status) {
+	case S_STOPPING:
+		status = S_STOPPED;
+		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call FennecEngine.stop();
+		break;
       
-        case S_STOPPED:
-          //printf("FE stop done - S_STOPPED\n");
-          //printfflush();
-          set_new_state(configuration_id, configuration_seq);
-          break;
+	case S_STOPPED:
+		set_new_state(configuration_id, configuration_seq);
+		break;
 
-        default:
-          //printf("FE stop done def %d\n", status);
-          //printfflush();
-
-      }
-    } else {
-      call FennecEngine.stop();
-    }
-  }
+	default:
+	}
+}
 
 
-  task void sendConfigurationMsg() {
+task void sendConfigurationMsg() {
     nx_struct FFControl *cu_msg;
     confmsg.conf = POLICY_CONFIGURATION;
 
@@ -310,8 +296,6 @@ event void FennecEngine.startDone(error_t err) {
     call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
    
     if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
-      //printf("send conf ??\n");
-      //printfflush();
       post continue_reconfiguration();
       return;
     }
@@ -329,37 +313,27 @@ event void FennecEngine.startDone(error_t err) {
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
     if (call NetworkAMSend.send(AM_BROADCAST_ADDR, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
-      //printf("failed to send ??\n");
-      //printfflush();
       start_policy_send();
       //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG_FAILED, configuration_id, configuration_seq);
     } else {
-      //printf("network sent ??\n");
-      //printfflush();
       busy_sending = TRUE;
       //dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
     }
-  }
+}
 
-  event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return msg;
-  }
 
-  event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
-  }
+command error_t Mgmt.start() {
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-  command error_t Mgmt.start() {
-    signal Mgmt.startDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    signal Mgmt.stopDone(SUCCESS);
-    return SUCCESS;
-  }
-
-  event void ControlUnitAppParams.receive_status(uint16_t status_flag) {
-  }
-
+event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {return msg;}
+event void ControlUnitAppParams.receive_status(uint16_t status_flag) {}
+event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 
 }
