@@ -70,8 +70,11 @@ void set_new_state(state_t conf, uint16_t seq) {
 	call Timer.stop();
 	switch(status) {
 	case S_STOPPED:
+		/* Everything is stopped */
+		insertLog(F_CONTROL_UNIT, S_STARTING);
 		status = S_STARTING;
 		resend_confs = POLICY_RESEND_RECONF;
+		/* Start Policy State */
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
 		call FennecEngine.start();
 		break;
@@ -83,6 +86,7 @@ void set_new_state(state_t conf, uint16_t seq) {
 		break;
 
 	case S_COMPLETED:
+		/* Here we start our journey once a new state is detected */
 		insertLog(F_CONTROL_UNIT, S_INIT);
 		status = S_INIT;
 		post report_new_configuration();
@@ -114,6 +118,10 @@ task void continue_reconfiguration() {
 		break;
 
 	case S_STARTED:
+		/* at this point the control stack is running, now start the rest,
+		 * set configuration to the new state and start events and the stack
+		 * itself 
+		 */
 		call PolicyCache.set_active_configuration(configuration_id);
 		call EventsMgmt.start();
 		call FennecEngine.start();
@@ -259,6 +267,8 @@ event void FennecEngine.startDone(error_t err) {
 		break;
 
 	case S_STARTED:
+		insertLog(F_CONTROL_UNIT, S_COMPLETED);
+		printLog();
 		status = S_COMPLETED;
 		break;
 
@@ -274,12 +284,14 @@ event void FennecEngine.stopDone(error_t err) {
 
 	switch(status) {
 	case S_STOPPING:
+		/* The configuration has been stopped, now stop the control state */
 		status = S_STOPPED;
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
 		call FennecEngine.stop();
 		break;
       
 	case S_STOPPED:
+		/* At this moment everything is stopped */
 		set_new_state(configuration_id, configuration_seq);
 		break;
 

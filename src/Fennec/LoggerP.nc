@@ -5,6 +5,7 @@ uses interface Alarm<T32khz,uint32_t> as Timer;
 
 implementation {
 
+#ifdef FENNEC_LOGGER
 #define MAX_NUM_LOGS 100
 
 uint16_t log_count = 0;
@@ -16,17 +17,24 @@ typedef struct log_msg {
 } log_msg_t;
 
 log_msg_t logs[MAX_NUM_LOGS];
+#endif
 
 void insertLog(uint16_t from, uint16_t message) @C() {
+#ifdef FENNEC_LOGGER
 	call Logger.insert(from, message);
+#endif
 }
 
 void cleanLog() @C() {
+#ifdef FENNEC_LOGGER
 	call Logger.clean();
+#endif
 }
 
 void printLog() @C() {
+#ifdef FENNEC_LOGGER
 	call Logger.print();
+#endif
 }
 
 
