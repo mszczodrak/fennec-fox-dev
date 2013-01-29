@@ -50,8 +50,10 @@ norace uint8_t status = S_NONE;
 task void sendConfigurationMsg();
 
 task void report_new_configuration() {
+	/*
 	dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_AND_RECONFIGURE,
                               configuration_id, configuration_seq);
+	*/
 }
 
 void start_policy_send() {
@@ -90,8 +92,9 @@ void set_new_state(state_t conf, uint16_t seq) {
 		insertLog(F_CONTROL_UNIT, S_INIT);
 		status = S_INIT;
 		post report_new_configuration();
+		insertLog(F_EVENTS, S_STOPPING);
 		call EventsMgmt.stop();
-		reset_control();
+		//reset_control();
 		break;
 
 	case S_INIT:
@@ -123,8 +126,9 @@ task void continue_reconfiguration() {
 		 * itself 
 		 */
 		call PolicyCache.set_active_configuration(configuration_id);
+		insertLog(F_EVENTS, S_STARTING);
 		call EventsMgmt.start();
-		call FennecEngine.start();
+		//call FennecEngine.start();
 		break;
 
 	case S_COMPLETED:
@@ -149,21 +153,29 @@ event void PolicyCache.newConf(conf_t new_conf) {
 }
 
 event void PolicyCache.wrong_conf() {
+	/*
 	dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
 					configuration_id, configuration_seq);
+	*/
 	reset_control();
 }
 
 event void EventsMgmt.stopDone(error_t err) {
 	if (err != SUCCESS) { 
 		call EventsMgmt.stop();
+		return;
 	}
+	insertLog(F_EVENTS, S_STOPPED);
+	reset_control();
 }
 
 event void EventsMgmt.startDone(error_t err) {
 	if (err != SUCCESS) { 
 		call EventsMgmt.start();
+		return;
 	}
+	insertLog(F_EVENTS, S_STARTED);
+	call FennecEngine.start();
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
