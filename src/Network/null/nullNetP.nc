@@ -52,17 +52,19 @@ module nullNetP {
 
 implementation {
 
-  command error_t Mgmt.start() {
-    dbg("Network", "Network null starts\n");
-    signal Mgmt.startDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.start() {
+	insertLog(F_NETWORK, S_STARTING);
+	insertLog(F_NETWORK, S_STARTED);
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    dbg("Network", "Network null stops\n");
-    signal Mgmt.stopDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	insertLog(F_NETWORK, S_STOPPING);
+	insertLog(F_NETWORK, S_STOPPED);
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
   command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     if (addr == TOS_NODE_ID) {

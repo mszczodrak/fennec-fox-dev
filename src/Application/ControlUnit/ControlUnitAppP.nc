@@ -348,11 +348,15 @@ task void sendConfigurationMsg() {
 
 
 command error_t Mgmt.start() {
+	insertLog(F_APPLICATION, S_STARTING);
+	insertLog(F_APPLICATION, S_STARTED);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
+	insertLog(F_APPLICATION, S_STOPPING);
+	insertLog(F_APPLICATION, S_STOPPED);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }

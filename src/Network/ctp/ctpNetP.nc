@@ -50,42 +50,40 @@ module ctpNetP {
 
 implementation {
 
-  command error_t Mgmt.start() {
-    call RoutingControl.start();
-    if (TOS_NODE_ID == call ctpNetParams.get_root()) {
-      call RootControl.setRoot();
-    }
+command error_t Mgmt.start() {
+	insertLog(F_NETWORK, S_STARTING);
+	call RoutingControl.start();
+	if (TOS_NODE_ID == call ctpNetParams.get_root()) {
+		call RootControl.setRoot();
+	}
 
-    dbg("Network", "Network: CTP start\n");
-    //dbgs(F_NETWORK, S_NONE, DBGS_MGMT_START, 0, 0);
+	insertLog(F_NETWORK, S_STARTED);
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-    signal Mgmt.startDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	insertLog(F_NETWORK, S_STOPPING);
+	insertLog(F_NETWORK, S_STOPPED);
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    dbg("Network", "Network: CTP stop\n");
-    //dbgs(F_NETWORK, S_NONE, DBGS_MGMT_STOP, 0, 0);
-    signal Mgmt.stopDone(SUCCESS);
-    return SUCCESS;
-  }
+event void CtpSend.sendDone(message_t* msg, error_t error) {
+	signal NetworkAMSend.sendDone(msg, error);
+}
 
-  event void CtpSend.sendDone(message_t* msg, error_t error) {
-    signal NetworkAMSend.sendDone(msg, error);
-  }
+command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	return call CtpSend.send(msg, len);
+}
 
-  command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    //dbgs(F_NETWORK, S_NONE, DBGS_GOT_SEND, 0, 0);
-    return call CtpSend.send(msg, len);
-  }
+command error_t NetworkAMSend.cancel(message_t* msg) {
+	return call CtpSend.cancel(msg);
+}
 
-  command error_t NetworkAMSend.cancel(message_t* msg) {
-    return call CtpSend.cancel(msg);
-  }
-
-  command uint8_t NetworkAMSend.maxPayloadLength() {
-   return call CtpSend.maxPayloadLength();
-  }
+command uint8_t NetworkAMSend.maxPayloadLength() {
+	return call CtpSend.maxPayloadLength();
+}
 
   command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
     return call CtpSend.getPayload(msg, len);

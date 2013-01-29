@@ -65,67 +65,63 @@ module csmacaMacP @safe() {
 
 implementation {
 
-  uint8_t status = S_STOPPED;
-  uint16_t pending_length;
-  message_t * ONE_NOK pending_message = NULL;
+uint8_t status = S_STOPPED;
+uint16_t pending_length;
+message_t * ONE_NOK pending_message = NULL;
 
-  uint8_t localSendId;
+uint8_t localSendId;
 
-//  enum {
-//    S_IDLE,
-//    S_SENDING,
-//  };
+command error_t Mgmt.start() {
+	error_t e;
+	insertLog(F_NETWORK, S_STARTING);
+	if (status == S_STARTED) {
+		insertLog(F_NETWORK, S_STARTED);
+		signal Mgmt.startDone(SUCCESS);
+		return SUCCESS;
+	}
 
+	localSendId = call Random.rand16();
 
-  /* Functions */
+	e = call RadioControl.start();
 
-  command error_t Mgmt.start() {
-    error_t e;
-    if (status == S_STARTED) {
-      signal Mgmt.startDone(SUCCESS);
-      return SUCCESS;
-    }
+	if (e == EALREADY) {
+		status = S_STARTING;
+		signal RadioControl.startDone(EALREADY);
+	}
 
-    localSendId = call Random.rand16();
+	if (e == FAIL) {
+		signal Mgmt.startDone(FAIL);
+		return FAIL;
+	}
 
-    e = call RadioControl.start();
+	status = S_STARTING;
+	return SUCCESS;
+}
 
-    if (e == EALREADY) {
-      status = S_STARTING;
-      signal RadioControl.startDone(EALREADY);
-    }
+command error_t Mgmt.stop() {
+	error_t e;
+	insertLog(F_NETWORK, S_STOPPING);
+	if (status == S_STOPPED) {
+		insertLog(F_NETWORK, S_STOPPED);
+		signal Mgmt.stopDone(SUCCESS);
+		return SUCCESS;
+	}
 
-    if (e == FAIL) {
-      signal Mgmt.startDone(FAIL);
-      return FAIL;
-    }
+	e = call RadioControl.stop();
 
-    status = S_STARTING;
-    return SUCCESS;
-  }
+	if (e == EALREADY) {
+		status = S_STOPPING;
+		signal RadioControl.stopDone(EALREADY);
+	}
 
-  command error_t Mgmt.stop() {
-    error_t e;
-    if (status == S_STOPPED) {
-      signal Mgmt.stopDone(SUCCESS);
-      return SUCCESS;
-    }
+	if (e == FAIL) {
+		signal Mgmt.stopDone(FAIL);
+		return FAIL;
+	}
 
-    e = call RadioControl.stop();
-
-    if (e == EALREADY) {
-      status = S_STOPPING;
-      signal RadioControl.stopDone(EALREADY);
-    }
-
-    if (e == FAIL) {
-      signal Mgmt.stopDone(FAIL);
-      return FAIL;
-    }
-
-    status = S_STOPPING;
-    return SUCCESS;
-  }
+	status = S_STOPPING;
+	return SUCCESS;
+}
 
 
   event void RadioControl.startDone(error_t err) {
@@ -135,6 +131,7 @@ implementation {
       if (status == S_STARTING) {
         status = S_STARTED;
         signal MacStatus.status(F_RADIO, ON);
+	insertLog(F_NETWORK, S_STARTED);
         signal Mgmt.startDone(SUCCESS);
       }
     }
@@ -148,6 +145,7 @@ implementation {
       if (status == S_STOPPING) {
         status = S_STOPPED;
         signal MacStatus.status(F_RADIO, OFF);
+	insertLog(F_NETWORK, S_STOPPED);
         signal Mgmt.stopDone(SUCCESS);
       }
     }
