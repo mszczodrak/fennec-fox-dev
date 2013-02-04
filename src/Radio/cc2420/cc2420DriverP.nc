@@ -1,4 +1,3 @@
-#include "CC2420.h"
 #include "CC2420TimeSyncMessage.h"
 #include "crc.h"
 #include "message.h"

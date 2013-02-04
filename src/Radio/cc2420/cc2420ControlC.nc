@@ -36,7 +36,6 @@
  * @version $Revision: 1.3 $ $Date: 2008/05/14 21:33:07 $
  */
 
-#include "CC2420.h"
 #include "IEEE802154.h"
 
 configuration cc2420ControlC {

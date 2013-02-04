@@ -29,6 +29,8 @@
 #ifndef __H_cc2420_RADIO__
 #define __H_cc2420_RADIO___
 
+#include "CC2420.h"
+
 enum {
         cc2420_MIN_MESSAGE_SIZE        	= 5,
         cc2420_MAX_MESSAGE_SIZE        	= 127,
