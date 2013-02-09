@@ -1,12 +1,15 @@
+#define MAX_NUM_LOGS 20
+
 module LoggerP {
+#ifdef FENNEC_LOGGER
 provides interface Logger;
 uses interface Alarm<T32khz,uint32_t> as Timer;
+#endif
 }
 
 implementation {
 
 #ifdef FENNEC_LOGGER
-#define MAX_NUM_LOGS 100
 
 uint16_t log_count = 0;
 
@@ -38,6 +41,7 @@ void printLog() @C() {
 }
 
 
+#ifdef FENNEC_LOGGER
 command void Logger.insert(uint16_t from, uint16_t message) {
 	logs[log_count].time = call Timer.getNow();
 	logs[log_count].from = from;
@@ -63,8 +67,7 @@ command void Logger.print() {
 }
 
 async event void Timer.fired() {
-
-
 }
+#endif
 
 }
