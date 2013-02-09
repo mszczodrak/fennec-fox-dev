@@ -212,7 +212,7 @@ implementation {
     }
 
     void do_init() {
-        uint8_t maxLength;
+//        uint8_t maxLength;
 //        radioOn = FALSE;
         running = FALSE;
         parentChanges = 0;
@@ -220,9 +220,9 @@ implementation {
         routeInfoInit(&routeInfo);
         routingTableInit();
         beaconMsg = call BeaconSend.getPayload(&beaconMsgBuffer, call BeaconSend.maxPayloadLength());
-        maxLength = call BeaconSend.maxPayloadLength();
-        dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
-              sizeof(beaconMsg), maxLength);
+//        maxLength = call BeaconSend.maxPayloadLength();
+//        dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
+//              sizeof(beaconMsg), maxLength);
     }
 
     command error_t Init.init() {
