@@ -50,19 +50,15 @@ implementation {
 bool on;
 
 command error_t Mgmt.start() {
-	insertLog(F_APPLICATION, S_STARTING);
 	on = 0;
 	call Timer.startPeriodic(call BlinkAppParams.get_delay());
-	insertLog(F_APPLICATION, S_STARTED);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
-	insertLog(F_APPLICATION, S_STOPPING);
 	call Timer.stop();
 	call Leds.set(0);
-	insertLog(F_APPLICATION, S_STOPPED);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }

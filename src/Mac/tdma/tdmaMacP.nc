@@ -148,12 +148,10 @@ implementation {
   }
 
 task void start_done() {
-	insertLog(F_MAC, S_STARTED);
 	signal Mgmt.startDone(err);
 }
 
 task void stop_done() {
-	insertLog(F_MAC, S_STOPPED);
 	signal Mgmt.stopDone(err);
 }
 
@@ -183,8 +181,6 @@ task void stop_done() {
   }
 
 command error_t Mgmt.start() {
-	insertLog(F_MAC, S_STARTING);
-
 	busy_sending = FALSE;
 	local = global = 0;
 	radio_status = OFF;
@@ -224,8 +220,6 @@ command error_t Mgmt.start() {
 }
 
 command error_t Mgmt.stop() {
-	insertLog(F_MAC, S_STOPPING);
-
 	call PeriodTimer.stop();
 	call FrameTimer.stop();
 	call TimerControl.stop();

@@ -73,7 +73,6 @@ void set_new_state(state_t conf, uint16_t seq) {
 	switch(status) {
 	case S_STOPPED:
 		/* Everything is stopped */
-		insertLog(F_CONTROL_UNIT, S_STARTING);
 		status = S_STARTING;
 		resend_confs = POLICY_RESEND_RECONF;
 		/* Start Policy State */
@@ -89,10 +88,8 @@ void set_new_state(state_t conf, uint16_t seq) {
 
 	case S_COMPLETED:
 		/* Here we start our journey once a new state is detected */
-		insertLog(F_CONTROL_UNIT, S_INIT);
 		status = S_INIT;
 		post report_new_configuration();
-		insertLog(F_EVENTS, S_STOPPING);
 		call EventsMgmt.stop();
 		//reset_control();
 		break;
@@ -100,7 +97,6 @@ void set_new_state(state_t conf, uint16_t seq) {
 	case S_INIT:
 		/* Here we are done with sending control messages and we
 		 * moving into stopping all modules of the stack */
-		insertLog(F_CONTROL_UNIT, S_STOPPING);
 		status = S_STOPPING;
 		call EventCache.clearMask();
 		call FennecEngine.stop();
@@ -111,7 +107,6 @@ void set_new_state(state_t conf, uint16_t seq) {
 task void continue_reconfiguration() {
 	atomic if (resend_confs > 0) resend_confs--;
 	if (resend_confs > 0) {
-		insertLog(F_CONTROL_UNIT, S_TRANSMITTING);
 		start_policy_send();
 		return;
 	}
@@ -127,7 +122,6 @@ task void continue_reconfiguration() {
 		 * itself 
 		 */
 		call PolicyCache.set_active_configuration(configuration_id);
-		insertLog(F_EVENTS, S_STARTING);
 		call EventsMgmt.start();
 		//call FennecEngine.start();
 		break;
@@ -149,7 +143,6 @@ command void SimpleStart.start() {
 }
 
 event void PolicyCache.newConf(conf_t new_conf) {
-	insertLog(F_CONTROL_UNIT, S_NEW_STATE);
 	set_new_state(new_conf, configuration_seq + 1);
 }
 
@@ -166,7 +159,6 @@ event void EventsMgmt.stopDone(error_t err) {
 		call EventsMgmt.stop();
 		return;
 	}
-	insertLog(F_EVENTS, S_STOPPED);
 	reset_control();
 }
 
@@ -175,7 +167,6 @@ event void EventsMgmt.startDone(error_t err) {
 		call EventsMgmt.start();
 		return;
 	}
-	insertLog(F_EVENTS, S_STARTED);
 	call FennecEngine.start();
 }
 
@@ -274,15 +265,12 @@ event void FennecEngine.startDone(error_t err) {
 		post report_new_configuration();
 
 	case S_STARTING:
-		insertLog(F_CONTROL_UNIT, S_STARTED);
 		status = S_STARTED;
 		call PolicyCache.set_active_configuration(configuration_id);
 		post continue_reconfiguration();
 		break;
 
 	case S_STARTED:
-		insertLog(F_CONTROL_UNIT, S_COMPLETED);
-		printLog();
 		status = S_COMPLETED;
 		break;
 
@@ -298,7 +286,6 @@ event void FennecEngine.stopDone(error_t err) {
 
 	switch(status) {
 	case S_STOPPING:
-		insertLog(F_CONTROL_UNIT, S_STOPPED);
 		/* The configuration has been stopped, now stop the control state */
 		status = S_STOPPED;
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
@@ -350,15 +337,11 @@ task void sendConfigurationMsg() {
 
 
 command error_t Mgmt.start() {
-	insertLog(F_APPLICATION, S_STARTING);
-	insertLog(F_APPLICATION, S_STARTED);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
-	insertLog(F_APPLICATION, S_STOPPING);
-	insertLog(F_APPLICATION, S_STOPPED);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
