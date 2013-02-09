@@ -51,20 +51,16 @@ module ctpNetP {
 implementation {
 
 command error_t Mgmt.start() {
-	insertLog(F_NETWORK, S_STARTING);
 	call RoutingControl.start();
 	if (TOS_NODE_ID == call ctpNetParams.get_root()) {
 		call RootControl.setRoot();
 	}
 
-	insertLog(F_NETWORK, S_STARTED);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
-	insertLog(F_NETWORK, S_STOPPING);
-	insertLog(F_NETWORK, S_STOPPED);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }

@@ -53,82 +53,78 @@ module cuNetP {
 implementation {
 
 command error_t Mgmt.start() {
-	insertLog(F_NETWORK, S_STARTING);
-	insertLog(F_NETWORK, S_STARTED);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
-	insertLog(F_NETWORK, S_STOPPING);
-	insertLog(F_NETWORK, S_STOPPED);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
-  command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-    return call MacAMSend.send(addr, msg, len);
-  }
+command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	return call MacAMSend.send(addr, msg, len);
+}
 
-  command error_t NetworkAMSend.cancel(message_t* msg) {
-    return call MacAMSend.cancel(msg);
-  }
+command error_t NetworkAMSend.cancel(message_t* msg) {
+	return call MacAMSend.cancel(msg);
+}
 
-  command uint8_t NetworkAMSend.maxPayloadLength() {
-    return call MacAMSend.maxPayloadLength();
-  }
+command uint8_t NetworkAMSend.maxPayloadLength() {
+	return call MacAMSend.maxPayloadLength();
+}
 
-  command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
-    return call MacAMSend.getPayload(msg, len);
-  }
+command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
+	return call MacAMSend.getPayload(msg, len);
+}
 
-  event void MacAMSend.sendDone(message_t *msg, error_t error) {
-    signal NetworkAMSend.sendDone(msg, error);
-  }
+event void MacAMSend.sendDone(message_t *msg, error_t error) {
+	signal NetworkAMSend.sendDone(msg, error);
+}
 
-  event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    return signal NetworkReceive.receive(msg, payload, len);
-  }
+event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return signal NetworkReceive.receive(msg, payload, len);
+}
 
-  event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return signal NetworkSnoop.receive(msg, payload, len);
-  }
+event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return signal NetworkSnoop.receive(msg, payload, len);
+}
 
-  command am_addr_t NetworkAMPacket.address() {
-    return call MacAMPacket.address();
-  }
+command am_addr_t NetworkAMPacket.address() {
+	return call MacAMPacket.address();
+}
 
-  command am_addr_t NetworkAMPacket.destination(message_t* amsg) {
-    return call MacAMPacket.destination(amsg);
-  }
+command am_addr_t NetworkAMPacket.destination(message_t* amsg) {
+	return call MacAMPacket.destination(amsg);
+}
 
-  command am_addr_t NetworkAMPacket.source(message_t* amsg) {
-    return call MacAMPacket.source(amsg);
-  }
+command am_addr_t NetworkAMPacket.source(message_t* amsg) {
+	return call MacAMPacket.source(amsg);
+}
 
-  command void NetworkAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    return call MacAMPacket.setDestination(amsg, addr);
-  }
+command void NetworkAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+	return call MacAMPacket.setDestination(amsg, addr);
+}
 
-  command void NetworkAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    return call MacAMPacket.setSource(amsg, addr);
-  }
+command void NetworkAMPacket.setSource(message_t* amsg, am_addr_t addr) {
+	return call MacAMPacket.setSource(amsg, addr);
+}
 
-  command bool NetworkAMPacket.isForMe(message_t* amsg) {
-    return call MacAMPacket.isForMe(amsg);
-  }
+command bool NetworkAMPacket.isForMe(message_t* amsg) {
+	return call MacAMPacket.isForMe(amsg);
+}
 
-  command am_id_t NetworkAMPacket.type(message_t* amsg) {
-    return call MacAMPacket.type(amsg);
-  }
+command am_id_t NetworkAMPacket.type(message_t* amsg) {
+	return call MacAMPacket.type(amsg);
+}
 
-  command void NetworkAMPacket.setType(message_t* amsg, am_id_t t) {
-    return call MacAMPacket.setType(amsg, t);
-  }
+command void NetworkAMPacket.setType(message_t* amsg, am_id_t t) {
+	return call MacAMPacket.setType(amsg, t);
+}
 
-  command am_group_t NetworkAMPacket.group(message_t* amsg) {
-    return call MacAMPacket.group(amsg);
-  }
+command am_group_t NetworkAMPacket.group(message_t* amsg) {
+	return call MacAMPacket.group(amsg);
+}
 
   command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
     return call MacAMPacket.setGroup(amsg, grp);
