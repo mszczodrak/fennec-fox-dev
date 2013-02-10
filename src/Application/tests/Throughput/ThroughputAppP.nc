@@ -86,7 +86,7 @@ command error_t Mgmt.start() {
 		call SerialSplitControl.start();
 	}
 
-	call Timer.startOneShot(10000);
+	call Timer.startOneShot(1000);
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
