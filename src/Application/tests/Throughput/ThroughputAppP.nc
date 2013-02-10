@@ -116,6 +116,10 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
         app_data_t *serial_data_payload;
         msg_queue_t sm;
 
+	if (init) {
+                return msg;
+        }
+
 
         if (call MessagePool.empty()) {
         /* well, there is not more memory space ... maybe increase pool queue */
