@@ -13,7 +13,7 @@ uses interface SimpleStart as ControlUnit;
 implementation {
 
 event void Boot.booted() {
-	call Leds.led1On();
+	//call Leds.led1On();
 	call DbgSerial.start();
 }
 
