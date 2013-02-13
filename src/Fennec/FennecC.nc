@@ -11,29 +11,35 @@ configuration FennecC {
 
 implementation {
 
-  components FennecP;
+components FennecP;
 
-  components MainC;
-  FennecP.Boot -> MainC;
+components MainC;
+FennecP.Boot -> MainC;
 
-  components RandomC;
-  FennecP.RandomStart -> RandomC;
+components RandomC;
+FennecP.RandomStart -> RandomC;
 
-  components CachesC;
-  FennecP.Caches -> CachesC;
+components CachesC;
+FennecP.Caches -> CachesC;
 
-  components ControlUnitAppC;
-  FennecP.ControlUnit -> ControlUnitAppC;
+components ControlUnitAppC;
+FennecP.ControlUnit -> ControlUnitAppC;
 
-  components FennecSerialDbgC;
-  FennecP.DbgSerial -> FennecSerialDbgC;
+components FennecSerialDbgC;
+FennecP.DbgSerial -> FennecSerialDbgC;
+
+components LedsC;
+FennecP.Leds -> LedsC;
+
+components FennecPacketC;
 
 #ifdef FENNEC_TOS_PRINTF
-  components PrintfC;
-  components SerialStartC;
+components PrintfC;
+components SerialStartC;
 #endif
 
-  components LoggerC;
-  components FennecPacketC;
+#ifdef FENNEC_LOGGER
+components LoggerC;
+#endif
 }
 
