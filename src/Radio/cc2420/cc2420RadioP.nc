@@ -102,7 +102,7 @@ command error_t SplitControl.start() {
 		state = S_STARTING;
 		if (call RadioPower.startVReg() != SUCCESS) {
 			/* added start_done when fails */
-			call Leds.led0On();
+			//call Leds.led0On();
 			post start_done();
 			err = FAIL;
 		}
@@ -111,7 +111,7 @@ command error_t SplitControl.start() {
 		post start_done();
 		return EALREADY;
 	} else if(state == S_STARTING) {
-		call Leds.led1Toggle();
+		//call Leds.led1Toggle();
 		if (++repeat_start > 2) {
 			/* added check for repeat calls */
 			call ReceiveControl.stop();
