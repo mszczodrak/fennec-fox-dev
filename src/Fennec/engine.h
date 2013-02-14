@@ -10,7 +10,7 @@ uint8_t ctrl_turn;
 
 void next_layer();
 uint16_t next_module();
-void ctrl_module(uint16_t module_id, uint8_t ctrl);
+bool ctrl_module(uint16_t module_id, uint8_t ctrl);
 void ctrl_module_done(uint8_t status);
 uint8_t ctrl_conf(uint16_t conf_id, uint8_t ctrl);
 void ctrl_conf_done(uint8_t status, uint8_t ctrl);

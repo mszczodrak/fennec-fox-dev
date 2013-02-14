@@ -48,7 +48,6 @@ implementation {
 norace uint8_t state = S_STOPPED;
 uint8_t mgmt = FALSE;
 norace error_t err;
-uint8_t repeat_start = 0;
 
 task void start_done() {
 	if (err == SUCCESS) {
@@ -98,29 +97,25 @@ command error_t Mgmt.stop() {
 command error_t SplitControl.start() {
 	err = SUCCESS;
 	if (state == S_STOPPED) {
-		repeat_start = 0;
 		state = S_STARTING;
 		if (call RadioPower.startVReg() != SUCCESS) {
 			/* added start_done when fails */
-			//call Leds.led0On();
-			post start_done();
+			state = S_STOPPED;
+			call ReceiveControl.stop();
+			call TransmitControl.stop();
+			call RadioPower.stopVReg();
 			err = FAIL;
 		}
-		return SUCCESS;
+		return err;
 	} else if(state == S_STARTED) {
 		post start_done();
 		return EALREADY;
 	} else if(state == S_STARTING) {
-		//call Leds.led1Toggle();
-		if (++repeat_start > 2) {
-			/* added check for repeat calls */
-			call ReceiveControl.stop();
-			call TransmitControl.stop();
-			call RadioPower.stopVReg();
-			state = S_STOPPED;
-			return call SplitControl.start();
-		}
-		return SUCCESS;
+		state = S_STOPPED;
+		call ReceiveControl.stop();
+		call TransmitControl.stop();
+		call RadioPower.stopVReg();
+		return FAIL;
 	}
 	return EBUSY;
 }
@@ -130,15 +125,6 @@ command error_t SplitControl.stop() {
 
 	switch(state) {
 
-	case S_STARTED:
-	case S_STARTING:
-		state = S_STOPPING;
-		if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
-		if (call TransmitControl.stop() != SUCCESS) err = FAIL;
-		if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
-		post stop_done();
-		return SUCCESS;
-
 	case S_STOPPED:
 		post stop_done();
 		return EALREADY;
@@ -147,7 +133,12 @@ command error_t SplitControl.stop() {
 		return SUCCESS;
 
 	default:
-		return EBUSY;
+		state = S_STOPPING;
+		if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+		if (call TransmitControl.stop() != SUCCESS) err = FAIL;
+		if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+		post stop_done();
+		return SUCCESS;
 	}
 }
 
