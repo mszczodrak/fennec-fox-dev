@@ -72,6 +72,9 @@ void prepare_network_message();
 uint32_t seqno = 0;
 bool init = 1;
 
+#define MIN_ADDR 1
+#define MAX_ADDR 17
+
 /**
   * starting point for this module
   */
@@ -79,6 +82,11 @@ command error_t Mgmt.start() {
 	init = 1;
 	seqno = 0;
 	busy_serial = FALSE;
+	if ((TOS_NODE_ID < MIN_ADDR) || (TOS_NODE_ID > MAX_ADDR)) {
+		signal Mgmt.startDone(SUCCESS);
+		return SUCCESS;
+	}
+
 	/* check if this node will be sending messages over the serial */
 	if ((TOS_NODE_ID == call ThroughputAppParams.get_destination()) || 
 	        (NODE == call ThroughputAppParams.get_destination())) {
