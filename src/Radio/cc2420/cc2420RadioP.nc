@@ -49,7 +49,7 @@ norace uint8_t state = S_STOPPED;
 uint8_t mgmt = FALSE;
 norace error_t err;
 
-task void start_done() {
+void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	} else {
@@ -70,7 +70,7 @@ task void finish_starting_radio() {
 	if (call RadioResource.release() != SUCCESS) err = FAIL;
 	if (call ReceiveControl.start() != SUCCESS) err = FAIL;
 	if (call TransmitControl.start() != SUCCESS) err = FAIL;
-	post start_done();
+	start_done();
 }
 
 task void stop_done() {
@@ -96,43 +96,37 @@ command error_t Mgmt.stop() {
 
 command error_t SplitControl.start() {
 	err = SUCCESS;
-	if (state == S_STOPPED) {
-		state = S_STARTING;
-		if (call RadioPower.startVReg() != SUCCESS) {
-			/* added start_done when fails */
-			state = S_STOPPED;
-			call ReceiveControl.stop();
-			call TransmitControl.stop();
-			call RadioPower.stopVReg();
-			err = FAIL;
-		}
-		return err;
-	} else if(state == S_STARTED) {
-		post start_done();
+	switch(state) {
+
+	case S_STARTED:
+		start_done();
 		return EALREADY;
-	} else if(state == S_STARTING) {
-		state = S_STOPPED;
-		call ReceiveControl.stop();
-		call TransmitControl.stop();
-		call RadioPower.stopVReg();
-		return FAIL;
+
+//	case S_STARTING:
+//		return SUCCESS;
+
+	case S_STOPPED:
+		state = S_STARTING;
+		if (call RadioPower.startVReg() != SUCCESS) err = FAIL;
+		start_done();
+		return SUCCESS;
 	}
 	return EBUSY;
 }
 
+
 command error_t SplitControl.stop() {
 	err = SUCCESS;
-
 	switch(state) {
 
 	case S_STOPPED:
 		post stop_done();
 		return EALREADY;
 
-	case S_STOPPING:
-		return SUCCESS;
+//	case S_STOPPING:
+//		return SUCCESS;
 
-	default:
+	case S_STARTED:
 		state = S_STOPPING;
 		if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
 		if (call TransmitControl.stop() != SUCCESS) err = FAIL;
@@ -140,11 +134,8 @@ command error_t SplitControl.stop() {
 		post stop_done();
 		return SUCCESS;
 	}
+	return EBUSY;
 }
-
-
-
-
 
 /*
   command error_t SplitControl.stop() {
@@ -169,31 +160,29 @@ command error_t SplitControl.stop() {
   }
 */
 
-  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
-  }
+event void cc2420RadioParams.receive_status(uint16_t status_flag) {
+}
 
 
-  /****************** RadioConfig Events ****************/
-  event void RadioConfig.syncDone( error_t error ) {
-  }
+/****************** RadioConfig Events ****************/
+event void RadioConfig.syncDone( error_t error ) {
+}
 
-  task void resource_request() {
-    call RadioResource.request();
-  }
+task void resource_request() {
+	call RadioResource.request();
+}
 
-  async event void RadioPower.startVRegDone() {
-    post resource_request();
-  }
-
-
-  async event void RadioPower.startOscillatorDone() {
-    post finish_starting_radio();
-  }
-
-  event void RadioResource.granted() {
-    call RadioPower.startOscillator();
-  }
+async event void RadioPower.startVRegDone() {
+	post resource_request();
+}
 
 
+async event void RadioPower.startOscillatorDone() {
+	post finish_starting_radio();
+}
+
+event void RadioResource.granted() {
+	call RadioPower.startOscillator();
+}
 }
 
