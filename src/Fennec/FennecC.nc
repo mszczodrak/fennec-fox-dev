@@ -43,5 +43,9 @@ components SerialStartC;
 #ifdef FENNEC_LOGGER
 components LoggerC;
 #endif
+
+components ProtocolStackC;
+
+
 }
 

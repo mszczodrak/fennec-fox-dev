@@ -67,8 +67,8 @@ implementation {
   NetworkPacketAcknowledgements = ControlUnitAppP.NetworkPacketAcknowledgements;
   NetworkStatus = ControlUnitAppP.NetworkStatus;
 
-  components FennecEngineC;
-  ControlUnitAppP.FennecEngine -> FennecEngineC;
+  components ProtocolStackC;
+  ControlUnitAppP.ProtocolStack -> ProtocolStackC;
 
   components CachesC;
   ControlUnitAppP.EventCache -> CachesC;

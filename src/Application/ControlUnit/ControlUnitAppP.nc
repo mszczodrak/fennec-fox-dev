@@ -26,7 +26,7 @@ uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
 
-uses interface Mgmt as FennecEngine;
+uses interface Mgmt as ProtocolStack;
 uses interface Mgmt as EventsMgmt;
 
 uses interface EventCache;
@@ -78,13 +78,13 @@ void set_new_state(state_t conf, uint16_t seq) {
 		resend_confs = POLICY_RESEND_RECONF;
 		/* Start Policy State */
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-		call FennecEngine.start();
+		call ProtocolStack.start();
 		break;
 
 	case S_NONE:
 		resend_confs = 0;  /* skip resending at the first time */
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-		call FennecEngine.start();
+		call ProtocolStack.start();
 		break;
 
 	case S_COMPLETED:
@@ -100,7 +100,7 @@ void set_new_state(state_t conf, uint16_t seq) {
 		 * moving into stopping all modules of the stack */
 		status = S_STOPPING;
 		call EventCache.clearMask();
-		call FennecEngine.stop();
+		call ProtocolStack.stop();
 		break;
 	}
 }
@@ -124,7 +124,7 @@ task void continue_reconfiguration() {
 		 */
 		call PolicyCache.set_active_configuration(configuration_id);
 		call EventsMgmt.start();
-		//call FennecEngine.start();
+		//call ProtocolStack.start();
 		break;
 
 	case S_COMPLETED:
@@ -168,7 +168,7 @@ event void EventsMgmt.startDone(error_t err) {
 		call EventsMgmt.start();
 		return;
 	}
-	call FennecEngine.start();
+	call ProtocolStack.start();
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -254,9 +254,9 @@ event void Timer.fired() {
 	}
 }
 
-event void FennecEngine.startDone(error_t err) {
+event void ProtocolStack.startDone(error_t err) {
 	if (err != SUCCESS) {
-		call FennecEngine.start();
+		call ProtocolStack.start();
 		return;
 	}
 
@@ -279,9 +279,9 @@ event void FennecEngine.startDone(error_t err) {
 	}
 }
 
-event void FennecEngine.stopDone(error_t err) {
+event void ProtocolStack.stopDone(error_t err) {
 	if (err != SUCCESS) {
-		call FennecEngine.stop();
+		call ProtocolStack.stop();
 		return;
 	}
 
@@ -290,7 +290,7 @@ event void FennecEngine.stopDone(error_t err) {
 		/* The configuration has been stopped, now stop the control state */
 		status = S_STOPPED;
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
-		call FennecEngine.stop();
+		call ProtocolStack.stop();
 		break;
       
 	case S_STOPPED:
