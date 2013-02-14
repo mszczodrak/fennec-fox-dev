@@ -30,56 +30,58 @@
 #include "cc2420Radio.h"
 
 module cc2420RadioP @safe() {
-  provides interface Mgmt;
-  provides interface ModuleStatus as RadioStatus;
-  provides interface SplitControl;
+provides interface Mgmt;
+provides interface ModuleStatus as RadioStatus;
+provides interface SplitControl;
 
-  uses interface cc2420RadioParams;
-  uses interface RadioConfig;
-  uses interface StdControl as ReceiveControl;
-  uses interface StdControl as TransmitControl;
-  uses interface RadioPower;
-  uses interface Resource as RadioResource;
+uses interface Leds;
+uses interface cc2420RadioParams;
+uses interface RadioConfig;
+uses interface StdControl as ReceiveControl;
+uses interface StdControl as TransmitControl;
+uses interface RadioPower;
+uses interface Resource as RadioResource;
 }
 
 implementation {
 
-  norace uint8_t state = S_STOPPED;
-  uint8_t mgmt = FALSE;
-  norace error_t err;
+norace uint8_t state = S_STOPPED;
+uint8_t mgmt = FALSE;
+norace error_t err;
+uint8_t repeat_start = 0;
 
-  task void start_done() {
-    if (err == SUCCESS) {
-      state = S_STARTED;
-    } else {
-      state = S_STOPPED;
-      call ReceiveControl.stop();
-      call TransmitControl.stop();
-      call RadioPower.stopVReg();
-    }
-    signal SplitControl.startDone(err);
-    if (mgmt == TRUE) {
-      signal Mgmt.startDone(err);
-      mgmt = FALSE;
-    }
-  }
+task void start_done() {
+	if (err == SUCCESS) {
+		state = S_STARTED;
+	} else {
+		state = S_STOPPED;
+		call ReceiveControl.stop();
+		call TransmitControl.stop();
+		call RadioPower.stopVReg();
+	}
+	signal SplitControl.startDone(err);
+	if (mgmt == TRUE) {
+		signal Mgmt.startDone(err);
+		mgmt = FALSE;
+	}
+}
 
-  task void finish_starting_radio() {
-    if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
-    if (call RadioResource.release() != SUCCESS) err = FAIL;
-    if (call ReceiveControl.start() != SUCCESS) err = FAIL;
-    if (call TransmitControl.start() != SUCCESS) err = FAIL;
-    post start_done();
-  }
+task void finish_starting_radio() {
+	if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
+	if (call RadioResource.release() != SUCCESS) err = FAIL;
+	if (call ReceiveControl.start() != SUCCESS) err = FAIL;
+	if (call TransmitControl.start() != SUCCESS) err = FAIL;
+	post start_done();
+}
 
-  task void stop_done() {
-    state = S_STOPPED;
-    signal SplitControl.stopDone(SUCCESS);
-    if (mgmt == TRUE) {
-      signal Mgmt.stopDone(SUCCESS);
-      mgmt = FALSE;
-    }
-  }
+task void stop_done() {
+	state = S_STOPPED;
+	signal SplitControl.stopDone(SUCCESS);
+	if (mgmt == TRUE) {
+		signal Mgmt.stopDone(SUCCESS);
+		mgmt = FALSE;
+	}
+}
 
 command error_t Mgmt.start() {
 	mgmt = TRUE;
@@ -93,24 +95,67 @@ command error_t Mgmt.stop() {
 	return SUCCESS;
 }
 
-  command error_t SplitControl.start() {
-    err = SUCCESS;
-    if (state == S_STOPPED) {
-      state = S_STARTING;
-      if (call RadioPower.startVReg() != SUCCESS) err = FAIL;
-      return SUCCESS;
+command error_t SplitControl.start() {
+	err = SUCCESS;
+	if (state == S_STOPPED) {
+		repeat_start = 0;
+		state = S_STARTING;
+		if (call RadioPower.startVReg() != SUCCESS) {
+			/* added start_done when fails */
+			call Leds.led0On();
+			post start_done();
+			err = FAIL;
+		}
+		return SUCCESS;
+	} else if(state == S_STARTED) {
+		post start_done();
+		return EALREADY;
+	} else if(state == S_STARTING) {
+		call Leds.led1Toggle();
+		if (++repeat_start > 2) {
+			/* added check for repeat calls */
+			call ReceiveControl.stop();
+			call TransmitControl.stop();
+			call RadioPower.stopVReg();
+			state = S_STOPPED;
+			return call SplitControl.start();
+		}
+		return SUCCESS;
+	}
+	return EBUSY;
+}
 
-    } else if(state == S_STARTED) {
-      post start_done();
-      return EALREADY;
+command error_t SplitControl.stop() {
+	err = SUCCESS;
 
-    } else if(state == S_STARTING) {
-      return SUCCESS;
-    }
+	switch(state) {
 
-    return EBUSY;
-  }
+	case S_STARTED:
+	case S_STARTING:
+		state = S_STOPPING;
+		if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+		if (call TransmitControl.stop() != SUCCESS) err = FAIL;
+		if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+		post stop_done();
+		return SUCCESS;
 
+	case S_STOPPED:
+		post stop_done();
+		return EALREADY;
+
+	case S_STOPPING:
+		return SUCCESS;
+
+	default:
+		return EBUSY;
+	}
+}
+
+
+
+
+
+/*
   command error_t SplitControl.stop() {
     err = SUCCESS;
     if (state == S_STARTED) {
@@ -131,6 +176,7 @@ command error_t Mgmt.stop() {
 
     return EBUSY;
   }
+*/
 
   event void cc2420RadioParams.receive_status(uint16_t status_flag) {
   }

@@ -85,6 +85,10 @@ implementation {
 
   cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
 
+components LedsC;
+cc2420RadioP.Leds -> LedsC;
+  
+
 #else 
 
   components capeSimRadioC;
