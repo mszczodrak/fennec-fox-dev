@@ -77,6 +77,9 @@ implementation {
   components RandomC;
   ControlUnitAppP.Random -> RandomC;
 
+  components LedsC;
+  ControlUnitAppP.Leds -> LedsC;
+
   components new TimerMilliC() as Timer;
   ControlUnitAppP.Timer -> Timer;
 

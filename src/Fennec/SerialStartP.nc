@@ -41,10 +41,10 @@ module SerialStartP {
   }
 }
 implementation {
-  event void Boot.booted() {
-    call SerialControl.start();
-  }
+event void Boot.booted() {
+	call SerialControl.start();
+}
 
-  event void SerialControl.startDone(error_t error) {}
-  event void SerialControl.stopDone(error_t error) {}
+event void SerialControl.startDone(error_t error) {}
+event void SerialControl.stopDone(error_t error) {}
 }

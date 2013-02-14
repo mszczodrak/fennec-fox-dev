@@ -25,13 +25,15 @@ FennecP.Caches -> CachesC;
 components ControlUnitAppC;
 FennecP.ControlUnit -> ControlUnitAppC;
 
-components FennecSerialDbgC;
-FennecP.DbgSerial -> FennecSerialDbgC;
-
 components LedsC;
 FennecP.Leds -> LedsC;
 
 components FennecPacketC;
+
+//#ifdef __DBGS__
+components FennecSerialDbgC;
+FennecP.DbgSerial -> FennecSerialDbgC;
+//#endif
 
 #ifdef FENNEC_TOS_PRINTF
 components PrintfC;

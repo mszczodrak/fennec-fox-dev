@@ -34,6 +34,7 @@ uses interface PolicyCache;
 
 uses interface Random;
 uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 }
 
 implementation {
@@ -83,6 +84,7 @@ void set_new_state(state_t conf, uint16_t seq) {
 	case S_NONE:
 		resend_confs = 0;  /* skip resending at the first time */
 		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call Leds.led1On();
 		call FennecEngine.start();
 		break;
 
@@ -262,6 +264,7 @@ event void FennecEngine.startDone(error_t err) {
 	switch(status) {
 	case S_NONE:
 		status = S_STARTING;
+		call Leds.led0On();
 		post report_new_configuration();
 
 	case S_STARTING:
