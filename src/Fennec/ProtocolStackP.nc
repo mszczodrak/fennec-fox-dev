@@ -24,24 +24,24 @@
  * last update: 02/14/2013
  */
 
-
 #include "Fennec.h"
 #include "ff_caches.h"
 #include "ff_defaults.h"
 
+#define MODULE_RESPONSE_DELAY    200
 
 module ProtocolStackP {
 provides interface Mgmt;
 
 uses interface ModuleCtrl;
-
+uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 }
 
 implementation {
 
 uint8_t state = S_STOPPED;
 uint8_t active_layer = UNKNOWN_LAYER;
-
 
 void next_layer();
 void copy_default_params(uint16_t conf_id);
@@ -51,13 +51,11 @@ uint8_t ctrl_conf(uint16_t conf_id);
 command error_t Mgmt.start() {
 	state = S_STARTING;
 	return ctrl_conf(active_state);
-//	return call FennecEngine.start();
 }
 
 command error_t Mgmt.stop() {
 	state = S_STOPPING;
 	return ctrl_conf(active_state);
-//	return call FennecEngine.stop();
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
@@ -115,6 +113,10 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
                         }
                 }
         }
+}
+
+event void Timer.fired() {
+
 }
 
 

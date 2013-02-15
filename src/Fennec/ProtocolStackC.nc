@@ -37,5 +37,12 @@ Mgmt = ProtocolStackP.Mgmt;
 components FennecEngineC;
 ProtocolStackP.ModuleCtrl -> FennecEngineC;
 
+components new TimerMilliC() as Timer;
+ProtocolStackP.Timer -> Timer;
+
+components LedsC;
+ProtocolStackP.Leds -> LedsC;
+
+
 
 }
