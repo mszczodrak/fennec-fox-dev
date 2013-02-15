@@ -59,64 +59,48 @@ command error_t Mgmt.stop() {
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
-        if (error != SUCCESS) {
-                if (state == S_STARTING) {
-                        call ModuleCtrl.start(next_module());
-                } else {
-                        call ModuleCtrl.stop(next_module());
-                }
-        } else {
-                next_layer();
+	if (error != SUCCESS) {
+		call ModuleCtrl.start(next_module());
+	} else {
+		next_layer();
 
-                if (active_layer == UNKNOWN_LAYER) {
-                        if (state == S_STARTING) {
-                                state = S_STARTED;
-                                signal Mgmt.startDone(SUCCESS);
-                        } else {
-                                state = S_STOPPED;
-                                signal Mgmt.stopDone(SUCCESS);
-                        }
-                } else {
-                        if (state == S_STARTING) {
-                                call ModuleCtrl.start(next_module());
-                        } else {
-                                call ModuleCtrl.stop(next_module());
-                        }
-                }
-        }
+		if (active_layer == UNKNOWN_LAYER) {
+			call Timer.stop();
+			state = S_STARTED;
+			signal Mgmt.startDone(SUCCESS);
+			return;
+		} else {
+			call ModuleCtrl.start(next_module());
+		}
+	}
+	call Timer.startPeriodic(MODULE_RESPONSE_DELAY);
 }
 
 
 event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
-        if (error != SUCCESS) {
-                if (state == S_STARTING) {
-                        call ModuleCtrl.start(next_module());
-                } else {
-                        call ModuleCtrl.stop(next_module());
-                }
-        } else {
-                next_layer();
-
-                if (active_layer == UNKNOWN_LAYER) {
-                        if (state == S_STARTING) {
-                                state = S_STARTED;
-                                signal Mgmt.startDone(SUCCESS);
-                        } else {
-                                state = S_STOPPED;
-                                signal Mgmt.stopDone(SUCCESS);
-                        }
-                } else {
-                        if (state == S_STARTING) {
-                                call ModuleCtrl.start(next_module());
-                        } else {
-                                call ModuleCtrl.stop(next_module());
-                        }
-                }
-        }
+	if (error != SUCCESS) {
+		call ModuleCtrl.stop(next_module());
+	} else {
+		next_layer();
+		if (active_layer == UNKNOWN_LAYER) {
+			call Timer.stop();
+			state = S_STOPPED;
+			signal Mgmt.stopDone(SUCCESS);
+			return;
+		} else {
+			call ModuleCtrl.stop(next_module());
+		}
+	}
+	call Timer.startPeriodic(MODULE_RESPONSE_DELAY);
 }
 
 event void Timer.fired() {
+	if (state == S_STARTING) {
+		call ModuleCtrl.start(next_module());
 
+	} else {
+		call ModuleCtrl.stop(next_module());
+	}
 }
 
 
