@@ -8,7 +8,7 @@ components ProtocolStackP;
 Mgmt = ProtocolStackP.Mgmt;
 
 components FennecEngineC;
-ProtocolStackP.FennecEngine -> FennecEngineC;
+ProtocolStackP.ModuleCtrl -> FennecEngineC;
 
 
 }

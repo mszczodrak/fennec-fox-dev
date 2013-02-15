@@ -7,7 +7,7 @@
 module ProtocolStackP {
 provides interface Mgmt;
 
-uses interface Mgmt as FennecEngine;
+uses interface ModuleCtrl;
 
 }
 
@@ -17,10 +17,9 @@ uint8_t state = S_STOPPED;
 uint8_t active_layer = UNKNOWN_LAYER;
 
 
+void next_layer();
 void copy_default_params(uint16_t conf_id);
 uint16_t next_module();
-//bool ctrl_module(uint16_t module_id, uint8_t ctrl);
-//void ctrl_module_done(uint8_t status);
 uint8_t ctrl_conf(uint16_t conf_id);
 
 command error_t Mgmt.start() {
@@ -35,13 +34,61 @@ command error_t Mgmt.stop() {
 //	return call FennecEngine.stop();
 }
 
-event void FennecEngine.startDone(error_t error) {
-//	signal Mgmt.startDone(error);
+event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
+        if (error != SUCCESS) {
+                if (state == S_STARTING) {
+                        call ModuleCtrl.start(next_module());
+                } else {
+                        call ModuleCtrl.stop(next_module());
+                }
+        } else {
+                next_layer();
+
+                if (active_layer == UNKNOWN_LAYER) {
+                        if (state == S_STARTING) {
+                                state = S_STARTED;
+                                signal Mgmt.startDone(SUCCESS);
+                        } else {
+                                state = S_STOPPED;
+                                signal Mgmt.stopDone(SUCCESS);
+                        }
+                } else {
+                        if (state == S_STARTING) {
+                                call ModuleCtrl.start(next_module());
+                        } else {
+                                call ModuleCtrl.stop(next_module());
+                        }
+                }
+        }
 }
 
 
-event void FennecEngine.stopDone(error_t error) {
-//	signal Mgmt.stopDone(error);
+event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
+        if (error != SUCCESS) {
+                if (state == S_STARTING) {
+                        call ModuleCtrl.start(next_module());
+                } else {
+                        call ModuleCtrl.stop(next_module());
+                }
+        } else {
+                next_layer();
+
+                if (active_layer == UNKNOWN_LAYER) {
+                        if (state == S_STARTING) {
+                                state = S_STARTED;
+                                signal Mgmt.startDone(SUCCESS);
+                        } else {
+                                state = S_STOPPED;
+                                signal Mgmt.stopDone(SUCCESS);
+                        }
+                } else {
+                        if (state == S_STARTING) {
+                                call ModuleCtrl.start(next_module());
+                        } else {
+                                call ModuleCtrl.stop(next_module());
+                        }
+                }
+        }
 }
 
 
@@ -54,9 +101,9 @@ uint8_t ctrl_conf(uint16_t conf_id) {
                 active_layer = F_APPLICATION;
         }
 	if (state == S_STARTING) {
-		ctrl_module(next_module(), ON);
+		call ModuleCtrl.start(next_module());
 	} else {
-		ctrl_module(next_module(), OFF);
+		call ModuleCtrl.stop(next_module());
 	}
         return 0;
 }
@@ -111,34 +158,5 @@ uint16_t next_module() {
         }
         return UNKNOWN;
 }
-
-void ctrl_module_done(uint8_t status) @C() {
-        if (status) {
-		if (state == S_STARTING) {
-	                ctrl_module(next_module(), ON);
-		} else {
-	                ctrl_module(next_module(), OFF);
-		}
-        } else {
-                next_layer();
-
-                if (active_layer == UNKNOWN_LAYER) {
-			if (state == S_STARTING) {
-				state = S_STARTED;
-				signal Mgmt.startDone(SUCCESS);
-			} else {
-				state = S_STOPPED;
-				signal Mgmt.stopDone(SUCCESS);
-			}
-                } else {
-			if (state == S_STARTING) {
-	                	ctrl_module(next_module(), ON);
-			} else {
-		                ctrl_module(next_module(), OFF);
-			}
-                }
-        }
-}
-
 
 }
