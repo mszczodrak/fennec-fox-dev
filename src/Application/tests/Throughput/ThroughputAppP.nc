@@ -88,10 +88,11 @@ command error_t Mgmt.start() {
 	init = 1;
 	seqno = 0;
 	busy_serial = FALSE;
-//	if ((TOS_NODE_ID < MIN_ADDR) || (TOS_NODE_ID > MAX_ADDR)) {
-//		signal Mgmt.startDone(SUCCESS);
-//		return SUCCESS;
-//	}
+
+	if ((TOS_NODE_ID < MIN_ADDR) || (TOS_NODE_ID > MAX_ADDR)) {
+		signal Mgmt.startDone(SUCCESS);
+		return SUCCESS;
+	}
 
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 	/* check if this node will be sending messages over the serial */
