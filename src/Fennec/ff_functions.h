@@ -43,7 +43,7 @@ conf_t get_conf_id();
 
 conf_t get_active_state();
 
-void check_configuration(conf_t conf_id);
+bool check_configuration(conf_t conf_id);
 
 metadata_t* getMetadata( message_t* msg );
 

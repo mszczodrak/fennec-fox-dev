@@ -20,10 +20,6 @@ command struct fennec_event *EventCache.getEntry(uint8_t ev) {
 
 module_t get_protocol(layer_t layer, conf_t conf) {
 
-    if (conf == POLICY_CONFIGURATION) {
-      conf = POLICY_CONF_ID;
-    }
-
     if (conf >= NUMBER_OF_CONFIGURATIONS) {
       return UNKNOWN_LAYER;
     }
@@ -48,19 +44,19 @@ module_t get_protocol(layer_t layer, conf_t conf) {
   }
 
 module_t get_next_module(module_t module_id, uint8_t flag) @C() {
-    conf_t conf_id = get_conf_id();
-    module_t next_module_id = UNKNOWN_ID;
-    uint16_t temp_id;
-    if (module_id == POLICY_CONFIGURATION) return POLICY_CONFIGURATION;
-    temp_id = configurations[conf_id].application;
-    if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-    temp_id = configurations[conf_id].network;
-    if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-    temp_id = configurations[conf_id].mac;
-    if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-    temp_id = configurations[conf_id].radio;
-    if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-    return next_module_id;
+	conf_t conf_id = get_conf_id();
+	module_t next_module_id = UNKNOWN_ID;
+	uint16_t temp_id;
+	if (module_id == POLICY_CONFIGURATION) return POLICY_CONFIGURATION;
+	temp_id = configurations[conf_id].application;
+	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
+	temp_id = configurations[conf_id].network;
+	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
+	temp_id = configurations[conf_id].mac;
+	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
+	temp_id = configurations[conf_id].radio;
+	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
+	return next_module_id;
 }
 
 command error_t PolicyCache.set_active_configuration(conf_t new_state) {
@@ -103,10 +99,12 @@ module_t get_module_id(module_t module_id, conf_t conf_id, layer_t layer_id) @C(
 	return get_protocol(layer_id, conf_id);
 }
 
-void check_configuration(conf_t conf_id) @C() {
-	if ((conf_id != POLICY_CONF_ID) || (conf_id != active_state)) {
+bool check_configuration(conf_t conf_id) @C() {
+	if ((conf_id != POLICY_CONFIGURATION) && (conf_id != active_state)) {
 		signal PolicyCache.wrong_conf();
+		return 1;
 	}
+	return 0;
 }
 
 conf_t get_conf_id() @C() {

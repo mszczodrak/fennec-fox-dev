@@ -77,13 +77,13 @@ void set_new_state(state_t conf, uint16_t seq) {
 		status = S_STARTING;
 		resend_confs = POLICY_RESEND_RECONF;
 		/* Start Policy State */
-		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
 		call ProtocolStack.start();
 		break;
 
 	case S_NONE:
 		resend_confs = 0;  /* skip resending at the first time */
-		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
 		call ProtocolStack.start();
 		break;
 
@@ -289,7 +289,7 @@ event void ProtocolStack.stopDone(error_t err) {
 	case S_STOPPING:
 		/* The configuration has been stopped, now stop the control state */
 		status = S_STOPPED;
-		call PolicyCache.set_active_configuration(POLICY_CONF_ID);
+		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
 		call ProtocolStack.stop();
 		break;
       
