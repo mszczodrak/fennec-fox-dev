@@ -44,49 +44,53 @@ configuration ThroughputAppC {
 
 implementation {
  
-  enum {
-    SERIAL_PORT = 1
-  };
+enum {
+	SERIAL_PORT = 1
+};
  
-  components ThroughputAppP;
-  Mgmt = ThroughputAppP;
-  Module = ThroughputAppP;
-  ThroughputAppParams = ThroughputAppP;
+components ThroughputAppP;
+Mgmt = ThroughputAppP;
+Module = ThroughputAppP;
+ThroughputAppParams = ThroughputAppP;
   
-  components new TimerMilliC() as TimerImp;
-  ThroughputAppP.Timer -> TimerImp;
+components new TimerMilliC() as TimerImp;
+ThroughputAppP.Timer -> TimerImp;
 
-  /* Creating a queue for sending messages over the network interface */
-  components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
-  ThroughputAppP.NetworkQueue -> NetworkQueueC;
+/* Creating a queue for sending messages over the network interface */
+components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
+ThroughputAppP.NetworkQueue -> NetworkQueueC;
 
-  /* Creating a queue for sending messages over the serial interface */
-  components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
-  ThroughputAppP.SerialQueue -> SerialQueueC;
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
+/* Creating a queue for sending messages over the serial interface */
+components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+ThroughputAppP.SerialQueue -> SerialQueueC;
+#endif
 
-  /* Creating a pool of message memory for network and serial communication */
-  components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
-  ThroughputAppP.MessagePool -> MessagePoolC;
+/* Creating a pool of message memory for network and serial communication */
+components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
+ThroughputAppP.MessagePool -> MessagePoolC;
 
-  components LedsC;
-  ThroughputAppP.Leds -> LedsC;
+components LedsC;
+ThroughputAppP.Leds -> LedsC;
 
-  components SerialActiveMessageC;
-  components new SerialAMSenderC(SERIAL_PORT);
-  components new SerialAMReceiverC(SERIAL_PORT);
-  ThroughputAppP.SerialAMSend -> SerialAMSenderC.AMSend;
-  ThroughputAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-  ThroughputAppP.SerialPacket -> SerialAMSenderC.Packet; 
-  ThroughputAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
-  ThroughputAppP.SerialReceive -> SerialAMReceiverC.Receive;
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
+components SerialActiveMessageC;
+components new SerialAMSenderC(SERIAL_PORT);
+components new SerialAMReceiverC(SERIAL_PORT);
+ThroughputAppP.SerialAMSend -> SerialAMSenderC.AMSend;
+ThroughputAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+ThroughputAppP.SerialPacket -> SerialAMSenderC.Packet; 
+ThroughputAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+ThroughputAppP.SerialReceive -> SerialAMReceiverC.Receive;
+#endif
  
-  NetworkAMSend = ThroughputAppP.NetworkAMSend;
-  NetworkReceive = ThroughputAppP.NetworkReceive;
-  NetworkSnoop = ThroughputAppP.NetworkSnoop;
-  NetworkAMPacket = ThroughputAppP.NetworkAMPacket;
-  NetworkPacket = ThroughputAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = ThroughputAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = ThroughputAppP.NetworkStatus;
+NetworkAMSend = ThroughputAppP.NetworkAMSend;
+NetworkReceive = ThroughputAppP.NetworkReceive;
+NetworkSnoop = ThroughputAppP.NetworkSnoop;
+NetworkAMPacket = ThroughputAppP.NetworkAMPacket;
+NetworkPacket = ThroughputAppP.NetworkPacket;
+NetworkPacketAcknowledgements = ThroughputAppP.NetworkPacketAcknowledgements;
+NetworkStatus = ThroughputAppP.NetworkStatus;
 
 }
 

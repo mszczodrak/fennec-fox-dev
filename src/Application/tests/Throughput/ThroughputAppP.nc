@@ -41,11 +41,13 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
 
 /* Serial Interfaces */ 
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 uses interface AMSend as SerialAMSend;
 uses interface AMPacket as SerialAMPacket;
 uses interface Packet as SerialPacket;
 uses interface Receive as SerialReceive;
 uses interface SplitControl as SerialSplitControl;
+#endif
 
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
@@ -54,7 +56,9 @@ uses interface Leds;
 uses interface Queue<msg_queue_t> as NetworkQueue;
 
 /* Serial Queue */
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 uses interface Queue<msg_queue_t> as SerialQueue;
+#endif
 
 /* Message Pool */
 uses interface Pool<message_t> as MessagePool;
@@ -65,7 +69,9 @@ implementation {
 
 bool busy_serial;
 
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 task void send_serial_message();
+#endif
 task void send_network_message();
 void prepare_network_message();
 
@@ -87,12 +93,14 @@ command error_t Mgmt.start() {
 //		return SUCCESS;
 //	}
 
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 	/* check if this node will be sending messages over the serial */
 	if ((TOS_NODE_ID == call ThroughputAppParams.get_destination()) || 
 	        (NODE == call ThroughputAppParams.get_destination())) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
+#endif
 
 	call Timer.startOneShot(1000);
 	signal Mgmt.startDone(SUCCESS);
@@ -120,6 +128,7 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
         message_t *serial_message;
         app_data_t *serial_data_payload;
         msg_queue_t sm;
@@ -164,7 +173,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
         call SerialQueue.enqueue(sm);
 
         post send_serial_message();
-
+#endif
         return msg;
 }
 
@@ -172,6 +181,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 	return msg;
 }
 
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
@@ -185,6 +195,9 @@ event void SerialAMSend.sendDone(message_t *msg, error_t error) {
 	busy_serial = FALSE;
 	post send_serial_message();
 }
+event void SerialSplitControl.stopDone(error_t errot){}
+event void SerialSplitControl.startDone(error_t error) {}
+#endif
 
 event void Timer.fired() {
 	if (init) {
@@ -197,8 +210,6 @@ event void Timer.fired() {
 }
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
-event void SerialSplitControl.stopDone(error_t errot){}
-event void SerialSplitControl.startDone(error_t error) {}
 event void ThroughputAppParams.receive_status(uint16_t status_flag) {}
 
 void prepare_network_message() {
@@ -247,6 +258,7 @@ void prepare_network_message() {
 }
 
 
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 task void send_serial_message() {
 	msg_queue_t *sm;
 
@@ -270,6 +282,7 @@ task void send_serial_message() {
 		busy_serial = TRUE;
 	}
 }
+#endif
 
 task void send_network_message() {
         msg_queue_t *nm;
