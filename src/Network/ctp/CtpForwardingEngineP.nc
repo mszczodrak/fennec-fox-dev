@@ -124,6 +124,7 @@ generic module CtpForwardingEngineP() {
     //   PacketAcknowledgements is for enabling layer 2 acknowledgments
     //   RetxmitTimer is for timing packet sends for improved performance
     //   LinkEstimator is for providing the ack bit to a link estimator
+interface Leds;
     interface AMSend as SubSend;
     interface PacketAcknowledgements;
     interface Timer<TMilli> as RetxmitTimer;

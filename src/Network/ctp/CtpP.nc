@@ -111,6 +111,7 @@ implementation {
   components CtpActiveMessageC;
   components new CtpForwardingEngineP() as Forwarder;
   components MainC;
+  components LedsC;
   
   Send = Forwarder;
   StdControl = Forwarder;
@@ -124,6 +125,8 @@ implementation {
   CtpPacket = Forwarder;
   CtpCongestion = Forwarder;
   
+  Forwarder.Leds -> LedsC;
+
   components new PoolC(message_t, FORWARD_COUNT) as MessagePoolP;
   components new PoolC(fe_queue_entry_t, FORWARD_COUNT) as QEntryPoolP;
   Forwarder.QEntryPool -> QEntryPoolP;
