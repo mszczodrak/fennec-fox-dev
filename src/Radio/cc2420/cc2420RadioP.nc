@@ -52,11 +52,6 @@ norace error_t err;
 void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
-	} else {
-		state = S_STOPPED;
-//		call ReceiveControl.stop();
-//		call TransmitControl.stop();
-//		call RadioPower.stopVReg();
 	}
 	signal SplitControl.startDone(err);
 	if (mgmt == TRUE) {
@@ -74,10 +69,12 @@ task void finish_starting_radio() {
 }
 
 task void stop_done() {
-	state = S_STOPPED;
-	signal SplitControl.stopDone(SUCCESS);
+	if (err == SUCCESS) {
+		state = S_STOPPED;
+	}
+	signal SplitControl.stopDone(err);
 	if (mgmt == TRUE) {
-		signal Mgmt.stopDone(SUCCESS);
+		signal Mgmt.stopDone(err);
 		mgmt = FALSE;
 	}
 }
@@ -96,47 +93,35 @@ command error_t Mgmt.stop() {
 
 command error_t SplitControl.start() {
 	err = SUCCESS;
-	switch(state) {
 
-	case S_STARTED:
+	if (state == S_STARTED) {
 		start_done();
-		return EALREADY;
-
-//	case S_STARTING:
-//		return SUCCESS;
-
-	case S_STOPPED:
-		state = S_STARTING;
-		if (call RadioPower.startVReg() != SUCCESS) {
-			err = FAIL;
-			start_done();
-		}
 		return SUCCESS;
 	}
-	return EBUSY;
+
+	if (call RadioPower.startVReg() != SUCCESS) return FAIL;
+	state = S_STARTING;
+	return SUCCESS;
 }
 
 
 command error_t SplitControl.stop() {
 	err = SUCCESS;
-	switch(state) {
 
-	case S_STOPPED:
-		post stop_done();
-		return EALREADY;
-
-//	case S_STOPPING:
-//		return SUCCESS;
-
-	case S_STARTED:
-		state = S_STOPPING;
-		if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
-		if (call TransmitControl.stop() != SUCCESS) err = FAIL;
-		if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+	if (state == S_STOPPED) {
 		post stop_done();
 		return SUCCESS;
 	}
-	return EBUSY;
+
+	if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+	if (call TransmitControl.stop() != SUCCESS) err = FAIL;
+	if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+
+	if (err != SUCCESS) return FAIL;
+
+	state = S_STOPPING;
+	post stop_done();
+	return SUCCESS;
 }
 
 /*
