@@ -274,7 +274,6 @@ implementation {
       // buf[rxFrameLength] >> 7 checks the CRC
       if ( ( buf[ rxFrameLength ] >> 7 ) && rx_buf ) {
         uint8_t type = ( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7;
-        call Leds.led0Toggle();
         signal CC2420Receive.receive( type, m_p_rx_buf );
         if ( type == IEEE154_TYPE_DATA ) {
           post receiveDone_task();
