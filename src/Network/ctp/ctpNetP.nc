@@ -33,6 +33,7 @@ module ctpNetP {
   provides interface Module;
 
   uses interface ctpNetParams;
+  uses interface Leds;
 
   provides interface ModuleStatus as NetworkStatus;
   provides interface AMSend as NetworkAMSend;

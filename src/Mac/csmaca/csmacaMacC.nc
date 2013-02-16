@@ -115,6 +115,9 @@ implementation {
   components RandomC;
   csmacaMacP.Random -> RandomC;
 
+  components LedsC;
+  csmacaMacP.Leds -> LedsC;
+
   RadioBuffer = CSMATransmitC.RadioBuffer;
   RadioSend = CSMATransmitC.RadioSend;
   RadioPacket = CSMATransmitC.RadioPacket;

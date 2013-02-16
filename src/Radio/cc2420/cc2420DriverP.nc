@@ -9,7 +9,8 @@ module cc2420DriverP @safe() {
   provides interface StdControl;
   provides interface ReceiveIndicator as EnergyIndicator;
   provides interface ReceiveIndicator as ByteIndicator;
-  
+ 
+  uses interface Leds; 
   uses interface GpioCapture as CaptureSFD;
   uses interface GeneralIO as CCA;
   uses interface GeneralIO as CSN;

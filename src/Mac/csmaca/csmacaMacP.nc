@@ -60,7 +60,7 @@ module csmacaMacP @safe() {
   uses interface Receive as SubReceive;
 
   uses interface Random;
-
+  uses interface Leds;
 }
 
 implementation {

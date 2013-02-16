@@ -27,6 +27,9 @@ implementation {
   components MainC;
   MainC.SoftwareInit -> cc2420DriverP;
 
+  components LedsC;
+  cc2420DriverP.Leds -> LedsC;
+
   components AlarmMultiplexC as RAlarm;
   cc2420DriverP.RadioTimer -> RAlarm;
   

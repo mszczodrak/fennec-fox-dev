@@ -69,6 +69,9 @@ implementation {
   NetworkPacket = ctpNetP;
   NetworkPacketAcknowledgements = ctpNetP;
 
+  components LedsC;
+  ctpNetP.Leds -> LedsC;
+
   components CtpP;
   components CtpActiveMessageC;
   components CollectionC as Collector;
