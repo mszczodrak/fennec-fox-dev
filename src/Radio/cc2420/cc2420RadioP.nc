@@ -54,9 +54,9 @@ void start_done() {
 		state = S_STARTED;
 	} else {
 		state = S_STOPPED;
-		call ReceiveControl.stop();
-		call TransmitControl.stop();
-		call RadioPower.stopVReg();
+//		call ReceiveControl.stop();
+//		call TransmitControl.stop();
+//		call RadioPower.stopVReg();
 	}
 	signal SplitControl.startDone(err);
 	if (mgmt == TRUE) {
@@ -107,8 +107,10 @@ command error_t SplitControl.start() {
 
 	case S_STOPPED:
 		state = S_STARTING;
-		if (call RadioPower.startVReg() != SUCCESS) err = FAIL;
-		start_done();
+		if (call RadioPower.startVReg() != SUCCESS) {
+			err = FAIL;
+			start_done();
+		}
 		return SUCCESS;
 	}
 	return EBUSY;
