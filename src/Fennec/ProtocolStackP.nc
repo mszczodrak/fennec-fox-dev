@@ -59,6 +59,7 @@ command error_t Mgmt.stop() {
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
+	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
 		call ModuleCtrl.start(next_module());
 	} else {
@@ -73,11 +74,11 @@ event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 			call ModuleCtrl.start(next_module());
 		}
 	}
-	call Timer.startPeriodic(MODULE_RESPONSE_DELAY);
 }
 
 
 event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
+	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
 		call ModuleCtrl.stop(next_module());
 	} else {
@@ -91,7 +92,6 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 			call ModuleCtrl.stop(next_module());
 		}
 	}
-	call Timer.startPeriodic(MODULE_RESPONSE_DELAY);
 }
 
 event void Timer.fired() {
