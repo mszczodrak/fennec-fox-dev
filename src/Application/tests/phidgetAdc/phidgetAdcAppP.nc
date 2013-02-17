@@ -193,7 +193,7 @@ event void Sensor_0_Read.readDone(error_t error, ff_sensor_data_t data) {
 	if (error == SUCCESS) {
 		/* sends packet if data count equals sampleCount, 
 		 * else appends data to the buffer */
-		//call Leds.led1Toggle();
+		call Leds.led1Toggle();
 		save_sensor_data(*(uint16_t*)data.raw, 0);
 	}
 }
@@ -202,7 +202,7 @@ event void Sensor_1_Read.readDone(error_t error, ff_sensor_data_t data) {
 	if (error == SUCCESS) {
 		/* sends packet if data count equals sampleCount, 
 		 * else appends data to the buffer */
-		//call Leds.led2Toggle();
+		call Leds.led2Toggle();
 		save_sensor_data(*(uint16_t*)data.raw, 1);
 	}
 }

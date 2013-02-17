@@ -63,7 +63,7 @@ command error_t Mgmt.stop() {
 }
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	if (addr == TOS_NODE_ID) {
+	if ((addr == TOS_NODE_ID) || (addr == NODE)) {
 		signal NetworkAMSend.sendDone(msg, SUCCESS);
 		signal MacReceive.receive(msg, 
 		call NetworkAMSend.getPayload(msg, len + 
