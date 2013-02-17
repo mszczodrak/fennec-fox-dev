@@ -35,31 +35,31 @@
 
 /* this is the application structure that we send across the network */
 typedef nx_struct app_data_t {
-  nx_uint16_t src;    		/* address of the node sending sensor samples */
-  nx_uint32_t seqno;		/* message sequence number */
-  nx_uint32_t freq;		/* sampling frequency (ms) */
-  nx_uint8_t sid;		/* sensor ID */
-				/* IDs are encoded following the declarations 
-				 * from the file src/Fennec/ff_sensors.h */
-  nx_uint8_t num;		/* number of samples */
-  nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
+	nx_uint16_t src;    		/* address of the node sending sensor samples */
+	nx_uint32_t seqno;		/* message sequence number */
+	nx_uint32_t freq;		/* sampling frequency (ms) */
+	nx_uint8_t sid;			/* sensor ID */
+					/* IDs are encoded following the declarations 
+				 	 * from the file src/Fennec/ff_sensors.h */
+	nx_uint8_t num;			/* number of samples */
+	nx_uint16_t (COUNT(0) data)[0]; /* place-holder for data */
 } app_data_t;
 
 
 typedef struct msg_queue_t {
-  uint8_t len;
-  uint16_t addr;
-  message_t *msg;
+	uint8_t len;
+	uint16_t addr;
+	message_t *msg;
 } msg_queue_t;
 
 
 typedef struct app_network_internal_t {
-  uint8_t sample_count;
-  uint8_t seqno;
-  uint32_t freq;
-  app_data_t *pkt;
-  uint8_t len;
-  message_t *msg;
+	uint8_t sample_count;
+	uint32_t seqno;
+	uint32_t freq;
+	app_data_t *pkt;
+	uint8_t len;
+	message_t *msg;
 } app_network_internal_t;
 
 #endif

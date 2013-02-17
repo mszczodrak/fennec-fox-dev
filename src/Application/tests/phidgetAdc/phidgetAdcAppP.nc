@@ -29,46 +29,46 @@
 #include "phidgetAdcApp.h"
 
 module phidgetAdcAppP {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
+provides interface Module;
 
-  uses interface phidgetAdcAppParams ;
+uses interface phidgetAdcAppParams ;
 
-  /* Network interfaces */
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+/* Network interfaces */
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
-  uses interface SensorCtrl as Sensor_0_Ctrl;
-  uses interface AdcSetup as Sensor_0_Setup;
-  uses interface Read<ff_sensor_data_t> as Sensor_0_Read;
+uses interface SensorCtrl as Sensor_0_Ctrl;
+uses interface AdcSetup as Sensor_0_Setup;
+uses interface Read<ff_sensor_data_t> as Sensor_0_Read;
 
-  uses interface SensorCtrl as Sensor_1_Ctrl;
-  uses interface AdcSetup as Sensor_1_Setup;
-  uses interface Read<ff_sensor_data_t> as Sensor_1_Read;
+uses interface SensorCtrl as Sensor_1_Ctrl;
+uses interface AdcSetup as Sensor_1_Setup;
+uses interface Read<ff_sensor_data_t> as Sensor_1_Read;
  
-  /* Serial Interfaces */ 
-  uses interface AMSend as SerialAMSend;
-  uses interface AMPacket as SerialAMPacket;
-  uses interface Packet as SerialPacket;
-  uses interface Receive as SerialReceive;
-  uses interface SplitControl as SerialSplitControl;
+/* Serial Interfaces */ 
+uses interface AMSend as SerialAMSend;
+uses interface AMPacket as SerialAMPacket;
+uses interface Packet as SerialPacket;
+uses interface Receive as SerialReceive;
+uses interface SplitControl as SerialSplitControl;
 
-  uses interface Timer<TMilli> as Timer;
-  uses interface Leds;
+uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 
-  /* Network Queue */
-  uses interface Queue<msg_queue_t> as NetworkQueue;
+/* Network Queue */
+uses interface Queue<msg_queue_t> as NetworkQueue;
 
-  /* Serial Queue */
-  uses interface Queue<msg_queue_t> as SerialQueue;
+/* Serial Queue */
+uses interface Queue<msg_queue_t> as SerialQueue;
 
-  /* Message Pool */
-  uses interface Pool<message_t> as MessagePool;
+/* Message Pool */
+uses interface Pool<message_t> as MessagePool;
 
 }
 
