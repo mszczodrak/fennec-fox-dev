@@ -278,13 +278,13 @@ implementation {
    * we should fall through and continue executing code where that interrupt
    * would have picked up and executed had our microcontroller been fast enough.
    */
-  async event void CaptureSFD.captured( uint16_t time ) {
+  async event void CaptureSFD.captured( uint16_t rtime ) {
     uint32_t time32;
     uint8_t sfd_state = 0;
     cc2420_header_t* header = (cc2420_header_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_header_t));
 
     atomic {
-      time32 = getTime32(time);
+      time32 = getTime32(rtime);
       switch( radio_state ) {
 
       case S_SFD:
@@ -345,7 +345,7 @@ implementation {
           sfd_state = call SFD.get();
           call CC2420Receive.sfd( time32 );
           m_receiving = TRUE;
-          m_prev_time = time;
+          m_prev_time = rtime;
           if ( call SFD.get() ) {
             // wait for the next interrupt before moving on
             return;
@@ -366,7 +366,7 @@ implementation {
            * Thus, we check for the time between the two interrupts.
            * FIXME: Why 10 tics? Seams like some magic number...
            */
-          if ((sfd_state == 0) && (time - m_prev_time < 10) ) {
+          if ((sfd_state == 0) && (rtime - m_prev_time < 10) ) {
             call CC2420Receive.sfd_dropped();
             if (radio_msg)
               PacketTimeStampclear(radio_msg);

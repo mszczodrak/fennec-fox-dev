@@ -9,6 +9,10 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
+#include /home/marcin/git/capefox/cape
+#CFLAGS+=-I/home/marcin/git/capefox/cape
+
+#CFLAGS+=-DCAPE_FOX
 
 #PFLAGS+=-D__DBGS__
 

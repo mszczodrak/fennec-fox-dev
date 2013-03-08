@@ -111,11 +111,11 @@ implementation {
    * Start frame delimiter signifies the beginning/end of a packet
    * See the CC2420 datasheet for details.
    */
-  async command void CC2420Receive.sfd( uint32_t time ) {
+  async command void CC2420Receive.sfd( uint32_t rtime ) {
     if ( m_timestamp_size < TIMESTAMP_QUEUE_SIZE ) {
       uint8_t tail =  ( ( m_timestamp_head + m_timestamp_size ) % 
                         TIMESTAMP_QUEUE_SIZE );
-      m_timestamp_queue[ tail ] = time;
+      m_timestamp_queue[ tail ] = rtime;
       m_timestamp_size++;
     }
   }
