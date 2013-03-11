@@ -62,7 +62,7 @@ implementation {
   components MainC;
   MainC.SoftwareInit -> cc2420ControlP;
   
-  components AlarmMultiplexC as Alarm;
+  components new Alarm32khz32C() as Alarm;
   cc2420ControlP.StartupTimer -> Alarm;
 
   components HplCC2420PinsC as Pins;

@@ -30,7 +30,7 @@ implementation {
   components LedsC;
   cc2420DriverP.Leds -> LedsC;
 
-  components AlarmMultiplexC as RAlarm;
+  components new Alarm32khz32C() as RAlarm;
   cc2420DriverP.RadioTimer -> RAlarm;
   
   components HplCC2420PinsC as Pins;
