@@ -31,12 +31,6 @@
 #ifdef FENNEC_TOS_PRINTF
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
-#else
-#ifdef CAPEFOX
-#include "printf_cape.h"
-#else
-#include "printf_default.h"
-#endif
 #endif
 
 #include "Dbgs.h"

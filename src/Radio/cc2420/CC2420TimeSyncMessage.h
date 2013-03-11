@@ -32,62 +32,21 @@
  * Author: Miklos Maroti
  */
 
-module HplRF230P
+#ifndef __TIMESYNCMESSAGE_H__
+#define __TIMESYNCMESSAGE_H__
+
+#ifndef AM_TIMESYNCMSG
+#define AM_TIMESYNCMSG 0x3D
+#endif
+
+// this value is sent in the air
+typedef nx_uint32_t timesync_radio_t;
+
+typedef nx_struct timesync_footer_t
 {
-	provides
-	{
-		interface GpioCapture as IRQ;
-		interface Init as PlatformInit;
-	}
+	nx_am_id_t type;
+  timesync_radio_t timestamp;
+} timesync_footer_t;
 
-	uses
-	{
-		interface HplAtm128Capture<uint16_t> as Capture;
-		interface GeneralIO as PortCLKM;
-		interface GeneralIO as PortIRQ;
-	}
-}
 
-implementation
-{
-	command error_t PlatformInit.init()
-	{
-		call PortCLKM.makeInput();
-		call PortCLKM.clr();
-		call PortIRQ.makeInput();
-		call PortIRQ.clr();
-		call Capture.stop();
-
-		return SUCCESS;
-	}
-
-	async event void Capture.captured(uint16_t time)
-	{
-		time = call Capture.get();	// TODO: ask Cory why time is not the captured time
-		signal IRQ.captured(time);
-	}
-
-	default async event void IRQ.captured(uint16_t time)
-	{
-	}
-
-	async command error_t IRQ.captureRisingEdge()
-	{
-		call Capture.setEdge(TRUE);
-		call Capture.reset();
-		call Capture.start();
-	
-		return SUCCESS;
-	}
-
-	async command error_t IRQ.captureFallingEdge()
-	{
-		// falling edge comes when the IRQ_STATUS register of the RF230 is read
-		return FAIL;	
-	}
-
-	async command void IRQ.disable()
-	{
-		call Capture.stop();
-	}
-}
+#endif//__TIMESYNCMESSAGE_H__

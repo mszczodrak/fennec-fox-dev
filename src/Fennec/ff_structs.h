@@ -96,6 +96,7 @@ typedef struct ff_sensor_client {
 	uint32_t signaling;
 } ff_sensor_client_t;
 
+
 typedef nx_struct metadata_t {
   nx_uint8_t rssi;
   nx_uint8_t lqi;

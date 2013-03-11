@@ -41,6 +41,7 @@ uses interface SimpleStart as ControlUnit;
 implementation {
 
 event void Boot.booted() {
+	dbg("Application", "Starting...");
 	//call Leds.led1On();
 	call DbgSerial.start();
 }

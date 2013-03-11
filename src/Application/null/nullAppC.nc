@@ -41,7 +41,6 @@ configuration nullAppC {
 }
 
 implementation {
-
   components nullAppP;
   Mgmt = nullAppP;
   Module = nullAppP;
