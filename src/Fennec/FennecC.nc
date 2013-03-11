@@ -61,6 +61,10 @@ components PrintfC;
 components SerialStartC;
 #endif
 
+#ifdef FENNEC_COOJA_PRINTF
+components SerialPrintfC;
+#endif
+
 #ifdef FENNEC_LOGGER
 components LoggerC;
 #endif
