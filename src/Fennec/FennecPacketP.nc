@@ -46,7 +46,7 @@ enum {
             MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
   */
 
-/*
+
   uint8_t PacketTimeSyncOffsetget(message_t* msg) @C() 
   {
     fennec_header_t *header = (fennec_header_t*) msg->data;
@@ -55,7 +55,7 @@ enum {
             - MAC_FOOTER_SIZE
             - sizeof(timesync_radio_t);
   }
-*/
+
 
 
   /***************** PacketTimeStamp32khz Commands ****************/
