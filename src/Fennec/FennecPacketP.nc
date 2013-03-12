@@ -19,6 +19,13 @@ module FennecPacketP @safe() {
 
 implementation {
 
+enum {
+	MAC_HEADER_SIZE = sizeof( fennec_header_t ) - 1,
+	MAC_FOOTER_SIZE = sizeof( uint16_t )
+
+};
+
+
   metadata_t* getMetadata( message_t* msg ) @C() {
     return (metadata_t*)msg->metadata;
   }
@@ -38,6 +45,8 @@ implementation {
   uses packet length of the message which is
             MAC_HEADER_SIZE+MAC_FOOTER_SIZE+datalen
   */
+
+/*
   uint8_t PacketTimeSyncOffsetget(message_t* msg) @C() 
   {
     fennec_header_t *header = (fennec_header_t*) msg->data;
@@ -46,6 +55,7 @@ implementation {
             - MAC_FOOTER_SIZE
             - sizeof(timesync_radio_t);
   }
+*/
 
 
   /***************** PacketTimeStamp32khz Commands ****************/
