@@ -184,7 +184,7 @@ implementation {
           m_bytes_left -= rxFrameLength + 1;
         }
         
-        if(rxFrameLength <= MAC_PACKET_SIZE) {
+        if(rxFrameLength <= CC2420_MAX_MESSAGE_SIZE) {
           if(rxFrameLength > 0) {
             if(rxFrameLength > SACK_HEADER_LENGTH) {
               // This packet has an FCF byte plus at least one more byte to read
@@ -316,7 +316,7 @@ implementation {
     metadata->lqi = buf[ length ] & 0x7f;
     metadata->rssi = buf[ length - 1 ];
 
-    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_SIZE) {
+    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_MAX_MESSAGE_SIZE) {
       /* set conf before signaling receive */
       m_p_rx_buf->conf = header->destpan;
 

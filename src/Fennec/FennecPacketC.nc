@@ -15,10 +15,6 @@ configuration FennecPacketC {
 
 implementation {
   components FennecPacketP;
-//  FennecPacket         = FennecPacketP;
-//  Acks                 = FennecPacketP;
-//  FennecPacketBody     = FennecPacketP;
-//  LinkPacketMetadata   = FennecPacketP;
   PacketTimeStamp32khz = FennecPacketP;
   PacketTimeStampMilli = FennecPacketP;
   PacketTimeSyncOffset = FennecPacketP;
