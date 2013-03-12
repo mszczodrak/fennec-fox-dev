@@ -74,15 +74,6 @@ implementation {
     }
 #endif
 
-
-#ifdef CAPEFOX
-    dbg("Dbgs", "%d %d %d %d %d\n", layer, state, action, d0, d1);
-#endif
-
-#ifdef TOSSIM
-    dbg("Dbgs", "%d %d %d %d %d\n", layer, state, action, d0, d1);
-#endif
-
     return 0;
   }
 }
