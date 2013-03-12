@@ -213,15 +213,15 @@ implementation {
   }
 
   async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
-    cc2420_header_t* ack_header;
-    cc2420_header_t* msg_header;
+    cc2420_hdr_t* ack_header;
+    cc2420_hdr_t* msg_header;
     metadata_t* msg_metadata;
     uint8_t* ack_buf;
     uint8_t length;
 
     if ( type == IEEE154_TYPE_ACK && radio_msg) {
-      ack_header = (cc2420_header_t*) call RadioPacket.getPayload(ack_msg, sizeof(cc2420_header_t));
-      msg_header = (cc2420_header_t*) call RadioPacket.getPayload(radio_msg, sizeof(cc2420_header_t));
+      ack_header = (cc2420_hdr_t*) call RadioPacket.getPayload(ack_msg, sizeof(cc2420_hdr_t));
+      msg_header = (cc2420_hdr_t*) call RadioPacket.getPayload(radio_msg, sizeof(cc2420_hdr_t));
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call RadioTimer.stop();
@@ -281,7 +281,7 @@ implementation {
   async event void CaptureSFD.captured( uint16_t rtime ) {
     uint32_t time32;
     uint8_t sfd_state = 0;
-    cc2420_header_t* header = (cc2420_header_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_header_t));
+    cc2420_hdr_t* header = (cc2420_hdr_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_hdr_t));
 
     atomic {
       time32 = getTime32(rtime);
@@ -296,7 +296,7 @@ implementation {
         call CaptureSFD.captureFallingEdge();
         PacketTimeStampset(radio_msg, time32);
         if (PacketTimeSyncOffsetisSet(radio_msg)) {
-           //uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+ PacketTimeSyncOffsetget(radio_msg);
+           //uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t)+ PacketTimeSyncOffsetget(radio_msg);
            uint8_t absOffset = PacketTimeSyncOffsetget(radio_msg);
            timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
            // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
@@ -396,7 +396,7 @@ implementation {
    * the same CRC polynomial as the CC2420's AUTOCRC functionality.
    */
   void loadTXFIFO() {
-    cc2420_header_t* header = (cc2420_header_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_header_t) );
+    cc2420_hdr_t* header = (cc2420_hdr_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_hdr_t) );
     metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
     uint8_t tx_power = meta->tx_power;
 

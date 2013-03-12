@@ -29,7 +29,16 @@
 #ifndef __H_cc2420_RADIO__
 #define __H_cc2420_RADIO___
 
-#include "CC2420.h"
+typedef nx_struct cc2420_hdr_t {
+  nxle_uint8_t length;
+  nxle_uint16_t fcf;
+  nxle_uint8_t dsn;
+  nxle_uint16_t destpan;
+  nxle_uint16_t dest;
+  nxle_uint16_t src;
+} cc2420_hdr_t;
+
+
 
 enum {
         cc2420_MIN_MESSAGE_SIZE        	= 5,
