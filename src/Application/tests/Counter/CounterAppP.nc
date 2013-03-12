@@ -64,7 +64,7 @@ implementation {
       call Timer.startPeriodic(send_delay);
     }
     dbg("Application", "Application: Counter start\n");
-    dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
+    //dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
@@ -73,7 +73,7 @@ implementation {
   command error_t Mgmt.stop() {
     call Timer.stop();
     dbg("Application", "Application: Counter stop\n");
-    dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
+    //dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }
@@ -92,7 +92,7 @@ implementation {
 
     dbg("Application", "Application Counter sends %d %d\n", msg->seqno,
 								msg->source); 
-    dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, 0);
+    //dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, 0);
 
     if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
@@ -122,7 +122,7 @@ implementation {
     CounterMsg* cm = (CounterMsg*)payload;
 
     dbg("Application", "Application Counter receive %d %d\n", cm->seqno, cm->source); 
-    dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+    //dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
     call Leds.set(cm->seqno);
     return msg;
   }
