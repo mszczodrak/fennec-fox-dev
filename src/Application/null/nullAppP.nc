@@ -46,13 +46,13 @@ module nullAppP {
 implementation {
 
   command error_t Mgmt.start() {
-    dbg("Application", "Application null starts\n");
+    //dbg("Application", "Application null starts\n");
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
-    dbg("Application", "Application null stops\n");
+    //dbg("Application", "Application null stops\n");
     signal Mgmt.stopDone(SUCCESS);
     return SUCCESS;
   }

@@ -453,7 +453,7 @@ implementation {
     msg->crc = metadata->crc;
 
     if (call MacAMPacket.isForMe(msg)) {
-      dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
+      //dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
       return signal MacReceive.receive(msg, payload, len);
     }
     else {
