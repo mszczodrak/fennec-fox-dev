@@ -46,6 +46,16 @@ module capeRadioP @safe() {
   provides interface ReceiveIndicator as ByteIndicator;
 
   uses interface capeRadioParams;
+
+
+  uses interface Packet;
+  uses interface AMPacket;
+  uses interface AMSend;
+  uses interface SplitControl as AMControl;
+  uses interface Receive as ReceiveReceive;
+  uses interface PacketAcknowledgements;
+
+
 }
 
 implementation {
@@ -82,6 +92,12 @@ implementation {
     mgmt = TRUE;
     call RadioControl.start();
     return SUCCESS;
+  }
+
+  event void AMControl.startDone(error_t err) {
+  }
+
+  event void AMControl.stopDone(error_t err) {
   }
 
   command error_t Mgmt.stop() {
@@ -263,6 +279,91 @@ implementation {
   async command error_t RadioResource.release() {
     return SUCCESS;
   }
+
+
+  event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_t len) {
+/*
+    msg_t *new_msg;
+    nx_struct fennec_header *fh;
+
+#ifndef TOSSIM
+    cc2420_metadata_t *meta;
+#else
+    tossim_metadata_t* meta;
+#endif
+
+    dbg("Radio", "Radio Receive message\n");
+
+    if (tr_state == S_STOPPED) {
+      return in_msg;
+    }
+
+    if ((new_msg = signal Module.next_message()) == NULL) {
+      return in_msg;
+    }
+
+#ifndef TOSSIM
+    meta = (cc2420_metadata_t*) in_msg->metadata;
+#else
+    meta = (tossim_metadata_t*) in_msg->metadata;
+#endif
+
+    {
+      //uint8_t *d = payload;
+      //dbg("Radio", "Ready to copy\n");
+      //dbg("Radio", "%d %d %d %d %d %d %d %d %d\n", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9]);
+
+
+    }
+
+    new_msg->len = len;
+    memcpy(new_msg, payload, len);
+    fh = (nx_struct fennec_header*)payload;
+    new_msg->fennec.len = fh->len;
+    new_msg->fennec.conf = fh->conf;
+
+#ifndef TOSSIM
+    new_msg->rssi = meta->rssi;
+    new_msg->lqi = meta->lqi;
+#else
+    new_msg->rssi = meta->strength;
+    new_msg->lqi = meta->strength;
+#endif
+
+    //dbg("Radio", "Ready copy done\n");
+
+    if (signal RadioSignal.check_destination(new_msg, payload) == TRUE) {
+      //dbg("Radio", "Radio signal receive\n");
+      signal RadioSignal.receive(new_msg, (uint8_t*)&new_msg->data, new_msg->len);
+    } else {
+      //dbg("Radio", "Radio - it's not for me\n");
+      signal Module.drop_message(new_msg);
+    }
+*/
+    return in_msg;
+}
+
+  event void AMSend.sendDone(message_t* out, error_t error){
+/*
+    tr_state = S_STARTED;
+    call Timer0.stop();
+    //dbg("Radio", "Radio got AMSend done\n");
+    {
+      //uint8_t *d = (uint8_t*)&out_msg->data;
+      //dbg("Radio", "%d %d %d %d %d %d %d %d %d\n", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9]);
+      //dbg("Radio", "C %d L %d %d\n", out_msg->fennec.conf, out_msg->fennec.len, out_msg->len);
+    }
+
+    if (next_hop != AM_BROADCAST_ADDR && !call PacketAcknowledgements.wasAcked(out)) {
+      dbg("Radio", "Radio did not get ACK\n");
+      error = FAIL;
+    }
+
+    signal RadioSignal.sendDone(out_msg, error);
+    //dbg("Radio", "Radio send done signaled\n");
+*/
+  }
+
 
 }
 

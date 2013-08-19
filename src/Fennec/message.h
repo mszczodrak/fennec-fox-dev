@@ -12,6 +12,8 @@
 #define TOS_BCAST_ADDR 0xFFFF
 #endif
 
+#define RADIO_SEND_RESOURCE "RADIO_SEND_RESOURCE"
+
 
 
 

@@ -71,4 +71,14 @@ implementation {
   RadioSend = capeRadioP.RadioSend;
   RadioControl = capeRadioP.RadioControl;
 
+
+  components ActiveMessageC;
+  capeRadioP.AMControl -> ActiveMessageC;
+  capeRadioP.Packet -> ActiveMessageC;
+  capeRadioP.AMPacket -> ActiveMessageC;
+  capeRadioP.AMSend -> ActiveMessageC.AMSend[101];
+  capeRadioP.ReceiveReceive -> ActiveMessageC.Receive[101];
+  capeRadioP.PacketAcknowledgements -> ActiveMessageC.PacketAcknowledgements;
+
+
 }
