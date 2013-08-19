@@ -9,6 +9,7 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
+CFLAGS += -I$(FENNEC_FOX_LIB)/support/make
 
 #PFLAGS+=-D__DBGS__
 
