@@ -84,9 +84,15 @@ typedef nx_struct metadata_t {
   nx_uint8_t rssi;
   nx_uint8_t lqi;
   nx_uint8_t tx_power;
+#ifdef TOSSIM
+  nx_uint8_t crc;
+  nx_uint8_t ack;
+  nx_uint8_t timesync;
+#else
   nx_bool crc;
   nx_bool ack;
   nx_bool timesync;
+#endif
   nx_uint32_t timestamp;
   nx_uint16_t rxInterval;
   nx_uint16_t maxRetries;
@@ -193,5 +199,13 @@ nx_struct accept_conf {
 	nx_uint8_t vnet_id;
 	nx_uint8_t local_conf;
 };
+
+#ifdef TOSSIM
+
+#include <TossimRadioMsg.h>
+
+#endif
+
+
 
 #endif

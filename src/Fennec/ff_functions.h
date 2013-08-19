@@ -27,7 +27,8 @@
 #ifndef FF_FUNCTIONS_H
 #define FF_FUNCTIONS_H
 
-#include "message.h"
+//#include "message.h"
+#include "Fennec.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))

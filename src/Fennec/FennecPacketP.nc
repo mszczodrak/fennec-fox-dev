@@ -1,6 +1,6 @@
 #include "IEEE802154.h"
-#include "message.h"
-#include "CC2420.h"
+//#include "message.h"
+//#include "CC2420.h"
 #include "CC2420TimeSyncMessage.h"
 
 module FennecPacketP @safe() {
@@ -18,6 +18,14 @@ module FennecPacketP @safe() {
 }
 
 implementation {
+
+enum
+{
+  // From CC2420.h file
+  CC2420_INVALID_TIMESTAMP  = 0x80000000L,
+};
+
+
 
 enum {
 	MAC_HEADER_SIZE = sizeof( fennec_header_t ) - 1,
