@@ -84,7 +84,7 @@ typedef nx_struct metadata_t {
   nx_uint8_t rssi;
   nx_uint8_t lqi;
   nx_uint8_t tx_power;
-#ifdef TOSSIM
+//#ifdef TOSSIM
   nx_uint8_t crc;
   nx_uint8_t ack;
   nx_uint8_t timesync;
@@ -113,22 +113,6 @@ typedef nx_struct message_t {
 } message_t;
 
 
-
-
-typedef nx_struct msg_t {
-	nx_uint8_t data[128];
-	nx_uint8_t len;
-	nx_uint16_t next_hop;
-	nx_uint8_t ack;
-	nx_uint8_t crc;
-	nx_uint8_t asap;
-	fennec_header_t fennec;
-	nx_uint8_t channel;
-	nx_uint8_t vnet_id;
-	nx_uint8_t last_layer;
-	nx_uint8_t rssi;
-	nx_uint8_t lqi;
-} msg_t;
 
 
 nx_struct FFControl {
