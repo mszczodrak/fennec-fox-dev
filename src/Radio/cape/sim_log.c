@@ -252,8 +252,13 @@ void sim_log_debug(uint16_t id, char* string, const char* format, ...) {
   for (i = 0; i < outputs[id].num; i++) {
     FILE* file = outputs[id].files[i];
     va_start(args, format);
-    fprintf(file, "DEBUG (%i): ", (int)sim_node());
+    //fprintf(file, "%20lli %10lli NODE (%04i): ", (long long int)sim_time(), (long long int)sim_time() / 1000000, (int)sim_node());
+    fprintf(file, "%10lli %03i %03i NODE (%04i): ", (long long int)(sim_time() / CAPE_TO_MILLISECONDS) / 1000, 
+						(int)(sim_time() / CAPE_TO_MILLISECONDS) % 1000, 
+						(int)(sim_time() / CAPE_TO_MICROSECONDS) % 1000, 
+						(int)sim_node());
     vfprintf(file, format, args); 
+    fprintf(file, "\n");
     fflush(file);
   }
 }

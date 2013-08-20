@@ -62,6 +62,11 @@
 extern "C" {
 #endif
 
+#define CAPE_TO_MICROSECONDS 10000
+#define CAPE_TO_MILLISECONDS 10000000
+#define CAPE_TO_SECONDS 10000000000
+
+
 void sim_log_init();
 void sim_log_add_channel(char* output, FILE* file);
 bool sim_log_remove_channel(char* output, FILE* file);
