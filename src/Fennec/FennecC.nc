@@ -43,13 +43,18 @@ FennecP.RandomStart -> RandomC;
 components CachesC;
 FennecP.Caches -> CachesC;
 
-components ControlUnitAppC;
-FennecP.ControlUnit -> ControlUnitAppC;
+//components ControlUnitAppC;
+//FennecP.ControlUnit -> ControlUnitAppC;
+
+components NetworkSchedulerC;
+FennecP.NetworkScheduler -> NetworkSchedulerC;
 
 components LedsC;
 FennecP.Leds -> LedsC;
 
+#ifndef TOSSIM
 components FennecPacketC;
+#endif
 
 //#ifdef __DBGS__
 components FennecSerialDbgC;

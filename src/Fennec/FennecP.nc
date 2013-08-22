@@ -35,7 +35,7 @@ uses interface Leds;
 uses interface SimpleStart as DbgSerial;
 uses interface SimpleStart as RandomStart;
 uses interface SimpleStart as Caches;
-uses interface SimpleStart as ControlUnit;
+uses interface SimpleStart as NetworkScheduler;
 }
 
 implementation {
@@ -50,8 +50,8 @@ task void start_random() {
 	call RandomStart.start();
 }
 
-task void start_control_unit() {
-	call ControlUnit.start();
+task void start_network_scheduler() {
+	call NetworkScheduler.start();
 }
 
 task void start_caches() {
@@ -68,17 +68,17 @@ event void DbgSerial.startDone(error_t err) {
 
 event void RandomStart.startDone(error_t err) {
 	if (err == SUCCESS) {
-		post start_control_unit();
+		post start_network_scheduler();
 	} else {
 		call RandomStart.start();
 	}
 }
 
-event void ControlUnit.startDone(error_t err) {
+event void NetworkScheduler.startDone(error_t err) {
 	if (err == SUCCESS) {
 		post start_caches();
 	} else {
-		call ControlUnit.start();
+		call NetworkScheduler.start();
 	}
 }
 

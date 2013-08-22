@@ -6,9 +6,11 @@ configuration FennecPacketC {
 //    interface FennecPacketBody;
 //    interface LinkPacketMetadata;
 
+#ifndef TOSSIM
     interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
     interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
     interface PacketTimeSyncOffset;
+#endif
   }
 
 }
