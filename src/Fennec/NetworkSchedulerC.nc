@@ -44,6 +44,16 @@ implementation {
   components NetworkSchedulerP;
   SimpleStart = NetworkSchedulerP;
 
+  components ProtocolStackC;
+  NetworkSchedulerP.ProtocolStack -> ProtocolStackC;
+
+  components CachesC;
+  NetworkSchedulerP.EventCache -> CachesC;
+  NetworkSchedulerP.PolicyCache -> CachesC;
+
+  components EventsC;
+  NetworkSchedulerP.EventsMgmt-> EventsC.Mgmt;
+
 }
 
 

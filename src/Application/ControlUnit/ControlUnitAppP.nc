@@ -145,7 +145,7 @@ command void SimpleStart.start() {
 }
 
 event void PolicyCache.newConf(conf_t new_conf) {
-	set_new_state(new_conf, configuration_seq + 1);
+//	set_new_state(new_conf, configuration_seq + 1);
 }
 
 event void PolicyCache.wrong_conf() {
