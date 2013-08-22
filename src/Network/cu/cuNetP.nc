@@ -53,11 +53,13 @@ module cuNetP {
 implementation {
 
 command error_t Mgmt.start() {
+	dbg("Network", "Network cuNet Mgmt.start()");
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
+	dbg("Network", "Network cuNet Mgmt.stop()");
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }

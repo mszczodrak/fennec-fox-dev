@@ -142,6 +142,7 @@ implementation {
   /* Functions */
 
   command error_t Mgmt.start() {
+    dbg("Mac", "Mac null Mgmt.start()");
     if (status == S_STARTED) {
       signal Mgmt.startDone(SUCCESS);
       return SUCCESS;
@@ -156,6 +157,7 @@ implementation {
 
 
   command error_t Mgmt.stop() {
+    dbg("Mac", "Mac null Mgmt.stop()");
     if (status == S_STOPPED) {
       signal Mgmt.stopDone(SUCCESS);
       return SUCCESS;

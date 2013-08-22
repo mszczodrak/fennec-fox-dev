@@ -135,6 +135,7 @@ task void continue_reconfiguration() {
 }
 
 command void SimpleStart.start() {
+	dbg("ControlUnit", "SimpleStart.start()");
 	configuration_id = UNKNOWN_CONFIGURATION;
 	configuration_seq = 0;
 	confmsg.conf = POLICY_CONFIGURATION;
@@ -272,6 +273,7 @@ event void ProtocolStack.startDone(error_t err) {
 		break;
 
 	case S_STARTED:
+		dbg("ControlUnit", "ProtocolStack.startDone - S_COMPLETED");
 		status = S_COMPLETED;
 		break;
 

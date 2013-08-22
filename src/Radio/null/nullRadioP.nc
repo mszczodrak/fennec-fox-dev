@@ -79,12 +79,14 @@ implementation {
   }
 
   command error_t Mgmt.start() {
+    dbg("Radio", "Radio null Mgmt.start()");
     mgmt = TRUE;
     call RadioControl.start();
     return SUCCESS;
   }
 
   command error_t Mgmt.stop() {
+    dbg("Radio", "Radio null Mgmt.stop()");
     mgmt = TRUE;
     call RadioControl.stop();
     return SUCCESS;

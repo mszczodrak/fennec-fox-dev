@@ -82,7 +82,8 @@ event void ControlUnit.startDone(error_t err) {
 	}
 }
 
-event void Caches.startDone(error_t err) {}
+event void Caches.startDone(error_t err) {
+}
 
 }
 

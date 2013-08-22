@@ -90,6 +90,7 @@ implementation {
 
   command error_t Mgmt.start() {
     mgmt = TRUE;
+    dbg("Radio", "Radio cape Mgmt.start()");
     call RadioControl.start();
     return SUCCESS;
   }
@@ -101,12 +102,14 @@ implementation {
   }
 
   command error_t Mgmt.stop() {
+    dbg("Radio", "Radio cape Mgmt.stop()");
     mgmt = TRUE;
     call RadioControl.stop();
     return SUCCESS;
   }
 
   command error_t RadioControl.start() {
+    dbg("Radio", "RadioControl.start");
     if (state == S_STOPPED) {
       state = S_STARTING;
       post start_done();
@@ -124,6 +127,7 @@ implementation {
   }
 
   command error_t RadioControl.stop() {
+    dbg("Radio", "RadioControl.stop");
     if (state == S_STARTED) {
       state = S_STOPPING;
       post stop_done();
@@ -260,6 +264,7 @@ implementation {
   }
 
   async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
+    dbg("Radio", "Radio getPayload");
     return msg->data;
   }
 

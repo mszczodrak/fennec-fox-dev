@@ -49,16 +49,19 @@ uint16_t next_module();
 uint8_t ctrl_conf(uint16_t conf_id);
 
 command error_t Mgmt.start() {
+	dbg("System", "Starting Protocol Stack");
 	state = S_STARTING;
 	return ctrl_conf(active_state);
 }
 
 command error_t Mgmt.stop() {
+	dbg("System", "Stopping Protocol Stack");
 	state = S_STOPPING;
 	return ctrl_conf(active_state);
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
+	dbg("System", "ModuleCtrl start done: %d", module_id);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
 		call ModuleCtrl.start(next_module());
@@ -106,9 +109,11 @@ event void Timer.fired() {
 
 
 uint8_t ctrl_conf(uint16_t conf_id) {
+	dbg("System", "Protocol Stack in ctrl_conf");
         if (state == S_STARTING) {
                 copy_default_params(conf_id);
                 active_layer = F_RADIO;
+		dbg("System", "System: active layer is %d %d", active_layer, F_RADIO);
         } else {
                 active_layer = F_APPLICATION;
         }
@@ -134,11 +139,12 @@ void next_layer() {
                 if (active_layer == F_NETWORK) active_layer = F_MAC;
                 if (active_layer == F_APPLICATION) active_layer = F_NETWORK;
         }
+	dbg("System", "next_layer : %d" , active_layer);
 }
 
 
 void copy_default_params(uint16_t conf_id) {
-        //dbg("FennecEngine", "Copying Default Params\n");
+        dbg("FennecEngine", "Copying Default Params\n");
         memcpy( defaults[conf_id].application_cache,
                 defaults[conf_id].application_default_params,
                 defaults[conf_id].application_default_size);
@@ -158,14 +164,19 @@ void copy_default_params(uint16_t conf_id) {
 
 
 uint16_t next_module() {
+	dbg("System", "next_module: active layer :%d", active_layer);
         switch(active_layer) {
         case F_APPLICATION:
+		dbg("System", "ProtocolStack: next module is F_APPLICATION");
                 return configurations[active_state].application;
         case F_NETWORK:
+		dbg("System", "ProtocolStack: next module is F_NETWORK");
                 return configurations[active_state].network;
         case F_MAC:
+		dbg("System", "ProtocolStack: next module is F_MAC");
                 return configurations[active_state].mac;
         case F_RADIO:
+		dbg("System", "ProtocolStack: next module is F_RADIO");
                 return configurations[active_state].radio;
         }
         return UNKNOWN;
