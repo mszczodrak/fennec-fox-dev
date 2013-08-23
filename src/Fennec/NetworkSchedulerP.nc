@@ -30,7 +30,9 @@ task void start_protocol_stack() {
 	if (conf == UNKNOWN_CONFIGURATION) {
 		dbg("NetworkScheduler", "NetworkScheduler first time starting, rest conf");
 		/* this is first time we are starting configuration of the stack */
-		conf = 0;
+		// TODO : normally start from 0, but to skip POLICY, start from 1
+		//conf = 0;
+		conf = 1;
 	}
 
 	if (state_record->num_confs > conf) {
@@ -106,7 +108,7 @@ event void EventsMgmt.stopDone(error_t err) {
 event void ProtocolStack.startConfDone(error_t err) {
 	dbg("NetworkScheduler", "ProtocolStack.startConfDone(%d)", err);
         if (err == SUCCESS) {
-		conf+=3;
+		conf++;
         }
 	post start_protocol_stack();
 }
