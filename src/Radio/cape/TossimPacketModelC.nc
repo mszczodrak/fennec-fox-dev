@@ -85,76 +85,30 @@ implementation {
     return SUCCESS;
   }
 
-  void send_backoff(sim_event_t* evt);
   void send_transmit(sim_event_t* evt);
   void send_transmit_done(sim_event_t* evt);
   
   void start_csma() {
-    sim_time_t first_sample;
+    dbg("System", "start_csma");
 
-    // The backoff is in terms of symbols. So take a random number
-    // in the range of backoff times, and multiply it by the
-    // sim_time per symbol.
-    sim_time_t backoff = sim_random();
-    backoff %= (sim_csma_init_high() - sim_csma_init_low());
-    backoff += sim_csma_init_low();
-    backoff *= (sim_ticks_per_sec() / sim_csma_symbols_per_sec());
-    dbg("TossimPacketModelC", "Starting CMSA with %lli.\n", backoff);
-    first_sample = sim_time() + backoff;
+    transmitting = TRUE;
+    call GainRadioModel.setPendingTransmission();
 
     sendEvent.mote = sim_node();
-    sendEvent.time = first_sample;
+    sendEvent.time = sim_time();
     sendEvent.force = 0;
     sendEvent.cancelled = 0;
 
-    sendEvent.handle = send_backoff;
+    sendEvent.handle = send_transmit; /* could add delay */
+
+
     sendEvent.cleanup = sim_queue_cleanup_none;
     sim_queue_insert(&sendEvent);
   }
 
+//    call GainRadioModel.clearChannel()) {
 
-  void send_backoff(sim_event_t* evt) {
-    backoffCount++;
-    if (call GainRadioModel.clearChannel()) {
-      neededFreeSamples--;
-    }
-    else {
-      neededFreeSamples = sim_csma_min_free_samples();
-    }
-    if (neededFreeSamples == 0) {
-      sim_time_t delay;
-      delay = sim_csma_rxtx_delay();
-      delay *= (sim_ticks_per_sec() / sim_csma_symbols_per_sec());
-      evt->time += delay;
-      transmitting = TRUE;
-      call GainRadioModel.setPendingTransmission();
-      evt->handle = send_transmit;
-      sim_queue_insert(evt);
-    }
-    else if (sim_csma_max_iterations() == 0 ||
-	     backoffCount <= sim_csma_max_iterations()) {
-      sim_time_t backoff = sim_random();
-      sim_time_t modulo = sim_csma_high() - sim_csma_low();
-      modulo *= pow(sim_csma_exponent_base(), backoffCount);
-      backoff %= modulo;
-									
-      backoff += sim_csma_init_low();
-      backoff *= (sim_ticks_per_sec() / sim_csma_symbols_per_sec());
-      evt->time += backoff;
-      sim_queue_insert(evt);
-    }
-    else {
-      message_t* rval = sending;
-      sending = NULL;
-      dbg("TossimPacketModelC", "PACKET: Failed to send packet due to busy channel.\n");
-      signal Packet.sendDone(rval, EBUSY);
-    }
-  }
 
-  int sim_packet_header_length() {
-    return sizeof(tossim_header_t);
-  }
-  
   void send_transmit(sim_event_t* evt) {
     sim_time_t duration;
     tossim_metadata_t* metadata = getMetadata(sending);
@@ -218,13 +172,6 @@ implementation {
     }
   }
 
-  default event void Control.startDone(error_t err) {
-    return;
-  }
- 
-  default event void Control.stopDone(error_t err) {
-    return;
-  }
  
   async command error_t PacketAcknowledgements.requestAck(message_t* msg) {
     return SUCCESS;
