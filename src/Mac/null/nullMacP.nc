@@ -196,7 +196,6 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	}
-	dbg("Mac", " here 2");
 
 	atomic {
 		if (!call SplitControlState.isState(S_STARTED)) {
@@ -207,7 +206,6 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		m_msg = msg;
 	}
 
-	dbg("Mac", " here 3");
 
 	header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
 		(0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
@@ -215,7 +213,6 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
 		( 1 << IEEE154_FCF_INTRAPAN ) );
 
-	dbg("Mac", " here");
 
 	metadata->ack = 1;
 	metadata->rssi = 0;
@@ -226,7 +223,6 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return FAIL;
 	}
 
-	dbg("Mac", " here");
 
 	m_state = S_LOAD;
 	m_msg = m_msg;
