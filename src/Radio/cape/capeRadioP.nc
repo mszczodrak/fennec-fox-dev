@@ -65,44 +65,44 @@ implementation {
   norace uint8_t state = S_STOPPED;
   norace message_t *m;
 
-  task void start_done() {
-    state = S_STARTED;
+task void start_done() {
+	state = S_STARTED;
 
-    signal RadioControl.startDone(SUCCESS);
-    if (mgmt == TRUE) {
-      signal Mgmt.startDone(SUCCESS);
-      mgmt = FALSE;
-    }
-  }
+	signal RadioControl.startDone(SUCCESS);
+	if (mgmt == TRUE) {
+		signal Mgmt.startDone(SUCCESS);
+		mgmt = FALSE;
+	}
+}
 
-  task void finish_starting_radio() {
-    post start_done();
-  }
+task void finish_starting_radio() {
+	post start_done();
+}
 
-  task void stop_done() {
-    state = S_STOPPED;
-    signal RadioControl.stopDone(SUCCESS);
-    if (mgmt == TRUE) {
-      signal Mgmt.stopDone(SUCCESS);
-      mgmt = FALSE;
-    }
-  }
+task void stop_done() {
+	state = S_STOPPED;
+	signal RadioControl.stopDone(SUCCESS);
+	if (mgmt == TRUE) {
+		signal Mgmt.stopDone(SUCCESS);
+		mgmt = FALSE;
+	}
+}
 
-  command error_t Mgmt.start() {
-    mgmt = TRUE;
-    dbg("Radio", "Radio cape Mgmt.start()");
-    call RadioControl.start();
-    return SUCCESS;
-  }
+command error_t Mgmt.start() {
+	dbg("Radio", "capeRadio Mgmt.start()");
+	mgmt = TRUE;
+	call RadioControl.start();
+	return SUCCESS;
+}
 
-  event void AMControl.startDone(error_t err) {
-  }
+event void AMControl.startDone(error_t err) {
+}
 
-  event void AMControl.stopDone(error_t err) {
-  }
+event void AMControl.stopDone(error_t err) {
+}
 
 command error_t Mgmt.stop() {
-	dbg("Radio", "capeRadio cape Mgmt.stop()");
+	dbg("Radio", "capeRadio Mgmt.stop()");
 	mgmt = TRUE;
 	call RadioControl.stop();
 	return SUCCESS;

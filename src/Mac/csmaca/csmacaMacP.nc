@@ -73,6 +73,7 @@ uint8_t localSendId;
 
 command error_t Mgmt.start() {
 	error_t e;
+	dbg("Mac", "csmaMac");
 	if (status == S_STARTED) {
 		signal Mgmt.startDone(SUCCESS);
 		return SUCCESS;
