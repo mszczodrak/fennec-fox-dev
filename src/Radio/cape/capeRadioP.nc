@@ -101,192 +101,192 @@ implementation {
   event void AMControl.stopDone(error_t err) {
   }
 
-  command error_t Mgmt.stop() {
-    dbg("Radio", "Radio cape Mgmt.stop()");
-    mgmt = TRUE;
-    call RadioControl.stop();
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	dbg("Radio", "capeRadio cape Mgmt.stop()");
+	mgmt = TRUE;
+	call RadioControl.stop();
+	return SUCCESS;
+}
 
-  command error_t RadioControl.start() {
-    dbg("Radio", "RadioControl.start");
-    if (state == S_STOPPED) {
-      state = S_STARTING;
-      post start_done();
-      return SUCCESS;
+command error_t RadioControl.start() {
+	dbg("Radio", "capeRadio RadioControl.start()");
+	if (state == S_STOPPED) {
+		state = S_STARTING;
+		post start_done();
+		return SUCCESS;
+	} else if(state == S_STARTED) {
+		post start_done();
+		return EALREADY;
+	} else if(state == S_STARTING) {
+		return SUCCESS;
+	}
 
-    } else if(state == S_STARTED) {
-      post start_done();
-      return EALREADY;
+	return EBUSY;
+}
 
-    } else if(state == S_STARTING) {
-      return SUCCESS;
-    }
+command error_t RadioControl.stop() {
+	dbg("Radio", "RadioControl.stop");
+	if (state == S_STARTED) {
+		state = S_STOPPING;
+		post stop_done();
+		return SUCCESS;
+	} else if(state == S_STOPPED) {
+		post stop_done();
+		return EALREADY;
+	} else if(state == S_STOPPING) {
+		return SUCCESS;
+	}
+	return EBUSY;
+}
 
-    return EBUSY;
-  }
+event void capeRadioParams.receive_status(uint16_t status_flag) {
+}
 
-  command error_t RadioControl.stop() {
-    dbg("Radio", "RadioControl.stop");
-    if (state == S_STARTED) {
-      state = S_STOPPING;
-      post stop_done();
-      return SUCCESS;
+async command error_t RadioPower.startVReg() {
+	return SUCCESS;
+}
 
-    } else if(state == S_STOPPED) {
-      post stop_done();
-      return EALREADY;
+async command error_t RadioPower.stopVReg() {
+	return SUCCESS;
+}
 
-    } else if(state == S_STOPPING) {
-      return SUCCESS;
-    }
+async command error_t RadioPower.startOscillator() {
+	return SUCCESS;
+}
 
-    return EBUSY;
-  }
+async command error_t RadioPower.stopOscillator() {
+	return SUCCESS;
+}
 
-  event void capeRadioParams.receive_status(uint16_t status_flag) {
-  }
+async command error_t RadioPower.rxOn() {
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.startVReg() {
-    return SUCCESS;
-  }
+async command error_t RadioPower.rfOff() {
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.stopVReg() {
-    return SUCCESS;
-  }
+command uint8_t RadioConfig.getChannel() {
+	return channel;
+}
 
-  async command error_t RadioPower.startOscillator() {
-    return SUCCESS;
-  }
+command void RadioConfig.setChannel( uint8_t new_channel ) {
+	atomic channel = new_channel;
+}
 
-  async command error_t RadioPower.stopOscillator() {
-    return SUCCESS;
-  }
+async command uint16_t RadioConfig.getShortAddr() {
+	return TOS_NODE_ID;
+}
 
-  async command error_t RadioPower.rxOn() {
-    return SUCCESS;
-  }
+command void RadioConfig.setShortAddr( uint16_t addr ) {
+}
 
-  async command error_t RadioPower.rfOff() {
-    return SUCCESS;
-  }
+async command uint16_t RadioConfig.getPanAddr() {
+	return TOS_NODE_ID;
+}
 
-  command uint8_t RadioConfig.getChannel() {
-    return channel;
-  }
+command void RadioConfig.setPanAddr( uint16_t pan ) {
+}
 
-  command void RadioConfig.setChannel( uint8_t new_channel ) {
-    atomic channel = new_channel;
-  }
+command error_t RadioConfig.sync() {
+	return SUCCESS;
+}
 
-  async command uint16_t RadioConfig.getShortAddr() {
-    return TOS_NODE_ID;
-  }
+command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
+}
 
-  command void RadioConfig.setShortAddr( uint16_t addr ) {
-  }
+async command bool RadioConfig.isAddressRecognitionEnabled() {
+	return FALSE;
+}
 
-  async command uint16_t RadioConfig.getPanAddr() {
-    return TOS_NODE_ID;
-  }
+async command bool RadioConfig.isHwAddressRecognitionDefault() {
+	return FALSE;
+}
 
-  command void RadioConfig.setPanAddr( uint16_t pan ) {
-  }
+command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
+}
 
-  command error_t RadioConfig.sync() {
-    return SUCCESS;
-  }
+async command bool RadioConfig.isHwAutoAckDefault() {
+	return FALSE;
+}
 
-  command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
-  }
+async command bool RadioConfig.isAutoAckEnabled() {
+	return FALSE;
+}
 
-  async command bool RadioConfig.isAddressRecognitionEnabled() {
-    return FALSE;
-  }
+command error_t ReadRssi.read() {
+	return FAIL;
+}
 
-  async command bool RadioConfig.isHwAddressRecognitionDefault() {
-    return FALSE;
-  }
+async command bool ByteIndicator.isReceiving() {
+	return FALSE;
+}
 
-  command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
-  }
+async command bool EnergyIndicator.isReceiving() {
+	return FALSE;
+}
 
-  async command bool RadioConfig.isHwAutoAckDefault() {
-    return FALSE;
-  }
+async command bool PacketIndicator.isReceiving() {
+	return FALSE;
+}
 
-  async command bool RadioConfig.isAutoAckEnabled() {
-    return FALSE;
-  }
+task void load_done() {
+	signal RadioBuffer.loadDone(m, SUCCESS);
+}
 
-  command error_t ReadRssi.read() {
-    return FAIL;
-  }
+async command error_t RadioBuffer.load(message_t* msg) {
+	dbg("Radio", "capeRadio RadioSend.load( 0x%1x )", msg);
+	m = msg;
+	post load_done();
+	return SUCCESS;
+}
 
+task void send_done() {
+	signal RadioSend.sendDone(m, SUCCESS);
+}
 
-  async command bool ByteIndicator.isReceiving() {
-    return FALSE;
-  }
+async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )", msg, useCca);
+	post send_done();
+	return SUCCESS;
+}
 
-  async command bool EnergyIndicator.isReceiving() {
-    return FALSE;
-  }
+async command error_t RadioSend.cancel(message_t *msg) {
+	return SUCCESS;
+}
 
-  async command bool PacketIndicator.isReceiving() {
-    return FALSE;
-  }
+async command uint8_t RadioPacket.maxPayloadLength() {
+	return 128;
+}
 
-  task void load_done() {
-    signal RadioBuffer.loadDone(m, SUCCESS);
-  }
-
-  async command error_t RadioBuffer.load(message_t* msg) {
-    m = msg;
-    post load_done();
-    return SUCCESS;
-  }
-
-  task void send_done() {
-    signal RadioSend.sendDone(m, SUCCESS);
-  }
-
-  async command error_t RadioSend.send(message_t* msg, bool useCca) {
-    post send_done();
-    return SUCCESS;
-  }
-
-  async command error_t RadioSend.cancel(message_t *msg) {
-    return SUCCESS;
-  }
-
-  async command uint8_t RadioPacket.maxPayloadLength() {
-    return 128;
-  }
-
-  async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-    dbg("Radio", "Radio getPayload");
-    return msg->data;
-  }
-
-
-  async command error_t RadioResource.immediateRequest() {
-    return SUCCESS;
-  }
-
-  async command error_t RadioResource.request() {
-    return SUCCESS;
-  }
-
-  async command bool RadioResource.isOwner() {
-    return SUCCESS;
-  }
-
-  async command error_t RadioResource.release() {
-    return SUCCESS;
-  }
+async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
+	dbg("Radio", "capeRadio RadioSend.getPayload( 0x%1x, %d )", msg, len);
+	if (len <= call RadioPacket.maxPayloadLength()) {
+		return (void*)msg->data;
+	} else {
+		return NULL;
+	}
+}
 
 
-  event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_t len) {
+async command error_t RadioResource.immediateRequest() {
+	return SUCCESS;
+}
+
+async command error_t RadioResource.request() {
+	return SUCCESS;
+}
+
+async command bool RadioResource.isOwner() {
+	return SUCCESS;
+}
+
+async command error_t RadioResource.release() {
+	return SUCCESS;
+}
+
+
+event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_t len) {
 /*
     msg_t *new_msg;
     nx_struct fennec_header *fh;
