@@ -1,65 +1,9 @@
-// $Id: TossimPacketModelC.nc,v 1.12 2010-06-29 22:07:51 scipio Exp $
-/*
- * Copyright (c) 2005 Stanford University. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * - Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the
- *   distribution.
- * - Neither the name of the copyright holder nor the names of
- *   its contributors may be used to endorse or promote products derived
- *   from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/**
- *
- * This packet-level radio component implements a basic CSMA
- * algorithm. It derives its constants from sim_csma.c. The algorithm
- * is as follows:
- *
- * Transmit iff you measure a clear channel min_free_samples() in a row.
- * Sample up to max_iterations() times. If you do not detect a free
- * channel in this time, signal sendDone with an error of EBUSY.
- * If max_iterations() is zero, then sample indefinitely.
- *
- * On a send request, use an initial backoff in the range of
- * init_low() to init_high().
- * Subsequent backoffs are in the range
-         <pre>(low, high) * exponent_base() ^ iterations</pre>
- *
- * The default exponent_base is 1 (constant backoff).
- *
- *
- * @author Philip Levis
- * @date Dec 16 2005
- *
- */
 
 #include <TossimRadioMsg.h>
 #include <sim_csma.h>
 
 module TossimPacketModelC { 
   provides {
-    interface Init;
     interface SplitControl as Control;
     interface PacketAcknowledgements;
     interface TossimPacketModel as Packet;
@@ -67,7 +11,6 @@ module TossimPacketModelC {
   uses interface GainRadioModel;
 }
 implementation {
-  bool initialized = FALSE;
   bool running = FALSE;
   uint8_t backoffCount;
   uint8_t neededFreeSamples;
@@ -83,16 +26,6 @@ implementation {
     return (tossim_metadata_t*)(&msg->metadata);
   }
   
-  command error_t Init.init() {
-    dbg("TossimPacketModelC", "TossimPacketModelC: Init.init() called\n");
-    initialized = TRUE;
-    // We need to cancel in case an event is still lying around in the queue from
-    // before a reboot. Otherwise, the event will be executed normally (node is on),
-    // but its memory has been zeroed out.
-    sendEvent.cancelled = 1;
-    return SUCCESS;
-  }
-
   task void startDoneTask() {
     running = TRUE;
     signal Control.startDone(SUCCESS);
@@ -104,19 +37,12 @@ implementation {
   }
   
   command error_t Control.start() {
-    if (!initialized) {
-      dbg("TossimPacketModelC", "TossimPacketModelC: Control.start() called before initialization!\n");
-      return FAIL;
-    }
+    sendEvent.cancelled = 1;
     dbg("TossimPacketModelC", "TossimPacketModelC: Control.start() called.\n");
     post startDoneTask();
     return SUCCESS;
   }
   command error_t Control.stop() {
-    if (!initialized) {
-      dbg("TossimPacketModelC", "TossimPacketModelC: Control.stop() called before initialization!\n");
-      return FAIL;
-    }
     running = FALSE;
     dbg("TossimPacketModelC", "TossimPacketModelC: Control.stop() called.\n");
     post stopDoneTask();
@@ -124,25 +50,7 @@ implementation {
   }
 
   
-  
-  async command error_t PacketAcknowledgements.requestAck(message_t* msg) {
-    tossim_metadata_t* meta = getMetadata(msg);
-    meta->ack = TRUE;
-    return SUCCESS;
-  }
-
-  async command error_t PacketAcknowledgements.noAck(message_t* ack) {
-    tossim_metadata_t* meta = getMetadata(ack);
-    meta->ack = FALSE;
-    return SUCCESS;
-  }
-
-  async command error_t PacketAcknowledgements.wasAcked(message_t* ack) {
-    tossim_metadata_t* meta = getMetadata(ack);
-    return meta->ack;
-  }
-      
-  task void sendDoneTask() {
+   task void sendDoneTask() {
     message_t* msg = sending;
     tossim_metadata_t* meta = getMetadata(msg);
     meta->ack = 0;
@@ -159,10 +67,6 @@ implementation {
   void start_csma();
 
   command error_t Packet.send(int dest, message_t* msg, uint8_t len) {
-    if (!initialized) {
-      dbg("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not initialized!\n");
-      return EOFF;
-    }
     if (!running) {
       dbg("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not running!\n");
       return EOFF;
@@ -321,5 +225,18 @@ implementation {
   default event void Control.stopDone(error_t err) {
     return;
   }
-}
+ 
+  async command error_t PacketAcknowledgements.requestAck(message_t* msg) {
+    return SUCCESS;
+  }
 
+  async command error_t PacketAcknowledgements.noAck(message_t* ack) {
+    return SUCCESS;
+  }
+
+  async command error_t PacketAcknowledgements.wasAcked(message_t* ack) {
+    return SUCCESS;
+  }
+      
+
+}

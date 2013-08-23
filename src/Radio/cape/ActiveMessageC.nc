@@ -60,7 +60,6 @@ implementation {
 
   components MainC;
   
-  MainC.SoftwareInit -> Network;
   SplitControl = Network;
   
   AMSend       = AM;
