@@ -30,40 +30,38 @@
 #include "capeRadio.h"
 
 module capeRadioP @safe() {
-  provides interface Mgmt;
-  provides interface Receive as RadioReceive;
-  provides interface ModuleStatus as RadioStatus;
-  provides interface Resource as RadioResource;
-  provides interface RadioConfig;
-  provides interface RadioPower;
-  provides interface Read<uint16_t> as ReadRssi;
-  provides interface SplitControl as RadioControl;
-  provides interface RadioBuffer;
-  provides interface RadioPacket;
-  provides interface RadioSend;
-  provides interface ReceiveIndicator as PacketIndicator;
-  provides interface ReceiveIndicator as EnergyIndicator;
-  provides interface ReceiveIndicator as ByteIndicator;
 
-  uses interface capeRadioParams;
+provides interface Mgmt;
+provides interface Receive as RadioReceive;
+provides interface ModuleStatus as RadioStatus;
+provides interface Resource as RadioResource;
+provides interface RadioConfig;
+provides interface RadioPower;
+provides interface Read<uint16_t> as ReadRssi;
+provides interface SplitControl as RadioControl;
+provides interface RadioBuffer;
+provides interface RadioPacket;
+provides interface RadioSend;
+provides interface ReceiveIndicator as PacketIndicator;
+provides interface ReceiveIndicator as EnergyIndicator;
+provides interface ReceiveIndicator as ByteIndicator;
 
+uses interface capeRadioParams;
 
-  uses interface Packet;
-  uses interface AMPacket;
-  uses interface AMSend;
-  uses interface SplitControl as AMControl;
-  uses interface Receive as ReceiveReceive;
-  uses interface PacketAcknowledgements;
-
-
+uses interface Packet;
+uses interface AMPacket;
+uses interface AMSend;
+uses interface SplitControl as AMControl;
+uses interface Receive as ReceiveReceive;
+uses interface PacketAcknowledgements;
 }
 
 implementation {
 
-  uint8_t channel;
-  uint8_t mgmt = FALSE;
-  norace uint8_t state = S_STOPPED;
-  norace message_t *m;
+uint8_t channel;
+uint8_t mgmt = FALSE;
+norace uint8_t state = S_STOPPED;
+norace message_t *m;
 
 task void start_done() {
 	state = S_STARTED;

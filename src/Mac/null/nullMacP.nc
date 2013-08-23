@@ -227,14 +227,17 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 }
 
 command error_t MacAMSend.cancel(message_t* msg) {
+	dbg("Mac", "nullMac MacAMSend.cancel(0x%1x)", msg);
 	return call RadioSend.cancel(msg);
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
+	dbg("Mac", "nullMac MacAMSend.maxPayloadLength()");
 	return call MacPacket.maxPayloadLength();
 }
 
 command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
+	dbg("Mac", "nullMac MacAMSend.getpayload(0x%1x, %d )", msg, len);
 	return call MacPacket.getPayload(msg, len);
 }
 
@@ -381,40 +384,43 @@ command am_group_t MacAMPacket.localGroup() {
   }
 
 
-  event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
+event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len) {
+	metadata_t* metadata;
+	dbg("Mac", "nullMac MacAMSend.receive(0x%1x, 0x%1x, %d )", msg, payload, len);
+	metadata = (metadata_t*) msg->metadata;
 
-    if(!(metadata)->crc) {
-      return msg;
-    }
+	if(!(metadata)->crc) {
+		return msg;
+	}
 
 //    msg->conf = call MacAMPacket.group(msg);
 //    msg->conf = call MacAMPacket.group(msg);
 
-    msg->rssi = metadata->rssi;
-    msg->lqi = metadata->lqi;
-    msg->crc = metadata->crc;
+	msg->rssi = metadata->rssi;
+	msg->lqi = metadata->lqi;
+	msg->crc = metadata->crc;
 
-    if (call MacAMPacket.isForMe(msg)) {
-      //dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
-      return signal MacReceive.receive(msg, payload, len);
-    }
-    else {
-      return signal MacSnoop.receive(msg, payload, len);
-    }
-  }
+	if (call MacAMPacket.isForMe(msg)) {
+		//dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
+		return signal MacReceive.receive(msg, payload, len);
+	} else {
+		return signal MacSnoop.receive(msg, payload, len);
+	}
+}
 
-  async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
-    m_state = S_BEGIN_TRANSMIT;
-    call RadioSend.send(m_msg, 0);
-  }
+async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
+	dbg("Mac", "nullMac MacAMSend.loadDone(0x%1x, %d )", msg, error);
+	m_state = S_BEGIN_TRANSMIT;
+	call RadioSend.send(m_msg, 0);
+}
 
 
-  async event void RadioSend.sendDone(message_t *msg, error_t error) {
-    m_state = S_STARTED;
-    atomic sendErr = error;
-    post sendDone_task();
-  }
+async event void RadioSend.sendDone(message_t *msg, error_t error) {
+	dbg("Mac", "nullMac MacAMSend.sendDone(0x%1x, %d )", msg, error);
+	m_state = S_STARTED;
+	atomic sendErr = error;
+	post sendDone_task();
+}
 
 }
 
