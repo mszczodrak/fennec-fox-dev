@@ -111,6 +111,8 @@ implementation {
     uint8_t len;
     void* payload;
 
+    dbg("TossimActiveMessageC", "TossimActiveMessageC Model.receive()");
+
     memcpy(bufferPointer, msg, sizeof(message_t));
     len = call Packet.payloadLength(bufferPointer);
     payload = call Packet.getPayload(bufferPointer, call Packet.maxPayloadLength());

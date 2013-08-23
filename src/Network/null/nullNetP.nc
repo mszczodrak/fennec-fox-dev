@@ -53,11 +53,13 @@ module nullNetP {
 implementation {
 
 command error_t Mgmt.start() {
+	dbg("Network", "nullNet Mgmt.start()");
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
+	dbg("Network", "nullNet Mgmt.stop()");
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }

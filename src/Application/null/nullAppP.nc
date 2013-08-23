@@ -45,17 +45,17 @@ module nullAppP {
 
 implementation {
 
-  command error_t Mgmt.start() {
-    //dbg("Application", "Application null starts\n");
-    signal Mgmt.startDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.start() {
+	dbg("Application", "nullApp Mgmt.start()");
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    //dbg("Application", "Application null stops\n");
-    signal Mgmt.stopDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	dbg("Application", "nullApp Mgmt.start()");
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
   event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 
