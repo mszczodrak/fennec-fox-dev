@@ -143,6 +143,7 @@ implementation {
 
 command error_t Mgmt.start() {
 	dbg("Mac", "nullMac Mgmt.start()");
+	post startDone_task();
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -150,6 +151,7 @@ command error_t Mgmt.start() {
 
 command error_t Mgmt.stop() {
 	dbg("Mac", "nullMac Mgmt.stop()");
+	shutdown();
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -194,6 +196,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	}
+	dbg("Mac", " here 2");
 
 	atomic {
 		if (!call SplitControlState.isState(S_STARTED)) {
@@ -204,11 +207,15 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		m_msg = msg;
 	}
 
+	dbg("Mac", " here 3");
+
 	header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
 		(0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
 		(0x3 << IEEE154_FCF_DEST_ADDR_MODE));
 	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
 		( 1 << IEEE154_FCF_INTRAPAN ) );
+
+	dbg("Mac", " here");
 
 	metadata->ack = 1;
 	metadata->rssi = 0;
@@ -218,6 +225,8 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	if ( m_state != S_STARTED ) {
 		return FAIL;
 	}
+
+	dbg("Mac", " here");
 
 	m_state = S_LOAD;
 	m_msg = m_msg;
