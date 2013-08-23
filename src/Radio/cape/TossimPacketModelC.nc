@@ -105,7 +105,7 @@ implementation {
   
   command error_t Control.start() {
     if (!initialized) {
-      dbgerror("TossimPacketModelC", "TossimPacketModelC: Control.start() called before initialization!\n");
+      dbg("TossimPacketModelC", "TossimPacketModelC: Control.start() called before initialization!\n");
       return FAIL;
     }
     dbg("TossimPacketModelC", "TossimPacketModelC: Control.start() called.\n");
@@ -114,7 +114,7 @@ implementation {
   }
   command error_t Control.stop() {
     if (!initialized) {
-      dbgerror("TossimPacketModelC", "TossimPacketModelC: Control.stop() called before initialization!\n");
+      dbg("TossimPacketModelC", "TossimPacketModelC: Control.stop() called before initialization!\n");
       return FAIL;
     }
     running = FALSE;
@@ -160,14 +160,15 @@ implementation {
 
   command error_t Packet.send(int dest, message_t* msg, uint8_t len) {
     if (!initialized) {
-      dbgerror("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not initialized!\n");
+      dbg("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not initialized!\n");
       return EOFF;
     }
     if (!running) {
-      dbgerror("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not running!\n");
+      dbg("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not running!\n");
       return EOFF;
 
     }
+    dbg("TossimPacketModelC", "TossimPacketModelC packet.send");
     if (sending != NULL) {
       return EBUSY;
     }

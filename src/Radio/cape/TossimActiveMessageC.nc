@@ -74,13 +74,14 @@ implementation {
 					  message_t* amsg,
 					  uint8_t len) {
     error_t err;
-    tossim_header_t* header = getHeader(amsg);
-    dbg("AM", "AM: Sending packet (id=%hhu, len=%hhu) to %hu\n", id, len, addr);
-    header->type = id;
-    header->dest = addr;
-    header->src = call AMPacket.address();
-    header->length = len;
-    err = call Model.send((int)addr, amsg, len + sizeof(tossim_header_t) + sizeof(tossim_footer_t));
+//    tossim_header_t* header = getHeader(amsg);
+//    dbg("AM", "AM: Sending packet (id=%hhu, len=%hhu) to %hu\n", id, len, addr);
+//    header->type = id;
+//    header->dest = addr;
+//    header->src = call AMPacket.address();
+//    header->length = len;
+//    err = call Model.send((int)addr, amsg, len + sizeof(tossim_header_t) + sizeof(tossim_footer_t));
+    err = call Model.send(addr, amsg, len);
     return err;
   }
 

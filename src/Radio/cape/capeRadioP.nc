@@ -94,9 +94,13 @@ command error_t Mgmt.start() {
 }
 
 event void AMControl.startDone(error_t err) {
+	state = S_STARTED;
+	post start_done();
 }
 
 event void AMControl.stopDone(error_t err) {
+	state = S_STOPPED;
+	post stop_done();
 }
 
 command error_t Mgmt.stop() {
@@ -110,7 +114,8 @@ command error_t RadioControl.start() {
 	dbg("Radio", "capeRadio RadioControl.start()");
 	if (state == S_STOPPED) {
 		state = S_STARTING;
-		post start_done();
+		call AMControl.start();
+//		post start_done();
 		return SUCCESS;
 	} else if(state == S_STARTED) {
 		post start_done();
@@ -245,8 +250,14 @@ task void send_done() {
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )", msg, useCca);
-	post send_done();
-	return SUCCESS;
+	if (call AMSend.send(BROADCAST, msg, 100) != SUCCESS) {
+		dbg("Radio", "capeRadio AMSend.send(BROADCAST, 0x%1x)  FAILED", msg);
+		return FAIL;
+
+	} else {
+		post send_done();
+		return SUCCESS;
+	}
 }
 
 async command error_t RadioSend.cancel(message_t *msg) {
@@ -285,6 +296,7 @@ async command error_t RadioResource.release() {
 
 
 event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_t len) {
+	dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", in_msg, payload, len);
 /*
     msg_t *new_msg;
     nx_struct fennec_header *fh;
@@ -346,7 +358,8 @@ event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_
     return in_msg;
 }
 
-  event void AMSend.sendDone(message_t* out, error_t error){
+event void AMSend.sendDone(message_t* out, error_t error){
+	dbg("Radio", "capeRadio AMSend.sendDone(0x%1x, %d )", out, error);
 /*
     tr_state = S_STARTED;
     call Timer0.stop();
