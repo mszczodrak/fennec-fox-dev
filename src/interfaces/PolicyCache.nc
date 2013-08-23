@@ -42,6 +42,21 @@ interface PolicyCache {
   event void wrong_conf();
   command error_t set_active_configuration(conf_t new_conf);
   command uint16_t get_number_of_configurations(void);
+
+  command uint16_t getNodeSequence();
+  command void setNodeSequence(uint16_t seq);
+
+  command uint16_t getNodeState();
+  command void setNodeState(uint16_t state);
+
+  command uint16_t getNetworkSequence();
+  command void setNetworkSequence(uint16_t seq);
+
+  command uint16_t getNetworkState();
+  command void setNetworkState(uint16_t state);
+
+  command network_state_t* getStateRecord(uint16_t id);
+
 }
 
 

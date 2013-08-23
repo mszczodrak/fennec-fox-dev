@@ -26,7 +26,7 @@ uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
 
-uses interface Mgmt as ProtocolStack;
+//uses interface Mgmt as ProtocolStack;
 uses interface Mgmt as EventsMgmt;
 
 uses interface EventCache;
@@ -78,13 +78,13 @@ void set_new_state(state_t conf, uint16_t seq) {
 		resend_confs = POLICY_RESEND_RECONF;
 		/* Start Policy State */
 		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
-		call ProtocolStack.start();
+		//call ProtocolStack.start();
 		break;
 
 	case S_NONE:
 		resend_confs = 0;  /* skip resending at the first time */
 		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
-		call ProtocolStack.start();
+		//call ProtocolStack.start();
 		break;
 
 	case S_COMPLETED:
@@ -92,7 +92,6 @@ void set_new_state(state_t conf, uint16_t seq) {
 		status = S_INIT;
 		post report_new_configuration();
 		call EventsMgmt.stop();
-		//reset_control();
 		break;
 
 	case S_INIT:
@@ -100,7 +99,7 @@ void set_new_state(state_t conf, uint16_t seq) {
 		 * moving into stopping all modules of the stack */
 		status = S_STOPPING;
 		call EventCache.clearMask();
-		call ProtocolStack.stop();
+		//call ProtocolStack.stop();
 		break;
 	}
 }
@@ -169,7 +168,7 @@ event void EventsMgmt.startDone(error_t err) {
 		call EventsMgmt.start();
 		return;
 	}
-	call ProtocolStack.start();
+	//call ProtocolStack.start();
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -255,6 +254,7 @@ event void Timer.fired() {
 	}
 }
 
+/*
 event void ProtocolStack.startDone(error_t err) {
 	if (err != SUCCESS) {
 		call ProtocolStack.start();
@@ -289,20 +289,21 @@ event void ProtocolStack.stopDone(error_t err) {
 
 	switch(status) {
 	case S_STOPPING:
-		/* The configuration has been stopped, now stop the control state */
+		//The configuration has been stopped, now stop the control state
 		status = S_STOPPED;
 		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
 		call ProtocolStack.stop();
 		break;
       
 	case S_STOPPED:
-		/* At this moment everything is stopped */
+		// At this moment everything is stopped
 		set_new_state(configuration_id, configuration_seq);
 		break;
 
 	default:
 	}
 }
+*/
 
 
 task void sendConfigurationMsg() {

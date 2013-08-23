@@ -141,68 +141,26 @@ implementation {
 
   /* Functions */
 
-  command error_t Mgmt.start() {
-    dbg("Mac", "Mac null Mgmt.start()");
-    if (status == S_STARTED) {
-      signal Mgmt.startDone(SUCCESS);
-      return SUCCESS;
-    }
-
-    if (SplitControl_start() != SUCCESS) {
-      signal Mgmt.startDone(FAIL);
-    }
-    status = S_STARTING;
-    return SUCCESS;
-  }
+command error_t Mgmt.start() {
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
 
-  command error_t Mgmt.stop() {
-    dbg("Mac", "Mac null Mgmt.stop()");
-    if (status == S_STOPPED) {
-      signal Mgmt.stopDone(SUCCESS);
-      return SUCCESS;
-    }
-
-    if (SplitControl_stop() != SUCCESS) {
-      signal Mgmt.stopDone(FAIL);
-    }
-    status = S_STOPPING;
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
 
-  event void RadioControl.startDone(error_t err) {
-    if (err != SUCCESS) {
-      call RadioControl.start();
-    } else {
-      if (status == S_STARTING) {
-        if (call SplitControlState.isState(S_STARTING)) {
-          post startDone_task();
-        }
 
-        status = S_STARTED;
-        signal MacStatus.status(F_RADIO, ON);
-        signal Mgmt.startDone(SUCCESS);
-      }
-    }
-  }
+event void RadioControl.startDone(error_t err) {
+}
 
 
-  event void RadioControl.stopDone(error_t err) {
-    if (err != SUCCESS) {
-      call RadioControl.stop();
-    } else {
-      if (status == S_STOPPING) {
-        if (call SplitControlState.isState(S_STOPPING)) {
-          shutdown();
-        }
+event void RadioControl.stopDone(error_t err) {
+} 
 
-        status = S_STOPPED;
-        signal MacStatus.status(F_RADIO, OFF);
-        signal Mgmt.stopDone(SUCCESS);
-      }
-    }
-  }
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload( msg, len);

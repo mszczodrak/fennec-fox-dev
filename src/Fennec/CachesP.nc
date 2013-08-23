@@ -9,8 +9,32 @@ provides interface PolicyCache;
 
 implementation {
 
+uint16_t network_sequence = 0;
+uint16_t node_sequence = 0;
+
+uint16_t network_state = 0;
+uint16_t node_state = 0;
+
+network_state_t states[MAX_STATES];
+
+
 command void SimpleStart.start() {
-	signal PolicyCache.newConf(active_state);
+//	uint8_t i;
+
+	states[0].id = 1;
+	states[0].num_confs = 2;
+	states[0].conf_ids[0] = POLICY_CONFIGURATION;
+	states[0].conf_ids[1] = 1;
+
+	states[1].id = 2;
+	states[1].num_confs = 2;
+	states[1].conf_ids[0] = POLICY_CONFIGURATION;
+	states[1].conf_ids[1] = 2;
+
+	network_state = active_state - 1;
+
+
+//	signal PolicyCache.newConf(active_state);
 	signal SimpleStart.startDone(SUCCESS);
 }
 
@@ -63,6 +87,44 @@ command error_t PolicyCache.set_active_configuration(conf_t new_state) {
 	atomic active_state = new_state;
 	return SUCCESS;
 }
+
+command uint16_t PolicyCache.getNetworkSequence() {
+	return network_sequence;
+}
+
+command void PolicyCache.setNetworkSequence(uint16_t seq) {
+	network_sequence = seq;
+}
+
+command uint16_t PolicyCache.getNodeSequence() {
+	return node_sequence;
+}
+
+command void PolicyCache.setNodeSequence(uint16_t seq) {
+	node_sequence = seq;
+}
+
+command uint16_t PolicyCache.getNetworkState() {
+	return network_state;
+}
+
+command void PolicyCache.setNetworkState(uint16_t state) {
+	network_state = state;
+}
+
+command uint16_t PolicyCache.getNodeState() {
+	return node_state;
+}
+
+command void PolicyCache.setNodeState(uint16_t state) {
+	node_state = state;
+}
+
+command network_state_t* PolicyCache.getStateRecord(uint16_t id) {
+	return &states[id];
+}
+
+
 
 command uint16_t PolicyCache.get_number_of_configurations() {
 	return NUMBER_OF_CONFIGURATIONS;

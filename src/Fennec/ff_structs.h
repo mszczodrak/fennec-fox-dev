@@ -36,6 +36,8 @@ typedef uint16_t conf_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 
+#define MAX_STATES      5
+#define MAX_CONFS_PER_STATE     5
 
 typedef nx_struct fennec_header_t {
   nxle_uint8_t length;
@@ -78,6 +80,13 @@ typedef struct ff_sensor_client {
 	uint32_t rate;
 	uint32_t signaling;
 } ff_sensor_client_t;
+
+
+typedef struct {
+        uint8_t id;
+        uint8_t num_confs;
+        uint8_t conf_ids[MAX_CONFS_PER_STATE];
+} network_state_t;
 
 
 typedef nx_struct metadata_t {

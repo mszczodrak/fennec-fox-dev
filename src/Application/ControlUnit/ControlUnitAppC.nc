@@ -67,8 +67,8 @@ implementation {
   NetworkPacketAcknowledgements = ControlUnitAppP.NetworkPacketAcknowledgements;
   NetworkStatus = ControlUnitAppP.NetworkStatus;
 
-  components ProtocolStackC;
-  ControlUnitAppP.ProtocolStack -> ProtocolStackC;
+//  components ProtocolStackC;
+//  ControlUnitAppP.ProtocolStack -> ProtocolStackC;
 
   components CachesC;
   ControlUnitAppP.EventCache -> CachesC;

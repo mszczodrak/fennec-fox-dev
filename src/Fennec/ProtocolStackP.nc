@@ -31,7 +31,8 @@
 #define MODULE_RESPONSE_DELAY    200
 
 module ProtocolStackP {
-provides interface Mgmt;
+//provides interface Mgmt;
+provides interface ProtocolStack;
 
 uses interface ModuleCtrl;
 uses interface Timer<TMilli> as Timer;
@@ -48,16 +49,16 @@ void copy_default_params(uint16_t conf_id);
 uint16_t next_module();
 uint8_t ctrl_conf(uint16_t conf_id);
 
-command error_t Mgmt.start() {
-	dbg("System", "Starting Protocol Stack");
+command error_t ProtocolStack.startConf(uint16_t conf) {
+	dbg("ProtocolStack", "ProtocolStack startConf(%d)", conf);
 	state = S_STARTING;
-	return ctrl_conf(active_state);
+	return ctrl_conf(conf);
 }
 
-command error_t Mgmt.stop() {
-	dbg("System", "Stopping Protocol Stack");
+command error_t ProtocolStack.stopConf(uint16_t conf) {
+	dbg("ProtocolStack", "ProtocolStack stopConf(%d)", conf);
 	state = S_STOPPING;
-	return ctrl_conf(active_state);
+	return ctrl_conf(conf);
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
@@ -71,7 +72,7 @@ event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 		if (active_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STARTED;
-			signal Mgmt.startDone(SUCCESS);
+			signal ProtocolStack.startConfDone(SUCCESS);
 			return;
 		} else {
 			call ModuleCtrl.start(next_module());
@@ -89,7 +90,7 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 		if (active_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STOPPED;
-			signal Mgmt.stopDone(SUCCESS);
+			signal ProtocolStack.stopConfDone(SUCCESS);
 			return;
 		} else {
 			call ModuleCtrl.stop(next_module());

@@ -26,13 +26,15 @@
 
 
 configuration ProtocolStackC {
-provides interface Mgmt;
+//provides interface Mgmt;
+provides interface ProtocolStack;
 }
 
 implementation {
 
 components ProtocolStackP;
-Mgmt = ProtocolStackP.Mgmt;
+//Mgmt = ProtocolStackP.Mgmt;
+ProtocolStack = ProtocolStackP;
 
 components FennecEngineC;
 ProtocolStackP.ModuleCtrl -> FennecEngineC;

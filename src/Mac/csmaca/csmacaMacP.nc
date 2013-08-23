@@ -120,30 +120,34 @@ command error_t Mgmt.stop() {
 }
 
 
-  event void RadioControl.startDone(error_t err) {
-    if (err == FAIL) {
-      call RadioControl.start();
-    } else {
-      if (status == S_STARTING) {
-        status = S_STARTED;
-        signal MacStatus.status(F_RADIO, ON);
-        signal Mgmt.startDone(SUCCESS);
-      }
-    }
-  }
+event void RadioControl.startDone(error_t err) {
+	if (status != S_STARTING) {
+		return;
+	}
+
+	if (err == FAIL) {
+		call RadioControl.start();
+	} else {
+		status = S_STARTED;
+		signal MacStatus.status(F_RADIO, ON);
+		signal Mgmt.startDone(SUCCESS);
+	}
+}
 
 
-  event void RadioControl.stopDone(error_t err) {
-    if (err == FAIL) {
-      call RadioControl.stop();
-    } else {
-      if (status == S_STOPPING) {
-        status = S_STOPPED;
-        signal MacStatus.status(F_RADIO, OFF);
-        signal Mgmt.stopDone(SUCCESS);
-      }
-    }
-  }
+event void RadioControl.stopDone(error_t err) {
+	if (status != S_STOPPING) {
+		return;
+	}
+
+	if (err == FAIL) {
+		call RadioControl.stop();
+	} else {
+		status = S_STOPPED;
+		signal MacStatus.status(F_RADIO, OFF);
+		signal Mgmt.stopDone(SUCCESS);
+	}
+}
 
   command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
     csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload( msg, len );
