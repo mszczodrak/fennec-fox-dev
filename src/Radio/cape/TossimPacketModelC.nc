@@ -101,7 +101,6 @@ implementation {
 
     sendEvent.handle = send_transmit; /* could add delay */
 
-
     sendEvent.cleanup = sim_queue_cleanup_none;
     sim_queue_insert(&sendEvent);
   }
