@@ -54,7 +54,6 @@ module CapeActiveMessageC {
   }
   uses {
     interface TossimPacketModel as Model;
-    command am_addr_t amAddress();
   }
 }
 implementation {
@@ -122,16 +121,18 @@ implementation {
   }
 
   event bool Model.shouldAck(message_t* msg) {
+/*
     tossim_header_t* header = getHeader(msg);
     if (header->dest == call amAddress()) {
       dbg("Acks", "Received packet addressed to me so ack it\n");
       return TRUE;
     }
+*/
     return FALSE;
   }
   
   command am_addr_t AMPacket.address() {
-    return call amAddress();
+    return TOS_NODE_ID;
   }
  
   command am_addr_t AMPacket.destination(message_t* amsg) {
@@ -226,10 +227,6 @@ implementation {
    return FAIL;
  }
 
- default command am_addr_t amAddress() {
-   return 0;
- }
-  
  void active_message_deliver_handle(sim_event_t* evt) {
    message_t* m = (message_t*)evt->data;
    dbg("Packet", "Delivering packet to %i at %s\n", (int)sim_node(), sim_time_string());

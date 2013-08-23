@@ -58,7 +58,6 @@ implementation {
 
   components CpmModelC as Model;
 
-  components ActiveMessageAddressC as Address;
   components MainC;
   
   MainC.SoftwareInit -> Network;
@@ -72,7 +71,6 @@ implementation {
   PacketAcknowledgements = Network;
 
   AM.Model -> Network.Packet;
-  AM.amAddress -> Address;
   
   Network.GainRadioModel -> Model;
 }
