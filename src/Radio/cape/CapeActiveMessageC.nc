@@ -118,7 +118,7 @@ implementation {
     payload = call Packet.getPayload(bufferPointer, call Packet.maxPayloadLength());
 
     dbg("AM", "Received active message (%p) of type %hhu and length %hhu for me @ %s.", bufferPointer, call AMPacket.type(bufferPointer), len, sim_time_string());
-    bufferPointer = signal Receive.receive[call AMPacket.type(bufferPointer)](bufferPointer, payload, len);
+    bufferPointer = signal Receive.receive[101](bufferPointer, payload, len);
   }
 
   event bool Model.shouldAck(message_t* msg) {
