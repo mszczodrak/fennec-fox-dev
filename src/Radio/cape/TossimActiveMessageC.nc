@@ -117,14 +117,8 @@ implementation {
     len = call Packet.payloadLength(bufferPointer);
     payload = call Packet.getPayload(bufferPointer, call Packet.maxPayloadLength());
 
-    if (call AMPacket.isForMe(msg)) {
-      dbg("AM", "Received active message (%p) of type %hhu and length %hhu for me @ %s.\n", bufferPointer, call AMPacket.type(bufferPointer), len, sim_time_string());
-      bufferPointer = signal Receive.receive[call AMPacket.type(bufferPointer)](bufferPointer, payload, len);
-    }
-    else {
-      dbg("AM", "Snooped on active message of type %hhu and length %hhu for %hu @ %s.\n", call AMPacket.type(bufferPointer), len, call AMPacket.destination(bufferPointer), sim_time_string());
-      bufferPointer = signal Snoop.receive[call AMPacket.type(bufferPointer)](bufferPointer, payload, len);
-    }
+    dbg("AM", "Received active message (%p) of type %hhu and length %hhu for me @ %s.", bufferPointer, call AMPacket.type(bufferPointer), len, sim_time_string());
+    bufferPointer = signal Receive.receive[call AMPacket.type(bufferPointer)](bufferPointer, payload, len);
   }
 
   event bool Model.shouldAck(message_t* msg) {
