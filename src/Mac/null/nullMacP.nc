@@ -159,12 +159,12 @@ command error_t Mgmt.stop() {
 
 
 event void RadioControl.startDone(error_t err) {
-	dbg("Mac", "nullMac RadioControl.startDone(%d)", err);
+//	dbg("Mac", "nullMac RadioControl.startDone(%d)", err);
 }
 
 
 event void RadioControl.stopDone(error_t err) {
-	dbg("Mac", "nullMac RadioControl.stopDone(%d)", err);
+//	dbg("Mac", "nullMac RadioControl.stopDone(%d)", err);
 } 
 
 

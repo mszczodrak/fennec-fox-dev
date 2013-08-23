@@ -58,16 +58,20 @@ implementation {
     uint32_t send_delay = call CounterAppParams.get_delay() * 
 		call CounterAppParams.get_delay_scale();
 
-    dbg("Applicationr", "Application Counter strarting");
+//	send_delay = 3000;
+
+    dbg("Application", "CounterApp starting delay: %d", send_delay);
     seqno = 0;
+
 
     if ((call CounterAppParams.get_src() == NODE) || 
 	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
       call Timer.startPeriodic(send_delay);
     }
+
+
     dbg("Application", "Application: Counter start");
 
-    //dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
     signal Mgmt.startDone(SUCCESS);
     return SUCCESS;
   }

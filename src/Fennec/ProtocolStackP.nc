@@ -31,7 +31,6 @@
 #define MODULE_RESPONSE_DELAY    200
 
 module ProtocolStackP {
-//provides interface Mgmt;
 provides interface ProtocolStack;
 
 uses interface ModuleCtrl;
@@ -45,13 +44,17 @@ uint8_t state = S_STOPPED;
 uint8_t active_layer = UNKNOWN_LAYER;
 
 void next_layer();
-void copy_default_params(uint16_t conf_id);
+error_t copy_default_params(uint16_t conf_id);
 uint16_t next_module();
 uint8_t ctrl_conf(uint16_t conf_id);
 
 command error_t ProtocolStack.startConf(uint16_t conf) {
 	dbg("ProtocolStack", "ProtocolStack startConf(%d)", conf);
 	state = S_STARTING;
+	if (copy_default_params(conf) != SUCCESS) {
+		dbg("ProtocolStack", "ProtocolStack copy_default_params(%d)  FAILED", conf);
+		return FAIL;
+	}
 	return ctrl_conf(conf);
 }
 
@@ -113,7 +116,6 @@ event void Timer.fired() {
 uint8_t ctrl_conf(uint16_t conf_id) {
 	//dbg("System", "Protocol Stack in ctrl_conf");
         if (state == S_STARTING) {
-                copy_default_params(conf_id);
                 active_layer = F_RADIO;
 		//dbg("System", "System: active layer is %d %d", active_layer, F_RADIO);
         } else {
@@ -144,7 +146,7 @@ void next_layer() {
 }
 
 
-void copy_default_params(uint16_t conf_id) {
+error_t copy_default_params(uint16_t conf_id) {
         memcpy( defaults[conf_id].application_cache,
                 defaults[conf_id].application_default_params,
                 defaults[conf_id].application_default_size);
@@ -160,11 +162,13 @@ void copy_default_params(uint16_t conf_id) {
         memcpy( defaults[conf_id].radio_cache,
                 defaults[conf_id].radio_default_params,
                 defaults[conf_id].radio_default_size);
+
+	dbg("ProtocolStack", "ProtocolStack copy_default_params");
+	return SUCCESS;
 }
 
 
 uint16_t next_module() {
-	//dbg("System", "next_module: active layer :%d", active_layer);
         switch(active_layer) {
         case F_APPLICATION:
 		dbg("ProtocolStack", "ProtocolStack: next module is F_APPLICATION");

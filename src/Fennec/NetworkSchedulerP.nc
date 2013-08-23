@@ -106,7 +106,7 @@ event void EventsMgmt.stopDone(error_t err) {
 event void ProtocolStack.startConfDone(error_t err) {
 	dbg("NetworkScheduler", "ProtocolStack.startConfDone(%d)", err);
         if (err == SUCCESS) {
-		conf++;
+		conf+=3;
         }
 	post start_protocol_stack();
 }

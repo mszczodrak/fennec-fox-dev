@@ -59,18 +59,14 @@ uses interface PacketAcknowledgements;
 implementation {
 
 uint8_t channel;
-uint8_t mgmt = FALSE;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
 
 task void start_done() {
 	state = S_STARTED;
-
+	dbg("Radio", "capeRadio start_done()");
 	signal RadioControl.startDone(SUCCESS);
-	if (mgmt == TRUE) {
-		signal Mgmt.startDone(SUCCESS);
-		mgmt = FALSE;
-	}
+	signal Mgmt.startDone(SUCCESS);
 }
 
 task void finish_starting_radio() {
@@ -79,16 +75,14 @@ task void finish_starting_radio() {
 
 task void stop_done() {
 	state = S_STOPPED;
+	dbg("Radio", "capeRadio stop_done()");
 	signal RadioControl.stopDone(SUCCESS);
-	if (mgmt == TRUE) {
-		signal Mgmt.stopDone(SUCCESS);
-		mgmt = FALSE;
-	}
+	signal Mgmt.stopDone(SUCCESS);
 }
 
 command error_t Mgmt.start() {
+	state = S_STOPPED;
 	dbg("Radio", "capeRadio Mgmt.start()");
-	mgmt = TRUE;
 	call RadioControl.start();
 	return SUCCESS;
 }
@@ -105,7 +99,6 @@ event void AMControl.stopDone(error_t err) {
 
 command error_t Mgmt.stop() {
 	dbg("Radio", "capeRadio Mgmt.stop()");
-	mgmt = TRUE;
 	call RadioControl.stop();
 	return SUCCESS;
 }
@@ -115,7 +108,6 @@ command error_t RadioControl.start() {
 	if (state == S_STOPPED) {
 		state = S_STARTING;
 		call AMControl.start();
-//		post start_done();
 		return SUCCESS;
 	} else if(state == S_STARTED) {
 		post start_done();
