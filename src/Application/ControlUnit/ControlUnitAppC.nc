@@ -40,7 +40,6 @@
 
 configuration ControlUnitAppC {
   provides interface Mgmt;
-  provides interface SimpleStart;
 
   uses interface ControlUnitAppParams;
   uses interface AMSend as NetworkAMSend;
@@ -55,7 +54,6 @@ configuration ControlUnitAppC {
 implementation {
  
   components ControlUnitAppP;
-  SimpleStart = ControlUnitAppP;
   Mgmt = ControlUnitAppP;
   ControlUnitAppParams = ControlUnitAppP;
 
@@ -71,7 +69,6 @@ implementation {
 //  ControlUnitAppP.ProtocolStack -> ProtocolStackC;
 
   components CachesC;
-  ControlUnitAppP.EventCache -> CachesC;
   ControlUnitAppP.PolicyCache -> CachesC;
 
   components RandomC;
@@ -83,7 +80,5 @@ implementation {
   components new TimerMilliC() as Timer;
   ControlUnitAppP.Timer -> Timer;
 
-  components EventsC;
-  ControlUnitAppP.EventsMgmt-> EventsC.Mgmt;
 }
 

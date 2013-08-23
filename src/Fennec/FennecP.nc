@@ -41,23 +41,19 @@ uses interface SimpleStart as NetworkScheduler;
 implementation {
 
 event void Boot.booted() {
-	dbg("Fennec", "Starting... here");
 	//call Leds.led1On();
 	call DbgSerial.start();
 }
 
 task void start_random() {
-	dbg("Fennec", "Starting... Random");
 	call RandomStart.start();
 }
 
 task void start_network_scheduler() {
-	dbg("Fennec", "Starting... NetworkScheduler");
 	call NetworkScheduler.start();
 }
 
 task void start_caches() {
-	dbg("Fennec", "Starting... Caches");
 	call Caches.start();
 }
 
@@ -77,8 +73,6 @@ event void RandomStart.startDone(error_t err) {
 	}
 }
 
-event void NetworkScheduler.startDone(error_t err) {
-}
 
 event void Caches.startDone(error_t err) {
 	if (err == SUCCESS) {
@@ -87,6 +81,8 @@ event void Caches.startDone(error_t err) {
 		post start_caches();
 	}
 }
+
+event void NetworkScheduler.startDone(error_t err) {}
 
 }
 

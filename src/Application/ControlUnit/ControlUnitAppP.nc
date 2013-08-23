@@ -14,7 +14,6 @@
 #define SAME_MSG_COUNTER_THRESHOLD 1
 
 module ControlUnitAppP @safe() {
-provides interface SimpleStart;
 provides interface Mgmt;
 
 uses interface ControlUnitAppParams;
@@ -26,10 +25,6 @@ uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
 
-//uses interface Mgmt as ProtocolStack;
-uses interface Mgmt as EventsMgmt;
-
-uses interface EventCache;
 uses interface PolicyCache;
 
 uses interface Random;
@@ -91,14 +86,12 @@ void set_new_state(state_t conf, uint16_t seq) {
 		/* Here we start our journey once a new state is detected */
 		status = S_INIT;
 		post report_new_configuration();
-		call EventsMgmt.stop();
 		break;
 
 	case S_INIT:
 		/* Here we are done with sending control messages and we
 		 * moving into stopping all modules of the stack */
 		status = S_STOPPING;
-		call EventCache.clearMask();
 		//call ProtocolStack.stop();
 		break;
 	}
@@ -116,14 +109,6 @@ task void continue_reconfiguration() {
 		set_new_state(configuration_id, configuration_seq);
 		break;
 
-	case S_STARTED:
-		/* at this point the control stack is running, now start the rest,
-		 * set configuration to the new state and start events and the stack
-		 * itself 
-		 */
-		call PolicyCache.set_active_configuration(configuration_id);
-		call EventsMgmt.start();
-		//call ProtocolStack.start();
 		break;
 
 	case S_COMPLETED:
@@ -131,16 +116,6 @@ task void continue_reconfiguration() {
 
 	default:
 	}
-}
-
-command void SimpleStart.start() {
-	dbg("ControlUnit", "SimpleStart.start()");
-	configuration_id = UNKNOWN_CONFIGURATION;
-	configuration_seq = 0;
-	confmsg.conf = POLICY_CONFIGURATION;
-	busy_sending = FALSE;
-	status = S_NONE;
-	signal SimpleStart.startDone(SUCCESS);
 }
 
 event void PolicyCache.newConf(conf_t new_conf) {
@@ -155,21 +130,6 @@ event void PolicyCache.wrong_conf() {
 	reset_control();
 }
 
-event void EventsMgmt.stopDone(error_t err) {
-	if (err != SUCCESS) { 
-		call EventsMgmt.stop();
-		return;
-	}
-	reset_control();
-}
-
-event void EventsMgmt.startDone(error_t err) {
-	if (err != SUCCESS) { 
-		call EventsMgmt.start();
-		return;
-	}
-	//call ProtocolStack.start();
-}
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
@@ -254,56 +214,6 @@ event void Timer.fired() {
 	}
 }
 
-/*
-event void ProtocolStack.startDone(error_t err) {
-	if (err != SUCCESS) {
-		call ProtocolStack.start();
-		return;
-	}
-
-	switch(status) {
-	case S_NONE:
-		status = S_STARTING;
-		post report_new_configuration();
-
-	case S_STARTING:
-		status = S_STARTED;
-		call PolicyCache.set_active_configuration(configuration_id);
-		post continue_reconfiguration();
-		break;
-
-	case S_STARTED:
-		dbg("ControlUnit", "ProtocolStack.startDone - S_COMPLETED");
-		status = S_COMPLETED;
-		break;
-
-	default:
-	}
-}
-
-event void ProtocolStack.stopDone(error_t err) {
-	if (err != SUCCESS) {
-		call ProtocolStack.stop();
-		return;
-	}
-
-	switch(status) {
-	case S_STOPPING:
-		//The configuration has been stopped, now stop the control state
-		status = S_STOPPED;
-		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
-		call ProtocolStack.stop();
-		break;
-      
-	case S_STOPPED:
-		// At this moment everything is stopped
-		set_new_state(configuration_id, configuration_seq);
-		break;
-
-	default:
-	}
-}
-*/
 
 
 task void sendConfigurationMsg() {
@@ -341,11 +251,19 @@ task void sendConfigurationMsg() {
 
 
 command error_t Mgmt.start() {
+	dbg("ControlUnit", "SimpleStart.start()");
+	configuration_id = UNKNOWN_CONFIGURATION;
+	configuration_seq = 0;
+	resend_confs = 0;  /* skip resending at the first time */
+	confmsg.conf = POLICY_CONFIGURATION;
+	busy_sending = FALSE;
+	status = S_NONE;
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
+	call Timer.stop();
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
