@@ -315,7 +315,7 @@ event void Model.sendDone(message_t* msg, error_t result) {
 */
 
   uint8_t payloadLength(message_t* msg) {
-    return getHeader(msg)->length;
+    return 100;
   }
 
 

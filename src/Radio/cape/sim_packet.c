@@ -47,9 +47,6 @@
 // has to be predeclared here because it is defined within that component.
 void active_message_deliver(int node, message_t* m, sim_time_t t);
 
-static tossim_header_t* getHeader(message_t* msg) {
-  return (tossim_header_t*)(msg->data - sizeof(tossim_header_t));
-}
 
 void sim_packet_deliver(int node, sim_packet_t* msg, sim_time_t t) __attribute__ ((C, spontaneous)){
   if (t < sim_time()) {

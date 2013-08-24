@@ -195,13 +195,6 @@ nx_struct accept_conf {
 	nx_uint8_t local_conf;
 };
 
-#ifdef TOSSIM
-
-#include <TossimRadioMsg.h>
-
-
-#endif
-
 
 
 #endif
