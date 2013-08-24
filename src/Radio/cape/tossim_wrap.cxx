@@ -2943,8 +2943,6 @@ SWIGINTERNINLINE PyObject*
 }
 
 
-#include <packet.h>
-
 
 SWIGINTERN swig_type_info*
 SWIG_pchar_descriptor(void)
@@ -5950,21 +5948,6 @@ fail:
 
 
 SWIGINTERN PyObject *_wrap_Tossim_newPacket(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Tossim *arg1 = (Tossim *) 0 ;
-  Packet *result = 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Tossim_newPacket",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Tossim, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Tossim_newPacket" "', argument " "1"" of type '" "Tossim *""'"); 
-  }
-  arg1 = reinterpret_cast< Tossim * >(argp1);
-  result = (Packet *)(arg1)->newPacket();
-fail:
   return NULL;
 }
 

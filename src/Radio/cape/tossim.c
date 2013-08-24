@@ -51,7 +51,6 @@
 
 #include <mac.c>
 #include <radio.c>
-#include <packet.c>
 #include <sim_noise.h>
 
 uint16_t TOS_NODE_ID = 1;
@@ -294,6 +293,3 @@ Radio* Tossim::radio() {
   return new Radio();
 }
 
-Packet* Tossim::newPacket() {
-  return new Packet();
-}

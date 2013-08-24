@@ -47,7 +47,6 @@
 #include <tos.h>
 #include <mac.h>
 #include <radio.h>
-#include <packet.h>
 #include <hashtable.h>
 
 typedef struct variable_string {
@@ -136,7 +135,6 @@ class Tossim {
 
   MAC* mac();
   Radio* radio();
-  Packet* newPacket();
 
  private:
   char timeBuf[256];

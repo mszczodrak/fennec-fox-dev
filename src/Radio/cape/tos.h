@@ -103,7 +103,6 @@ struct @exactlyonce { };
 #include <sim_event_queue.c>
 #include <sim_tossim.c>
 #include <sim_mac.c>
-#include <sim_packet.c>
 #endif
 
 #endif
