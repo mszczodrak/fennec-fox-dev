@@ -50,7 +50,6 @@ module CapeActiveMessageC {
 
     interface Packet;
     interface AMPacket;
-    interface TossimPacket;
   }
   uses {
     interface TossimPacketModel as Model;
@@ -96,10 +95,6 @@ implementation {
     return call Packet.getPayload(m, len);
   }
 
-  command int8_t TossimPacket.strength(message_t* msg) {
-    return getMetadata(msg)->strength;
-  }
-  
   event void Model.sendDone(message_t* msg, error_t result) {
     signal AMSend.sendDone[call AMPacket.type(msg)](msg, result);
   }
