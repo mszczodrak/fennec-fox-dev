@@ -1,5 +1,4 @@
 
-#include <TossimRadioMsg.h>
 #include <sim_radio.h>
 
 module CapePacketModelC { 

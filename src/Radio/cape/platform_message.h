@@ -44,20 +44,10 @@
 #ifndef PLATFORM_MESSAGE_H
 #define PLATFORM_MESSAGE_H
 
-#include <TossimRadioMsg.h>
 #include <Serial.h>
 
 typedef union message_header {
-  tossim_header_t tossim;
   serial_header_t serial;
 } message_header_t;
-
-typedef union message_footer {
-  tossim_footer_t tossim;
-} message_footer_t;
-
-typedef union message_metadata {
-  tossim_metadata_t tossim;
-} message_metadata_t;
 
 #endif
