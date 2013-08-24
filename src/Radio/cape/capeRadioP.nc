@@ -72,17 +72,12 @@ task void start_done() {
 	signal Mgmt.startDone(SUCCESS);
 }
 
-task void finish_starting_radio() {
-	post start_done();
-}
-
 task void stop_done() {
 	state = S_STOPPED;
 	dbg("Radio", "capeRadio stop_done()");
 	signal RadioControl.stopDone(SUCCESS);
 	signal Mgmt.stopDone(SUCCESS);
 }
-
 
 task void load_done() {
 	signal RadioBuffer.loadDone(out_msg, err);
