@@ -48,43 +48,6 @@ except AttributeError:
 del types
 
 
-class MAC(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, MAC, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, MAC, name)
-    __repr__ = _swig_repr
-    def __init__(self, *args): 
-        this = _TOSSIM.new_MAC(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _TOSSIM.delete_MAC
-    __del__ = lambda self : None;
-    def initHigh(*args): return _TOSSIM.MAC_initHigh(*args)
-    def initLow(*args): return _TOSSIM.MAC_initLow(*args)
-    def high(*args): return _TOSSIM.MAC_high(*args)
-    def low(*args): return _TOSSIM.MAC_low(*args)
-    def symbolsPerSec(*args): return _TOSSIM.MAC_symbolsPerSec(*args)
-    def bitsPerSymbol(*args): return _TOSSIM.MAC_bitsPerSymbol(*args)
-    def preambleLength(*args): return _TOSSIM.MAC_preambleLength(*args)
-    def exponentBase(*args): return _TOSSIM.MAC_exponentBase(*args)
-    def minFreeSamples(*args): return _TOSSIM.MAC_minFreeSamples(*args)
-    def rxtxDelay(*args): return _TOSSIM.MAC_rxtxDelay(*args)
-    def ackTime(*args): return _TOSSIM.MAC_ackTime(*args)
-    def setInitHigh(*args): return _TOSSIM.MAC_setInitHigh(*args)
-    def setInitLow(*args): return _TOSSIM.MAC_setInitLow(*args)
-    def setHigh(*args): return _TOSSIM.MAC_setHigh(*args)
-    def setLow(*args): return _TOSSIM.MAC_setLow(*args)
-    def setSymbolsPerSec(*args): return _TOSSIM.MAC_setSymbolsPerSec(*args)
-    def setBitsBerSymbol(*args): return _TOSSIM.MAC_setBitsBerSymbol(*args)
-    def setPreambleLength(*args): return _TOSSIM.MAC_setPreambleLength(*args)
-    def setExponentBase(*args): return _TOSSIM.MAC_setExponentBase(*args)
-    def setMinFreeSamples(*args): return _TOSSIM.MAC_setMinFreeSamples(*args)
-    def setRxtxDelay(*args): return _TOSSIM.MAC_setRxtxDelay(*args)
-    def setAckTime(*args): return _TOSSIM.MAC_setAckTime(*args)
-MAC_swigregister = _TOSSIM.MAC_swigregister
-MAC_swigregister(MAC)
-
 class Radio(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Radio, name, value)
@@ -227,7 +190,6 @@ class Tossim(_object):
     def removeChannel(*args): return _TOSSIM.Tossim_removeChannel(*args)
     def randomSeed(*args): return _TOSSIM.Tossim_randomSeed(*args)
     def runNextEvent(*args): return _TOSSIM.Tossim_runNextEvent(*args)
-    def mac(*args): return _TOSSIM.Tossim_mac(*args)
     def radio(*args): return _TOSSIM.Tossim_radio(*args)
 Tossim_swigregister = _TOSSIM.Tossim_swigregister
 Tossim_swigregister(Tossim)

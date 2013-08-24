@@ -2478,18 +2478,17 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define SWIGTYPE_p_FILE swig_types[0]
-#define SWIGTYPE_p_MAC swig_types[1]
-#define SWIGTYPE_p_Mote swig_types[2]
-#define SWIGTYPE_p_Radio swig_types[3]
-#define SWIGTYPE_p_Tossim swig_types[4]
-#define SWIGTYPE_p_Variable swig_types[5]
-#define SWIGTYPE_p_char swig_types[6]
-#define SWIGTYPE_p_int swig_types[7]
-#define SWIGTYPE_p_nesc_app swig_types[8]
-#define SWIGTYPE_p_p_char swig_types[9]
-#define SWIGTYPE_p_var_string swig_types[10]
-static swig_type_info *swig_types[12];
-static swig_module_info swig_module = {swig_types, 11, 0, 0, 0, 0};
+#define SWIGTYPE_p_Mote swig_types[1]
+#define SWIGTYPE_p_Radio swig_types[2]
+#define SWIGTYPE_p_Tossim swig_types[3]
+#define SWIGTYPE_p_Variable swig_types[4]
+#define SWIGTYPE_p_char swig_types[5]
+#define SWIGTYPE_p_int swig_types[6]
+#define SWIGTYPE_p_nesc_app swig_types[7]
+#define SWIGTYPE_p_p_char swig_types[8]
+#define SWIGTYPE_p_var_string swig_types[9]
+static swig_type_info *swig_types[11];
+static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2772,10 +2771,7 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 }
 
 
-#include <mac.h>
-
-
-  #define SWIG_From_long   PyInt_FromLong 
+#define SWIG_From_long   PyInt_FromLong 
 
 
 SWIGINTERNINLINE PyObject *
@@ -3135,618 +3131,11 @@ SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val)
 #ifdef __cplusplus
 extern "C" {
 #endif
-SWIGINTERN PyObject *_wrap_new_MAC(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)":new_MAC")) SWIG_fail;
-  result = (MAC *)new MAC();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_MAC, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
 
 
-SWIGINTERN PyObject *_wrap_delete_MAC(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_MAC",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_MAC" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  delete arg1;
-  
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
 
 
-SWIGINTERN PyObject *_wrap_MAC_initHigh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_initHigh",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_initHigh" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->initHigh();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
 
-
-SWIGINTERN PyObject *_wrap_MAC_initLow(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_initLow",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_initLow" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->initLow();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_high(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_high",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_high" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->high();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_low(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_low",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_low" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->low();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_symbolsPerSec(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_symbolsPerSec",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_symbolsPerSec" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->symbolsPerSec();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_bitsPerSymbol(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_bitsPerSymbol",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_bitsPerSymbol" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->bitsPerSymbol();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_preambleLength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_preambleLength",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_preambleLength" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->preambleLength();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_exponentBase(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_exponentBase",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_exponentBase" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->exponentBase();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_minFreeSamples(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_minFreeSamples",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_minFreeSamples" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->minFreeSamples();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_rxtxDelay(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_rxtxDelay",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_rxtxDelay" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->rxtxDelay();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_ackTime(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_ackTime",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_ackTime" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->ackTime();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setInitHigh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setInitHigh",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setInitHigh" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setInitHigh" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setInitHigh(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setInitLow(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setInitLow",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setInitLow" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setInitLow" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setInitLow(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setHigh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setHigh",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setHigh" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setHigh" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setHigh(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setLow(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setLow",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setLow" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setLow" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setLow(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setSymbolsPerSec(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setSymbolsPerSec",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setSymbolsPerSec" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setSymbolsPerSec" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setSymbolsPerSec(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setBitsBerSymbol(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setBitsBerSymbol",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setBitsBerSymbol" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setBitsBerSymbol" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setBitsBerSymbol(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setPreambleLength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setPreambleLength",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setPreambleLength" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setPreambleLength" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setPreambleLength(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setExponentBase(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setExponentBase",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setExponentBase" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setExponentBase" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setExponentBase(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-SWIGINTERN PyObject *_wrap_MAC_setMinFreeSamples(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setMinFreeSamples",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setMinFreeSamples" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setMinFreeSamples" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setMinFreeSamples(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setRxtxDelay(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setRxtxDelay",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setRxtxDelay" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setRxtxDelay" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setRxtxDelay(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_MAC_setAckTime(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setAckTime",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setAckTime" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setAckTime" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setAckTime(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *MAC_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O|swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_MAC, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
 
 SWIGINTERN PyObject *_wrap_new_Radio(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
@@ -5900,28 +5289,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Tossim_mac(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Tossim *arg1 = (Tossim *) 0 ;
-  MAC *result = 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Tossim_mac",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Tossim, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Tossim_mac" "', argument " "1"" of type '" "Tossim *""'"); 
-  }
-  arg1 = reinterpret_cast< Tossim * >(argp1);
-  result = (MAC *)(arg1)->mac();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_MAC, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_Tossim_radio(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Tossim *arg1 = (Tossim *) 0 ;
@@ -5952,31 +5319,6 @@ SWIGINTERN PyObject *Tossim_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObjec
 }
 
 static PyMethodDef SwigMethods[] = {
-	 { (char *)"new_MAC", _wrap_new_MAC, METH_VARARGS, NULL},
-	 { (char *)"delete_MAC", _wrap_delete_MAC, METH_VARARGS, NULL},
-	 { (char *)"MAC_initHigh", _wrap_MAC_initHigh, METH_VARARGS, NULL},
-	 { (char *)"MAC_initLow", _wrap_MAC_initLow, METH_VARARGS, NULL},
-	 { (char *)"MAC_high", _wrap_MAC_high, METH_VARARGS, NULL},
-	 { (char *)"MAC_low", _wrap_MAC_low, METH_VARARGS, NULL},
-	 { (char *)"MAC_symbolsPerSec", _wrap_MAC_symbolsPerSec, METH_VARARGS, NULL},
-	 { (char *)"MAC_bitsPerSymbol", _wrap_MAC_bitsPerSymbol, METH_VARARGS, NULL},
-	 { (char *)"MAC_preambleLength", _wrap_MAC_preambleLength, METH_VARARGS, NULL},
-	 { (char *)"MAC_exponentBase", _wrap_MAC_exponentBase, METH_VARARGS, NULL},
-	 { (char *)"MAC_minFreeSamples", _wrap_MAC_minFreeSamples, METH_VARARGS, NULL},
-	 { (char *)"MAC_rxtxDelay", _wrap_MAC_rxtxDelay, METH_VARARGS, NULL},
-	 { (char *)"MAC_ackTime", _wrap_MAC_ackTime, METH_VARARGS, NULL},
-	 { (char *)"MAC_setInitHigh", _wrap_MAC_setInitHigh, METH_VARARGS, NULL},
-	 { (char *)"MAC_setInitLow", _wrap_MAC_setInitLow, METH_VARARGS, NULL},
-	 { (char *)"MAC_setHigh", _wrap_MAC_setHigh, METH_VARARGS, NULL},
-	 { (char *)"MAC_setLow", _wrap_MAC_setLow, METH_VARARGS, NULL},
-	 { (char *)"MAC_setSymbolsPerSec", _wrap_MAC_setSymbolsPerSec, METH_VARARGS, NULL},
-	 { (char *)"MAC_setBitsBerSymbol", _wrap_MAC_setBitsBerSymbol, METH_VARARGS, NULL},
-	 { (char *)"MAC_setPreambleLength", _wrap_MAC_setPreambleLength, METH_VARARGS, NULL},
-	 { (char *)"MAC_setExponentBase", _wrap_MAC_setExponentBase, METH_VARARGS, NULL},
-	 { (char *)"MAC_setMinFreeSamples", _wrap_MAC_setMinFreeSamples, METH_VARARGS, NULL},
-	 { (char *)"MAC_setRxtxDelay", _wrap_MAC_setRxtxDelay, METH_VARARGS, NULL},
-	 { (char *)"MAC_setAckTime", _wrap_MAC_setAckTime, METH_VARARGS, NULL},
-	 { (char *)"MAC_swigregister", MAC_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Radio", _wrap_new_Radio, METH_VARARGS, NULL},
 	 { (char *)"delete_Radio", _wrap_delete_Radio, METH_VARARGS, NULL},
 	 { (char *)"Radio_add", _wrap_Radio_add, METH_VARARGS, NULL},
@@ -6041,7 +5383,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Tossim_removeChannel", _wrap_Tossim_removeChannel, METH_VARARGS, NULL},
 	 { (char *)"Tossim_randomSeed", _wrap_Tossim_randomSeed, METH_VARARGS, NULL},
 	 { (char *)"Tossim_runNextEvent", _wrap_Tossim_runNextEvent, METH_VARARGS, NULL},
-	 { (char *)"Tossim_mac", _wrap_Tossim_mac, METH_VARARGS, NULL},
 	 { (char *)"Tossim_radio", _wrap_Tossim_radio, METH_VARARGS, NULL},
 	 { (char *)"Tossim_swigregister", Tossim_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
@@ -6051,7 +5392,6 @@ static PyMethodDef SwigMethods[] = {
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
 static swig_type_info _swigt__p_FILE = {"_p_FILE", "FILE *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_MAC = {"_p_MAC", "MAC *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Mote = {"_p_Mote", "Mote *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Radio = {"_p_Radio", "Radio *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Tossim = {"_p_Tossim", "Tossim *", 0, 0, (void*)0, 0};
@@ -6064,7 +5404,6 @@ static swig_type_info _swigt__p_var_string = {"_p_var_string", "var_string *|var
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_FILE,
-  &_swigt__p_MAC,
   &_swigt__p_Mote,
   &_swigt__p_Radio,
   &_swigt__p_Tossim,
@@ -6077,7 +5416,6 @@ static swig_type_info *swig_type_initial[] = {
 };
 
 static swig_cast_info _swigc__p_FILE[] = {  {&_swigt__p_FILE, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_MAC[] = {  {&_swigt__p_MAC, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mote[] = {  {&_swigt__p_Mote, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Radio[] = {  {&_swigt__p_Radio, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Tossim[] = {  {&_swigt__p_Tossim, 0, 0, 0},{0, 0, 0, 0}};
@@ -6090,7 +5428,6 @@ static swig_cast_info _swigc__p_var_string[] = {  {&_swigt__p_var_string, 0, 0, 
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_FILE,
-  _swigc__p_MAC,
   _swigc__p_Mote,
   _swigc__p_Radio,
   _swigc__p_Tossim,
