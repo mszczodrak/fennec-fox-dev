@@ -22,8 +22,8 @@ implementation {
   
   message_t receiveBuffer;
   
-  tossim_metadata_t* getMetadata(message_t* msg) {
-    return (tossim_metadata_t*)(&msg->metadata);
+  metadata_t* getMetadata(message_t* msg) {
+    return (metadata_t*)(&msg->metadata);
   }
   
   task void startDoneTask() {
@@ -52,7 +52,7 @@ implementation {
   
    task void sendDoneTask() {
     message_t* msg = sending;
-    tossim_metadata_t* meta = getMetadata(msg);
+    metadata_t* meta = getMetadata(msg);
     meta->ack = 0;
     meta->strength = 0;
     meta->time = 0;
@@ -110,7 +110,7 @@ implementation {
 
   void send_transmit(sim_event_t* evt) {
     sim_time_t duration;
-    tossim_metadata_t* metadata = getMetadata(sending);
+    metadata_t* metadata = getMetadata(sending);
 
     duration = 8 * sendingLength;
     duration /= sim_csma_bits_per_symbol();
@@ -153,7 +153,7 @@ implementation {
   
   event void GainRadioModel.acked(message_t* msg) {
     if (running) {
-      tossim_metadata_t* metadata = getMetadata(sending);
+      metadata_t* metadata = getMetadata(sending);
       metadata->ack = 1;
       if (msg != sending) {
 	error = 1;

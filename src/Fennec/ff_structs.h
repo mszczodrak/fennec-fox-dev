@@ -97,6 +97,8 @@ typedef nx_struct metadata_t {
   nx_uint8_t crc;
   nx_uint8_t ack;
   nx_uint8_t timesync;
+  nx_int8_t strength;
+  nx_uint16_t time;
 #else
   nx_bool crc;
   nx_bool ack;

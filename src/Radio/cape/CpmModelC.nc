@@ -323,7 +323,7 @@ implementation {
       // Copy this receiver's packet signal strength to the metadata region
       // of the packet. Note that this packet is actually shared across all
       // receivers: a higher layer performs the copy.
-      tossim_metadata_t* meta = (tossim_metadata_t*)(&mine->msg->metadata);
+      metadata_t* meta = (metadata_t*)(&mine->msg->metadata);
       meta->strength = mine->strength;
       
       dbg_clear("CpmModelC,SNRLoss", "  -signaling reception\n");

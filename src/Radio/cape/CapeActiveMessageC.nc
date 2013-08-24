@@ -64,10 +64,6 @@ implementation {
     return (tossim_header_t*)(amsg->data - sizeof(tossim_header_t));
   }
 
-  tossim_metadata_t* getMetadata(message_t* amsg) {
-    return (tossim_metadata_t*)(&amsg->metadata);
-  }
-  
   command error_t AMSend.send[am_id_t id](am_addr_t addr,
 					  message_t* amsg,
 					  uint8_t len) {

@@ -96,7 +96,7 @@ uint8_t* sim_packet_data(sim_packet_t* p) __attribute__ ((C, spontaneous)){
 }
 void sim_packet_set_strength(sim_packet_t* p, uint16_t str) __attribute__ ((C, spontaneous)){
   message_t* msg = (message_t*)p;
-  tossim_metadata_t* md = (tossim_metadata_t*)(&msg->metadata);
+  metadata_t* md = (metadata_t*)(&msg->metadata);
   md->strength = str;
 }
 void sim_packet_deliver(int node, sim_packet_t* msg, sim_time_t t) __attribute__ ((C, spontaneous)){
