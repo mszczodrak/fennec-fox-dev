@@ -79,7 +79,7 @@ implementation {
   capeRadioP.AMControl -> Network;
   capeRadioP.Packet -> AM;
   capeRadioP.AMPacket -> AM;
-  capeRadioP.ReceiveReceive -> AM.Receive[101];
+  capeRadioP.ReceiveReceive -> AM.Receive;
   capeRadioP.AMSend -> AM.AMSend[101];
 
   AM.Model -> Network.Packet;

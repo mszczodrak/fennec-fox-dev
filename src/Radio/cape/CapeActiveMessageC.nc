@@ -4,8 +4,7 @@ module CapeActiveMessageC {
   provides {
     
     interface AMSend[am_id_t id];
-    interface Receive[am_id_t id];
-    interface Receive as Snoop[am_id_t id];
+    interface Receive;
 
     interface Packet;
     interface AMPacket;
@@ -67,7 +66,7 @@ implementation {
     payload = call Packet.getPayload(bufferPointer, call Packet.maxPayloadLength());
 
     dbg("AM", "Received active message (%p) of type %hhu and length %hhu for me @ %s.", bufferPointer, call AMPacket.type(bufferPointer), len, sim_time_string());
-    bufferPointer = signal Receive.receive[101](bufferPointer, payload, len);
+    bufferPointer = signal Receive.receive(bufferPointer, payload, len);
   }
 
   event bool Model.shouldAck(message_t* msg) {
@@ -155,14 +154,6 @@ implementation {
 
   command am_group_t AMPacket.localGroup() {
     return TOS_AM_GROUP;
-  }
-
- default event message_t* Receive.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) {
-    return msg;
-  }
-  
-  default event message_t* Snoop.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) {
-    return msg;
   }
 
  default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t err) {
