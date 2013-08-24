@@ -2480,7 +2480,6 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 #define SWIGTYPE_p_FILE swig_types[0]
 #define SWIGTYPE_p_MAC swig_types[1]
 #define SWIGTYPE_p_Mote swig_types[2]
-//#define SWIGTYPE_p_Packet swig_types[3]
 #define SWIGTYPE_p_Radio swig_types[4]
 #define SWIGTYPE_p_Tossim swig_types[5]
 #define SWIGTYPE_p_Variable swig_types[6]
@@ -4038,119 +4037,9 @@ SWIGINTERN PyObject *Radio_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject
   return SWIG_Py_Void();
 }
 
-/*
-SWIGINTERN PyObject *_wrap_new_Packet(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)":new_Packet")) SWIG_fail;
-  result = (Packet *)new Packet();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Packet, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
 
-
-SWIGINTERN PyObject *_wrap_delete_Packet(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_Packet",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Packet" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  delete arg1;
-  
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Packet_deliver(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  int arg2 ;
-  long long arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  long long val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOO:Packet_deliver",&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_deliver" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Packet_deliver" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_long_SS_long(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Packet_deliver" "', argument " "3"" of type '" "long long""'");
-  } 
-  arg3 = static_cast< long long >(val3);
-  (arg1)->deliver(arg2,arg3);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Packet_deliverNow(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Packet_deliverNow",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_deliverNow" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Packet_deliverNow" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->deliverNow(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-*/
-
-SWIGINTERN PyObject *Packet_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-/*
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O|swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_Packet, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-*/
-}
+//SWIGINTERN PyObject *Packet_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+//}
 
 SWIGINTERN PyObject *_wrap_variable_string_t_type_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
@@ -6075,8 +5964,6 @@ SWIGINTERN PyObject *_wrap_Tossim_newPacket(PyObject *SWIGUNUSEDPARM(self), PyOb
   }
   arg1 = reinterpret_cast< Tossim * >(argp1);
   result = (Packet *)(arg1)->newPacket();
-  //resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Packet, 0 |  0 );
-  //return resultobj;
 fail:
   return NULL;
 }
@@ -6124,7 +6011,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Radio_setNoise", _wrap_Radio_setNoise, METH_VARARGS, NULL},
 	 { (char *)"Radio_setSensitivity", _wrap_Radio_setSensitivity, METH_VARARGS, NULL},
 	 { (char *)"Radio_swigregister", Radio_swigregister, METH_VARARGS, NULL},
-	 { (char *)"Packet_swigregister", Packet_swigregister, METH_VARARGS, NULL},
+//	 { (char *)"Packet_swigregister", Packet_swigregister, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_type_set", _wrap_variable_string_t_type_set, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_type_get", _wrap_variable_string_t_type_get, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_ptr_set", _wrap_variable_string_t_ptr_set, METH_VARARGS, NULL},
