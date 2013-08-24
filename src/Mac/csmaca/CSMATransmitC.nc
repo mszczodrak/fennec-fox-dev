@@ -1,20 +1,20 @@
-#include "CC2420.h"
 #include "IEEE802154.h"
 
 configuration CSMATransmitC {
-  provides interface CSMATransmit;
-  provides interface SplitControl;
-  provides interface Send;
 
-  uses interface ReceiveIndicator as EnergyIndicator;
-  uses interface StdControl as RadioStdControl;
-  uses interface RadioBuffer;
-  uses interface RadioSend;
-  uses interface RadioPacket;
-  uses interface SplitControl as RadioControl;
-  uses interface csmacaMacParams;
-  uses interface RadioPower;
-  uses interface Resource as RadioResource;
+provides interface CSMATransmit;
+provides interface SplitControl;
+provides interface Send;
+
+uses interface ReceiveIndicator as EnergyIndicator;
+uses interface StdControl as RadioStdControl;
+uses interface RadioBuffer;
+uses interface RadioSend;
+uses interface RadioPacket;
+uses interface SplitControl as RadioControl;
+uses interface csmacaMacParams;
+uses interface RadioPower;
+uses interface Resource as RadioResource;
 }
 
 implementation {

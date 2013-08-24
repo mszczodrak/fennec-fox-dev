@@ -36,7 +36,6 @@
  * @author David Moss
  */
  
-#include "CC2420.h"
 #include "csmacaMac.h"
 
 module UniqueReceiveP @safe() {

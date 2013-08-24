@@ -28,6 +28,14 @@
 #ifndef _H_CSMACA_MAC_H_
 #define _H_CSMACA_MAC_H_
 
+/**
+ * Ideally, your receive history size should be equal to the number of
+ * RF neighbors your node will have
+ */
+#ifndef RECEIVE_HISTORY_SIZE
+#define RECEIVE_HISTORY_SIZE 4
+#endif
+
 typedef nx_struct csmaca_header_t {
   nxle_uint8_t length;
   nxle_uint16_t fcf;
@@ -40,6 +48,21 @@ typedef nx_struct csmaca_header_t {
   nxle_uint8_t network;
   nxle_uint8_t type;
 } csmaca_header_t;
+
+enum
+{
+  CC2420_INVALID_TIMESTAMP  = 0x80000000L,
+};
+
+enum cc2420_enums {
+  CC2420_TIME_ACK_TURNAROUND = 7, // jiffies
+  CC2420_TIME_VREN = 20,          // jiffies
+  CC2420_TIME_SYMBOL = 2,         // 2 symbols / jiffy
+  CC2420_BACKOFF_PERIOD = ( 20 / CC2420_TIME_SYMBOL ), // symbols
+  CC2420_MIN_BACKOFF = ( 20 / CC2420_TIME_SYMBOL ),  // platform specific?
+  CC2420_ACK_WAIT_DELAY = 256,    // jiffies
+};
+
 
 
 #endif
