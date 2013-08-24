@@ -5944,11 +5944,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Tossim_newPacket(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *Tossim_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O|swigregister", &obj)) return NULL;
@@ -6049,7 +6044,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Tossim_runNextEvent", _wrap_Tossim_runNextEvent, METH_VARARGS, NULL},
 	 { (char *)"Tossim_mac", _wrap_Tossim_mac, METH_VARARGS, NULL},
 	 { (char *)"Tossim_radio", _wrap_Tossim_radio, METH_VARARGS, NULL},
-	 { (char *)"Tossim_newPacket", _wrap_Tossim_newPacket, METH_VARARGS, NULL},
 	 { (char *)"Tossim_swigregister", Tossim_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
