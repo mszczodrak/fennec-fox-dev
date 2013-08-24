@@ -340,60 +340,52 @@ command am_group_t MacAMPacket.localGroup() {
 }
 
 
-  /***************** Packet Commands ****************/
-  command void MacPacket.clear(message_t* msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-    memset(header, 0x0, sizeof(fennec_header_t));
-    memset(metadata, 0x0, sizeof(metadata_t));
-  }
+/***************** Packet Commands ****************/
+command void MacPacket.clear(message_t* msg) {
+	metadata_t* metadata = (metadata_t*) msg->metadata;
+	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
+	memset(header, 0x0, sizeof(fennec_header_t));
+	memset(metadata, 0x0, sizeof(metadata_t));
+}
 
-  command uint8_t MacPacket.payloadLength(message_t* msg) {
-    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-    return header->length - sizeof(fennec_header_t);
-  }
+command uint8_t MacPacket.payloadLength(message_t* msg) {
+	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
+	return header->length - sizeof(fennec_header_t);
+}
 
-  command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-    header->length  = len + sizeof(fennec_header_t);
-  }
+command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
+	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
+	header->length  = len + sizeof(fennec_header_t);
+}
 
-  command uint8_t MacPacket.maxPayloadLength() {
-    return call RadioPacket.maxPayloadLength();
-  }
+command uint8_t MacPacket.maxPayloadLength() {
+	return (call RadioPacket.maxPayloadLength() - sizeof(fennec_header_t));
+}
 
-  command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call MacPacket.maxPayloadLength()) {
-      uint8_t *p = call RadioPacket.getPayload(msg, len);
-      return (p + sizeof(fennec_header_t));
-    } else {
-      return NULL;
-    }
+command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
+	if (len <= call MacPacket.maxPayloadLength()) {
+		uint8_t *p = call RadioPacket.getPayload(msg, len);
+		return (p + sizeof(fennec_header_t));
+	} else {
+		return NULL;
+	}
+}
 
-  }
-
-
-
-
-  task void sendDone_task() {
-    error_t packetErr;
-    atomic packetErr = sendErr;
-    if(call SplitControlState.isState(S_STOPPING)) {
-      shutdown();
-
-    } else {
-      call SplitControlState.forceState(S_STARTED);
-    }
-
-    signal MacAMSend.sendDone( m_msg, packetErr );
-  }
-
+task void sendDone_task() {
+	error_t packetErr;
+	atomic packetErr = sendErr;
+	if(call SplitControlState.isState(S_STOPPING)) {
+		shutdown();
+	} else {
+		call SplitControlState.forceState(S_STARTED);
+	}
+	signal MacAMSend.sendDone( m_msg, packetErr );
+}
 
 event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	metadata_t* metadata;
-	dbg("Mac", "nullMac MacAMSend.receive(0x%1x, 0x%1x, %d )", msg, payload, len);
-	metadata = (metadata_t*) msg->metadata;
-
+	metadata_t* metadata = (metadata_t*) msg->metadata;
+	uint8_t *ptr = (uint8_t*) payload;
+	
 	if(!(metadata)->crc) {
 		dbg("Mac", "nullMac MacAMSend.receive did not pass CRC");
 		return msg;
@@ -407,10 +399,19 @@ event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len
 	msg->crc = metadata->crc;
 
 	if (call MacAMPacket.isForMe(msg)) {
-		//dbg("Radio", "Radio receives msg on state %d\n", msg->conf);
-		return signal MacReceive.receive(msg, payload, len);
+	        dbg("Mac", "nullMac MacReceive.receive(0x%1x, 0x%1x, %d )", msg,
+                        ptr + sizeof(fennec_header_t),
+                        len - sizeof(fennec_header_t));
+        	return signal MacReceive.receive(msg,
+                        ptr + sizeof(fennec_header_t),
+                        len - sizeof(fennec_header_t));
 	} else {
-		return signal MacSnoop.receive(msg, payload, len);
+		dbg("Mac", "nullMac MacSnoop.receive(0x%1x, 0x%1x, %d )", msg,
+			ptr + sizeof(fennec_header_t),
+			len - sizeof(fennec_header_t));
+		return signal MacSnoop.receive(msg,
+			ptr + sizeof(fennec_header_t),
+			len - sizeof(fennec_header_t));
 	}
 }
 

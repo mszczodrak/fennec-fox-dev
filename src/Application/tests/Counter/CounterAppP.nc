@@ -89,7 +89,7 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
-	dbg("Application", "CounterApp sendMessage() %d %d", msg->seqno, msg->source); 
+	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
 	//dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, 0);
 
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
