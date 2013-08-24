@@ -3,7 +3,7 @@
 module CapeActiveMessageC {
   provides {
     
-    interface AMSend[am_id_t id];
+    interface AMSend;
     interface Receive;
 
     interface Packet;
@@ -22,7 +22,7 @@ implementation {
     return (tossim_header_t*)(amsg->data - sizeof(tossim_header_t));
   }
 
-  command error_t AMSend.send[am_id_t id](am_addr_t addr,
+  command error_t AMSend.send(am_addr_t addr,
 					  message_t* amsg,
 					  uint8_t len) {
     error_t err;
@@ -37,20 +37,20 @@ implementation {
     return err;
   }
 
-  command error_t AMSend.cancel[am_id_t id](message_t* msg) {
+  command error_t AMSend.cancel(message_t* msg) {
     return call Model.cancel(msg);
   }
   
-  command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
+  command uint8_t AMSend.maxPayloadLength() {
     return call Packet.maxPayloadLength();
   }
 
-  command void* AMSend.getPayload[am_id_t id](message_t* m, uint8_t len) {
+  command void* AMSend.getPayload(message_t* m, uint8_t len) {
     return call Packet.getPayload(m, len);
   }
 
   event void Model.sendDone(message_t* msg, error_t result) {
-    signal AMSend.sendDone[call AMPacket.type(msg)](msg, result);
+    signal AMSend.sendDone(msg, result);
   }
 
   /* Receiving a packet */
@@ -155,10 +155,6 @@ implementation {
   command am_group_t AMPacket.localGroup() {
     return TOS_AM_GROUP;
   }
-
- default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t err) {
-   return;
- }
 
  default command error_t Model.send(int node, message_t* msg, uint8_t len) {
    return FAIL;

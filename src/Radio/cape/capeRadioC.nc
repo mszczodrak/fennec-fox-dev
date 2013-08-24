@@ -80,7 +80,7 @@ implementation {
   capeRadioP.Packet -> AM;
   capeRadioP.AMPacket -> AM;
   capeRadioP.ReceiveReceive -> AM.Receive;
-  capeRadioP.AMSend -> AM.AMSend[101];
+  capeRadioP.AMSend -> AM.AMSend;
 
   AM.Model -> Network.Packet;
   Network.GainRadioModel -> Model;
