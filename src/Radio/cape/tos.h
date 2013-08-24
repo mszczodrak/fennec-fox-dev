@@ -102,7 +102,13 @@ struct @exactlyonce { };
 #include <heap.c>
 #include <sim_event_queue.c>
 #include <sim_tossim.c>
-#include <sim_mac.c>
+
+#include <sim_csma.c>
+#include <sim_gain.c>
+
+#include <randomlib.c>
+#include <sim_noise.c>
+
 #endif
 
 #endif
