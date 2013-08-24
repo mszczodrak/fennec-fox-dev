@@ -48,12 +48,7 @@ provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface capeRadioParams;
 
-uses interface Packet;
-uses interface AMPacket;
-uses interface AMSend;
 uses interface SplitControl as AMControl;
-uses interface Receive as ReceiveReceive;
-uses interface PacketAcknowledgements;
 
 uses interface TossimPacketModel as Model;
 }
@@ -249,8 +244,7 @@ task void send_done() {
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )", msg, useCca);
 	if (call Model.send(BROADCAST, msg, 120) != SUCCESS) {
-//	if (call AMSend.send(BROADCAST, msg, 100) != SUCCESS) {
-		dbg("Radio", "capeRadio AMSend.send(BROADCAST, 0x%1x)  FAILED", msg);
+		dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  FAILED", msg);
 		return FAIL;
 
 	} else {
@@ -294,81 +288,15 @@ async command error_t RadioResource.release() {
 }
 
 
-event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_t len) {
-	dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", in_msg, payload, len);
-/*
-    msg_t *new_msg;
-    nx_struct fennec_header *fh;
-
-#ifndef TOSSIM
-    cc2420_metadata_t *meta;
-#else
-    tossim_metadata_t* meta;
-#endif
-
-    dbg("Radio", "Radio Receive message\n");
-
-    if (tr_state == S_STOPPED) {
-      return in_msg;
-    }
-
-    if ((new_msg = signal Module.next_message()) == NULL) {
-      return in_msg;
-    }
-
-#ifndef TOSSIM
-    meta = (cc2420_metadata_t*) in_msg->metadata;
-#else
-    meta = (tossim_metadata_t*) in_msg->metadata;
-#endif
-
-    {
-      //uint8_t *d = payload;
-      //dbg("Radio", "Ready to copy\n");
-      //dbg("Radio", "%d %d %d %d %d %d %d %d %d\n", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9]);
-
-
-    }
-
-    new_msg->len = len;
-    memcpy(new_msg, payload, len);
-    fh = (nx_struct fennec_header*)payload;
-    new_msg->fennec.len = fh->len;
-    new_msg->fennec.conf = fh->conf;
-
-#ifndef TOSSIM
-    new_msg->rssi = meta->rssi;
-    new_msg->lqi = meta->lqi;
-#else
-    new_msg->rssi = meta->strength;
-    new_msg->lqi = meta->strength;
-#endif
-
-    //dbg("Radio", "Ready copy done\n");
-
-    if (signal RadioSignal.check_destination(new_msg, payload) == TRUE) {
-      //dbg("Radio", "Radio signal receive\n");
-      signal RadioSignal.receive(new_msg, (uint8_t*)&new_msg->data, new_msg->len);
-    } else {
-      //dbg("Radio", "Radio - it's not for me\n");
-      signal Module.drop_message(new_msg);
-    }
-*/
-    return in_msg;
-}
-
 event void Model.sendDone(message_t* msg, error_t result) {
-	dbg("Radio", "capeRadio AMSend.sendDone(0x%1x, %d )", msg, result);
+	dbg("Radio", "capeRadio Model.sendDone(0x%1x, %d )", msg, result);
     	//signal RadioSignal.sendDone(m, result);
 }
 
 
-event void AMSend.sendDone(message_t* out, error_t error){
-	dbg("Radio", "capeRadio AMSend.sendDone(0x%1x, %d )", out, error);
 /*
     tr_state = S_STARTED;
     call Timer0.stop();
-    //dbg("Radio", "Radio got AMSend done\n");
     {
       //uint8_t *d = (uint8_t*)&out_msg->data;
       //dbg("Radio", "%d %d %d %d %d %d %d %d %d\n", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9]);
@@ -383,25 +311,10 @@ event void AMSend.sendDone(message_t* out, error_t error){
     signal RadioSignal.sendDone(out_msg, error);
     //dbg("Radio", "Radio send done signaled\n");
 */
-  }
 
   uint8_t payloadLength(message_t* msg) {
     return getHeader(msg)->length;
   }
-
-  uint8_t maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
-  }
-
-  void* getPayload(message_t* msg, uint8_t len) {
-    if (len <= TOSH_DATA_LENGTH) {
-      return msg->data;
-    }
-    else {
-      return NULL;
-    }
-  }
-
 
 
   event void Model.receive(message_t* msg) {
@@ -413,7 +326,7 @@ event void AMSend.sendDone(message_t* out, error_t error){
 
     memcpy(bufferPointer, msg, sizeof(message_t));
     len = payloadLength(bufferPointer);
-    payload = getPayload(bufferPointer, maxPayloadLength());
+    payload = call RadioPacket.getPayload(bufferPointer, call RadioPacket.maxPayloadLength());
 
 //    bufferPointer = signal Receive.receive(bufferPointer, payload, len);
   }
