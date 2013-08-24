@@ -1,34 +1,3 @@
-/*
- * Copyright (c) 2005 Stanford University. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * - Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the
- *   distribution.
- * - Neither the name of the copyright holder nor the names of
- *   its contributors may be used to endorse or promote products derived
- *   from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 /**
  *
  * CPM (closest-pattern matching) is a wireless noise simulation model
@@ -50,7 +19,7 @@
 #include <randomlib.h>
 
 module CpmModelC {
-  provides interface GainRadioModel as Model;
+	provides interface GainRadioModel as Model;
 }
 
 implementation {
@@ -245,31 +214,31 @@ implementation {
     return prr_hat;
   }
 
-  bool shouldReceive(double SNR) {
-    double prr = prr_estimate_from_snr(SNR);
-    double coin = RandomUniform();
-    if ( (prr >= 0) && (prr <= 1) ) {
-      if (coin < prr)
-	prr = 1.0;
-      else
-	prr = 0.0;
-    }
-    return prr;
-  }
+bool shouldReceive(double SNR) {
+	double prr = prr_estimate_from_snr(SNR);
+	double coin = RandomUniform();
+	if ( (prr >= 0) && (prr <= 1) ) {
+		if (coin < prr)
+			prr = 1.0;
+		else
+			prr = 0.0;
+	}
+	return prr;
+}
 
-  bool checkReceive(receive_message_t* msg) {
-    double noise = noise_hash_generation();
-    receive_message_t* list = outstandingReceptionHead;
-    noise = pow(10.0, noise / 10.0);
-    while (list != NULL) {
-      if (list != msg) {
-	noise += pow(10.0, list->power / 10.0);
-      }
-      list = list->next;
-    }
-    noise = 10.0 * log(noise) / log(10.0);
-    return shouldReceive(msg->power - noise);
-  }
+bool checkReceive(receive_message_t* msg) {
+	double noise = noise_hash_generation();
+	receive_message_t* list = outstandingReceptionHead;
+	noise = pow(10.0, noise / 10.0);
+	while (list != NULL) {
+		if (list != msg) {
+			noise += pow(10.0, list->power / 10.0);
+		}
+		list = list->next;
+	}
+	noise = 10.0 * log(noise) / log(10.0);
+	return shouldReceive(msg->power - noise);
+}
   
   double packetNoise(receive_message_t* msg) {
     double noise = noise_hash_generation();
@@ -293,76 +262,73 @@ implementation {
   /* Handle a packet reception. If the packet is being acked,
      pass the corresponding receive_message_t* to the ack handler,
      otherwise free it. */
-  void sim_gain_receive_handle(sim_event_t* evt) {
-    receive_message_t* mine = (receive_message_t*)evt->data;
-    receive_message_t* predecessor = NULL;
-    receive_message_t* list = outstandingReceptionHead;
 
-    dbg("CpmModelC", "Handling reception event @ %s.\n", sim_time_string());
-    while (list != NULL) {
-      if (list->next == mine) {
-	predecessor = list;
-      }
-      list = list->next;
-    }
-    if (predecessor) {
-      predecessor->next = mine->next;
-    }
-    else if (mine == outstandingReceptionHead) { // must be head
-      outstandingReceptionHead = mine->next;
-    }
-    else {
-      dbgerror("CpmModelC", "Incoming packet list structure is corrupted: entry is not the head and no entry points to it.\n");
-    }
-    dbg("CpmModelC,SNRLoss", "Packet from %i to %i\n", (int)mine->source, (int)sim_node());
-    if (!checkReceive(mine)) {
-      dbg("CpmModelC,SNRLoss", " - lost packet from %i as SNR was too low.\n", (int)mine->source);
-      mine->lost = 1;
-    }
-    if (!mine->lost) {
-      // Copy this receiver's packet signal strength to the metadata region
-      // of the packet. Note that this packet is actually shared across all
-      // receivers: a higher layer performs the copy.
-      metadata_t* meta = (metadata_t*)(&mine->msg->metadata);
-      meta->strength = mine->strength;
+void sim_gain_receive_handle(sim_event_t* evt) {
+	receive_message_t* mine = (receive_message_t*)evt->data;
+	receive_message_t* predecessor = NULL;
+	receive_message_t* list = outstandingReceptionHead;
+
+	dbg("CpmModelC", "Handling reception event @ %s.\n", sim_time_string());
+	while (list != NULL) {
+		if (list->next == mine) {
+			predecessor = list;
+		}
+		list = list->next;
+	}
+
+	if (predecessor) {
+		predecessor->next = mine->next;
+	} else if (mine == outstandingReceptionHead) { // must be head
+		outstandingReceptionHead = mine->next;
+	} else {
+		dbgerror("CpmModelC", "Incoming packet list structure is corrupted: entry is not the head and no entry points to it.\n");
+	}
+	dbg("CpmModelC,SNRLoss", "Packet from %i to %i\n", (int)mine->source, (int)sim_node());
+	if (!checkReceive(mine)) {
+		dbg("CpmModelC,SNRLoss", " - lost packet from %i as SNR was too low.\n", (int)mine->source);
+		mine->lost = 1;
+	}
+
+	if (!mine->lost) {
+		// Copy this receiver's packet signal strength to the metadata region
+		// of the packet. Note that this packet is actually shared across all
+		// receivers: a higher layer performs the copy.
+		metadata_t* meta = (metadata_t*)(&mine->msg->metadata);
+		meta->strength = mine->strength;
       
-      dbg_clear("CpmModelC,SNRLoss", "  -signaling reception\n");
-      signal Model.receive(mine->msg);
-      if (mine->ack) {
-        dbg_clear("CpmModelC", " acknowledgment requested, ");
-      }
-      else {
-        dbg_clear("CpmModelC", " no acknowledgment requested.\n");
-      }
-      // If we scheduled an ack, receiving = 0 when it completes
-      if (mine->ack && signal Model.shouldAck(mine->msg)) {
-        dbg_clear("CpmModelC", " scheduling ack.\n");
-	sim_gain_schedule_ack(mine->source, sim_time() + 1, mine);
-      }
-      else { // Otherwise free the receive_message_t*
-	free_receive_message(mine);
-      }
-      // We're searching for new packets again
-      receiving = 0;
-    } // If the packet was lost, then we're searching for new packets again
-    else {
-      if (RandomUniform() < 0.001) {
-	dbg("CpmModelC,SNRLoss", "Packet was technically lost, but TOSSIM introduces an ack false positive rate.\n");
-	if (mine->ack && signal Model.shouldAck(mine->msg)) {
-	  dbg_clear("CpmModelC", " scheduling ack.\n");
-	  sim_gain_schedule_ack(mine->source, sim_time() + 1, mine);
+		dbg_clear("CpmModelC,SNRLoss", "  -signaling reception\n");
+		signal Model.receive(mine->msg);
+		if (mine->ack) {
+			dbg_clear("CpmModelC", " acknowledgment requested, ");
+		} else {
+			dbg_clear("CpmModelC", " no acknowledgment requested.\n");
+		}
+		// If we scheduled an ack, receiving = 0 when it completes
+		if (mine->ack && signal Model.shouldAck(mine->msg)) {
+			dbg_clear("CpmModelC", " scheduling ack.\n");
+			sim_gain_schedule_ack(mine->source, sim_time() + 1, mine);
+		} else { // Otherwise free the receive_message_t*
+			free_receive_message(mine);
+		}
+		// We're searching for new packets again
+		receiving = 0;
+	} // If the packet was lost, then we're searching for new packets again
+	 else {
+		if (RandomUniform() < 0.001) {
+			dbg("CpmModelC,SNRLoss", "Packet was technically lost, but TOSSIM introduces an ack false positive rate.\n");
+			if (mine->ack && signal Model.shouldAck(mine->msg)) {
+				dbg_clear("CpmModelC", " scheduling ack.\n");
+				sim_gain_schedule_ack(mine->source, sim_time() + 1, mine);
+			} else { // Otherwise free the receive_message_t*
+				free_receive_message(mine);
+			}
+		} else {
+			free_receive_message(mine);
+		}
+		receiving = 0;
+		dbg_clear("CpmModelC,SNRLoss", "  -packet was lost.\n");
 	}
-	else { // Otherwise free the receive_message_t*
-	  free_receive_message(mine);
-	}
-      }
-      else {
-	free_receive_message(mine);
-      }
-      receiving = 0;
-      dbg_clear("CpmModelC,SNRLoss", "  -packet was lost.\n");
-    }
-  }
+}
    
   // Create a record that a node is receiving a packet,
   // enqueue a receive event to figure out what happens.

@@ -323,7 +323,7 @@ event void Model.receive(message_t* msg) {
 	metadata = (metadata_t*)getMetadata( bufferPointer );
 	metadata->crc = 1; /* always PASS crc */
 	metadata->lqi = 0;
-//	metadata->rssi = ??
+	metadata->rssi = metadata->strength;
 
 	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
 						sizeof(fennec_header_t));
