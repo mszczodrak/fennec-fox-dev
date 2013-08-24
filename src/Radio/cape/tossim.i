@@ -236,9 +236,7 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 }
 %}
 
-%include mac.i
 %include radio.i
-%include packet.i
 
 %typemap(python,in) FILE * {
   if (!PyFile_Check($input)) {
