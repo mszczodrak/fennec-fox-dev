@@ -91,7 +91,7 @@ task void load_done() {
 
 task void send_done() {
 	signal RadioSend.sendDone(out_msg, err);
-//	m = NULL;
+	out_msg = NULL;
 }
 
 task void send_msg() {
@@ -101,7 +101,9 @@ task void send_msg() {
 						sizeof(fennec_header_t));
 	err = call Model.send(BROADCAST, out_msg, header->length);
 	dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
-	post send_done();
+	if (err != SUCCESS) {
+		post send_done();
+	}
 }
 
 
@@ -315,12 +317,6 @@ event void Model.sendDone(message_t* msg, error_t result) {
 	post send_done();
 }
 
-/*
-  uint8_t payloadLength(message_t* msg) {
-    return 100;
-  }
-*/
-
 event void Model.receive(message_t* msg) {
 	uint8_t len;
 	void* payload;
@@ -341,7 +337,7 @@ event void Model.receive(message_t* msg) {
 	bufferPointer = signal RadioReceive.receive(bufferPointer, payload, len);
 }
 
-  event bool Model.shouldAck(message_t* msg) {
+event bool Model.shouldAck(message_t* msg) {
 /*
     tossim_header_t* header = getHeader(msg);
     if (header->dest == call amAddress()) {
@@ -350,32 +346,31 @@ event void Model.receive(message_t* msg) {
     }
 */
     return FALSE;
-  }
+}
 
 
- void active_message_deliver_handle(sim_event_t* evt) {
-   message_t* mg = (message_t*)evt->data;
-   dbg("Packet", "Delivering packet to %i at %s\n", (int)sim_node(), sim_time_string());
-   signal Model.receive(mg);
- }
+void active_message_deliver_handle(sim_event_t* evt) {
+	message_t* mg = (message_t*)evt->data;
+	dbg("capeRadio", "Delivering packet to %i at %s\n", (int)sim_node(), sim_time_string());
+	signal Model.receive(mg);
+}
 
- sim_event_t* allocate_deliver_event(int node, message_t* msg, sim_time_t t) {
-   sim_event_t* evt = (sim_event_t*)malloc(sizeof(sim_event_t));
-   evt->mote = node;
-   evt->time = t;
-   evt->handle = active_message_deliver_handle;
-   evt->cleanup = sim_queue_cleanup_event;
-   evt->cancelled = 0;
-   evt->force = 0;
-   evt->data = msg;
-   return evt;
- }
+sim_event_t* allocate_deliver_event(int node, message_t* msg, sim_time_t t) {
+	sim_event_t* evt = (sim_event_t*)malloc(sizeof(sim_event_t));
+	evt->mote = node;
+	evt->time = t;
+	evt->handle = active_message_deliver_handle;
+	evt->cleanup = sim_queue_cleanup_event;
+	evt->cancelled = 0;
+	evt->force = 0;
+	evt->data = msg;
+	return evt;
+}
 
- void active_message_deliver(int node, message_t* msg, sim_time_t t) @C() @spontaneous() {
-   sim_event_t* evt = allocate_deliver_event(node, msg, t);
-   sim_queue_insert(evt);
- }
-
+void active_message_deliver(int node, message_t* msg, sim_time_t t) @C() @spontaneous() {
+	sim_event_t* evt = allocate_deliver_event(node, msg, t);
+	sim_queue_insert(evt);
+}
 
 
 }
