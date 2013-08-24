@@ -49,7 +49,6 @@
 #include <string.h>
 #include <hashtable.h>
 
-#include <mac.c>
 #include <radio.c>
 #include <sim_noise.h>
 

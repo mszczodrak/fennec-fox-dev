@@ -45,7 +45,6 @@
 //#include <stdint.h>
 #include <memory.h>
 #include <tos.h>
-#include <mac.h>
 #include <radio.h>
 #include <hashtable.h>
 
