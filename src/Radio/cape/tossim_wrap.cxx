@@ -2480,16 +2480,16 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 #define SWIGTYPE_p_FILE swig_types[0]
 #define SWIGTYPE_p_MAC swig_types[1]
 #define SWIGTYPE_p_Mote swig_types[2]
-#define SWIGTYPE_p_Radio swig_types[4]
-#define SWIGTYPE_p_Tossim swig_types[5]
-#define SWIGTYPE_p_Variable swig_types[6]
-#define SWIGTYPE_p_char swig_types[7]
-#define SWIGTYPE_p_int swig_types[8]
-#define SWIGTYPE_p_nesc_app swig_types[9]
-#define SWIGTYPE_p_p_char swig_types[10]
-#define SWIGTYPE_p_var_string swig_types[11]
-static swig_type_info *swig_types[13];
-static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
+#define SWIGTYPE_p_Radio swig_types[3]
+#define SWIGTYPE_p_Tossim swig_types[4]
+#define SWIGTYPE_p_Variable swig_types[5]
+#define SWIGTYPE_p_char swig_types[6]
+#define SWIGTYPE_p_int swig_types[7]
+#define SWIGTYPE_p_nesc_app swig_types[8]
+#define SWIGTYPE_p_p_char swig_types[9]
+#define SWIGTYPE_p_var_string swig_types[10]
+static swig_type_info *swig_types[12];
+static swig_module_info swig_module = {swig_types, 11, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -5986,7 +5986,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Radio_setNoise", _wrap_Radio_setNoise, METH_VARARGS, NULL},
 	 { (char *)"Radio_setSensitivity", _wrap_Radio_setSensitivity, METH_VARARGS, NULL},
 	 { (char *)"Radio_swigregister", Radio_swigregister, METH_VARARGS, NULL},
-//	 { (char *)"Packet_swigregister", Packet_swigregister, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_type_set", _wrap_variable_string_t_type_set, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_type_get", _wrap_variable_string_t_type_get, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_ptr_set", _wrap_variable_string_t_ptr_set, METH_VARARGS, NULL},
@@ -6054,7 +6053,6 @@ static PyMethodDef SwigMethods[] = {
 static swig_type_info _swigt__p_FILE = {"_p_FILE", "FILE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_MAC = {"_p_MAC", "MAC *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Mote = {"_p_Mote", "Mote *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Packet = {"_p_Packet", "Packet *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Radio = {"_p_Radio", "Radio *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Tossim = {"_p_Tossim", "Tossim *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Variable = {"_p_Variable", "Variable *", 0, 0, (void*)0, 0};
@@ -6068,7 +6066,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_FILE,
   &_swigt__p_MAC,
   &_swigt__p_Mote,
-  &_swigt__p_Packet,
   &_swigt__p_Radio,
   &_swigt__p_Tossim,
   &_swigt__p_Variable,
@@ -6082,7 +6079,6 @@ static swig_type_info *swig_type_initial[] = {
 static swig_cast_info _swigc__p_FILE[] = {  {&_swigt__p_FILE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_MAC[] = {  {&_swigt__p_MAC, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mote[] = {  {&_swigt__p_Mote, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Packet[] = {  {&_swigt__p_Packet, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Radio[] = {  {&_swigt__p_Radio, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Tossim[] = {  {&_swigt__p_Tossim, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Variable[] = {  {&_swigt__p_Variable, 0, 0, 0},{0, 0, 0, 0}};
@@ -6096,7 +6092,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_FILE,
   _swigc__p_MAC,
   _swigc__p_Mote,
-  _swigc__p_Packet,
   _swigc__p_Radio,
   _swigc__p_Tossim,
   _swigc__p_Variable,
