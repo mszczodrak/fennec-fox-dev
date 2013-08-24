@@ -51,15 +51,6 @@ static tossim_header_t* getHeader(message_t* msg) {
   return (tossim_header_t*)(msg->data - sizeof(tossim_header_t));
 }
 
-uint8_t* sim_packet_data(sim_packet_t* p) __attribute__ ((C, spontaneous)){
-  message_t* msg = (message_t*)p;
-  return (uint8_t*)&msg->data;
-}
-void sim_packet_set_strength(sim_packet_t* p, uint16_t str) __attribute__ ((C, spontaneous)){
-  message_t* msg = (message_t*)p;
-  metadata_t* md = (metadata_t*)(&msg->metadata);
-  md->strength = str;
-}
 void sim_packet_deliver(int node, sim_packet_t* msg, sim_time_t t) __attribute__ ((C, spontaneous)){
   if (t < sim_time()) {
     t = sim_time();
@@ -68,10 +59,6 @@ void sim_packet_deliver(int node, sim_packet_t* msg, sim_time_t t) __attribute__
   active_message_deliver(node, (message_t*)msg, t);
 }
   
-uint8_t sim_packet_max_length(sim_packet_t* msg) __attribute__ ((C, spontaneous)){
-  return TOSH_DATA_LENGTH;
-}
-
 sim_packet_t* sim_packet_allocate () __attribute__ ((C, spontaneous)){
   return (sim_packet_t*)malloc(sizeof(message_t));
 }

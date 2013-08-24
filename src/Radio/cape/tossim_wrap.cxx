@@ -4073,116 +4073,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Packet_data(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  char *result = 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Packet_data",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_data" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  result = (char *)(arg1)->data();
-  resultobj = SWIG_FromCharPtr((const char *)result);
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Packet_setData(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  char *arg2 = (char *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int res2 ;
-  char *buf2 = 0 ;
-  size_t size2 = 0 ;
-  int alloc2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Packet_setData",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_setData" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, &size2, &alloc2);
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Packet_setData" "', argument " "2"" of type '" "char *""'");
-  }  
-  arg2 = reinterpret_cast< char * >(buf2);
-  arg3 = static_cast< int >(size2 - 1);
-  (arg1)->setData(arg2,arg3);
-  resultobj = SWIG_Py_Void();
-  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
-  return resultobj;
-fail:
-  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Packet_maxLength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Packet_maxLength",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_maxLength" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  result = (int)(arg1)->maxLength();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Packet_setStrength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Packet_setStrength",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_setStrength" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Packet_setStrength" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setStrength(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_Packet_deliver(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Packet *arg1 = (Packet *) 0 ;
@@ -6233,10 +6123,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Radio_swigregister", Radio_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Packet", _wrap_new_Packet, METH_VARARGS, NULL},
 	 { (char *)"delete_Packet", _wrap_delete_Packet, METH_VARARGS, NULL},
-	 { (char *)"Packet_data", _wrap_Packet_data, METH_VARARGS, NULL},
-	 { (char *)"Packet_setData", _wrap_Packet_setData, METH_VARARGS, NULL},
-	 { (char *)"Packet_maxLength", _wrap_Packet_maxLength, METH_VARARGS, NULL},
-	 { (char *)"Packet_setStrength", _wrap_Packet_setStrength, METH_VARARGS, NULL},
 	 { (char *)"Packet_deliver", _wrap_Packet_deliver, METH_VARARGS, NULL},
 	 { (char *)"Packet_deliverNow", _wrap_Packet_deliverNow, METH_VARARGS, NULL},
 	 { (char *)"Packet_swigregister", Packet_swigregister, METH_VARARGS, NULL},

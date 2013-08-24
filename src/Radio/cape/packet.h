@@ -48,12 +48,6 @@ class Packet {
     Packet(sim_packet_t* msg);
     ~Packet();
 
-    char* data();
-    void setData(char* data, int len);
-    int maxLength();
-    
-    void setStrength(int str);
-
     sim_packet_t* getPacket();
 
     void deliver(int node, long long int t);

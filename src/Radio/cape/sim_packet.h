@@ -58,11 +58,7 @@ extern "C" {
    */
   typedef struct sim_packet {} sim_packet_t;
   
-  uint8_t* sim_packet_data(sim_packet_t* msg);
-  void sim_packet_set_strength(sim_packet_t* msg, uint16_t str);
-
   void sim_packet_deliver(int node, sim_packet_t* msg, sim_time_t t);
-  uint8_t sim_packet_max_length(sim_packet_t* msg);
 
   sim_packet_t* sim_packet_allocate();
   void sim_packet_free(sim_packet_t* m);

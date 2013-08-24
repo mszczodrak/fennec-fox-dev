@@ -54,13 +54,6 @@ class Packet {
     Packet();
     ~Packet();
     
-    char* data();
-
-    void setData(char* data, int len);	
-    int maxLength();
-    
-    void setStrength(int str);
-
     void deliver(int node, long long int time);
     void deliverNow(int node);
 };

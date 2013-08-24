@@ -62,24 +62,6 @@ Packet::~Packet() {
   }
 }
 
-char* Packet::data() {
-  char* val =  (char*)sim_packet_data(msgPtr);
-  return val;
-}
-
-void Packet::setData(char* data, int len) {
-  len = (len > maxLength())? maxLength():len;
-  memcpy(sim_packet_data(msgPtr), data, len);
-}
-
-int Packet::maxLength() {
-  return (int)sim_packet_max_length(msgPtr);
-}
-
-void Packet::setStrength(int str) {
-  sim_packet_set_strength(msgPtr, (uint16_t)str);
-}
-
 sim_packet_t* Packet::getPacket() {
   return msgPtr;
 }
