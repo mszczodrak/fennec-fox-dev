@@ -383,7 +383,6 @@ class Tossim {
   bool runNextEvent();
   MAC* mac();
   Radio* radio();
-  Packet* newPacket();
 };
 
 

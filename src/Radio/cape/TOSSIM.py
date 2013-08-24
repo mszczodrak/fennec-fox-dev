@@ -106,15 +106,6 @@ class Radio(_object):
 Radio_swigregister = _TOSSIM.Radio_swigregister
 Radio_swigregister(Radio)
 
-class Packet(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Packet, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Packet, name)
-    __repr__ = _swig_repr
-    def __init__(self, *args): 
-	pass
-
 class variable_string_t(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, variable_string_t, name, value)
@@ -238,7 +229,6 @@ class Tossim(_object):
     def runNextEvent(*args): return _TOSSIM.Tossim_runNextEvent(*args)
     def mac(*args): return _TOSSIM.Tossim_mac(*args)
     def radio(*args): return _TOSSIM.Tossim_radio(*args)
-    def newPacket(*args): return _TOSSIM.Tossim_newPacket(*args)
 Tossim_swigregister = _TOSSIM.Tossim_swigregister
 Tossim_swigregister(Tossim)
 

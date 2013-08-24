@@ -4036,9 +4036,6 @@ SWIGINTERN PyObject *Radio_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject
 }
 
 
-//SWIGINTERN PyObject *Packet_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-//}
-
 SWIGINTERN PyObject *_wrap_variable_string_t_type_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   variable_string_t *arg1 = (variable_string_t *) 0 ;
