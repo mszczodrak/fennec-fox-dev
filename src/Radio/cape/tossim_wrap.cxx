@@ -3349,28 +3349,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_MAC_maxIterations(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:MAC_maxIterations",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_maxIterations" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  result = (int)(arg1)->maxIterations();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_MAC_minFreeSamples(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   MAC *arg1 = (MAC *) 0 ;
@@ -3675,37 +3653,6 @@ SWIGINTERN PyObject *_wrap_MAC_setExponentBase(PyObject *SWIGUNUSEDPARM(self), P
 fail:
   return NULL;
 }
-
-
-SWIGINTERN PyObject *_wrap_MAC_setMaxIterations(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  MAC *arg1 = (MAC *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:MAC_setMaxIterations",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MAC, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MAC_setMaxIterations" "', argument " "1"" of type '" "MAC *""'"); 
-  }
-  arg1 = reinterpret_cast< MAC * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "MAC_setMaxIterations" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setMaxIterations(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
 
 SWIGINTERN PyObject *_wrap_MAC_setMinFreeSamples(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
@@ -6468,7 +6415,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"MAC_bitsPerSymbol", _wrap_MAC_bitsPerSymbol, METH_VARARGS, NULL},
 	 { (char *)"MAC_preambleLength", _wrap_MAC_preambleLength, METH_VARARGS, NULL},
 	 { (char *)"MAC_exponentBase", _wrap_MAC_exponentBase, METH_VARARGS, NULL},
-	 { (char *)"MAC_maxIterations", _wrap_MAC_maxIterations, METH_VARARGS, NULL},
 	 { (char *)"MAC_minFreeSamples", _wrap_MAC_minFreeSamples, METH_VARARGS, NULL},
 	 { (char *)"MAC_rxtxDelay", _wrap_MAC_rxtxDelay, METH_VARARGS, NULL},
 	 { (char *)"MAC_ackTime", _wrap_MAC_ackTime, METH_VARARGS, NULL},
@@ -6480,7 +6426,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"MAC_setBitsBerSymbol", _wrap_MAC_setBitsBerSymbol, METH_VARARGS, NULL},
 	 { (char *)"MAC_setPreambleLength", _wrap_MAC_setPreambleLength, METH_VARARGS, NULL},
 	 { (char *)"MAC_setExponentBase", _wrap_MAC_setExponentBase, METH_VARARGS, NULL},
-	 { (char *)"MAC_setMaxIterations", _wrap_MAC_setMaxIterations, METH_VARARGS, NULL},
 	 { (char *)"MAC_setMinFreeSamples", _wrap_MAC_setMinFreeSamples, METH_VARARGS, NULL},
 	 { (char *)"MAC_setRxtxDelay", _wrap_MAC_setRxtxDelay, METH_VARARGS, NULL},
 	 { (char *)"MAC_setAckTime", _wrap_MAC_setAckTime, METH_VARARGS, NULL},

@@ -72,7 +72,6 @@ class MAC {
   int bitsPerSymbol();
   int preambleLength();
   int exponentBase();
-  int maxIterations();
   int minFreeSamples();
   int rxtxDelay();
   int ackTime(); 
@@ -85,7 +84,6 @@ class MAC {
   void setBitsBerSymbol(int val);
   void setPreambleLength(int val);
   void setExponentBase(int val);
-  void setMaxIterations(int val);
   void setMinFreeSamples(int val);
   void setRxtxDelay(int val);
   void setAckTime(int val);

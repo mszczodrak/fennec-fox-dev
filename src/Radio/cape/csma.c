@@ -50,7 +50,6 @@ int Csma::symbolsPerSec() {return sim_csma_symbols_per_sec();}
 int Csma::bitsPerSymbol() {return sim_csma_bits_per_symbol();}
 int Csma::preambleLength() {return sim_csma_preamble_length();}
 int Csma::exponentBase() {return sim_csma_exponent_base();}
-int Csma::maxIterations() {return sim_csma_max_iterations();}
 int Csma::minFreeSamples() {return sim_csma_min_free_samples();}
 int Csma::rxtxDelay() {return sim_csma_rxtx_delay();}
 int Csma::ackTime() {return sim_csma_ack_time();}
@@ -63,7 +62,6 @@ void Csma::setSymbolsPerSec(int val) {sim_csma_set_symbols_per_sec(val);}
 void Csma::setBitsBerSymbol(int val) {sim_csma_set_bits_per_symbol(val);}
 void Csma::setPreambleLength(int val) {sim_csma_set_preamble_length(val);}
 void Csma::setExponentBase(int val) {sim_csma_set_exponent_base(val);}
-void Csma::setMaxIterations(int val) {sim_csma_set_max_iterations(val);}
 void Csma::setMinFreeSamples(int val) {sim_csma_set_min_free_samples(val);}
 void Csma::setRxtxDelay(int val) {sim_csma_set_rxtx_delay(val);}
 void Csma::setAckTime(int val); {sim_csma_set_ack_time(val);}

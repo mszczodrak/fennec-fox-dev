@@ -104,7 +104,6 @@ extern "C" {
   int sim_csma_bits_per_symbol();
   int sim_csma_preamble_length(); // in symbols
   int sim_csma_exponent_base();
-  int sim_csma_max_iterations();
   int sim_csma_min_free_samples();
   int sim_csma_rxtx_delay();
   int sim_csma_ack_time(); // in symbols
@@ -117,7 +116,6 @@ extern "C" {
   void sim_csma_set_bits_per_symbol(int val);
   void sim_csma_set_preamble_length(int val); // in symbols
   void sim_csma_set_exponent_base(int val);
-  void sim_csma_set_max_iterations(int val);
   void sim_csma_set_min_free_samples(int val);
   void sim_csma_set_rxtx_delay(int val);
   void sim_csma_set_ack_time(int val); // in symbols
