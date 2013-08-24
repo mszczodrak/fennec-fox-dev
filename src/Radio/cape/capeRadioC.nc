@@ -73,7 +73,7 @@ implementation {
 
 
   components CapeActiveMessageC as AM;
-  components TossimPacketModelC as Network;
+  components CapePacketModelC as Network;
   components CpmModelC as Model;
 
   capeRadioP.AMControl -> Network;
@@ -81,8 +81,6 @@ implementation {
   capeRadioP.AMPacket -> AM;
   capeRadioP.ReceiveReceive -> AM.Receive[101];
   capeRadioP.AMSend -> AM.AMSend[101];
-
-  capeRadioP.PacketAcknowledgements -> Network;
 
   AM.Model -> Network.Packet;
   Network.GainRadioModel -> Model;
