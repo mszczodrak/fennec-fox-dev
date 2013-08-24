@@ -1,4 +1,3 @@
-#include "CC2420TimeSyncMessage.h"
 #include "crc.h"
 #include "message.h"
 #include "Fennec.h"
@@ -162,7 +161,7 @@ implementation {
     metadata->rssi = 0;
     metadata->lqi = 0;
     //metadata->timesync = FALSE;
-    metadata->timestamp = CC2420_INVALID_TIMESTAMP;
+    metadata->timestamp = INVALID_TIMESTAMP;
 
     csmaca_backoff_period = call csmacaMacParams.get_backoff();
     csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
@@ -355,7 +354,7 @@ implementation {
       // sampled during the ack turn-around window
       if ( !call EnergyIndicator.isReceiving() ) {
         m_state = S_BEGIN_TRANSMIT;
-        call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );    
+        call BackoffTimer.start( TIME_ACK_TURNAROUND );    
       } else {
         congestionBackoff(m_msg);
       }
