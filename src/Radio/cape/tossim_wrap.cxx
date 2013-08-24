@@ -2480,7 +2480,7 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 #define SWIGTYPE_p_FILE swig_types[0]
 #define SWIGTYPE_p_MAC swig_types[1]
 #define SWIGTYPE_p_Mote swig_types[2]
-#define SWIGTYPE_p_Packet swig_types[3]
+//#define SWIGTYPE_p_Packet swig_types[3]
 #define SWIGTYPE_p_Radio swig_types[4]
 #define SWIGTYPE_p_Tossim swig_types[5]
 #define SWIGTYPE_p_Variable swig_types[6]
@@ -4038,6 +4038,7 @@ SWIGINTERN PyObject *Radio_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject
   return SWIG_Py_Void();
 }
 
+/*
 SWIGINTERN PyObject *_wrap_new_Packet(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Packet *result = 0 ;
@@ -4140,13 +4141,15 @@ SWIGINTERN PyObject *_wrap_Packet_deliverNow(PyObject *SWIGUNUSEDPARM(self), PyO
 fail:
   return NULL;
 }
-
+*/
 
 SWIGINTERN PyObject *Packet_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+/*
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O|swigregister", &obj)) return NULL;
   SWIG_TypeNewClientData(SWIGTYPE_p_Packet, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
+*/
 }
 
 SWIGINTERN PyObject *_wrap_variable_string_t_type_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
@@ -6072,8 +6075,8 @@ SWIGINTERN PyObject *_wrap_Tossim_newPacket(PyObject *SWIGUNUSEDPARM(self), PyOb
   }
   arg1 = reinterpret_cast< Tossim * >(argp1);
   result = (Packet *)(arg1)->newPacket();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Packet, 0 |  0 );
-  return resultobj;
+  //resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Packet, 0 |  0 );
+  //return resultobj;
 fail:
   return NULL;
 }
@@ -6121,10 +6124,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Radio_setNoise", _wrap_Radio_setNoise, METH_VARARGS, NULL},
 	 { (char *)"Radio_setSensitivity", _wrap_Radio_setSensitivity, METH_VARARGS, NULL},
 	 { (char *)"Radio_swigregister", Radio_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_Packet", _wrap_new_Packet, METH_VARARGS, NULL},
-	 { (char *)"delete_Packet", _wrap_delete_Packet, METH_VARARGS, NULL},
-	 { (char *)"Packet_deliver", _wrap_Packet_deliver, METH_VARARGS, NULL},
-	 { (char *)"Packet_deliverNow", _wrap_Packet_deliverNow, METH_VARARGS, NULL},
 	 { (char *)"Packet_swigregister", Packet_swigregister, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_type_set", _wrap_variable_string_t_type_set, METH_VARARGS, NULL},
 	 { (char *)"variable_string_t_type_get", _wrap_variable_string_t_type_get, METH_VARARGS, NULL},

@@ -113,15 +113,16 @@ class Packet(_object):
     __getattr__ = lambda self, name: _swig_getattr(self, Packet, name)
     __repr__ = _swig_repr
     def __init__(self, *args): 
-        this = _TOSSIM.new_Packet(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _TOSSIM.delete_Packet
-    __del__ = lambda self : None;
-    def deliver(*args): return _TOSSIM.Packet_deliver(*args)
-    def deliverNow(*args): return _TOSSIM.Packet_deliverNow(*args)
-Packet_swigregister = _TOSSIM.Packet_swigregister
-Packet_swigregister(Packet)
+	pass
+        #this = _TOSSIM.new_Packet(*args)
+        #try: self.this.append(this)
+        #except: self.this = this
+    #__swig_destroy__ = _TOSSIM.delete_Packet
+    #__del__ = lambda self : None;
+    #def deliver(*args): return _TOSSIM.Packet_deliver(*args)
+    #def deliverNow(*args): return _TOSSIM.Packet_deliverNow(*args)
+#Packet_swigregister = _TOSSIM.Packet_swigregister
+#Packet_swigregister(Packet)
 
 class variable_string_t(_object):
     __swig_setmethods__ = {}
