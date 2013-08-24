@@ -11,8 +11,6 @@ module CapePacketModelC {
 }
 implementation {
   bool running = FALSE;
-  uint8_t backoffCount;
-  uint8_t neededFreeSamples;
   message_t* sending = NULL;
   bool transmitting = FALSE;
   uint8_t sendingLength = 0;
@@ -78,8 +76,6 @@ implementation {
     sendingLength = len; 
     sending = msg;
     destNode = dest;
-    backoffCount = 0;
-    neededFreeSamples = sim_csma_min_free_samples();
     start_csma();
     return SUCCESS;
   }
