@@ -34,9 +34,9 @@ enum {
 };
 
 
-  metadata_t* getMetadata( message_t* msg ) @C() {
-    return (metadata_t*)msg->metadata;
-  }
+metadata_t* getMetadata( message_t* msg ) @C() {
+	return (metadata_t*)msg->metadata;
+}
 
   int getAddressLength(int type) {
     switch (type) {

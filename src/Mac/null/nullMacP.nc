@@ -395,6 +395,7 @@ event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len
 	metadata = (metadata_t*) msg->metadata;
 
 	if(!(metadata)->crc) {
+		dbg("Mac", "nullMac MacAMSend.receive did not pass CRC");
 		return msg;
 	}
 

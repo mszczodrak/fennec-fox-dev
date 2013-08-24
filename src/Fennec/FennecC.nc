@@ -52,9 +52,7 @@ FennecP.NetworkScheduler -> NetworkSchedulerC;
 components LedsC;
 FennecP.Leds -> LedsC;
 
-#ifndef TOSSIM
 components FennecPacketC;
-#endif
 
 //#ifdef __DBGS__
 components FennecSerialDbgC;

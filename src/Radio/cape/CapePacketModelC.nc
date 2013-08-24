@@ -1,5 +1,6 @@
 
 #include <sim_radio.h>
+#include <Fennec.h>
 
 module CapePacketModelC { 
   provides {
@@ -18,14 +19,10 @@ implementation {
   
   message_t receiveBuffer;
   
-  metadata_t* getMetadata(message_t* msg) {
-    return (metadata_t*)(&msg->metadata);
-  }
-  
-  task void startDoneTask() {
-    running = TRUE;
-    signal Control.startDone(SUCCESS);
-  }
+task void startDoneTask() {
+	running = TRUE;
+	signal Control.startDone(SUCCESS);
+}
 
   task void stopDoneTask() {
     running = FALSE;

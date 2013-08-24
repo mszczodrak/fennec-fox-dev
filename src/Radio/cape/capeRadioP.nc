@@ -315,12 +315,14 @@ event void Model.sendDone(message_t* msg, error_t result) {
 event void Model.receive(message_t* msg) {
 	uint8_t len;
 	void* payload;
-//	metadata_t* metadata;
+	metadata_t* metadata;
 	fennec_header_t *header; 
 
 	memcpy(bufferPointer, msg, sizeof(message_t));
 
-//	metadata = (metadata_t*)getMetadata( bufferPointer );
+	metadata = (metadata_t*)getMetadata( bufferPointer );
+	metadata->crc = 1; /* always PASS crc */
+
 	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
 						sizeof(fennec_header_t));
 	len = header->length;
