@@ -381,7 +381,6 @@ class Tossim {
   void randomSeed(int seed);
 
   bool runNextEvent();
-  MAC* mac();
   Radio* radio();
 };
 

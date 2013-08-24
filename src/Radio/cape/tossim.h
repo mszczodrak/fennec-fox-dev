@@ -133,7 +133,6 @@ class Tossim {
   
   bool runNextEvent();
 
-  MAC* mac();
   Radio* radio();
 
  private:

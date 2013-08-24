@@ -285,10 +285,6 @@ bool Tossim::runNextEvent() {
   return sim_run_next_event();
 }
 
-MAC* Tossim::mac() {
-  return new MAC();
-}
-
 Radio* Tossim::radio() {
   return new Radio();
 }
