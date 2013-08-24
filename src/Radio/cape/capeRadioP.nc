@@ -54,6 +54,8 @@ uses interface AMSend;
 uses interface SplitControl as AMControl;
 uses interface Receive as ReceiveReceive;
 uses interface PacketAcknowledgements;
+
+uses interface TossimPacketModel as Model;
 }
 
 implementation {
@@ -61,6 +63,10 @@ implementation {
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
+
+message_t buffer;
+message_t* bufferPointer = &buffer;
+
 
 task void start_done() {
 	state = S_STARTED;
@@ -242,7 +248,8 @@ task void send_done() {
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )", msg, useCca);
-	if (call AMSend.send(BROADCAST, msg, 100) != SUCCESS) {
+	if (call Model.send(BROADCAST, msg, 120) != SUCCESS) {
+//	if (call AMSend.send(BROADCAST, msg, 100) != SUCCESS) {
 		dbg("Radio", "capeRadio AMSend.send(BROADCAST, 0x%1x)  FAILED", msg);
 		return FAIL;
 
@@ -253,7 +260,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 }
 
 async command error_t RadioSend.cancel(message_t *msg) {
-	return SUCCESS;
+	return call Model.cancel(msg);
 }
 
 async command uint8_t RadioPacket.maxPayloadLength() {
@@ -350,6 +357,12 @@ event message_t* ReceiveReceive.receive(message_t* in_msg, void* payload, uint8_
     return in_msg;
 }
 
+event void Model.sendDone(message_t* msg, error_t result) {
+	dbg("Radio", "capeRadio AMSend.sendDone(0x%1x, %d )", msg, result);
+    	//signal RadioSignal.sendDone(m, result);
+}
+
+
 event void AMSend.sendDone(message_t* out, error_t error){
 	dbg("Radio", "capeRadio AMSend.sendDone(0x%1x, %d )", out, error);
 /*
@@ -371,6 +384,75 @@ event void AMSend.sendDone(message_t* out, error_t error){
     //dbg("Radio", "Radio send done signaled\n");
 */
   }
+
+  uint8_t payloadLength(message_t* msg) {
+    return getHeader(msg)->length;
+  }
+
+  uint8_t maxPayloadLength() {
+    return TOSH_DATA_LENGTH;
+  }
+
+  void* getPayload(message_t* msg, uint8_t len) {
+    if (len <= TOSH_DATA_LENGTH) {
+      return msg->data;
+    }
+    else {
+      return NULL;
+    }
+  }
+
+
+
+  event void Model.receive(message_t* msg) {
+    uint8_t len;
+    void* payload;
+    dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, 0, 0);
+
+    dbg("TossimActiveMessageC", "TossimActiveMessageC Model.receive()");
+
+    memcpy(bufferPointer, msg, sizeof(message_t));
+    len = payloadLength(bufferPointer);
+    payload = getPayload(bufferPointer, maxPayloadLength());
+
+//    bufferPointer = signal Receive.receive(bufferPointer, payload, len);
+  }
+
+  event bool Model.shouldAck(message_t* msg) {
+/*
+    tossim_header_t* header = getHeader(msg);
+    if (header->dest == call amAddress()) {
+      dbg("Acks", "Received packet addressed to me so ack it\n");
+      return TRUE;
+    }
+*/
+    return FALSE;
+  }
+
+
+ void active_message_deliver_handle(sim_event_t* evt) {
+   message_t* mg = (message_t*)evt->data;
+   dbg("Packet", "Delivering packet to %i at %s\n", (int)sim_node(), sim_time_string());
+   signal Model.receive(mg);
+ }
+
+ sim_event_t* allocate_deliver_event(int node, message_t* msg, sim_time_t t) {
+   sim_event_t* evt = (sim_event_t*)malloc(sizeof(sim_event_t));
+   evt->mote = node;
+   evt->time = t;
+   evt->handle = active_message_deliver_handle;
+   evt->cleanup = sim_queue_cleanup_event;
+   evt->cancelled = 0;
+   evt->force = 0;
+   evt->data = msg;
+   return evt;
+ }
+
+ void active_message_deliver(int node, message_t* msg, sim_time_t t) @C() @spontaneous() {
+   sim_event_t* evt = allocate_deliver_event(node, msg, t);
+   sim_queue_insert(evt);
+ }
+
 
 
 }
