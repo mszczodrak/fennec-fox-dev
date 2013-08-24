@@ -118,12 +118,6 @@ class Packet(_object):
         except: self.this = this
     __swig_destroy__ = _TOSSIM.delete_Packet
     __del__ = lambda self : None;
-    def setSource(*args): return _TOSSIM.Packet_setSource(*args)
-    def source(*args): return _TOSSIM.Packet_source(*args)
-    def setDestination(*args): return _TOSSIM.Packet_setDestination(*args)
-    def destination(*args): return _TOSSIM.Packet_destination(*args)
-    def setType(*args): return _TOSSIM.Packet_setType(*args)
-    def type(*args): return _TOSSIM.Packet_type(*args)
     def data(*args): return _TOSSIM.Packet_data(*args)
     def setData(*args): return _TOSSIM.Packet_setData(*args)
     def maxLength(*args): return _TOSSIM.Packet_maxLength(*args)

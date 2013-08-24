@@ -48,15 +48,6 @@ class Packet {
     Packet(sim_packet_t* msg);
     ~Packet();
 
-    void setSource(int src);
-    int source();
-
-    void setDestination(int dest);
-    int destination();
-
-    void setType(int type);
-    int type();
-
     char* data();
     void setData(char* data, int len);
     int maxLength();

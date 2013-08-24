@@ -58,15 +58,6 @@ extern "C" {
    */
   typedef struct sim_packet {} sim_packet_t;
   
-  void sim_packet_set_source(sim_packet_t* msg, uint16_t src);
-  uint16_t sim_packet_source(sim_packet_t* msg);
-  
-  void sim_packet_set_destination(sim_packet_t* msg, uint16_t dest);
-  uint16_t sim_packet_destination(sim_packet_t* msg);
-  
-  void sim_packet_set_type(sim_packet_t* msg, uint8_t type);
-  uint8_t sim_packet_type(sim_packet_t* msg);
-
   uint8_t* sim_packet_data(sim_packet_t* msg);
   void sim_packet_set_strength(sim_packet_t* msg, uint16_t str);
 

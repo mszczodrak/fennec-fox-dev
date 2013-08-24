@@ -62,27 +62,6 @@ Packet::~Packet() {
   }
 }
 
-void Packet::setSource(int src) {
-  sim_packet_set_source(msgPtr, (uint16_t)src);
-}
-int Packet::source() {
-  return sim_packet_source(msgPtr);
-}
-
-void Packet::setDestination(int dest) {
-  sim_packet_set_destination(msgPtr, (uint16_t)dest);
-}
-int Packet::destination() {
-  return sim_packet_destination(msgPtr);
-}
-
-void Packet::setType(int type) {
-  sim_packet_set_type(msgPtr, (uint8_t)type);
-}
-int Packet::type() {
-  return sim_packet_type(msgPtr);
-}
-
 char* Packet::data() {
   char* val =  (char*)sim_packet_data(msgPtr);
   return val;
