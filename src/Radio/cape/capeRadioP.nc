@@ -325,6 +325,7 @@ event void Model.receive(message_t* msg) {
 
 	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
 						sizeof(fennec_header_t));
+
 	len = header->length;
 	payload = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
                                                 sizeof(len));
@@ -335,16 +336,16 @@ event void Model.receive(message_t* msg) {
 }
 
 event bool Model.shouldAck(message_t* msg) {
-/*
-    tossim_header_t* header = getHeader(msg);
-    if (header->dest == call amAddress()) {
-      dbg("Acks", "Received packet addressed to me so ack it\n");
-      return TRUE;
-    }
-*/
-    return FALSE;
-}
+	fennec_header_t *header;
+	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
+						sizeof(fennec_header_t));
 
+	if (header->dest == TOS_NODE_ID) { 	
+		dbg("Radio", "capeRadio Model.shouldAck(0x%1x) - TRUE", msg);
+		return TRUE;
+	}
+	return FALSE;
+}
 
 void active_message_deliver_handle(sim_event_t* evt) {
 	message_t* mg = (message_t*)evt->data;
