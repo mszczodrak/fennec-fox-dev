@@ -1,6 +1,6 @@
 
 #include <TossimRadioMsg.h>
-#include <sim_csma.h>
+#include <sim_radio.h>
 
 module CapePacketModelC { 
   provides {
@@ -61,7 +61,7 @@ implementation {
     return FAIL;
   }
 
-  void start_csma();
+  void start_radio();
 
   command error_t Packet.send(int dest, message_t* msg, uint8_t len) {
     if (!running) {
@@ -76,15 +76,15 @@ implementation {
     sendingLength = len; 
     sending = msg;
     destNode = dest;
-    start_csma();
+    start_radio();
     return SUCCESS;
   }
 
   void send_transmit(sim_event_t* evt);
   void send_transmit_done(sim_event_t* evt);
   
-  void start_csma() {
-    dbg("System", "start_csma");
+  void start_radio() {
+    dbg("System", "start_radio");
 
     transmitting = TRUE;
     call GainRadioModel.setPendingTransmission();
@@ -108,13 +108,13 @@ implementation {
     metadata_t* metadata = getMetadata(sending);
 
     duration = 8 * sendingLength;
-    duration /= sim_csma_bits_per_symbol();
-    duration += sim_csma_preamble_length();
+    duration /= sim_radio_bits_per_symbol();
+    duration += sim_radio_preamble_length();
     
     if (metadata->ack) {
-      duration += sim_csma_ack_time();
+      duration += sim_radio_ack_time();
     }
-    duration *= (sim_ticks_per_sec() / sim_csma_symbols_per_sec());
+    duration *= (sim_ticks_per_sec() / sim_radio_symbols_per_sec());
 
     evt->time += duration;
     evt->handle = send_transmit_done;
@@ -123,7 +123,7 @@ implementation {
     call GainRadioModel.putOnAirTo(destNode, sending, metadata->ack, evt->time, 0.0, 0.0);
     metadata->ack = 0;
 
-    evt->time += (sim_csma_rxtx_delay() *  (sim_ticks_per_sec() / sim_csma_symbols_per_sec()));
+    evt->time += (sim_radio_rxtx_delay() *  (sim_ticks_per_sec() / sim_radio_symbols_per_sec()));
 
     dbg("TossimPacketModelC", "PACKET: Send done at %llu.\n", evt->time);
 	

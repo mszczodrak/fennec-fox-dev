@@ -37,33 +37,33 @@
  * @date   Dec 10 2005
  */
 
-#include <csma.h>
+#include <radio.h>
 
 Csma::Csma() {}
 Csma::~Csma() {}
 
-int Csma::initHigh() {return sim_csma_init_high();}
-int Csma::initLow() {return sim_csma_init_low();}
-int Csma::high() {return sim_csma_high();}
-int Csma::low() {return sim_csma_low();}
-int Csma::symbolsPerSec() {return sim_csma_symbols_per_sec();}
-int Csma::bitsPerSymbol() {return sim_csma_bits_per_symbol();}
-int Csma::preambleLength() {return sim_csma_preamble_length();}
-int Csma::exponentBase() {return sim_csma_exponent_base();}
-int Csma::minFreeSamples() {return sim_csma_min_free_samples();}
-int Csma::rxtxDelay() {return sim_csma_rxtx_delay();}
-int Csma::ackTime() {return sim_csma_ack_time();}
+int Csma::initHigh() {return sim_radio_init_high();}
+int Csma::initLow() {return sim_radio_init_low();}
+int Csma::high() {return sim_radio_high();}
+int Csma::low() {return sim_radio_low();}
+int Csma::symbolsPerSec() {return sim_radio_symbols_per_sec();}
+int Csma::bitsPerSymbol() {return sim_radio_bits_per_symbol();}
+int Csma::preambleLength() {return sim_radio_preamble_length();}
+int Csma::exponentBase() {return sim_radio_exponent_base();}
+int Csma::minFreeSamples() {return sim_radio_min_free_samples();}
+int Csma::rxtxDelay() {return sim_radio_rxtx_delay();}
+int Csma::ackTime() {return sim_radio_ack_time();}
 
-void Csma::setInitHigh(int val) {sim_csma_set_init_high(val);}
-void Csma::setInitLow(int val) {sim_csma_set_init_low(val);}
-void Csma::setHigh(int val) {sim_csma_set_high(val);}
-void Csma::setLow(int val) {sim_csma_set_low(val);}
-void Csma::setSymbolsPerSec(int val) {sim_csma_set_symbols_per_sec(val);}
-void Csma::setBitsBerSymbol(int val) {sim_csma_set_bits_per_symbol(val);}
-void Csma::setPreambleLength(int val) {sim_csma_set_preamble_length(val);}
-void Csma::setExponentBase(int val) {sim_csma_set_exponent_base(val);}
-void Csma::setMinFreeSamples(int val) {sim_csma_set_min_free_samples(val);}
-void Csma::setRxtxDelay(int val) {sim_csma_set_rxtx_delay(val);}
-void Csma::setAckTime(int val); {sim_csma_set_ack_time(val);}
+void Csma::setInitHigh(int val) {sim_radio_set_init_high(val);}
+void Csma::setInitLow(int val) {sim_radio_set_init_low(val);}
+void Csma::setHigh(int val) {sim_radio_set_high(val);}
+void Csma::setLow(int val) {sim_radio_set_low(val);}
+void Csma::setSymbolsPerSec(int val) {sim_radio_set_symbols_per_sec(val);}
+void Csma::setBitsBerSymbol(int val) {sim_radio_set_bits_per_symbol(val);}
+void Csma::setPreambleLength(int val) {sim_radio_set_preamble_length(val);}
+void Csma::setExponentBase(int val) {sim_radio_set_exponent_base(val);}
+void Csma::setMinFreeSamples(int val) {sim_radio_set_min_free_samples(val);}
+void Csma::setRxtxDelay(int val) {sim_radio_set_rxtx_delay(val);}
+void Csma::setAckTime(int val); {sim_radio_set_ack_time(val);}
 
 #endif

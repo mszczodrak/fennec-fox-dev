@@ -37,7 +37,7 @@
  * @date   Dec 10 2005
  */
 
-// $Id: sim_csma.h,v 1.6 2010-06-29 22:07:51 scipio Exp $
+// $Id: sim_radio.h,v 1.6 2010-06-29 22:07:51 scipio Exp $
 
 #ifndef SIM_CSMA_H_INCLUDED
 #define SIM_CSMA_H_INCLUDED
@@ -96,29 +96,29 @@
 extern "C" {
 #endif
 
-  int sim_csma_init_high();
-  int sim_csma_init_low();
-  int sim_csma_high();
-  int sim_csma_low();
-  int sim_csma_symbols_per_sec();
-  int sim_csma_bits_per_symbol();
-  int sim_csma_preamble_length(); // in symbols
-  int sim_csma_exponent_base();
-  int sim_csma_min_free_samples();
-  int sim_csma_rxtx_delay();
-  int sim_csma_ack_time(); // in symbols
+  int sim_radio_init_high();
+  int sim_radio_init_low();
+  int sim_radio_high();
+  int sim_radio_low();
+  int sim_radio_symbols_per_sec();
+  int sim_radio_bits_per_symbol();
+  int sim_radio_preamble_length(); // in symbols
+  int sim_radio_exponent_base();
+  int sim_radio_min_free_samples();
+  int sim_radio_rxtx_delay();
+  int sim_radio_ack_time(); // in symbols
   
-  void sim_csma_set_init_high(int val);
-  void sim_csma_set_init_low(int val);
-  void sim_csma_set_high(int val);
-  void sim_csma_set_low(int val);
-  void sim_csma_set_symbols_per_sec(int val);
-  void sim_csma_set_bits_per_symbol(int val);
-  void sim_csma_set_preamble_length(int val); // in symbols
-  void sim_csma_set_exponent_base(int val);
-  void sim_csma_set_min_free_samples(int val);
-  void sim_csma_set_rxtx_delay(int val);
-  void sim_csma_set_ack_time(int val); // in symbols
+  void sim_radio_set_init_high(int val);
+  void sim_radio_set_init_low(int val);
+  void sim_radio_set_high(int val);
+  void sim_radio_set_low(int val);
+  void sim_radio_set_symbols_per_sec(int val);
+  void sim_radio_set_bits_per_symbol(int val);
+  void sim_radio_set_preamble_length(int val); // in symbols
+  void sim_radio_set_exponent_base(int val);
+  void sim_radio_set_min_free_samples(int val);
+  void sim_radio_set_rxtx_delay(int val);
+  void sim_radio_set_ack_time(int val); // in symbols
   
 #ifdef __cplusplus
 }
