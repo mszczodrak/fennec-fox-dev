@@ -83,8 +83,6 @@ implementation {
   void send_transmit_done(sim_event_t* evt);
   
   void start_radio() {
-    dbg("System", "start_radio");
-
     transmitting = TRUE;
     call GainRadioModel.setPendingTransmission();
 
