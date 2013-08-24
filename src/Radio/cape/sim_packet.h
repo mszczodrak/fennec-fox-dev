@@ -64,9 +64,6 @@ extern "C" {
   void sim_packet_set_destination(sim_packet_t* msg, uint16_t dest);
   uint16_t sim_packet_destination(sim_packet_t* msg);
   
-  void sim_packet_set_length(sim_packet_t* msg, uint8_t len);
-  uint16_t sim_packet_length(sim_packet_t* msg);
-
   void sim_packet_set_type(sim_packet_t* msg, uint8_t type);
   uint8_t sim_packet_type(sim_packet_t* msg);
 

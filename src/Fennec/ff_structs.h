@@ -199,6 +199,7 @@ nx_struct accept_conf {
 
 #include <TossimRadioMsg.h>
 
+
 #endif
 
 

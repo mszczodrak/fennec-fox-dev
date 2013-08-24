@@ -76,13 +76,6 @@ int Packet::destination() {
   return sim_packet_destination(msgPtr);
 }
 
-void Packet::setLength(int len) {
-  sim_packet_set_length(msgPtr, (uint8_t)len);
-}
-int Packet::length() {
-  return sim_packet_length(msgPtr);
-}
-
 void Packet::setType(int type) {
   sim_packet_set_type(msgPtr, (uint8_t)type);
 }
@@ -98,7 +91,6 @@ char* Packet::data() {
 void Packet::setData(char* data, int len) {
   len = (len > maxLength())? maxLength():len;
   memcpy(sim_packet_data(msgPtr), data, len);
-  setLength(len);
 }
 
 int Packet::maxLength() {

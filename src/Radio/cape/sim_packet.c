@@ -71,15 +71,6 @@ uint16_t sim_packet_destination(sim_packet_t* msg)__attribute__ ((C, spontaneous
   return hdr->dest;
 }
   
-void sim_packet_set_length(sim_packet_t* msg, uint8_t length)__attribute__ ((C, spontaneous)) {
-  tossim_header_t* hdr = getHeader((message_t*)msg);
-  hdr->length = length;
-}
-uint16_t sim_packet_length(sim_packet_t* msg)__attribute__ ((C, spontaneous)) {
-  tossim_header_t* hdr = getHeader((message_t*)msg);
-  return hdr->length;
-}
-
 void sim_packet_set_type(sim_packet_t* msg, uint8_t type) __attribute__ ((C, spontaneous)){
   tossim_header_t* hdr = getHeader((message_t*)msg);
   hdr->type = type;

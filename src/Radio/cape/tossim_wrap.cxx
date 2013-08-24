@@ -4177,58 +4177,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Packet_setLength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Packet_setLength",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_setLength" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Packet_setLength" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->setLength(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Packet_length(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Packet *arg1 = (Packet *) 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Packet_length",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Packet, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Packet_length" "', argument " "1"" of type '" "Packet *""'"); 
-  }
-  arg1 = reinterpret_cast< Packet * >(argp1);
-  result = (int)(arg1)->length();
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_Packet_setType(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Packet *arg1 = (Packet *) 0 ;
@@ -6445,8 +6393,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Packet_source", _wrap_Packet_source, METH_VARARGS, NULL},
 	 { (char *)"Packet_setDestination", _wrap_Packet_setDestination, METH_VARARGS, NULL},
 	 { (char *)"Packet_destination", _wrap_Packet_destination, METH_VARARGS, NULL},
-	 { (char *)"Packet_setLength", _wrap_Packet_setLength, METH_VARARGS, NULL},
-	 { (char *)"Packet_length", _wrap_Packet_length, METH_VARARGS, NULL},
 	 { (char *)"Packet_setType", _wrap_Packet_setType, METH_VARARGS, NULL},
 	 { (char *)"Packet_type", _wrap_Packet_type, METH_VARARGS, NULL},
 	 { (char *)"Packet_data", _wrap_Packet_data, METH_VARARGS, NULL},

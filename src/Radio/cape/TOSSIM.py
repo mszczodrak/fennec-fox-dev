@@ -122,8 +122,6 @@ class Packet(_object):
     def source(*args): return _TOSSIM.Packet_source(*args)
     def setDestination(*args): return _TOSSIM.Packet_setDestination(*args)
     def destination(*args): return _TOSSIM.Packet_destination(*args)
-    def setLength(*args): return _TOSSIM.Packet_setLength(*args)
-    def length(*args): return _TOSSIM.Packet_length(*args)
     def setType(*args): return _TOSSIM.Packet_setType(*args)
     def type(*args): return _TOSSIM.Packet_type(*args)
     def data(*args): return _TOSSIM.Packet_data(*args)

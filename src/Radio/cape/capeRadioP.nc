@@ -61,6 +61,7 @@ norace message_t *m;
 
 message_t buffer;
 message_t* bufferPointer = &buffer;
+uint8_t auto_ack;
 
 
 task void start_done() {
@@ -82,6 +83,7 @@ task void stop_done() {
 }
 
 command error_t Mgmt.start() {
+	auto_ack = TRUE;
 	state = S_STOPPED;
 	dbg("Radio", "capeRadio Mgmt.start()");
 	call RadioControl.start();
@@ -321,8 +323,6 @@ event void Model.sendDone(message_t* msg, error_t result) {
     uint8_t len;
     void* payload;
     dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, 0, 0);
-
-    dbg("TossimActiveMessageC", "TossimActiveMessageC Model.receive()");
 
     memcpy(bufferPointer, msg, sizeof(message_t));
     len = payloadLength(bufferPointer);

@@ -54,9 +54,6 @@ class Packet {
     void setDestination(int dest);
     int destination();
 
-    void setLength(int len);
-    int length();
-
     void setType(int type);
     int type();
 
