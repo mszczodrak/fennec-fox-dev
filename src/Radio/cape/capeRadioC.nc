@@ -72,13 +72,18 @@ implementation {
   RadioControl = capeRadioP.RadioControl;
 
 
-  components ActiveMessageC;
-  capeRadioP.AMControl -> ActiveMessageC;
-  capeRadioP.Packet -> ActiveMessageC;
-  capeRadioP.AMPacket -> ActiveMessageC;
-  capeRadioP.AMSend -> ActiveMessageC.AMSend[101];
-  capeRadioP.ReceiveReceive -> ActiveMessageC.Receive[101];
-  capeRadioP.PacketAcknowledgements -> ActiveMessageC.PacketAcknowledgements;
+  components CapeActiveMessageC as AM;
+  components TossimPacketModelC as Network;
+  components CpmModelC as Model;
 
+  capeRadioP.AMControl -> Network;
+  capeRadioP.Packet -> AM;
+  capeRadioP.AMPacket -> AM;
+  capeRadioP.ReceiveReceive -> AM.Receive[101];
+  capeRadioP.AMSend -> AM.AMSend[101];
 
+  capeRadioP.PacketAcknowledgements -> Network;
+
+  AM.Model -> Network.Packet;
+  Network.GainRadioModel -> Model;
 }
