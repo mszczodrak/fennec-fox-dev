@@ -101,6 +101,10 @@ task void send_msg() {
 	}
 }
 
+task void cancel_msg() {
+	call Model.cancel(out_msg);
+}
+
 
 command error_t Mgmt.start() {
 	auto_ack = TRUE;
@@ -268,7 +272,11 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 }
 
 async command error_t RadioSend.cancel(message_t *msg) {
-	return call Model.cancel(msg);
+	if (out_msg == msg) {
+		post cancel_msg();
+		return SUCCESS;
+	}
+	return FAIL;
 }
 
 async command uint8_t RadioPacket.maxPayloadLength() {

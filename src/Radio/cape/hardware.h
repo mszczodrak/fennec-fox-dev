@@ -65,7 +65,13 @@ enum {
 
 // A/D channels
 enum {
-  CHANNEL_THERMISTOR = ATM128_ADC_SNGL_ADC1    // normally unpopulated
+  CHANNEL_RSSI       = ATM128_ADC_SNGL_ADC0,
+  CHANNEL_THERMISTOR = ATM128_ADC_SNGL_ADC1,    // normally unpopulated
+  CHANNEL_BATTERY    = ATM128_ADC_SNGL_ADC7,
+  CHANNEL_BANDGAP    = 30,
+  CHANNEL_GND        = 31,
+//  ATM128_ADC_PRESCALE = ATM128_ADC_PRESCALE_64,  // normal mica2 prescaler value
+  ATM128_TIMER0_TICKSPPS = 32768,
 };
 
 #ifndef PLATFORM_BAUDRATE
@@ -73,5 +79,6 @@ enum {
   PLATFORM_BAUDRATE = 57600L
 };
 #endif
+
 
 #endif //HARDWARE_H
