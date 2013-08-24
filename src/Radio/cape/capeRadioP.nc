@@ -57,7 +57,9 @@ implementation {
 
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
+
 norace message_t *m;
+norace error_t err;
 
 message_t buffer;
 message_t* bufferPointer = &buffer;
@@ -80,6 +82,16 @@ task void stop_done() {
 	dbg("Radio", "capeRadio stop_done()");
 	signal RadioControl.stopDone(SUCCESS);
 	signal Mgmt.stopDone(SUCCESS);
+}
+
+
+task void load_done() {
+	signal RadioBuffer.loadDone(m, err);
+}
+
+
+task void send_done() {
+	signal RadioSend.sendDone(m, err);
 }
 
 command error_t Mgmt.start() {
@@ -228,19 +240,12 @@ async command bool PacketIndicator.isReceiving() {
 	return FALSE;
 }
 
-task void load_done() {
-	signal RadioBuffer.loadDone(m, SUCCESS);
-}
-
 async command error_t RadioBuffer.load(message_t* msg) {
 	dbg("Radio", "capeRadio RadioSend.load( 0x%1x )", msg);
 	m = msg;
+	err = SUCCESS;
 	post load_done();
 	return SUCCESS;
-}
-
-task void send_done() {
-	signal RadioSend.sendDone(m, SUCCESS);
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
@@ -291,28 +296,15 @@ async command error_t RadioResource.release() {
 
 
 event void Model.sendDone(message_t* msg, error_t result) {
+	if (msg != m) {
+		dbg("Radio", "capeRadio Model.sendDone returned incorred msg pointer");
+		err = FAIL;
+	} 
 	dbg("Radio", "capeRadio Model.sendDone(0x%1x, %d )", msg, result);
-    	//signal RadioSignal.sendDone(m, result);
+	err = result;
+	post send_done();
 }
 
-
-/*
-    tr_state = S_STARTED;
-    call Timer0.stop();
-    {
-      //uint8_t *d = (uint8_t*)&out_msg->data;
-      //dbg("Radio", "%d %d %d %d %d %d %d %d %d\n", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9]);
-      //dbg("Radio", "C %d L %d %d\n", out_msg->fennec.conf, out_msg->fennec.len, out_msg->len);
-    }
-
-    if (next_hop != AM_BROADCAST_ADDR && !call PacketAcknowledgements.wasAcked(out)) {
-      dbg("Radio", "Radio did not get ACK\n");
-      error = FAIL;
-    }
-
-    signal RadioSignal.sendDone(out_msg, error);
-    //dbg("Radio", "Radio send done signaled\n");
-*/
 
   uint8_t payloadLength(message_t* msg) {
     return 100;
