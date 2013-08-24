@@ -39,6 +39,7 @@
 
 #include <radio.h>
 #include <sim_gain.h>
+#include <sim_radio.h>
 
 Radio::Radio() {}
 Radio::~Radio() {}
@@ -67,3 +68,28 @@ void Radio::setNoise(int node, double mean, double range) {
 void Radio::setSensitivity(double sensitivity) {
   sim_gain_set_sensitivity(sensitivity);
 }
+
+
+
+
+
+
+
+
+int Radio::symbolsPerSec() {return sim_radio_symbols_per_sec();}
+int Radio::bitsPerSymbol() {return sim_radio_bits_per_symbol();}
+int Radio::preambleLength() {return sim_radio_preamble_length();}
+int Radio::rxtxDelay() {return sim_radio_rxtx_delay();}
+int Radio::ackTime() {return sim_radio_ack_time();}
+
+
+void Radio::setSymbolsPerSec(int val) {sim_radio_set_symbols_per_sec(val);}
+void Radio::setBitsBerSymbol(int val) {sim_radio_set_bits_per_symbol(val);}
+void Radio::setPreambleLength(int val) {sim_radio_set_preamble_length(val);}
+void Radio::setRxtxDelay(int val) {sim_radio_set_rxtx_delay(val);}
+void Radio::setAckTime(int val) {
+  sim_radio_set_ack_time(val);
+}
+
+
+

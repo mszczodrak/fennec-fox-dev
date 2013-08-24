@@ -51,6 +51,21 @@ class Radio {
   void remove(int src, int dest);
   void setNoise(int node, double mean, double range);
   void setSensitivity(double sensitivity);
+
+
+  int symbolsPerSec();
+  int bitsPerSymbol();
+  int preambleLength(); // in symbols
+  int rxtxDelay();
+  int ackTime(); // in symbols
+
+  void setSymbolsPerSec(int val);
+  void setBitsBerSymbol(int val);
+  void setPreambleLength(int val); // in symbols
+  void setRxtxDelay(int val);
+  void setAckTime(int val); // in symbols int 
+
+
 };
 
 #endif
