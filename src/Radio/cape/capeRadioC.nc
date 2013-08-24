@@ -71,21 +71,11 @@ implementation {
   RadioSend = capeRadioP.RadioSend;
   RadioControl = capeRadioP.RadioControl;
 
-
-  //components CapeActiveMessageC as AM;
   components CapePacketModelC as Network;
   components CpmModelC as Model;
 
   capeRadioP.AMControl -> Network;
-  //capeRadioP.Packet -> AM;
-  //capeRadioP.AMPacket -> AM;
-
-
-  //capeRadioP.ReceiveReceive -> AM.Receive;
-  //capeRadioP.AMSend -> AM.AMSend;
-
   capeRadioP.Model -> Network.Packet;
 
-  //AM.Model -> Network.Packet;
   Network.GainRadioModel -> Model;
 }
