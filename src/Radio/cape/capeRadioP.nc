@@ -58,13 +58,12 @@ implementation {
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
 
-norace message_t *m;
+norace message_t *out_msg;
 norace error_t err;
 
 message_t buffer;
 message_t* bufferPointer = &buffer;
 uint8_t auto_ack;
-
 
 task void start_done() {
 	state = S_STARTED;
@@ -86,13 +85,25 @@ task void stop_done() {
 
 
 task void load_done() {
-	signal RadioBuffer.loadDone(m, err);
+	signal RadioBuffer.loadDone(out_msg, err);
 }
 
 
 task void send_done() {
-	signal RadioSend.sendDone(m, err);
+	signal RadioSend.sendDone(out_msg, err);
+//	m = NULL;
 }
+
+task void send_msg() {
+	fennec_header_t *header;
+
+	header = (fennec_header_t*)call RadioPacket.getPayload(out_msg,
+						sizeof(fennec_header_t));
+	err = call Model.send(BROADCAST, out_msg, header->length);
+	dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
+	post send_done();
+}
+
 
 command error_t Mgmt.start() {
 	auto_ack = TRUE;
@@ -102,12 +113,12 @@ command error_t Mgmt.start() {
 	return SUCCESS;
 }
 
-event void AMControl.startDone(error_t err) {
+event void AMControl.startDone(error_t error) {
 	state = S_STARTED;
 	post start_done();
 }
 
-event void AMControl.stopDone(error_t err) {
+event void AMControl.stopDone(error_t error) {
 	state = S_STOPPED;
 	post stop_done();
 }
@@ -242,20 +253,19 @@ async command bool PacketIndicator.isReceiving() {
 
 async command error_t RadioBuffer.load(message_t* msg) {
 	dbg("Radio", "capeRadio RadioSend.load( 0x%1x )", msg);
-	m = msg;
+	out_msg = msg;
 	err = SUCCESS;
 	post load_done();
 	return SUCCESS;
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )", msg, useCca);
-	if (call Model.send(BROADCAST, msg, 120) != SUCCESS) {
-		dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  FAILED", msg);
+	if (msg != out_msg) {
+		dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )  FAILED", msg, useCca);
 		return FAIL;
-
 	} else {
-		post send_done();
+		dbg("Radio", "capeRadio RadioSend.send(0x%1x, %d )", msg, useCca);
+		post send_msg();
 		return SUCCESS;
 	}
 }
@@ -296,7 +306,7 @@ async command error_t RadioResource.release() {
 
 
 event void Model.sendDone(message_t* msg, error_t result) {
-	if (msg != m) {
+	if (msg != out_msg) {
 		dbg("Radio", "capeRadio Model.sendDone returned incorred msg pointer");
 		err = FAIL;
 	} 
@@ -305,23 +315,31 @@ event void Model.sendDone(message_t* msg, error_t result) {
 	post send_done();
 }
 
-
+/*
   uint8_t payloadLength(message_t* msg) {
     return 100;
   }
+*/
 
+event void Model.receive(message_t* msg) {
+	uint8_t len;
+	void* payload;
+//	metadata_t* metadata;
+	fennec_header_t *header; 
 
-  event void Model.receive(message_t* msg) {
-    uint8_t len;
-    void* payload;
-    dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, 0, 0);
+	memcpy(bufferPointer, msg, sizeof(message_t));
 
-    memcpy(bufferPointer, msg, sizeof(message_t));
-    len = payloadLength(bufferPointer);
-    payload = call RadioPacket.getPayload(bufferPointer, call RadioPacket.maxPayloadLength());
+//	metadata = (metadata_t*)getMetadata( bufferPointer );
+	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
+						sizeof(fennec_header_t));
+	len = header->length;
+	payload = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
+                                                sizeof(len));
+	
+	dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, payload, len);
 
-//    bufferPointer = signal Receive.receive(bufferPointer, payload, len);
-  }
+	bufferPointer = signal RadioReceive.receive(bufferPointer, payload, len);
+}
 
   event bool Model.shouldAck(message_t* msg) {
 /*
