@@ -316,7 +316,8 @@ implementation {
     metadata->lqi = buf[ length ] & 0x7f;
     metadata->rssi = buf[ length - 1 ];
 
-    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_MAX_MESSAGE_SIZE) {
+
+    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_SIZE) {
       /* set conf before signaling receive */
       m_p_rx_buf->conf = header->destpan;
 

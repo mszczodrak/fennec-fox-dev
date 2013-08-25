@@ -350,12 +350,14 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 	msg->crc = metadata->crc;
 
 
+	//printf("ms 0x%1x  payload  0x%1x  d  0x%1x  ptr  0x%1x   diff 0x%1x\n", msg, payload, msg->data, ptr + sizeof(csmaca_header_t),
+	//		msg->data + sizeof(csmaca_header_t));
+	//printfflush();
+
 	if (call MacAMPacket.isForMe(msg)) {
-		//return signal MacReceive.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
-		return signal MacReceive.receive(msg, ptr, len - sizeof(csmaca_header_t));
+		return signal MacReceive.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
 	} else {
-		//return signal MacSnoop.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
-		return signal MacSnoop.receive(msg, ptr, len - sizeof(csmaca_header_t));
+		return signal MacSnoop.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
 	}
 }
 
