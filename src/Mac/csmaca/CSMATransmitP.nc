@@ -111,7 +111,8 @@ implementation {
   }
 
   /***************** Send Commands ****************/
-  command error_t Send.cancel( message_t* p_msg ) {
+command error_t Send.cancel( message_t* p_msg ) {
+	dbg("Mac", "csmaMac CSMATransmitP Send.cancel(0x%1x)", p_msg);
     switch( m_state ) {
     case S_LOAD:
     case S_SAMPLE_CCA:
@@ -125,23 +126,27 @@ implementation {
     }
   }
 
-  command error_t Send.send( message_t* p_msg, uint8_t len ) {
+command error_t Send.send( message_t* p_msg, uint8_t len ) {
+	csmaca_header_t* header;
+	metadata_t* metadata;
+	dbg("Mac", "csmaMac CSMATransmitP Send.send(0x%1x, %d)", p_msg, len);
 
-    csmaca_header_t* header = (csmaca_header_t*) call Send.getPayload( p_msg, len);
-    metadata_t* metadata = (metadata_t*) p_msg->metadata;
+	header = (csmaca_header_t*) call Send.getPayload( p_msg, len);
+	metadata = (metadata_t*) p_msg->metadata;
 
-    if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
-      header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
-    }
+	if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
+		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
+	}
 
-    atomic {
-      if (!call SplitControlState.isState(S_STARTED)) {
-        return FAIL;
-      }
+	atomic {
+		if (!call SplitControlState.isState(S_STARTED)) {
+			dbg("Mac", "csmaMac CSMATransmitP Send.send() - FAIL - isState(S_STARTED)");
+			return FAIL;
+		}
 
-      call SplitControlState.forceState(S_TRANSMITTING);
-      m_msg = p_msg;
-    }
+		call SplitControlState.forceState(S_TRANSMITTING);
+		m_msg = p_msg;
+	}
 
     // header->length = len + CC2420_SIZE;
 #ifdef CC2420_HW_SECURITY
@@ -167,30 +172,33 @@ implementation {
     csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
     csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
 
-    if (m_state == S_CANCEL) {
-      return ECANCEL;
-    }
+	if (m_state == S_CANCEL) {
+		return ECANCEL;
+	}
 
-    if ( m_state != S_STARTED ) {
-      return FAIL;
-    }
+	if ( m_state != S_STARTED ) {
+		dbg("Mac", "csmaMac CSMATransmitP Send.send() - FAIL - m_state != S_STARTED");
+		return FAIL;
+	}
 
-    m_state = S_LOAD;
-    m_cca = call csmacaMacParams.get_cca();
-    m_msg = m_msg;
-    totalCcaChecks = 0;
+	m_state = S_LOAD;
+	m_cca = call csmacaMacParams.get_cca();
+	m_msg = m_msg;
+	totalCcaChecks = 0;
+			dbg("Mac", "           OK");
 
-    sendDoneErr = call RadioBuffer.load(m_msg);
-    if (sendDoneErr != SUCCESS) {
-      post signalSendDone();
-      return sendDoneErr;
-    }
-    return SUCCESS;
-  }
+	sendDoneErr = call RadioBuffer.load(m_msg);
+	if (sendDoneErr != SUCCESS) {
+		dbg("Mac", "csmaMac CSMATransmitP Send.send() - FAIL - RadioBuffer.load(0x%1x)", m_msg);
+		post signalSendDone();
+		return sendDoneErr;
+	}
+	return SUCCESS;
+}
 
-  command void* Send.getPayload(message_t* m, uint8_t len) {
-    return call RadioPacket.getPayload(m, len);
-  }
+command void* Send.getPayload(message_t* m, uint8_t len) {
+	return call RadioPacket.getPayload(m, len);
+}
 
   command uint8_t Send.maxPayloadLength() {
     return call RadioPacket.maxPayloadLength();
@@ -309,7 +317,8 @@ implementation {
     return SUCCESS;
   }
 
-  async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
+async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
+	dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d)", msg, error);
     if (error != SUCCESS) {
       sendDoneErr = error;
       post signalSendDone();
