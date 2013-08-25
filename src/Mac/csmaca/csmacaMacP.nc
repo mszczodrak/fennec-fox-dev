@@ -26,8 +26,6 @@
  */
 
 #include <Fennec.h>
-#include "csmacaMac.h"
-
 #include <Ieee154.h> 
 #include "csmacaMac.h"
 
