@@ -337,6 +337,8 @@ event void SubSend.sendDone(message_t* msg, error_t result) {
 /***************** SubReceive Events ****************/
 event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	metadata_t* metadata = (metadata_t*) msg->metadata;
+	uint8_t *ptr = (uint8_t*) payload;
+
 	dbg("Mac", "csmaMac SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
 
 	if((call csmacaMacParams.get_crc()) && (!(metadata)->crc)) {
@@ -347,10 +349,13 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 	msg->lqi = metadata->lqi;
 	msg->crc = metadata->crc;
 
+
 	if (call MacAMPacket.isForMe(msg)) {
-		return signal MacReceive.receive(msg, payload, len - sizeof(csmaca_header_t));
+		//return signal MacReceive.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
+		return signal MacReceive.receive(msg, ptr, len - sizeof(csmaca_header_t));
 	} else {
-		return signal MacSnoop.receive(msg, payload, len - sizeof(csmaca_header_t));
+		//return signal MacSnoop.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
+		return signal MacSnoop.receive(msg, ptr, len - sizeof(csmaca_header_t));
 	}
 }
 
