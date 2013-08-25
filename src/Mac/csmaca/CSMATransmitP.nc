@@ -185,7 +185,6 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	m_cca = call csmacaMacParams.get_cca();
 	m_msg = m_msg;
 	totalCcaChecks = 0;
-			dbg("Mac", "           OK");
 
 	sendDoneErr = call RadioBuffer.load(m_msg);
 	if (sendDoneErr != SUCCESS) {
@@ -252,17 +251,19 @@ command void* Send.getPayload(message_t* m, uint8_t len) {
   }
 
 
-  event void csmacaMacParams.receive_status(uint16_t status_flag) {
-  }
+event void csmacaMacParams.receive_status(uint16_t status_flag) {
+}
 
-  void requestInitialBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
-    } else {
-      myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
-    }
-  }
+void requestInitialBackoff(message_t *msg) {
+	metadata_t* metadata = (metadata_t*) msg->metadata;
+	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
+		myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
+	} else {
+		myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
+	}
+	dbg("Mac", "csmaMac CSMATransmitP requestInitialBackoff(0x%1x) myInitialBackoff = %d", msg, myInitialBackoff);
+
+}
 
   void congestionBackoff(message_t *msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
@@ -319,43 +320,46 @@ command void* Send.getPayload(message_t* m, uint8_t len) {
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d)", msg, error);
-    if (error != SUCCESS) {
-      sendDoneErr = error;
-      post signalSendDone();
-      return;
-    }
+	if (error != SUCCESS) {
+		sendDoneErr = error;
+		post signalSendDone();
+		return;
+	}
 
-    if ( m_state == S_CANCEL ) {
-      call RadioSend.cancel(msg);
-      sendDoneErr = ECANCEL;
-      post signalSendDone();
+	if ( m_state == S_CANCEL ) {
+		call RadioSend.cancel(msg);
+		sendDoneErr = ECANCEL;
+		post signalSendDone();
+	} else if ( !m_cca ) {
+		dbg("Mac", "csmaMac CSMATransmitP start sending");
+		m_state = S_BEGIN_TRANSMIT;
+		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
+			dbg("Mac", "csmaMac CSMATransmitP RadioSend.send(0x%1x, %d)", m_msg, m_cca);
+			signal RadioSend.sendDone(m_msg, FAIL);
+		}
+	} else {
+		m_state = S_SAMPLE_CCA;
 
-    } else if ( !m_cca ) {
-      m_state = S_BEGIN_TRANSMIT;
-      if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
-        signal RadioSend.sendDone(m_msg, FAIL);
-      }
-    } else {
-      m_state = S_SAMPLE_CCA;
-
-      requestInitialBackoff(msg);
-      if (myInitialBackoff) {
-        call BackoffTimer.start(myInitialBackoff);
-      } else {
-        signal BackoffTimer.fired();
-      }
-    }
-  }
+		requestInitialBackoff(msg);
+		if (myInitialBackoff) {
+			call BackoffTimer.start(myInitialBackoff);
+		} else {
+			signal BackoffTimer.fired();
+		}
+	}
+}
 
 
-  /***************** Timer Events ****************/
+/***************** Timer Events ****************/
   /**
    * The backoff timer is mainly used to wait for a moment before trying
    * to send a packet again. But we also use it to timeout the wait for
    * an acknowledgement, and timeout the wait for an SFD interrupt when
    * we should have gotten one.
    */
-  async event void BackoffTimer.fired() {
+async event void BackoffTimer.fired() {
+	dbg("Mac", "csmaMac CSMATransmitP BackoffTimer.fired()");
+
     switch( m_state ) {
         
     case S_SAMPLE_CCA : 
