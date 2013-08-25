@@ -166,53 +166,51 @@ implementation {
    * a broadcast address message, the receiving end does not
    * signal receive() more than once for that message.
    */
-  command error_t Send.send(message_t *msg, uint8_t len) {
-    if(call SplitControlState.getState() == S_OFF) {
-      // Everything is off right now, start SplitControl and try again
-      return EOFF;
-    }
-    
-    if(call SendState.requestState(S_LPL_SENDING) == SUCCESS) {
-      currentSendMsg = msg;
-      currentSendLen = len;
-      
-      // In case our off timer is running...
-      call OffTimer.stop();
-      call SendDoneTimer.stop();
-      
-      if(call RadioPowerState.getState() == S_ON) {
-        initializeSend();
-        return SUCCESS;
-        
-      } else {
-        post startRadio();
-      }
-      
-      return SUCCESS;
-    }
-    
-    return EBUSY;
-  }
+command error_t Send.send(message_t *msg, uint8_t len) {
+	dbg("Mac", "csmaMac DefaultLplP Send.send(0x%1x, %d)", msg, len);
 
-  command error_t Send.cancel(message_t *msg) {
-    if(currentSendMsg == msg) {
-      call SendState.toIdle();
-      call SendDoneTimer.stop();
-      startOffTimer();
-      return call SubSend.cancel(msg);
-    }
+	if(call SplitControlState.getState() == S_OFF) {
+		// Everything is off right now, start SplitControl and try again
+		return EOFF;
+	}
     
-    return FAIL;
-  }
-  
-  
-  command uint8_t Send.maxPayloadLength() {
-    return call SubSend.maxPayloadLength();
-  }
+	 if(call SendState.requestState(S_LPL_SENDING) == SUCCESS) {
+		currentSendMsg = msg;
+		currentSendLen = len;
+      
+		// In case our off timer is running...
+		call OffTimer.stop();
+		call SendDoneTimer.stop();
+      
+		if(call RadioPowerState.getState() == S_ON) {
+			initializeSend();
+			return SUCCESS;
+		} else {
+			post startRadio();
+		}
+		return SUCCESS;
+	}
+	return EBUSY;
+}
 
-  command void *Send.getPayload(message_t* msg, uint8_t len) {
-    return call SubSend.getPayload(msg, len);
-  }
+command error_t Send.cancel(message_t *msg) {
+	dbg("Mac", "csmaMac DefaultLplP Send.cancel(0x%1x)", msg);
+	if(currentSendMsg == msg) {
+		call SendState.toIdle();
+		call SendDoneTimer.stop();
+		startOffTimer();
+		return call SubSend.cancel(msg);
+	}
+	return FAIL;
+}
+  
+command uint8_t Send.maxPayloadLength() {
+	return call SubSend.maxPayloadLength();
+}
+
+command void *Send.getPayload(message_t* msg, uint8_t len) {
+	return call SubSend.getPayload(msg, len);
+}
   
   
   /***************** DutyCycle Events ***************/
