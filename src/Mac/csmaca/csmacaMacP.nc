@@ -33,33 +33,33 @@
 
 
 module csmacaMacP @safe() {
-  provides interface Mgmt;
-  provides interface ModuleStatus as MacStatus;
-  provides interface AMSend as MacAMSend;
-  provides interface Receive as MacReceive;
-  provides interface Receive as MacSnoop;
+provides interface Mgmt;
+provides interface ModuleStatus as MacStatus;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
 
-  provides interface Packet as MacPacket;
-  provides interface AMPacket as MacAMPacket;
+provides interface Packet as MacPacket;
+provides interface AMPacket as MacAMPacket;
 
-  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface csmacaMacParams;
+uses interface csmacaMacParams;
 
-  uses interface SplitControl as RadioControl;
+uses interface SplitControl as RadioControl;
 
-  uses interface ModuleStatus as RadioStatus;
-  uses interface RadioPacket;
-  uses interface RadioConfig;
-  uses interface RadioPower;
-  uses interface Read<uint16_t> as ReadRssi;
-  uses interface Resource as RadioResource;
+uses interface ModuleStatus as RadioStatus;
+uses interface RadioPacket;
+uses interface RadioConfig;
+uses interface RadioPower;
+uses interface Read<uint16_t> as ReadRssi;
+uses interface Resource as RadioResource;
 
-  uses interface Send as SubSend;
-  uses interface Receive as SubReceive;
+uses interface Send as SubSend;
+uses interface Receive as SubReceive;
 
-  uses interface Random;
-  uses interface Leds;
+uses interface Random;
+uses interface Leds;
 }
 
 implementation {
