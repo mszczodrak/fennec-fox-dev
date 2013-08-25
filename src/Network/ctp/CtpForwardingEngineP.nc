@@ -684,6 +684,7 @@ implementation {
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
+    dbg("Network", "CTP CtpForwardEngine SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
 
     collectid = call CtpPacket.getType(msg);
 
