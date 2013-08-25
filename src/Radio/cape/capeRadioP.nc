@@ -38,7 +38,7 @@ provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
 provides interface Read<uint16_t> as ReadRssi;
-provides interface SplitControl as RadioControl;
+provides interface SplitControl;
 provides interface RadioBuffer;
 provides interface RadioPacket;
 provides interface RadioSend;
@@ -57,6 +57,7 @@ implementation {
 
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
+uint8_t mgmt = FALSE;
 
 norace message_t *out_msg;
 norace error_t err;
@@ -66,17 +67,36 @@ message_t* bufferPointer = &buffer;
 uint8_t auto_ack;
 
 task void start_done() {
-	state = S_STARTED;
-	dbg("Radio", "capeRadio start_done()");
-	signal RadioControl.startDone(SUCCESS);
-	signal Mgmt.startDone(SUCCESS);
+        if (err == SUCCESS) {
+                state = S_STARTED;
+        }
+        signal SplitControl.startDone(err);
+        if (mgmt == TRUE) {
+		dbg("Radio", "capeRadio signal Mgmt.startDone(%d)", err);
+                signal Mgmt.startDone(err);
+                mgmt = FALSE;
+        }
+}
+
+task void finish_starting_radio() {
+        if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
+        if (call RadioResource.release() != SUCCESS) err = FAIL;
+        //if (call ReceiveControl.start() != SUCCESS) err = FAIL;
+        //if (call TransmitControl.start() != SUCCESS) err = FAIL;
+	dbg("Radio", "capeRadio finish_starting_radio()");
+        post start_done();
 }
 
 task void stop_done() {
-	state = S_STOPPED;
-	dbg("Radio", "capeRadio stop_done()");
-	signal RadioControl.stopDone(SUCCESS);
-	signal Mgmt.stopDone(SUCCESS);
+        if (err == SUCCESS) {
+                state = S_STOPPED;
+        }
+        signal SplitControl.stopDone(err);
+        if (mgmt == TRUE) {
+		dbg("Radio", "capeRadio signal Mgmt.stopDone(%d)", err);
+                signal Mgmt.stopDone(err);
+                mgmt = FALSE;
+        }
 }
 
 task void load_done() {
@@ -108,63 +128,79 @@ task void cancel_msg() {
 
 command error_t Mgmt.start() {
 	auto_ack = TRUE;
-	state = S_STOPPED;
 	dbg("Radio", "capeRadio Mgmt.start()");
-	call RadioControl.start();
-	return SUCCESS;
+	call AMControl.start();
+
+        mgmt = TRUE;
+        call SplitControl.start();
+        return SUCCESS;
 }
 
 event void AMControl.startDone(error_t error) {
-	state = S_STARTED;
-	post start_done();
 }
 
 event void AMControl.stopDone(error_t error) {
-	state = S_STOPPED;
-	post stop_done();
 }
 
 command error_t Mgmt.stop() {
 	dbg("Radio", "capeRadio Mgmt.stop()");
-	call RadioControl.stop();
-	return SUCCESS;
+	call AMControl.stop();
+
+        mgmt = TRUE;
+        call SplitControl.stop();
+        return SUCCESS;
 }
 
-command error_t RadioControl.start() {
-	dbg("Radio", "capeRadio RadioControl.start()");
-	if (state == S_STOPPED) {
-		state = S_STARTING;
-		call AMControl.start();
-		return SUCCESS;
-	} else if(state == S_STARTED) {
-		post start_done();
-		return EALREADY;
-	} else if(state == S_STARTING) {
-		return SUCCESS;
+
+command error_t SplitControl.start() {
+	dbg("Radio", "capeRadio SplitControl.start()");
+        err = SUCCESS;
+
+        if (state == S_STARTED) {
+                post start_done();
+                return SUCCESS;
+        }
+
+        if (call RadioPower.startVReg() != SUCCESS) {
+		dbg("Radio", "capeRadio RadioPower.startVReg() - FAILED");
+		return FAIL;
 	}
-
-	return EBUSY;
+        state = S_STARTING;
+        return SUCCESS;
 }
 
-command error_t RadioControl.stop() {
-	dbg("Radio", "RadioControl.stop");
-	if (state == S_STARTED) {
-		state = S_STOPPING;
-		post stop_done();
-		return SUCCESS;
-	} else if(state == S_STOPPED) {
-		post stop_done();
-		return EALREADY;
-	} else if(state == S_STOPPING) {
-		return SUCCESS;
-	}
-	return EBUSY;
+command error_t SplitControl.stop() {
+	dbg("Radio", "capeRadio SplitControl.stop()");
+        err = SUCCESS;
+
+        if (state == S_STOPPED) {
+                post stop_done();
+                return SUCCESS;
+        }
+
+        //if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+        //if (call TransmitControl.stop() != SUCCESS) err = FAIL;
+        if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+
+        if (err != SUCCESS) return FAIL;
+
+        state = S_STOPPING;
+        post stop_done();
+        return SUCCESS;
 }
+
+
 
 event void capeRadioParams.receive_status(uint16_t status_flag) {
 }
 
+task void start_v_reg_done() {
+	call RadioPower.startOscillator();
+}
+
 async command error_t RadioPower.startVReg() {
+	dbg("Radio", "capeRadio RadioPower.startVReg()");
+	post start_v_reg_done();
 	return SUCCESS;
 }
 
@@ -172,7 +208,13 @@ async command error_t RadioPower.stopVReg() {
 	return SUCCESS;
 }
 
+task void start_oscillator_done() {
+        post finish_starting_radio();
+}
+
 async command error_t RadioPower.startOscillator() {
+	dbg("Radio", "capeRadio RadioPower.startOscillator()");
+	post start_oscillator_done();
 	return SUCCESS;
 }
 

@@ -69,7 +69,7 @@ implementation {
   RadioBuffer = capeRadioP.RadioBuffer;
   RadioPacket = capeRadioP.RadioPacket;
   RadioSend = capeRadioP.RadioSend;
-  RadioControl = capeRadioP.RadioControl;
+  RadioControl = capeRadioP.SplitControl;
 
   components CapePacketModelC as Network;
   components CpmModelC as Model;
