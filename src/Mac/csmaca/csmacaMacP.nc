@@ -153,8 +153,11 @@ event void RadioControl.stopDone(error_t err) {
 }
 
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload( msg, len );
-	dbg("Mac", "csmaMac Mgmt.stop()");
+	csmaca_header_t* header;
+
+	dbg("Mac", "csmaMac MacAMSend.send(%d, 0x%1x, %d)", addr, msg, len);
+
+	header = (csmaca_header_t*)call SubSend.getPayload( msg, len );
 
 	call MacAMPacket.setGroup(msg, msg->conf);
 
@@ -177,14 +180,17 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 }
 
 command error_t MacAMSend.cancel(message_t* msg) {
+	dbg("Mac", "csmaMac MacAMSend.cancel(0x%1x)", msg);
 	return call SubSend.cancel(msg);
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
+	dbg("Mac", "csmaMac MacAMSend.maxPayloadLength()");
 	return call MacPacket.maxPayloadLength();
 }
 
 command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
+	dbg("Mac", "csmaMac MacAMSend.getPayload(0x%1x, %d)", msg, len);
 	return call MacPacket.getPayload(msg, len);
 }
 
