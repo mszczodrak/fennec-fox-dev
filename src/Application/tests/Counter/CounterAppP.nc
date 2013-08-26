@@ -95,7 +95,7 @@ void sendMessage() {
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
 	} else {
-		dbg("Application", "CounterApp call NetworkAMSend.send(%d, 0x%1x, &d)",
+		dbg("Application", "CounterApp call NetworkAMSend.send(%d, 0x%1x, %d)",
 					call CounterAppParams.get_dest(), &packet,
 					sizeof(CounterMsg));
 		sendBusy = TRUE;
