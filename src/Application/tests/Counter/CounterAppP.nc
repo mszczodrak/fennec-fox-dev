@@ -111,7 +111,7 @@ event void Timer.fired() {
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, &d)",
+	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
 }

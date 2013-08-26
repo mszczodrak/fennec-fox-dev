@@ -111,11 +111,16 @@ task void send_done() {
 
 task void send_msg() {
 	fennec_header_t *header;
+	metadata_t* metadata;
 
 	header = (fennec_header_t*)call RadioPacket.getPayload(out_msg,
 						sizeof(fennec_header_t));
+	metadata = getMetadata(out_msg);
+
+	metadata->ack = ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) );
+
 	err = call Model.send(BROADCAST, out_msg, header->length);
-	dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
+	//dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
 	if (err != SUCCESS) {
 		post send_done();
 	}
@@ -326,7 +331,7 @@ async command uint8_t RadioPacket.maxPayloadLength() {
 }
 
 async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-	dbg("Radio", "capeRadio RadioSend.getPayload( 0x%1x, %d )", msg, len);
+	//dbg("Radio", "capeRadio RadioSend.getPayload( 0x%1x, %d )", msg, len);
 	if (len <= call RadioPacket.maxPayloadLength()) {
 		return (void*)msg->data;
 	} else {
@@ -353,6 +358,12 @@ async command error_t RadioResource.release() {
 
 
 event void Model.sendDone(message_t* msg, error_t result) {
+	fennec_header_t * header = (fennec_header_t*) msg->data;
+	if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+		dbg("Radio", "capeRadio wait for ACCCCCCCCCCCCCKKKKKKKKKKKKKKKKKKKKKK");
+	}
+
+
 	if (msg != out_msg) {
 		dbg("Radio", "capeRadio Model.sendDone returned incorred msg pointer");
 		err = FAIL;
@@ -381,18 +392,20 @@ event void Model.receive(message_t* msg) {
 	len = header->length;
 	payload = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
                                                 sizeof(len));
-	
-	dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, payload, len);
 
-	bufferPointer = signal RadioReceive.receive(bufferPointer, payload, len);
+	if ((( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == 	IEEE154_TYPE_DATA) {	
+		dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, payload, len);
+		bufferPointer = signal RadioReceive.receive(bufferPointer, payload, len);
+	}
 }
 
 event bool Model.shouldAck(message_t* msg) {
 	fennec_header_t *header;
+	dbg("Radio", "                     hehe");
 	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
 						sizeof(fennec_header_t));
 
-	if (header->dest == TOS_NODE_ID) { 	
+	if ( (header->dest == TOS_NODE_ID) && (header->fcf & (1 << IEEE154_FCF_ACK_REQ)) ) {  	
 		dbg("Radio", "capeRadio Model.shouldAck(0x%1x) - TRUE", msg);
 		return TRUE;
 	}
