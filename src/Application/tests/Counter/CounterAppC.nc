@@ -61,4 +61,6 @@ implementation {
   CounterAppP.Leds -> LedsC;
   CounterAppP.Timer -> TimerMilliC;
 
+  components EHC;
+
 }
