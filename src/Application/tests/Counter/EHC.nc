@@ -1,7 +1,14 @@
 configuration EHC {
+provides interface SplitControl;
 
 }
 implementation {
-	components EHP;
+components EHP;
+SplitControl = EHP;
+
+components new TimerMilliC();
+
+EHP.Timer -> TimerMilliC;
+
 
 }

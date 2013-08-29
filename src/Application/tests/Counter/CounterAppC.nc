@@ -62,5 +62,6 @@ implementation {
   CounterAppP.Timer -> TimerMilliC;
 
   components EHC;
+  CounterAppP.EHControl -> EHC;
 
 }

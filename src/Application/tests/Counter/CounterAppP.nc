@@ -46,6 +46,8 @@ uses interface ModuleStatus as NetworkStatus;
 uses interface Leds;
 uses interface Timer<TMilli>;
 
+uses interface SplitControl as EHControl;
+
 }
 
 implementation {
@@ -53,6 +55,12 @@ implementation {
 message_t packet;
 bool sendBusy = FALSE;
 uint16_t seqno;
+
+event void EHControl.startDone(error_t err) {
+}
+
+event void EHControl.stopDone(error_t err) {
+}
 
 command error_t Mgmt.start() {
 	uint32_t send_delay = call CounterAppParams.get_delay() * 
@@ -66,6 +74,7 @@ command error_t Mgmt.start() {
 	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
 		call Timer.startPeriodic(send_delay);
 	}
+	call EHControl.start();
 
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
