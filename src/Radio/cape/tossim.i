@@ -237,6 +237,7 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 %}
 
 %include radio.i
+%include seh.i
 
 #ifdef SWIGPYTHON
 %typemap(in) FILE * {
@@ -371,6 +372,7 @@ class Tossim {
 
   bool runNextEvent();
   Radio* radio();
+  SEH* seh();
 };
 
 

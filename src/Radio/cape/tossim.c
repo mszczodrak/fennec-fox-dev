@@ -50,6 +50,7 @@
 #include <hashtable.h>
 
 #include <radio.c>
+#include <seh.c>
 #include <sim_noise.h>
 
 uint16_t TOS_NODE_ID = 1;
@@ -288,3 +289,6 @@ Radio* Tossim::radio() {
   return new Radio();
 }
 
+SEH* Tossim::seh() {
+  return new SEH();
+}

@@ -2959,12 +2959,13 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_FILE swig_types[0]
 #define SWIGTYPE_p_Mote swig_types[1]
 #define SWIGTYPE_p_Radio swig_types[2]
-#define SWIGTYPE_p_Tossim swig_types[3]
-#define SWIGTYPE_p_Variable swig_types[4]
-#define SWIGTYPE_p_char swig_types[5]
-#define SWIGTYPE_p_nesc_app_t swig_types[6]
-static swig_type_info *swig_types[8];
-static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
+#define SWIGTYPE_p_SEH swig_types[3]
+#define SWIGTYPE_p_Tossim swig_types[4]
+#define SWIGTYPE_p_Variable swig_types[5]
+#define SWIGTYPE_p_char swig_types[6]
+#define SWIGTYPE_p_nesc_app_t swig_types[7]
+static swig_type_info *swig_types[9];
+static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3412,6 +3413,16 @@ SWIGINTERNINLINE PyObject*
 }
 
 
+#include <seh.h>
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
+}
+
+
 SWIGINTERN swig_type_info*
 SWIG_pchar_descriptor(void)
 {
@@ -3557,13 +3568,6 @@ SWIG_AsVal_long_SS_long (PyObject *obj, long long *val)
   }
 #endif
   return res;
-}
-
-
-SWIGINTERNINLINE PyObject*
-  SWIG_From_int  (int value)
-{
-  return PyInt_FromLong((long) value);
 }
 
 
@@ -3924,6 +3928,151 @@ SWIGINTERN PyObject *Radio_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
   SWIG_TypeNewClientData(SWIGTYPE_p_Radio, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_SEH(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SEH *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_SEH")) SWIG_fail;
+  result = (SEH *)new SEH();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SEH, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_SEH(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SEH *arg1 = (SEH *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_SEH",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_SEH" "', argument " "1"" of type '" "SEH *""'"); 
+  }
+  arg1 = reinterpret_cast< SEH * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SEH_solarCellSize(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SEH *arg1 = (SEH *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SEH_solarCellSize",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_solarCellSize" "', argument " "1"" of type '" "SEH *""'"); 
+  }
+  arg1 = reinterpret_cast< SEH * >(argp1);
+  result = (int)(arg1)->solarCellSize();
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SEH_solarCellEfficiency(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SEH *arg1 = (SEH *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SEH_solarCellEfficiency",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_solarCellEfficiency" "', argument " "1"" of type '" "SEH *""'"); 
+  }
+  arg1 = reinterpret_cast< SEH * >(argp1);
+  result = (int)(arg1)->solarCellEfficiency();
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SEH_setSolarCellSize(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SEH *arg1 = (SEH *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:SEH_setSolarCellSize",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_setSolarCellSize" "', argument " "1"" of type '" "SEH *""'"); 
+  }
+  arg1 = reinterpret_cast< SEH * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SEH_setSolarCellSize" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  (arg1)->setSolarCellSize(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SEH_setSolarCellEfficiency(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SEH *arg1 = (SEH *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:SEH_setSolarCellEfficiency",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_setSolarCellEfficiency" "', argument " "1"" of type '" "SEH *""'"); 
+  }
+  arg1 = reinterpret_cast< SEH * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SEH_setSolarCellEfficiency" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  (arg1)->setSolarCellEfficiency(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *SEH_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_SEH, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
 }
 
@@ -4890,6 +5039,28 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Tossim_seh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Tossim *arg1 = (Tossim *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  SEH *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Tossim_seh",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Tossim, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Tossim_seh" "', argument " "1"" of type '" "Tossim *""'"); 
+  }
+  arg1 = reinterpret_cast< Tossim * >(argp1);
+  result = (SEH *)(arg1)->seh();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SEH, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *Tossim_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -4908,6 +5079,13 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Radio_setNoise", _wrap_Radio_setNoise, METH_VARARGS, NULL},
 	 { (char *)"Radio_setSensitivity", _wrap_Radio_setSensitivity, METH_VARARGS, NULL},
 	 { (char *)"Radio_swigregister", Radio_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_SEH", _wrap_new_SEH, METH_VARARGS, NULL},
+	 { (char *)"delete_SEH", _wrap_delete_SEH, METH_VARARGS, NULL},
+	 { (char *)"SEH_solarCellSize", _wrap_SEH_solarCellSize, METH_VARARGS, NULL},
+	 { (char *)"SEH_solarCellEfficiency", _wrap_SEH_solarCellEfficiency, METH_VARARGS, NULL},
+	 { (char *)"SEH_setSolarCellSize", _wrap_SEH_setSolarCellSize, METH_VARARGS, NULL},
+	 { (char *)"SEH_setSolarCellEfficiency", _wrap_SEH_setSolarCellEfficiency, METH_VARARGS, NULL},
+	 { (char *)"SEH_swigregister", SEH_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Variable", _wrap_new_Variable, METH_VARARGS, NULL},
 	 { (char *)"delete_Variable", _wrap_delete_Variable, METH_VARARGS, NULL},
 	 { (char *)"Variable_getData", _wrap_Variable_getData, METH_VARARGS, NULL},
@@ -4942,6 +5120,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Tossim_randomSeed", _wrap_Tossim_randomSeed, METH_VARARGS, NULL},
 	 { (char *)"Tossim_runNextEvent", _wrap_Tossim_runNextEvent, METH_VARARGS, NULL},
 	 { (char *)"Tossim_radio", _wrap_Tossim_radio, METH_VARARGS, NULL},
+	 { (char *)"Tossim_seh", _wrap_Tossim_seh, METH_VARARGS, NULL},
 	 { (char *)"Tossim_swigregister", Tossim_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
@@ -4952,6 +5131,7 @@ static PyMethodDef SwigMethods[] = {
 static swig_type_info _swigt__p_FILE = {"_p_FILE", "FILE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Mote = {"_p_Mote", "Mote *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Radio = {"_p_Radio", "Radio *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_SEH = {"_p_SEH", "SEH *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Tossim = {"_p_Tossim", "Tossim *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Variable = {"_p_Variable", "Variable *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
@@ -4961,6 +5141,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_FILE,
   &_swigt__p_Mote,
   &_swigt__p_Radio,
+  &_swigt__p_SEH,
   &_swigt__p_Tossim,
   &_swigt__p_Variable,
   &_swigt__p_char,
@@ -4970,6 +5151,7 @@ static swig_type_info *swig_type_initial[] = {
 static swig_cast_info _swigc__p_FILE[] = {  {&_swigt__p_FILE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mote[] = {  {&_swigt__p_Mote, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Radio[] = {  {&_swigt__p_Radio, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_SEH[] = {  {&_swigt__p_SEH, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Tossim[] = {  {&_swigt__p_Tossim, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Variable[] = {  {&_swigt__p_Variable, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -4979,6 +5161,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_FILE,
   _swigc__p_Mote,
   _swigc__p_Radio,
+  _swigc__p_SEH,
   _swigc__p_Tossim,
   _swigc__p_Variable,
   _swigc__p_char,

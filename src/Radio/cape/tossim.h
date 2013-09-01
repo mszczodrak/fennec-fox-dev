@@ -46,6 +46,7 @@
 #include <memory.h>
 #include <tos.h>
 #include <radio.h>
+#include <seh.h>
 #include <hashtable.h>
 
 typedef struct variable_string {
@@ -133,6 +134,8 @@ class Tossim {
   bool runNextEvent();
 
   Radio* radio();
+
+  SEH* seh();
 
  private:
   char timeBuf[256];
