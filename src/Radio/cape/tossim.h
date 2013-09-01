@@ -99,9 +99,11 @@ class Mote {
   void turnOn();
   void setID(unsigned long id);  
 
-  void addNoiseTraceReading(int val);
+  void addNoiseTraceReading(char val);
   void createNoiseModel();
   int generateNoise(int when);
+
+  void addIrradianceTraceReading(float val);
   
   Variable* getVariable(char* name);
   

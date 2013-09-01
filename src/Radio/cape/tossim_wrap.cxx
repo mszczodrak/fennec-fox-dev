@@ -3571,6 +3571,22 @@ SWIG_AsVal_long_SS_long (PyObject *obj, long long *val)
 }
 
 
+SWIGINTERN int
+SWIG_AsVal_float (PyObject * obj, float *val)
+{
+  double v;
+  int res = SWIG_AsVal_double (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v < -FLT_MAX || v > FLT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = static_cast< float >(v);
+    }
+  }  
+  return res;
+}
+
+
 SWIGINTERNINLINE PyObject *
 SWIG_FromCharPtrAndSize(const char* carray, size_t size)
 {
@@ -4586,6 +4602,36 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Mote_addIrradianceTraceReading(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Mote *arg1 = (Mote *) 0 ;
+  float arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  float val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Mote_addIrradianceTraceReading",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addIrradianceTraceReading" "', argument " "1"" of type '" "Mote *""'"); 
+  }
+  arg1 = reinterpret_cast< Mote * >(argp1);
+  ecode2 = SWIG_AsVal_float(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addIrradianceTraceReading" "', argument " "2"" of type '" "float""'");
+  } 
+  arg2 = static_cast< float >(val2);
+  (arg1)->addIrradianceTraceReading(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *Mote_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -5104,6 +5150,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Mote_addNoiseTraceReading", _wrap_Mote_addNoiseTraceReading, METH_VARARGS, NULL},
 	 { (char *)"Mote_createNoiseModel", _wrap_Mote_createNoiseModel, METH_VARARGS, NULL},
 	 { (char *)"Mote_generateNoise", _wrap_Mote_generateNoise, METH_VARARGS, NULL},
+	 { (char *)"Mote_addIrradianceTraceReading", _wrap_Mote_addIrradianceTraceReading, METH_VARARGS, NULL},
 	 { (char *)"Mote_swigregister", Mote_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Tossim", _wrap_new_Tossim, METH_VARARGS, NULL},
 	 { (char *)"delete_Tossim", _wrap_delete_Tossim, METH_VARARGS, NULL},

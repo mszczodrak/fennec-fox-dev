@@ -110,6 +110,7 @@ struct @exactlyonce { };
 
 #include <randomlib.c>
 #include <sim_noise.c>
+#include <sim_irradiance.c>
 
 #endif
 

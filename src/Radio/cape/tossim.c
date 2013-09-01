@@ -52,6 +52,7 @@
 #include <radio.c>
 #include <seh.c>
 #include <sim_noise.h>
+#include <sim_irradiance.h>
 
 uint16_t TOS_NODE_ID = 1;
 
@@ -198,7 +199,7 @@ Variable* Mote::getVariable(char* name) {
   return var;
 }
 
-void Mote::addNoiseTraceReading(int val) {
+void Mote::addNoiseTraceReading(char val) {
   sim_noise_trace_add(id(), (char)val);
 }
 
@@ -208,6 +209,10 @@ void Mote::createNoiseModel() {
 
 int Mote::generateNoise(int when) {
   return (int)sim_noise_generate(id(), when);
+}
+
+void Mote::addIrradianceTraceReading(float val) {
+  sim_irradiance_trace_add(id(), val);
 }
 
 Tossim::Tossim(nesc_app_t* n) {

@@ -348,6 +348,8 @@ class Mote {
   void addNoiseTraceReading(int val);
   void createNoiseModel();
   int generateNoise(int when);
+
+  void addIrradianceTraceReading(float val);
 };
 
 class Tossim {

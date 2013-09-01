@@ -147,6 +147,7 @@ class Mote(_object):
     def addNoiseTraceReading(self, *args): return _TOSSIM.Mote_addNoiseTraceReading(self, *args)
     def createNoiseModel(self): return _TOSSIM.Mote_createNoiseModel(self)
     def generateNoise(self, *args): return _TOSSIM.Mote_generateNoise(self, *args)
+    def addIrradianceTraceReading(self, *args): return _TOSSIM.Mote_addIrradianceTraceReading(self, *args)
 Mote_swigregister = _TOSSIM.Mote_swigregister
 Mote_swigregister(Mote)
 
