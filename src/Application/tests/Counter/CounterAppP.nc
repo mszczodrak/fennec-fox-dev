@@ -46,7 +46,7 @@ uses interface ModuleStatus as NetworkStatus;
 uses interface Leds;
 uses interface Timer<TMilli>;
 
-uses interface SplitControl as EHControl;
+uses interface SplitControl as SolarCellControl;
 
 }
 
@@ -56,10 +56,10 @@ message_t packet;
 bool sendBusy = FALSE;
 uint16_t seqno;
 
-event void EHControl.startDone(error_t err) {
+event void SolarCellControl.startDone(error_t err) {
 }
 
-event void EHControl.stopDone(error_t err) {
+event void SolarCellControl.stopDone(error_t err) {
 }
 
 command error_t Mgmt.start() {
@@ -74,7 +74,7 @@ command error_t Mgmt.start() {
 	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
 		call Timer.startPeriodic(send_delay);
 	}
-	call EHControl.start();
+	call SolarCellControl.start();
 
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
