@@ -8,15 +8,15 @@ extern "C" {
 #endif
 
 enum {
-	IRRADIANCE_MIN_TRACE = 86400,
-	IRRADIANCE_HISTORY_SIZE = 86400,	/* requires 24 hours, with one trace per minute */
+	/* one trace per minute */
+	IRRADIANCE_MIN_TRACE = 10,
 };
 
 typedef struct sim_irradiance_node_t {
 	float* irradianceTrace;
 	int irradianceTraceLen;
-	int lastIrradiance;	
 	int irradianceTraceIndex;
+	int lastIrradiance;	
 } sim_irradiance_node_t;
 
 void sim_irradiance_init();

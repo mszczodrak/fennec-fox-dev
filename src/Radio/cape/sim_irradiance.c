@@ -29,6 +29,7 @@ void sim_irradiance_init()__attribute__ ((C, spontaneous))
 
 void sim_irradiance_trace_add(uint16_t node_id, float irradianceVal)__attribute__ ((C, spontaneous)) {
   // Need to double size of trace arra
+//  printf("adding\n");
   if (irradianceData[node_id].irradianceTraceIndex ==
       irradianceData[node_id].irradianceTraceLen) {
     float* data = (float*)(malloc(sizeof(float) * irradianceData[node_id].irradianceTraceLen * 2));
@@ -39,6 +40,7 @@ void sim_irradiance_trace_add(uint16_t node_id, float irradianceVal)__attribute_
   }
   irradianceData[node_id].irradianceTrace[irradianceData[node_id].irradianceTraceIndex] = irradianceVal;
   irradianceData[node_id].irradianceTraceIndex++;
+  printf("Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
   dbg("Insert", "Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
 }
 
