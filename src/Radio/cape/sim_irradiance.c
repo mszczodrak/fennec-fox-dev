@@ -40,7 +40,7 @@ void sim_irradiance_trace_add(uint16_t node_id, float irradianceVal)__attribute_
   }
   irradianceData[node_id].irradianceTrace[irradianceData[node_id].irradianceTraceIndex] = irradianceVal;
   irradianceData[node_id].irradianceTraceIndex++;
-  printf("Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
+  printf("Adding irradiance value %i for %i of %f\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (float)irradianceVal);
   dbg("Insert", "Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
 }
 
