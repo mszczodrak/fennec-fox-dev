@@ -70,12 +70,6 @@ void Radio::setSensitivity(double sensitivity) {
 }
 
 
-
-
-
-
-
-
 int Radio::symbolsPerSec() {return sim_radio_symbols_per_sec();}
 int Radio::bitsPerSymbol() {return sim_radio_bits_per_symbol();}
 int Radio::preambleLength() {return sim_radio_preamble_length();}

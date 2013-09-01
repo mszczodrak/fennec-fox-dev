@@ -238,15 +238,18 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 
 %include radio.i
 
-%typemap(python,in) FILE * {
+#ifdef SWIGPYTHON
+%typemap(in) FILE * {
   if (!PyFile_Check($input)) {
     PyErr_SetString(PyExc_TypeError, "Requires a file as a parameter.");
     return NULL;
   }
   $1 = PyFile_AsFile($input);
 }
+#endif
 
-%typemap(python,out) variable_string_t {
+#ifdef SWIGPYTHON
+%typemap(out) variable_string_t {
   if ($1.isArray) {
     //printf("Generating array %s\n", $1.type);
     $result = listFromArray  ($1.type, $1.ptr, $1.len);
@@ -259,9 +262,10 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
     PyErr_SetString(PyExc_RuntimeError, "Error generating Python type from TinyOS variable.");
   }
 }
+#endif
 
-
-%typemap(python,in) nesc_app_t* {
+#ifdef SWIGPYTHON
+%typemap(in) nesc_app_t* {
   if (!PyList_Check($input)) {
     PyErr_SetString(PyExc_TypeError, "Requires a list as a parameter.");
     return NULL;
@@ -312,20 +316,7 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
     $1 = app;
   }
 }
-
-typedef struct var_string {
-  char* type;
-  char* ptr;
-  int len;
-  int isArray;
-} variable_string_t;
-
-typedef struct nesc_app {
-  int numVariables;
-  char** variableNames;
-  char** variableTypes;
-  int* variableArray;
-} nesc_app_t;
+#endif
 
 class Variable {
  public:
