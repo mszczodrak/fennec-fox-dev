@@ -4,12 +4,13 @@ uses interface Timer<TMilli>;
 }
 implementation {
 
-double total = 0;
+uint32_t total_w = 0;
+uint32_t total_j = 0;
 uint16_t i;
 
 uint16_t size = 1000;
 
-float data[1000] = {
+uint16_t data[1000] = {
 0,
 0,
 0,
@@ -974,14 +975,22 @@ float data[1000] = {
 };
 
 event void Timer.fired() {
-	total += data[i];
+	// 0.2 efficiency
+	// 0.008 m^2 to 8cm^2
+	float _w = data[i] * 0.2 * 0.008;  // how many wats are on avg
+	float _j = _w * 60; // watts to joules
+	dbg("EHP", "EHP i: %d data[%d]: %d new W is %d   and J is %d", i, i, data[i], _w, _j);
+
+	total_w += _w;
+	total_j += _j;
+		
 	i++;
-	dbg("EHP", "EHP Total chanrge is %d", total);
+	dbg("EHP", "EHP Total W is %d   and J is %d", total_w, total_j);
 }
 
 command error_t SplitControl.start() {
 	i = 0;
-	total = 200;
+//	total = 200;
 	call Timer.startPeriodic(1024);
 	return SUCCESS;
 }
