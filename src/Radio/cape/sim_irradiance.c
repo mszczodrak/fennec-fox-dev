@@ -34,19 +34,21 @@ void sim_irradiance_trace_add(uint16_t node_id, float irradianceVal)__attribute_
   if (irradianceData[node_id].irradianceTraceIndex ==
       irradianceData[node_id].irradianceTraceLen) {
     float* data = (float*)(malloc(sizeof(float) * irradianceData[node_id].irradianceTraceLen * 2));
-    memcpy(data, irradianceData[node_id].irradianceTrace, irradianceData[node_id].irradianceTraceLen);
+    memcpy(data, irradianceData[node_id].irradianceTrace, sizeof(float) * irradianceData[node_id].irradianceTraceLen);
     free(irradianceData[node_id].irradianceTrace);
     irradianceData[node_id].irradianceTraceLen *= 2;
     irradianceData[node_id].irradianceTrace = data;
   }
   irradianceData[node_id].irradianceTrace[irradianceData[node_id].irradianceTraceIndex] = irradianceVal;
   irradianceData[node_id].irradianceTraceIndex++;
+//	printf("len %d", irradianceData[node_id].irradianceTraceIndex);
 //  printf("Adding irradiance value %i for %i of %f\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (float)irradianceVal);
-  dbg("Insert", "Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
+//  dbg("Insert", "Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
 }
 
 float sim_irradiance_trace(uint16_t node_id) {
 	float trace = irradianceData[node_id].irradianceTrace[ irradianceData[node_id].lastIrradiance ];
+	//printf("node %d  lastIrradiance %d  trace %f\n", node_id, irradianceData[node_id].lastIrradiance, trace);
 	irradianceData[node_id].lastIrradiance++;
 
 	if (irradianceData[node_id].lastIrradiance == irradianceData[node_id].irradianceTraceIndex) {

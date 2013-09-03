@@ -99,7 +99,7 @@ void sim_noise_trace_add(uint16_t node_id, char noiseVal)__attribute__ ((C, spon
   if (noiseData[node_id].noiseTraceIndex ==
       noiseData[node_id].noiseTraceLen) {
     char* data = (char*)(malloc(sizeof(char) * noiseData[node_id].noiseTraceLen * 2));
-    memcpy(data, noiseData[node_id].noiseTrace, noiseData[node_id].noiseTraceLen);
+    memcpy(data, noiseData[node_id].noiseTrace, sizeof(char) * noiseData[node_id].noiseTraceLen);
     free(noiseData[node_id].noiseTrace);
     noiseData[node_id].noiseTraceLen *= 2;
     noiseData[node_id].noiseTrace = data;

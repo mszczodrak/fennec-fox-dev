@@ -10,7 +10,7 @@ uses interface Timer<TMilli>;
 
 implementation {
 
-uint64_t harvesting_period = 10;
+uint64_t harvesting_period = 60;
 bool running = FALSE;
 float lastTrace;
 
@@ -54,17 +54,25 @@ void sim_request_harvesting() {
 
 
 void sim_irradiance_receive_handle(sim_event_t *evt) {
-	float watt;
+	double watt;
+	double joule;
 	lastTrace = sim_irradiance_trace(evt->mote);	/* irradiance perm m^2 */	
 
 
 	sim_seh_solar_cell_size(); /* in cm^2 */
 
+	dbg("IrradianceModel", "IrradianceModel received %f %d %d", lastTrace,
+		sim_seh_solar_cell_size(), sim_seh_solar_cell_efficiency());
+
 	watt = lastTrace * 
 		(sim_seh_solar_cell_size() / 10000.0) * 
 		(sim_seh_solar_cell_efficiency() / 100.0);
 
-	dbg("IrradianceModel", "IrradianceModel received %f", lastTrace);
+	joule = watt * harvesting_period;
+
+	signal IrradianceModel.harvestedW(watt);
+	signal IrradianceModel.harvestedJ(joule);
+	dbg("IrradianceModel", "IrradianceModel watt %f", watt);
 
 	if (running) {
 		sim_request_harvesting();
