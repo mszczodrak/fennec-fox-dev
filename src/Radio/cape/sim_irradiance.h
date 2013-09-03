@@ -21,6 +21,7 @@ typedef struct sim_irradiance_node_t {
 
 void sim_irradiance_init();
 void sim_irradiance_trace_add(uint16_t node_id, float val);
+float sim_irradiance_trace(uint16_t node_id);
 
 #ifdef __cplusplus
 }

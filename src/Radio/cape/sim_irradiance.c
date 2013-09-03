@@ -23,6 +23,7 @@ void sim_irradiance_init()__attribute__ ((C, spontaneous))
     irradianceData[j].irradianceTrace = (float*)(malloc(sizeof(float) * IRRADIANCE_MIN_TRACE));
     irradianceData[j].irradianceTraceLen = IRRADIANCE_MIN_TRACE;
     irradianceData[j].irradianceTraceIndex = 0;
+    irradianceData[j].lastIrradiance = 0;
   }
 //  printf("Done with sim_irradiance_init()\n");
 }
@@ -42,5 +43,15 @@ void sim_irradiance_trace_add(uint16_t node_id, float irradianceVal)__attribute_
   irradianceData[node_id].irradianceTraceIndex++;
 //  printf("Adding irradiance value %i for %i of %f\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (float)irradianceVal);
   dbg("Insert", "Adding irradiance value %i for %i of %i\n", (int)irradianceData[node_id].irradianceTraceIndex, (int)node_id, (int)irradianceVal);
+}
+
+float sim_irradiance_trace(uint16_t node_id) {
+	float trace = irradianceData[node_id].irradianceTrace[ irradianceData[node_id].lastIrradiance ];
+	irradianceData[node_id].lastIrradiance++;
+
+	if (irradianceData[node_id].lastIrradiance == irradianceData[node_id].irradianceTraceIndex) {
+		irradianceData[node_id].lastIrradiance = 0;
+	}
+	return trace;
 }
 

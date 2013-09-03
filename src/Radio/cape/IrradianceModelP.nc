@@ -11,17 +11,29 @@ uses interface Timer<TMilli>;
 implementation {
 
 uint64_t harvesting_period = 10;
+bool running = FALSE;
+float lastTrace;
 
 void sim_request_harvesting();
 void sim_irradiance_receive_handle(sim_event_t *evt);
+void sim_watt_receive(sim_event_t *evt);
 
-void sim_irradiance_receive_handle(sim_event_t *evt) {
 
-	dbg("IrradianceModel", "IrradianceModel received");
-
+command error_t IrradianceModel.startHarvesting() {
+	running = TRUE;
 	sim_request_harvesting();
-	
+	return SUCCESS;
 }
+
+command error_t IrradianceModel.stopHarvesting() {
+	running = FALSE;
+	return SUCCESS;
+}
+
+
+event void Timer.fired() {
+}
+
 
 void sim_request_harvesting() {
 	sim_event_t *evt = (sim_event_t*)malloc(sizeof(sim_event_t));
@@ -33,7 +45,7 @@ void sim_request_harvesting() {
 	evt->cleanup = sim_queue_cleanup_event;
 	evt->cancelled = 0;
 	evt->force = 1;
-	evt->data = 0;
+	evt->data = NULL;
 
 	/* add time delay */
 	evt->time += (harvesting_period * CAPE_TO_SECONDS);	/* irradiance is sampled every harvesting_period sec */
@@ -41,21 +53,27 @@ void sim_request_harvesting() {
 }
 
 
-command error_t IrradianceModel.startHarvesting() {
-	sim_request_harvesting();
-	return SUCCESS;
+void sim_irradiance_receive_handle(sim_event_t *evt) {
+	float watt;
+	lastTrace = sim_irradiance_trace(evt->mote);	/* irradiance perm m^2 */	
+
+
+	sim_seh_solar_cell_size(); /* in cm^2 */
+
+	watt = lastTrace * 
+		(sim_seh_solar_cell_size() / 10000.0) * 
+		(sim_seh_solar_cell_efficiency() / 100.0);
+
+	dbg("IrradianceModel", "IrradianceModel received %f", lastTrace);
+
+	if (running) {
+		sim_request_harvesting();
+	}
 }
 
-command error_t IrradianceModel.stopHarvesting() {
-	return SUCCESS;
-}
-
-
-event void Timer.fired() {
 
 
 
-}
 
 
 }
