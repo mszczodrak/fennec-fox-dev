@@ -86,7 +86,6 @@ command error_t Mgmt.stop() {
 void sendMessage() {
 	CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
-	printf("sending\n");
 	call Leds.led1Toggle();
 	if (msg == NULL) {
 		return;
@@ -110,9 +109,6 @@ void sendMessage() {
 }
 
 event void Timer.fired() {
-	call Leds.led2Toggle();
-	printf("Timer\n");
-	printfflush();
 	if (!sendBusy) {
 		sendMessage();
 	}
@@ -122,7 +118,6 @@ event void Timer.fired() {
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
-	printf("sendDone\n");
 	sendBusy = FALSE;
 }
 
