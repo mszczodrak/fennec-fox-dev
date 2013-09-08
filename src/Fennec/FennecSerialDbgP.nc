@@ -10,6 +10,7 @@ module FennecSerialDbgP {
   uses interface AMSend;
   uses interface Queue<nx_struct debug_msg>;
 #endif
+  uses interface Leds;
 }
 
 implementation {

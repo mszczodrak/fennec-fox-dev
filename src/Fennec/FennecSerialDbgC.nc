@@ -19,5 +19,8 @@ implementation {
   components new QueueC(nx_struct debug_msg, DBG_BUFFER_SIZE);
   FennecSerialDbgP.Queue -> QueueC;
 #endif
+
+  components LedsC;
+  FennecSerialDbgP.Leds -> LedsC;
 }
 

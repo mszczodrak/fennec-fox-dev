@@ -61,7 +61,4 @@ implementation {
   CounterAppP.Leds -> LedsC;
   CounterAppP.Timer -> TimerMilliC;
 
-  components capeSolarCellC;
-  CounterAppP.SolarCellControl -> capeSolarCellC;
-
 }
