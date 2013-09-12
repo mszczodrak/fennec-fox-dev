@@ -6,6 +6,9 @@ use application printf $(FENNEC_FOX_LIB)/Application/tests/Printf ()
 use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter ( 
 	uint16_t delay, uint16_t delay_scale, uint16_t src, uint16_t dest )
 
+use application counterEH $(FENNEC_FOX_LIB)/Application/tests/CounterEH ( 
+	uint16_t delay, uint16_t delay_scale, uint16_t src, uint16_t dest )
+
 use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 use application cuApp $(FENNEC_FOX_LIB)/Application/ControlUnit ()
 
