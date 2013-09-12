@@ -4,7 +4,7 @@ provides interface SplitControl;
 provides interface SolarCell;
 uses interface SimDynamicEnergy;
 
-uses interface IrradianceModel;
+uses interface Irradiance;
 
 }
 
@@ -24,13 +24,13 @@ task void stop_done() {
 
 command error_t SplitControl.start() {
 	joule_charge = 0;
-	err = call IrradianceModel.startHarvesting();
+	err = call Irradiance.startHarvesting();
 	post start_done();
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	err = call IrradianceModel.stopHarvesting();
+	err = call Irradiance.stopHarvesting();
 	post stop_done();
 	return SUCCESS;
 }
@@ -43,7 +43,7 @@ command uint8_t SolarCell.getArea() {
 	return sim_seh_solar_cell_size();
 }
 
-event void IrradianceModel.harvested(double watt) {
+event void Irradiance.harvested(double watt) {
 	double new_watt;
 	double joule;
 	/*
@@ -57,7 +57,7 @@ event void IrradianceModel.harvested(double watt) {
 
 	//dbg("SolarCell", "SolarCell watt %f", new_watt);
 
-	joule = new_watt * call IrradianceModel.getHarvestingPeriodSec();
+	joule = new_watt * call Irradiance.getHarvestingPeriodSec();
 	
 	dbg("SolarCell", "SolarCell joule %f", joule);
 	

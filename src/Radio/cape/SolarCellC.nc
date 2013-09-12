@@ -13,7 +13,11 @@ SplitControl = SolarCellP;
 SolarCell = SolarCellP;
 SimDynamicEnergy = SolarCellP;
 
-components IrradianceModelC as Model;
-SolarCellP.IrradianceModel -> Model;
+#ifdef TOSSIM
+components IrradianceModelC as IrradianceC;
+#else
+components IrradianceTraceC as IrradianceC;
+#endif
 
+SolarCellP.Irradiance -> Irradiance;
 }
