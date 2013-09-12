@@ -1,13 +1,18 @@
 configuration EnergyC {
 provides interface SimpleStart;
+provides interface SimDynamicEnergy;
 }
 
 implementation {
 
 components EnergyP;
 SimpleStart = EnergyP;
+SimDynamicEnergy = EnergyP;
 
-components capeSolarCellC as EnergySrc;
-EnergyP.EnergySrcCtrl -> EnergySrc;
+components SolarCellC as EnergySrc;
+EnergyP.SplitControl -> EnergySrc;
+
+EnergySrc.SimDynamicEnergy -> EnergyP;
+
 
 }

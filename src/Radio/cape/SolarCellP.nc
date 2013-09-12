@@ -2,8 +2,10 @@ module SolarCellP {
 
 provides interface SplitControl;
 provides interface SolarCell;
+uses interface SimDynamicEnergy;
 
 uses interface IrradianceModel;
+
 }
 
 implementation {
@@ -34,15 +36,16 @@ command error_t SplitControl.stop() {
 }
 
 command uint8_t SolarCell.getEfficiency() {
-	return 0;
+	return sim_seh_solar_cell_efficiency();
 }
 
 command uint8_t SolarCell.getArea() {
-	return 0;
+	return sim_seh_solar_cell_size();
 }
 
 event void IrradianceModel.harvested(double watt) {
 	double new_watt;
+	double joule;
 	/*
 	convert the trace reading into the watt energy harvested by 
 	the simulated solar cell, which is not necessary 1m^2 and
@@ -52,8 +55,13 @@ event void IrradianceModel.harvested(double watt) {
 	new_watt = watt * sim_seh_solar_cell_size() * 
 			sim_seh_solar_cell_efficiency();
 
-	dbg("IrradianceModel", "IrradianceModel watt %f", new_watt);
+	//dbg("SolarCell", "SolarCell watt %f", new_watt);
 
+	joule = new_watt * call IrradianceModel.getHarvestingPeriodSec();
+	
+	dbg("SolarCell", "SolarCell joule %f", joule);
+	
+	call SimDynamicEnergy.add(joule);
 }
 
 
