@@ -9,7 +9,4 @@ implementation {
 components IrradianceModelP;
 IrradianceModel = IrradianceModelP;
 
-components new TimerMilliC();
-IrradianceModelP.Timer -> TimerMilliC;
-
 }

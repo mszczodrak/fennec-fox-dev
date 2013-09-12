@@ -3416,13 +3416,6 @@ SWIGINTERNINLINE PyObject*
 #include <seh.h>
 
 
-SWIGINTERNINLINE PyObject*
-  SWIG_From_int  (int value)
-{
-  return PyInt_FromLong((long) value);
-}
-
-
 SWIGINTERN swig_type_info*
 SWIG_pchar_descriptor(void)
 {
@@ -3568,6 +3561,13 @@ SWIG_AsVal_long_SS_long (PyObject *obj, long long *val)
   }
 #endif
   return res;
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
 }
 
 
@@ -3987,7 +3987,7 @@ SWIGINTERN PyObject *_wrap_SEH_solarCellSize(PyObject *SWIGUNUSEDPARM(self), PyO
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  int result;
+  double result;
   
   if (!PyArg_ParseTuple(args,(char *)"O:SEH_solarCellSize",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, 0 |  0 );
@@ -3995,8 +3995,8 @@ SWIGINTERN PyObject *_wrap_SEH_solarCellSize(PyObject *SWIGUNUSEDPARM(self), PyO
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_solarCellSize" "', argument " "1"" of type '" "SEH *""'"); 
   }
   arg1 = reinterpret_cast< SEH * >(argp1);
-  result = (int)(arg1)->solarCellSize();
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (double)(arg1)->solarCellSize();
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
@@ -4009,7 +4009,7 @@ SWIGINTERN PyObject *_wrap_SEH_solarCellEfficiency(PyObject *SWIGUNUSEDPARM(self
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  int result;
+  double result;
   
   if (!PyArg_ParseTuple(args,(char *)"O:SEH_solarCellEfficiency",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SEH, 0 |  0 );
@@ -4017,8 +4017,8 @@ SWIGINTERN PyObject *_wrap_SEH_solarCellEfficiency(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_solarCellEfficiency" "', argument " "1"" of type '" "SEH *""'"); 
   }
   arg1 = reinterpret_cast< SEH * >(argp1);
-  result = (int)(arg1)->solarCellEfficiency();
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (double)(arg1)->solarCellEfficiency();
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
@@ -4028,10 +4028,10 @@ fail:
 SWIGINTERN PyObject *_wrap_SEH_setSolarCellSize(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   SEH *arg1 = (SEH *) 0 ;
-  int arg2 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int val2 ;
+  double val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
@@ -4042,11 +4042,11 @@ SWIGINTERN PyObject *_wrap_SEH_setSolarCellSize(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_setSolarCellSize" "', argument " "1"" of type '" "SEH *""'"); 
   }
   arg1 = reinterpret_cast< SEH * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SEH_setSolarCellSize" "', argument " "2"" of type '" "int""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SEH_setSolarCellSize" "', argument " "2"" of type '" "double""'");
   } 
-  arg2 = static_cast< int >(val2);
+  arg2 = static_cast< double >(val2);
   (arg1)->setSolarCellSize(arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
@@ -4058,10 +4058,10 @@ fail:
 SWIGINTERN PyObject *_wrap_SEH_setSolarCellEfficiency(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   SEH *arg1 = (SEH *) 0 ;
-  int arg2 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int val2 ;
+  double val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
@@ -4072,11 +4072,11 @@ SWIGINTERN PyObject *_wrap_SEH_setSolarCellEfficiency(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SEH_setSolarCellEfficiency" "', argument " "1"" of type '" "SEH *""'"); 
   }
   arg1 = reinterpret_cast< SEH * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SEH_setSolarCellEfficiency" "', argument " "2"" of type '" "int""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SEH_setSolarCellEfficiency" "', argument " "2"" of type '" "double""'");
   } 
-  arg2 = static_cast< int >(val2);
+  arg2 = static_cast< double >(val2);
   (arg1)->setSolarCellEfficiency(arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;

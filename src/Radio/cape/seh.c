@@ -4,8 +4,8 @@
 SEH::SEH() {}
 SEH::~SEH() {}
 
-int SEH::solarCellSize() {return sim_seh_solar_cell_size();}
-int SEH::solarCellEfficiency() {return sim_seh_solar_cell_efficiency();}
+double SEH::solarCellSize() {return sim_seh_solar_cell_size();}
+double SEH::solarCellEfficiency() {return sim_seh_solar_cell_efficiency();}
 /*
 int MAC::high() {return sim_csma_high();}
 int MAC::low() {return sim_csma_low();}
@@ -19,8 +19,8 @@ int MAC::rxtxDelay() {return sim_csma_rxtx_delay();}
 int MAC::ackTime() {return sim_csma_ack_time();}
 */
 
-void SEH::setSolarCellSize(int val) {sim_seh_set_solar_cell_size(val);}
-void SEH::setSolarCellEfficiency(int val) {sim_seh_set_solar_cell_efficiency(val);}
+void SEH::setSolarCellSize(double val) {sim_seh_set_solar_cell_size(val);}
+void SEH::setSolarCellEfficiency(double val) {sim_seh_set_solar_cell_efficiency(val);}
 /*
 void MAC::setHigh(int val) {sim_csma_set_high(val);}
 void MAC::setLow(int val) {sim_csma_set_low(val);}

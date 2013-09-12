@@ -6,11 +6,11 @@ class SEH {
   SEH();
   ~SEH();
 
-  int solarCellSize();
-  int solarCellEfficiency();
+  double solarCellSize();
+  double solarCellEfficiency();
   
-  void setSolarCellSize(int val);
-  void setSolarCellEfficiency(int val);
+  void setSolarCellSize(double val);
+  void setSolarCellEfficiency(double val);
 };
 
 #endif

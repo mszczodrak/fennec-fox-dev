@@ -103,7 +103,7 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
-  void addIrradianceTraceReading(float val);
+  void addIrradianceTraceReading(double val);
   
   Variable* getVariable(char* name);
   

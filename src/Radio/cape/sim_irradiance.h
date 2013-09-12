@@ -13,15 +13,15 @@ enum {
 };
 
 typedef struct sim_irradiance_node_t {
-	float* irradianceTrace;
+	double* irradianceTrace;
 	int irradianceTraceLen;
 	int irradianceTraceIndex;
 	int lastIrradiance;	
 } sim_irradiance_node_t;
 
 void sim_irradiance_init();
-void sim_irradiance_trace_add(uint16_t node_id, float val);
-float sim_irradiance_trace(uint16_t node_id);
+void sim_irradiance_trace_add(uint16_t node_id, double val);
+double sim_irradiance_trace(uint16_t node_id);
 
 #ifdef __cplusplus
 }

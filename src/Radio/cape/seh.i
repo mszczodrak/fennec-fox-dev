@@ -9,8 +9,8 @@ class SEH {
   SEH();
   ~SEH();
 
-  int solarCellSize();
-  int solarCellEfficiency();
+  double solarCellSize();
+  double solarCellEfficiency();
 
 /*
   int high();
@@ -25,8 +25,8 @@ class SEH {
   int ackTime(); 
 */
   
-  void setSolarCellSize(int val);
-  void setSolarCellEfficiency(int val);
+  void setSolarCellSize(double val);
+  void setSolarCellEfficiency(double val);
 /*
   void setHigh(int val);
   void setLow(int val);

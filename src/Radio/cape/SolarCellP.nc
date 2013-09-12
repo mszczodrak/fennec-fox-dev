@@ -41,12 +41,20 @@ command uint8_t SolarCell.getArea() {
 	return 0;
 }
 
-event void IrradianceModel.harvestedW(double watt) {
+event void IrradianceModel.harvested(double watt) {
+	double new_watt;
+	/*
+	convert the trace reading into the watt energy harvested by 
+	the simulated solar cell, which is not necessary 1m^2 and
+	100% efficient
+	*/
+
+	new_watt = watt * sim_seh_solar_cell_size() * 
+			sim_seh_solar_cell_efficiency();
+
+	dbg("IrradianceModel", "IrradianceModel watt %f", new_watt);
 
 }
 
-event void IrradianceModel.harvestedJ(double joule) {
-	joule_charge += joule;
-}
 
 }

@@ -211,7 +211,7 @@ int Mote::generateNoise(int when) {
   return (int)sim_noise_generate(id(), when);
 }
 
-void Mote::addIrradianceTraceReading(float val) {
+void Mote::addIrradianceTraceReading(double val) {
   sim_irradiance_trace_add(id(), val);
 }
 
