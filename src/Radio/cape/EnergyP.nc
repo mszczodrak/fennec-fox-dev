@@ -51,4 +51,8 @@ command error_t SimDynamicEnergy.del(double joules) {
 	}
 }
 
+command double SimDynamicEnergy.energy() {
+	return total_joules;
+}
+
 }
