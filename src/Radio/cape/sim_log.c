@@ -251,11 +251,18 @@ void sim_log_debug(uint16_t id, char* string, const char* format, ...) {
   }
   for (i = 0; i < outputs[id].num; i++) {
     FILE* file = outputs[id].files[i];
+    long long int sim_sec = sim_time() / CAPE_SIM_TO_SECONDS;
+    long long int sim_ms = (sim_time() % CAPE_SIM_TO_SECONDS) / CAPE_SIM_TO_MILLISECONDS;
+    long long int sim_us = (sim_time() % CAPE_SIM_TO_MILLISECONDS) / CAPE_SIM_TO_MICROSECONDS;
     va_start(args, format);
     //fprintf(file, "%20lli %10lli NODE (%04i): ", (long long int)sim_time(), (long long int)sim_time() / 1000000, (int)sim_node());
-    fprintf(file, "%10lli %03i %03i NODE (%04i): ", (long long int)(sim_time() / CAPE_SIM_TO_SECONDS), 
-						(int)(sim_time() % CAPE_SIM_TO_SECONDS) / 1000, 
-						(int)(sim_time() % CAPE_SIM_TO_MILLISECONDS) / 10, 
+//    fprintf(file, "%10lli %03i %03i NODE (%04i): ", (long long int)(sim_time() / CAPE_SIM_TO_SECONDS), 
+//						(int)(sim_time() % CAPE_SIM_TO_SECONDS) / 1000, 
+//						(int)(sim_time() % CAPE_SIM_TO_MILLISECONDS) / 10, 
+//						(int)sim_node());
+    fprintf(file, "%10lli %03i %03i NODE (%04i): ", (long long int)sim_sec, 
+						(int)sim_ms, 
+						(int)sim_us, 
 						(int)sim_node());
     vfprintf(file, format, args); 
     fprintf(file, "\n");

@@ -19,7 +19,7 @@ command error_t Irradiance.startHarvesting() {
 	index = 0;
 	running = TRUE;
 	if (IRRADIANCE_TRACE_LEN > 0) {
-		call Timer.startPeriodic(HARVESTING_PERIOD_SEC * 1000);
+		call Timer.startPeriodic(HARVESTING_PERIOD_SEC * 1024);
         	return SUCCESS;
 	} else {
 		return FAIL;
