@@ -1,4 +1,4 @@
-configuration capeIrradianceC;
+configuration capeIrradianceC {
 provides interface Irradiance;
 }
 implementation {

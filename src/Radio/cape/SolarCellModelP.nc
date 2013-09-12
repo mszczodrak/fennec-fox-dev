@@ -11,3 +11,5 @@ command double SolarCell.getEfficiency() {
 command double SolarCell.getArea() {
 	return sim_seh_solar_cell_size();
 }
+
+}
