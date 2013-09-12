@@ -45,7 +45,7 @@ void sim_request_harvesting() {
 	evt->data = NULL;
 
 	/* add time delay */
-	evt->time += (HARVESTING_PERIOD_SEC * CAPE_TO_SECONDS);	/* irradiance is sampled every HARVESTING_PERIOD_SEC sec */
+	evt->time += (HARVESTING_PERIOD_SEC * CAPE_SIM_TO_SECONDS);	/* irradiance is sampled every HARVESTING_PERIOD_SEC sec */
 	sim_queue_insert(evt);
 }
 
