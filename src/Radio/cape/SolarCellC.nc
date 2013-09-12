@@ -14,10 +14,12 @@ SolarCell = SolarCellP;
 SimDynamicEnergy = SolarCellP;
 
 //#ifdef TOSSIM
-//components IrradianceModelC as IrradianceC;
+//components capeIrradianceC as IrradianceC;
 //#else
+components SolarCellSpecC as SolarC;
 components IrradianceTraceC as IrradianceC;
 //#endif
 
 SolarCellP.Irradiance -> IrradianceC;
+SolarCellP.SubSolarCell -> SolarC;
 }

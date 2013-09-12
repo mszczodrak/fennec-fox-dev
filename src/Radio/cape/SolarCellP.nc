@@ -5,6 +5,7 @@ provides interface SolarCell;
 uses interface SimDynamicEnergy;
 
 uses interface Irradiance;
+uses interface SolarCell as SubSolarCell;
 
 }
 
@@ -35,12 +36,12 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-command uint8_t SolarCell.getEfficiency() {
-	return sim_seh_solar_cell_efficiency();
+command double SolarCell.getEfficiency() {
+	return call SubSolarCell.getEfficiency();
 }
 
-command uint8_t SolarCell.getArea() {
-	return sim_seh_solar_cell_size();
+command double SolarCell.getArea() {
+	return call SubSolarCell.getArea();
 }
 
 event void Irradiance.harvested(double watt) {
@@ -52,8 +53,8 @@ event void Irradiance.harvested(double watt) {
 	100% efficient
 	*/
 
-	new_watt = watt * sim_seh_solar_cell_size() * 
-			sim_seh_solar_cell_efficiency();
+	new_watt = watt * call SolarCell.getEfficiency()  * 
+			call SolarCell.getArea() ;
 
 	//dbg("SolarCell", "SolarCell watt %f", new_watt);
 
