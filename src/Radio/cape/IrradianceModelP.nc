@@ -4,7 +4,7 @@
 #include <sim_log.h>
 
 module IrradianceModelP {
-provides interface IrradianceModel;
+provides interface Irradiance;
 }
 
 implementation {
@@ -17,18 +17,18 @@ void sim_request_harvesting();
 void sim_irradiance_receive_handle(sim_event_t *evt);
 void sim_watt_receive(sim_event_t *evt);
 
-command error_t IrradianceModel.startHarvesting() {
+command error_t Irradiance.startHarvesting() {
 	running = TRUE;
 	sim_request_harvesting();
 	return SUCCESS;
 }
 
-command error_t IrradianceModel.stopHarvesting() {
+command error_t Irradiance.stopHarvesting() {
 	running = FALSE;
 	return SUCCESS;
 }
 
-command uint16_t IrradianceModel.getHarvestingPeriodSec() {
+command uint16_t Irradiance.getHarvestingPeriodSec() {
 	return HARVESTING_PERIOD_SEC;
 }
 
@@ -53,7 +53,7 @@ void sim_irradiance_receive_handle(sim_event_t *evt) {
 	double lastTrace = sim_irradiance_trace(evt->mote);	/* irradiance perm m^2 */	
 
 	dbg("IrradianceModel", "IrradianceModel watt %f", lastTrace);
-	signal IrradianceModel.harvested(lastTrace);
+	signal Irradiance.harvested(lastTrace);
 
 	if (running) {
 		sim_request_harvesting();

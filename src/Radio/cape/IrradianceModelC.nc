@@ -1,12 +1,12 @@
 
 
 configuration IrradianceModelC {
-provides interface IrradianceModel;
+provides interface Irradiance;
 }
 
 implementation {
 
 components IrradianceModelP;
-IrradianceModel = IrradianceModelP;
+Irradiance = IrradianceModelP;
 
 }

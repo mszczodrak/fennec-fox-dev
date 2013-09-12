@@ -1,4 +1,4 @@
-interface IrradianceModel {
+interface Irradiance {
 command error_t startHarvesting();
 command error_t stopHarvesting();
 
