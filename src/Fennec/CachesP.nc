@@ -12,29 +12,10 @@ implementation {
 uint16_t network_sequence = 0;
 uint16_t node_sequence = 0;
 
-uint16_t network_state = 0;
 uint16_t node_state = 0;
-
-network_state_t states[MAX_STATES];
 
 
 command void SimpleStart.start() {
-//	uint8_t i;
-
-	states[0].id = 1;
-	states[0].num_confs = 2;
-	states[0].conf_ids[0] = POLICY_CONFIGURATION;
-	states[0].conf_ids[1] = 1;
-
-	states[1].id = 2;
-	states[1].num_confs = 2;
-	states[1].conf_ids[0] = POLICY_CONFIGURATION;
-	states[1].conf_ids[1] = 2;
-
-	network_state = active_state - 1;
-
-
-//	signal PolicyCache.newConf(active_state);
 	signal SimpleStart.startDone(SUCCESS);
 }
 
@@ -105,11 +86,11 @@ command void PolicyCache.setNodeSequence(uint16_t seq) {
 }
 
 command uint16_t PolicyCache.getNetworkState() {
-	return network_state;
+	return active_state;
 }
 
 command void PolicyCache.setNetworkState(uint16_t state) {
-	network_state = state;
+	active_state = state;
 }
 
 command uint16_t PolicyCache.getNodeState() {
@@ -120,7 +101,7 @@ command void PolicyCache.setNodeState(uint16_t state) {
 	node_state = state;
 }
 
-command network_state_t* PolicyCache.getStateRecord(uint16_t id) {
+command struct network_state* PolicyCache.getStateRecord(uint16_t id) {
 	return &states[id];
 }
 

@@ -17,7 +17,7 @@ uint8_t num_of_proc = 0;
 uint8_t state = S_STOPPED;
 
 uint16_t processing_state;
-network_state_t* state_record;
+struct network_state* state_record;
 uint16_t conf = UNKNOWN_CONFIGURATION;
 
 task void start_protocol_stack() {
@@ -25,7 +25,7 @@ task void start_protocol_stack() {
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack network_state = %d", processing_state);
 	state_record = call PolicyCache.getStateRecord(processing_state);
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack id = %d, num_confs = %d", 
-		state_record->id, state_record->num_confs);
+		state_record->state_id, state_record->num_confs);
 
 	if (conf == UNKNOWN_CONFIGURATION) {
 		dbg("NetworkScheduler", "NetworkScheduler first time starting, rest conf");
@@ -57,7 +57,7 @@ task void stop_protocol_stack() {
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack network_state = %d", processing_state);
 	state_record = call PolicyCache.getStateRecord(processing_state);
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack id = %d, num_confs = %d", 
-		state_record->id, state_record->num_confs);
+		state_record->state_id, state_record->num_confs);
 
 	
 

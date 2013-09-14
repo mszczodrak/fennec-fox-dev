@@ -82,11 +82,11 @@ typedef struct ff_sensor_client {
 } ff_sensor_client_t;
 
 
-typedef struct {
-        uint8_t id;
+typedef struct network_state {
+        uint8_t state_id;
         uint8_t num_confs;
         uint8_t conf_ids[MAX_CONFS_PER_STATE];
-} network_state_t;
+};
 
 
 typedef nx_struct metadata_t {
@@ -137,6 +137,7 @@ nx_struct FFControl {
 };
 
 struct fennec_configuration {
+	uint16_t conf_id;
 	uint8_t application;
 	uint8_t network;
 	uint8_t mac;
