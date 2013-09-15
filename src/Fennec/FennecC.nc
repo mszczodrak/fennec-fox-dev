@@ -43,14 +43,13 @@ FennecP.RandomStart -> RandomC;
 components CachesC;
 FennecP.Caches -> CachesC;
 
-//components ControlUnitAppC;
-//FennecP.ControlUnit -> ControlUnitAppC;
-
 components NetworkSchedulerC;
 FennecP.NetworkScheduler -> NetworkSchedulerC;
 
 components LedsC;
 FennecP.Leds -> LedsC;
+
+components RegistryC;
 
 components FennecPacketC;
 

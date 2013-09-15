@@ -52,7 +52,7 @@ module_t get_next_module(module_t module_id, uint8_t flag) @C() {
 	conf_t conf_id = get_conf_id();
 	module_t next_module_id = UNKNOWN_ID;
 	uint16_t temp_id;
-	if (module_id == POLICY_CONFIGURATION) return POLICY_CONFIGURATION;
+
 	temp_id = configurations[conf_id].application;
 	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
 	temp_id = configurations[conf_id].network;
@@ -143,10 +143,12 @@ module_t get_module_id(module_t module_id, conf_t conf_id, layer_t layer_id) @C(
 }
 
 bool check_configuration(conf_t conf_id) @C() {
+/*
 	if ((conf_id != POLICY_CONFIGURATION) && (conf_id != active_state)) {
 		signal PolicyCache.wrong_conf();
 		return 1;
 	}
+*/
 	return 0;
 }
 
