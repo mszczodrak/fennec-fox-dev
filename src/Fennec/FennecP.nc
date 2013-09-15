@@ -36,6 +36,7 @@ uses interface SimpleStart as DbgSerial;
 uses interface SimpleStart as RandomStart;
 uses interface SimpleStart as Caches;
 uses interface SimpleStart as NetworkScheduler;
+uses interface SimpleStart as Registry;
 }
 
 implementation {
@@ -84,5 +85,9 @@ event void Caches.startDone(error_t err) {
 
 event void NetworkScheduler.startDone(error_t err) {}
 
+event void Registry.startDone(error_t err) {}
+
 }
+
+
 

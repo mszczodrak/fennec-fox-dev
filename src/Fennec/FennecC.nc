@@ -50,6 +50,7 @@ components LedsC;
 FennecP.Leds -> LedsC;
 
 components RegistryC;
+FennecP.Registry -> RegistryC;
 
 components FennecPacketC;
 
