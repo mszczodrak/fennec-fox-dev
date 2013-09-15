@@ -23,46 +23,44 @@ command struct fennec_event *EventCache.getEntry(uint8_t ev) {
 	return &eventsTable[--ev];
 }
 
-module_t get_protocol(layer_t layer, conf_t conf) {
+module_t get_module_id(conf_t conf, layer_t layer) {
 
-    if (conf >= NUMBER_OF_CONFIGURATIONS) {
-      return UNKNOWN_LAYER;
-    }
+	if (conf >= NUMBER_OF_CONFIGURATIONS) {
+		return UNKNOWN_LAYER;
+	}
 
-    switch(layer) {
+	switch(layer) {
 
-      case F_APPLICATION:
-        return configurations[ conf ].application;
+	case F_APPLICATION:
+		return configurations[ conf ].application;
 
-      case F_NETWORK:
-        return configurations[ conf ].network;
+	case F_NETWORK:
+		return configurations[ conf ].network;
 
-      case F_MAC:
-        return configurations[ conf ].mac;
+	case F_MAC:
+		return configurations[ conf ].mac;
 
-      case F_RADIO:
-        return configurations[ conf ].radio;
+	case F_RADIO:
+		return configurations[ conf ].radio;
 
-      default:
-        return UNKNOWN_LAYER;
-    }
-  }
-
-module_t get_next_module(module_t module_id, uint8_t flag) @C() {
-	conf_t conf_id = get_conf_id();
-	module_t next_module_id = UNKNOWN_ID;
-	uint16_t temp_id;
-
-	temp_id = configurations[conf_id].application;
-	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-	temp_id = configurations[conf_id].network;
-	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-	temp_id = configurations[conf_id].mac;
-	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-	temp_id = configurations[conf_id].radio;
-	if ((temp_id < next_module_id) && (temp_id > module_id)) next_module_id = temp_id;
-	return next_module_id;
+	default:
+		return UNKNOWN_LAYER;
+	}
 }
+
+state_t get_state_id() @C() {
+	return active_state;
+}
+
+conf_t get_conf_id(module_t module_id) @C() {
+	return get_state_id();
+}
+
+module_t get_next_module_id(module_t from_module_id, uint8_t to_layer) @C() {
+	return get_module_id(get_conf_id(from_module_id), to_layer);
+}
+
+
 
 command error_t PolicyCache.set_active_configuration(conf_t new_state) {
 	atomic active_state = new_state;
@@ -138,9 +136,6 @@ task void check_event() {
 	}
 }
 
-module_t get_module_id(module_t module_id, conf_t conf_id, layer_t layer_id) @C() {
-	return get_protocol(layer_id, conf_id);
-}
 
 bool check_configuration(conf_t conf_id) @C() {
 /*
@@ -152,13 +147,8 @@ bool check_configuration(conf_t conf_id) @C() {
 	return 0;
 }
 
-conf_t get_conf_id() @C() {
-	return get_state_id();
-}
 
-state_t get_state_id() @C() {
-	return active_state;
-}
+
 
 command void EventCache.clearMask() {
 	event_mask = 0;
