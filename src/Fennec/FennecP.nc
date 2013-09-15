@@ -43,18 +43,22 @@ implementation {
 
 event void Boot.booted() {
 	//call Leds.led1On();
+	dbg("Fennec", "Fennec Boot.booted()");
 	call DbgSerial.start();
 }
 
 task void start_random() {
+	dbg("Fennec", "Fennec start_random()");
 	call RandomStart.start();
 }
 
 task void start_network_scheduler() {
+	dbg("Fennec", "Fennec start_network_scheduler()");
 	call NetworkScheduler.start();
 }
 
 task void start_caches() {
+	dbg("Fennec", "Fennec start_caches()");
 	call Caches.start();
 }
 

@@ -29,10 +29,7 @@ task void start_protocol_stack() {
 
 	if (conf == UNKNOWN_CONFIGURATION) {
 		dbg("NetworkScheduler", "NetworkScheduler first time starting, rest conf");
-		/* this is first time we are starting configuration of the stack */
-		// TODO : normally start from 0, but to skip POLICY, start from 1
-		//conf = 0;
-		conf = 1;
+		conf = 0;
 	}
 
 	if (state_record->num_confs > conf) {

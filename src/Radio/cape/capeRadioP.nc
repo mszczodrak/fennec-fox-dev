@@ -401,7 +401,6 @@ event void Model.receive(message_t* msg) {
 
 event bool Model.shouldAck(message_t* msg) {
 	fennec_header_t *header;
-	dbg("Radio", "                     hehe");
 	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
 						sizeof(fennec_header_t));
 
