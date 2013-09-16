@@ -251,9 +251,6 @@ command void* Send.getPayload(message_t* m, uint8_t len) {
   }
 
 
-event void csmacaMacParams.receive_status(uint16_t status_flag) {
-}
-
 void requestInitialBackoff(message_t *msg) {
 	metadata_t* metadata = (metadata_t*) msg->metadata;
 	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {

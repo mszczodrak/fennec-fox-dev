@@ -317,9 +317,6 @@ implementation {
   default event void SplitControl.stopDone(error_t error) {
   }
 
-  event void csmacaMacParams.receive_status(uint16_t status_flag) {
-  }
-
 }
 
 

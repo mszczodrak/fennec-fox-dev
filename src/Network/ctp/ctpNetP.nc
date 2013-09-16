@@ -162,8 +162,4 @@ command uint8_t NetworkAMSend.maxPayloadLength() {
     return call CtpPacketAcknowledgements.wasAcked(msg);
   }
 
-  event void ctpNetParams.receive_status(uint16_t status_flag) {
-  }
-
-
 }

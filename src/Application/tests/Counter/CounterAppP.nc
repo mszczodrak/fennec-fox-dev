@@ -139,7 +139,4 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
 }
 
-event void CounterAppParams.receive_status(uint16_t status_flag) {
-}
-
 }

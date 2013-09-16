@@ -580,23 +580,4 @@ implementation {
   }
 
   
-
-
-//  default async event void RadioPower.startVRegDone() {
-//  }
-
-//  default event void Resource.granted() {
-//  }
-
-//  default async event void RadioPower.startOscillatorDone() {
-//  }
-
-
-
-
-
-  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
-  }
-
-  
 }

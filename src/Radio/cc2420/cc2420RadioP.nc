@@ -147,9 +147,6 @@ command error_t SplitControl.stop() {
   }
 */
 
-event void cc2420RadioParams.receive_status(uint16_t status_flag) {
-}
-
 
 /****************** RadioConfig Events ****************/
 event void RadioConfig.syncDone( error_t error ) {

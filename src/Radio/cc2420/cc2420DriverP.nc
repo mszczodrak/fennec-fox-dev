@@ -110,9 +110,6 @@ implementation {
     return !(call CCA.get());
   }
   
-  event void cc2420RadioParams.receive_status(uint16_t status_flag) {
-  }
-
 
   error_t releaseSpiResource() {
     call SpiResource.release();
