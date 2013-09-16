@@ -28,7 +28,7 @@ configuration CounterAppC {
   provides interface Mgmt;
   provides interface Module;
 
-  uses interface CounterAppParams;
+  uses interface Params;
 
   uses interface AMSend as NetworkAMSend;
   uses interface Receive as NetworkReceive;
@@ -45,7 +45,7 @@ implementation {
   Mgmt = CounterAppP;
   Module = CounterAppP;
 
-  CounterAppParams = CounterAppP;
+  Params = CounterAppP;
 
   NetworkAMSend = CounterAppP.NetworkAMSend;
   NetworkReceive = CounterAppP.NetworkReceive;
