@@ -195,10 +195,6 @@ command error_t SplitControl.stop() {
 }
 
 
-
-event void capeRadioParams.receive_status(uint16_t status_flag) {
-}
-
 task void start_v_reg_done() {
 	call RadioPower.startOscillator();
 }

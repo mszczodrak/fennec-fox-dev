@@ -77,6 +77,12 @@ module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_it) @C() {
 
 
 
+
+struct stack_params get_conf_params(module_t module_id) @C() {
+        return states[get_state_id()].conf_params[get_conf_id(module_id)];
+}
+
+
 command error_t PolicyCache.set_active_configuration(state_t new_state) {
 	atomic active_state = new_state;
 	return SUCCESS;

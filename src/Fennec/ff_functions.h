@@ -42,10 +42,7 @@ state_t get_state_id();
 module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_id);
 
 
-
-
-
-
+struct stack_params get_conf_params(module_t module_id) @C();
 
 
 bool check_configuration(conf_t conf_id);
