@@ -147,6 +147,7 @@ void next_layer() {
 
 
 error_t copy_default_params(uint16_t conf_id) {
+/*
         memcpy( defaults[conf_id].application_cache,
                 defaults[conf_id].application_default_params,
                 defaults[conf_id].application_default_size);
@@ -164,6 +165,7 @@ error_t copy_default_params(uint16_t conf_id) {
                 defaults[conf_id].radio_default_size);
 
 	dbg("ProtocolStack", "ProtocolStack copy_default_params");
+*/
 	return SUCCESS;
 }
 

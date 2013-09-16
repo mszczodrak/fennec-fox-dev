@@ -17,7 +17,7 @@ uint8_t num_of_proc = 0;
 uint8_t state = S_STOPPED;
 
 uint16_t processing_state;
-struct network_state* state_record;
+struct state* state_record;
 uint16_t conf = UNKNOWN_CONFIGURATION;
 
 task void start_protocol_stack() {
@@ -35,8 +35,8 @@ task void start_protocol_stack() {
 	if (state_record->num_confs > conf) {
 		/* there are confs to start */
 		dbg("NetworkScheduler", "NetworkScheduler call ProtocolStack.startConf(%d)",
-				state_record->conf_ids[conf]);
-		call ProtocolStack.startConf(state_record->conf_ids[conf]);		
+				state_record->conf_list[conf]);
+		call ProtocolStack.startConf(state_record->conf_list[conf]);		
 
 	} else {
 		/* that's all folks, all configurations are running */

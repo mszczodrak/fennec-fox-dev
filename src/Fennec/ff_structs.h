@@ -82,10 +82,10 @@ typedef struct ff_sensor_client {
 } ff_sensor_client_t;
 
 
-struct network_state {
+struct state {
         uint8_t state_id;
         uint8_t num_confs;
-        uint8_t conf_ids[MAX_CONFS_PER_STATE];
+	conf_t *conf_list;
 };
 
 

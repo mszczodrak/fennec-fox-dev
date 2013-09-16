@@ -56,7 +56,7 @@ conf_t get_conf_id(module_t module_id) @C() {
 	uint8_t i;
 	conf_t conf_id;
 	for (i = 0; i < states[get_state_id()].num_confs; i++) {
-		conf_id = states[get_state_id()].conf_ids[i];
+		conf_id = states[get_state_id()].conf_list[i];
 		if ( 
 			(configurations[conf_id].application == module_id)
 			||
@@ -114,7 +114,7 @@ command void PolicyCache.setNodeState(uint16_t state) {
 	node_state = state;
 }
 
-command struct network_state* PolicyCache.getStateRecord(uint16_t id) {
+command struct state* PolicyCache.getStateRecord(uint16_t id) {
 	return &states[id];
 }
 

@@ -55,7 +55,7 @@ interface PolicyCache {
   command uint16_t getNetworkState();
   command void setNetworkState(uint16_t state);
 
-  command struct network_state* getStateRecord(uint16_t id);
+  command struct state* getStateRecord(uint16_t id);
 
 }
 
