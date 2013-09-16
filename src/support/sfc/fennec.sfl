@@ -86,7 +86,7 @@ use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
 	uint8_t channel=26, uint8_t power=31, 
 	uint8_t ack=1, uint8_t crc=1)
 
-use radio cape $(FENNEC_FOX_LIB)/Radio/cape ()
+use radio cape $(FENNEC_FOX_LIB)/Radio/cape (uint8_t dummy = 0)
 
 
 #use application temp $(FENNEC_FOX_LIB)/Application/tests/Temperature ()
