@@ -33,7 +33,7 @@ module CounterAppP {
 provides interface Mgmt;
 provides interface Module;
 
-uses interface Params;
+uses interface CounterAppParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -54,13 +54,9 @@ message_t packet;
 bool sendBusy = FALSE;
 uint16_t seqno;
 
-
 command error_t Mgmt.start() {
-	uint16_t delay = *((uint16_t*)call Params.get("delay"));
-	uint16_t delay_scale = *((uint16_t*)call Params.get("delay_scale"));
-	uint16_t src = *((uint16_t*)call Params.get("src"));
-	uint16_t dest = *((uint16_t*)call Params.get("dest"));
-	uint32_t send_delay = delay * delay_scale;
+	uint32_t send_delay = call CounterAppParams.get_delay() * 
+		call CounterAppParams.get_delay_scale();
 	//call Leds.led0On();
 	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
 	dbg("Application", "CounterApp Mgmt.start()");
@@ -68,7 +64,8 @@ command error_t Mgmt.start() {
 	dbg("Application", "CounterApp starting delay: %d", send_delay);
 	seqno = 0;
 
-	if ((src == NODE) || (src == TOS_NODE_ID)) {
+	if ((call CounterAppParams.get_src() == NODE) || 
+	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
 		call Leds.led1On();
 		call Timer.startPeriodic(send_delay);
 	}
@@ -87,7 +84,6 @@ command error_t Mgmt.stop() {
 }
 
 void sendMessage() {
-	uint16_t dest = *((uint16_t*)call Params.get("dest"));
 	CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
 	call Leds.led1Toggle();
@@ -101,11 +97,12 @@ void sendMessage() {
 	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
 	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, 0);
 
-	if (call NetworkAMSend.send(dest, &packet, 
+	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
 	} else {
 		dbg("Application", "CounterApp call NetworkAMSend.send(%d, 0x%1x, %d)",
-					dest, &packet, sizeof(CounterMsg));
+					call CounterAppParams.get_dest(), &packet,
+					sizeof(CounterMsg));
 		sendBusy = TRUE;
 		call Leds.set(seqno);
 	}
@@ -141,5 +138,6 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
 }
+
 
 }
