@@ -81,11 +81,19 @@ typedef struct ff_sensor_client {
 	uint32_t signaling;
 } ff_sensor_client_t;
 
+struct stack_params {
+	void *			application;
+	void *			network;
+	void *			mac;
+	void * 			radio;
+};
+
 
 struct state {
-        uint8_t state_id;
-        uint8_t num_confs;
-	conf_t *conf_list;
+        uint8_t 		state_id;
+        uint8_t 		num_confs;
+	conf_t *		conf_list;
+	struct stack_params *	conf_params; 
 };
 
 
@@ -136,7 +144,7 @@ nx_struct FFControl {
   /* array of new accepts */
 };
 
-struct fennec_configuration {
+struct stack_configuration {
 	uint16_t conf_id;
 	uint8_t application;
 	uint8_t network;
