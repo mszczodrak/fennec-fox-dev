@@ -29,7 +29,6 @@
 #include "cuMac.h"
 
 #include <Ieee154.h> 
-#include "CC2420.h"
 #include "cuMac.h"
 
 

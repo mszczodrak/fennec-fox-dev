@@ -1,4 +1,3 @@
-#include "CC2420.h"
 #include "IEEE802154.h"
 
 configuration cuTransmitC {

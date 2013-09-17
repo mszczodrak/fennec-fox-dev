@@ -1,4 +1,3 @@
-#include "CC2420.h"
 #include "CC2420TimeSyncMessage.h"
 #include "crc.h"
 #include "message.h"
@@ -154,7 +153,6 @@ implementation {
       m_msg = p_msg;
     }
 
-    // header->length = len + CC2420_SIZE;
 #ifdef CC2420_HW_SECURITY
     header->fcf &= ((1 << IEEE154_FCF_ACK_REQ)|
                     (1 << IEEE154_FCF_SECURITY_ENABLED)|
@@ -172,7 +170,7 @@ implementation {
     metadata->rssi = 0;
     metadata->lqi = 0;
     //metadata->timesync = FALSE;
-    metadata->timestamp = CC2420_INVALID_TIMESTAMP;
+    metadata->timestamp = INVALID_TIMESTAMP;
 
     cu_backoff_period = call cuMacParams.get_backoff();
     cu_min_backoff = call cuMacParams.get_min_backoff();
@@ -360,7 +358,7 @@ implementation {
       // sampled during the ack turn-around window
       if ( !call EnergyIndicator.isReceiving() ) {
         m_state = S_BEGIN_TRANSMIT;
-        call BackoffTimer.start( CC2420_TIME_ACK_TURNAROUND );    
+        call BackoffTimer.start( TIME_ACK_TURNAROUND );    
       } else {
         congestionBackoff(m_msg);
       }
