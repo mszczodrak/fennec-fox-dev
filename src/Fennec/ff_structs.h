@@ -193,8 +193,7 @@ struct fennec_policy {
 
 struct fennec_event {
 	uint8_t operation;
-	uint16_t value;
-	uint8_t scale;
+	uint32_t value;
 	am_addr_t addr;
 };
 
