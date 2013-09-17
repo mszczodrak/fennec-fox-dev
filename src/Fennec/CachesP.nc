@@ -20,7 +20,7 @@ command void SimpleStart.start() {
 }
 
 command struct fennec_event *EventCache.getEntry(uint8_t ev) {
-	return &eventsTable[--ev];
+	//return &eventsTable[--ev];
 }
 
 module_t get_module_id(conf_t conf, layer_t layer) {
