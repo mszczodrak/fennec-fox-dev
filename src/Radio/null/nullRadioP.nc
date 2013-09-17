@@ -126,9 +126,6 @@ command error_t RadioControl.stop() {
 	return EBUSY;
 }
 
-event void nullRadioParams.receive_status(uint16_t status_flag) {
-}
-
 async command error_t RadioPower.startVReg() {
     return SUCCESS;
   }

@@ -204,7 +204,4 @@ async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
 }
 
-event void nullNetParams.receive_status(uint16_t status_flag) {
-}
-
 }

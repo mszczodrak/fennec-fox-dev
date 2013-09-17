@@ -171,7 +171,4 @@ command am_group_t NetworkAMPacket.group(message_t* amsg) {
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
   }
 
-  event void cuNetParams.receive_status(uint16_t status_flag) {
-  }
-
 }

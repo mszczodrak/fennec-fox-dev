@@ -413,6 +413,4 @@ implementation
     async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
     async command uint8_t   TimeSyncInfo.getHeartBeats() { return 0; }
 
-    event void tdmaMacParams.receive_status(uint16_t status_flag) {
-    }
 }

@@ -83,7 +83,4 @@ command error_t Mgmt.stop() {
 
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
   }
-
-  event void BlinkAppParams.receive_status(uint16_t status_flag) {
-  }
 }

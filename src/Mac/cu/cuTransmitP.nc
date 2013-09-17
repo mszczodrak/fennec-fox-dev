@@ -253,9 +253,6 @@ implementation {
   }
 
 
-  event void cuMacParams.receive_status(uint16_t status_flag) {
-  }
-
   void requestInitialBackoff(message_t *msg) {
     metadata_t* metadata = (metadata_t*) msg->metadata;
     if ((cu_delay_after_receive > 0) && (metadata->rxInterval > 0)) {

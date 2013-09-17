@@ -269,7 +269,6 @@ command error_t Mgmt.stop() {
 }
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {return msg;}
-event void ControlUnitAppParams.receive_status(uint16_t status_flag) {}
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 
 }

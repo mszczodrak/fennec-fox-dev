@@ -106,6 +106,5 @@ event void Timer.fired() {
 }
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
-event void genericSensorAppParams.receive_status(uint16_t status_flag) {}
 
 }

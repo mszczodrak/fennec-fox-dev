@@ -212,7 +212,6 @@ implementation {
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
   event void SerialSplitControl.stopDone(error_t errot){}
   event void SerialSplitControl.startDone(error_t error) {}
-  event void phidgetLightAndMotionAppParams.receive_status(uint16_t status_flag) {}
   event void Sensor_0_Ctrl.startDone(error_t error){}
   event void Sensor_0_Ctrl.stopDone(error_t error){}
   event void Sensor_1_Ctrl.startDone(error_t error){}

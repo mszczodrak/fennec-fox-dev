@@ -29,54 +29,51 @@
 #include "PrintfApp.h"
 
 module PrintfAppP {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
+provides interface Module;
 
-  uses interface PrintfAppParams;
+uses interface PrintfAppParams;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
-  uses interface Timer<TMilli> as Timer;
+uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
 
-  command error_t Mgmt.start() {
-    call Timer.startPeriodic(1000);
-    signal Mgmt.startDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.start() {
+	call Timer.startPeriodic(1000);
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-  command error_t Mgmt.stop() {
-    signal Mgmt.stopDone(SUCCESS);
-    return SUCCESS;
-  }
+command error_t Mgmt.stop() {
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-  event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 
-  event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    return msg;
-  }
+event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
 
-  event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return msg;
-  }
+event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
 
-  event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
-  }
+event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
+}
 
-  event void Timer.fired() {
-    printf("Hello World!\n");
-    printfflush();
-  }
-
-  event void PrintfAppParams.receive_status(uint16_t status_flag) {
-  }
+event void Timer.fired() {
+	printf("Hello World!\n");
+	printfflush();
+}
 
 }

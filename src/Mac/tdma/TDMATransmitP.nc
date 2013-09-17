@@ -239,9 +239,6 @@ implementation {
   }
 
 
-  event void tdmaMacParams.receive_status(uint16_t status_flag) {
-  }
-
   void requestInitialBackoff(message_t *msg) {
     myInitialBackoff = ( call Random.rand16() % (0x1F * tdma_backoff_period) + tdma_min_backoff);
   }

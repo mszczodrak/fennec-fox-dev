@@ -264,9 +264,6 @@ async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
 	return metadata->ack;
 }
 
-event void nullMacParams.receive_status(uint16_t status_flag) {
-}
-
 event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
 	return signal MacStatus.status(layer, status_flag);
 }

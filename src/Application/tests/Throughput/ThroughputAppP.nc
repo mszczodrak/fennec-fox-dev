@@ -213,7 +213,6 @@ event void Timer.fired() {
 }
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
-event void ThroughputAppParams.receive_status(uint16_t status_flag) {}
 
 void prepare_network_message() {
         message_t *network_message;

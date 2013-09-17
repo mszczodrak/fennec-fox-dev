@@ -185,45 +185,24 @@ command error_t Mgmt.stop() {
   }
 
 
-
-
-
-  event void cuMacParams.receive_status(uint16_t status_flag) {
-  }
-
-
-  event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
+event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
     return signal MacStatus.status(layer, status_flag);
-  }
+}
 
-  event void RadioConfig.syncDone(error_t error) {
-  
-  }
+event void RadioConfig.syncDone(error_t error) {
+}
 
-  async event void RadioPower.startVRegDone() {
-  }
+async event void RadioPower.startVRegDone() {
+}
 
-  async event void RadioPower.startOscillatorDone() {
-  }
+async event void RadioPower.startOscillatorDone() {
+}
 
-  event void ReadRssi.readDone(error_t error, uint16_t rssi) {
-  }
+event void ReadRssi.readDone(error_t error, uint16_t rssi) {
+}
 
-  event void RadioResource.granted() {
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
+event void RadioResource.granted() {
+}
 
 
 

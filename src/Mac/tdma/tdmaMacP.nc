@@ -386,10 +386,6 @@ command error_t Mgmt.stop() {
     return metadata->ack;
   }
 
-  event void tdmaMacParams.receive_status(uint16_t status_flag) {
-  }
-
-
   event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
     return signal MacStatus.status(layer, status_flag);
   }

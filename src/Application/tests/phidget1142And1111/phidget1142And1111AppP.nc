@@ -213,8 +213,6 @@ implementation {
   event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
   event void SerialSplitControl.stopDone(error_t errot){}
   event void SerialSplitControl.startDone(error_t error) {}
-  event void phidget1142And1111AppParams.receive_status(uint16_t status_flag) {}
-
 
   void clean_sensor_record(uint8_t id) {
 

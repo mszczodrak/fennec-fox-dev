@@ -190,7 +190,4 @@ implementation {
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
   }
 
-  event void ftspNetParams.receive_status(uint16_t status_flag) {
-  }
-
 }
