@@ -37,5 +37,5 @@
 interface Event {
   command void start(struct fennec_event *en);
   command void stop();
-  event void occured(bool oc);
+  event void occured(uint16_t oc);
 }

@@ -179,6 +179,11 @@ bool check_configuration(conf_t conf_id) @C() {
 
 
 
+void event_occured(module_t module_id, uint16_t oc) {
+
+}
+
+
 
 command void EventCache.clearMask() {
 	event_mask = 0;

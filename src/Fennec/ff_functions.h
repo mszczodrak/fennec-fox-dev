@@ -52,6 +52,8 @@ bool check_configuration(conf_t conf_id);
 
 metadata_t* getMetadata( message_t* msg );
 
+void event_occured(module_t module_id, uint16_t oc);
+
 
 void PacketTimeStampclear(message_t* msg);
 void PacketTimeStampset(message_t* msg, uint32_t value);
