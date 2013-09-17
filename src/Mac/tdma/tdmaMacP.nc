@@ -26,10 +26,7 @@
  */
 
 #include <Fennec.h>
-#include "tdmaMac.h"
-
 #include <Ieee154.h> 
-#include "CC2420.h"
 #include "tdmaMac.h"
 #include "TimeSyncMessage.h"
 
