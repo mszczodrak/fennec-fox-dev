@@ -38,20 +38,27 @@ configuration timerAppC {
   uses interface Packet as NetworkPacket;
   uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
   uses interface ModuleStatus as NetworkStatus;
+
+provides interface Event;
 }
 
 implementation {
-  components timerAppP;
-  Mgmt = timerAppP;
-  Module = timerAppP;
+components timerAppP;
+Mgmt = timerAppP;
+Module = timerAppP;
 
-  timerAppParams = timerAppP;
+timerAppParams = timerAppP;
 
-  NetworkAMSend = timerAppP.NetworkAMSend;
-  NetworkReceive = timerAppP.NetworkReceive;
-  NetworkSnoop = timerAppP.NetworkSnoop;
-  NetworkAMPacket = timerAppP.NetworkAMPacket;
-  NetworkPacket = timerAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = timerAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = timerAppP.NetworkStatus;
+NetworkAMSend = timerAppP.NetworkAMSend;
+NetworkReceive = timerAppP.NetworkReceive;
+NetworkSnoop = timerAppP.NetworkSnoop;
+NetworkAMPacket = timerAppP.NetworkAMPacket;
+NetworkPacket = timerAppP.NetworkPacket;
+NetworkPacketAcknowledgements = timerAppP.NetworkPacketAcknowledgements;
+NetworkStatus = timerAppP.NetworkStatus;
+
+Event = timerAppP;
+
+components new TimerMilliC();
+timerAppP.Timer -> TimerMilliC;
 }

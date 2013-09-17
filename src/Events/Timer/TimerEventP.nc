@@ -31,7 +31,6 @@
 generic module TimerEventP()
 {
   provides interface Event;
-  provides interface TimerEvent;
 
   uses interface Timer<TMilli>;
 
@@ -44,7 +43,6 @@ implementation {
   uint8_t op;
   am_addr_t addr;
   bool occures;
-  uint32_t scale;
 
   command void Event.start(struct fennec_event *en) {
     occures = FALSE;
@@ -52,22 +50,8 @@ implementation {
     op = en->operation;
     addr = en->addr;
 
-    scale = 1;
-
-    if (en->scale == TYPE_SECOND) {
-      scale = 1024U;
-    }
-
-    if (en->scale == TYPE_MINUTE) {
-      scale = 61440U;
-    }
- 
-    if (en->scale == TYPE_DAY) {
-      scale = 1474560U;
-    }
-
     if ((NODE == addr) || (TOS_NODE_ID == addr)) {
-      call SensorTimer.startOneShot(threshold * scale);
+      call SensorTimer.startOneShot(threshold);
       call Timer.startPeriodic(DEFAULT_FENNEC_SENSE_PERIOD);
       dbg("TimerEvent", "TimerEvent started with op %d and value %d\n", op, threshold);
     }
@@ -77,18 +61,6 @@ implementation {
     call Timer.stop();
     call SensorTimer.stop();
     dbg("TimerEvent", "TimerEvent stopped\n");
-  }
-
-  command void TimerEvent.setFrequency(uint16_t ms_delay) {
-    call Timer.startPeriodic(ms_delay);
-  }
-
-  command void TimerEvent.setOperation(uint8_t new_op) {
-    op = new_op;
-  }
-
-  command void TimerEvent.setThreshold(uint16_t value) {
-    threshold = value;
   }
 
   event void Timer.fired() {

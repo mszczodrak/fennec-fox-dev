@@ -41,9 +41,17 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 uses interface ModuleStatus as NetworkStatus;
+
+uses interface Timer<TMilli>;
+provides interface Event;
 }
 
 implementation {
+
+uint16_t threshold;
+uint8_t op;
+am_addr_t addr;
+bool occures;
 
 command error_t Mgmt.start() {
 	dbg("Application", "timerApp Mgmt.start()");
@@ -56,6 +64,77 @@ command error_t Mgmt.stop() {
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
+
+
+command void Event.start(struct fennec_event *en) {
+	occures = FALSE;
+	threshold = en->value;
+	op = en->operation;
+	addr = en->addr;
+
+	if ((NODE == addr) || (TOS_NODE_ID == addr)) {
+		call Timer.startPeriodic(DEFAULT_FENNEC_SENSE_PERIOD);
+		dbg("TimerEvent", "TimerEvent started with op %d and value %d\n", op, threshold);
+	}
+}
+
+command void Event.stop() {
+	call Timer.stop();
+	dbg("TimerEvent", "TimerEvent stopped\n");
+}
+
+
+
+
+event void Timer.fired() {
+	dbg("TimerEvent", "TimerEvent: fired to check the event occurance\n");
+
+	switch(op) {
+	case EQ:
+		if (occures) {
+			occures = FALSE;
+			signal Event.occured(FALSE);
+		}
+		break;
+
+	case NQ:
+		if (!occures) {
+			occures = TRUE;
+			signal Event.occured(TRUE);
+		}
+	break;
+
+	case LT:
+	case LE:
+		if (!occures) {
+			occures = TRUE;
+			signal Event.occured(TRUE);
+		}
+		if (occures) {
+			occures = FALSE;
+			signal Event.occured(FALSE);
+		}
+		break;
+
+	case GT:
+	case GE:
+		if (!occures) {
+			occures = TRUE;
+			signal Event.occured(TRUE);
+		}
+		if (occures) {
+			occures = FALSE;
+			signal Event.occured(FALSE);
+		}
+		break;
+
+	default:
+		dbg("TimerEvent", "TimerEvent testing event occrence but with unknown operator\n");
+	}
+}
+
+
+
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 

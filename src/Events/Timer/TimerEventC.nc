@@ -38,14 +38,12 @@
 
 generic configuration TimerEventC() {
   provides interface Event;
-  provides interface TimerEvent;
 }
 
 implementation {
 
   components new TimerEventP();
   Event = TimerEventP;
-  TimerEvent = TimerEventP;
 
   components new TimerMilliC();
   TimerEventP.Timer -> TimerMilliC;
