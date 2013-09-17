@@ -58,7 +58,6 @@ use application phidget_1142and1111 $(FENNEC_FOX_LIB)/Application/tests/phidget1
 	uint16_t destination = 0)
 
 #event applications
-use application timerEvent /home/msz/github/fennec-fox-dev/src/Application/timer ()
 
 # NETWORK
 
@@ -125,3 +124,4 @@ use source light $(FENNEC_FOX_LIB)/Events/Light ()
 use source voltage $(FENNEC_FOX_LIB)/Events/Voltage ()
 
 
+use source timerEvent $(FENNEC_FOX_LIB)/Application/timer ()
