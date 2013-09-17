@@ -23,6 +23,19 @@ command struct fennec_event *EventCache.getEntry(uint8_t ev) {
 	//return &eventsTable[--ev];
 }
 
+
+/*
+void turnEvents(bool flag) {
+	uint8_t i;
+	for(i = 0 ; i < NUMBER_OF_EVENTS; i++ ) {
+		if ( call EventCache.eventStatus(i)) {
+			setEvent(i + 1, flag);
+		}
+	}
+}
+*/
+
+
 module_t get_module_id(conf_t conf, layer_t layer) {
 
 	if (conf >= NUMBER_OF_CONFIGURATIONS) {

@@ -53,6 +53,7 @@ bool check_configuration(conf_t conf_id);
 metadata_t* getMetadata( message_t* msg );
 
 void event_occured(module_t module_id, uint16_t oc);
+void turnEvents(bool flag);
 
 
 void PacketTimeStampclear(message_t* msg);
