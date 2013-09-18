@@ -41,44 +41,44 @@ uses interface Leds;
 implementation {
 
 uint8_t state = S_STOPPED;
-uint8_t active_layer = UNKNOWN_LAYER;
-
+uint8_t current_layer = UNKNOWN_LAYER;
 void next_layer();
-error_t copy_default_params(uint16_t conf_id);
-uint16_t next_module();
-uint8_t ctrl_conf(uint16_t conf_id);
+uint16_t current_conf;
+
 
 command error_t ProtocolStack.startConf(uint16_t conf) {
-	dbg("ProtocolStack", "ProtocolStack startConf(%d)", conf);
+	dbg("ProtocolStack", "ProtocolStackP ProtocolStack.startConf(%d)", conf);
 	state = S_STARTING;
-	if (copy_default_params(conf) != SUCCESS) {
-		dbg("ProtocolStack", "ProtocolStack copy_default_params(%d)  FAILED", conf);
-		return FAIL;
-	}
-	return ctrl_conf(conf);
+	current_layer = F_RADIO;
+	current_conf = conf;
+	call ModuleCtrl.start(get_module_id(current_conf, current_layer));
+	return 0;
 }
 
 command error_t ProtocolStack.stopConf(uint16_t conf) {
-	dbg("ProtocolStack", "ProtocolStack stopConf(%d)", conf);
+	dbg("ProtocolStack", "ProtocolStackP ProtocolStack.stopConf(%d)", conf);
 	state = S_STOPPING;
-	return ctrl_conf(conf);
+	current_layer = F_APPLICATION;
+	current_conf = conf;
+	call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
+	return 0;
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 	dbg("ProtocolStack", "ProtocolStack ModuleCtrl.startDone(%d, %d)", module_id, error);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
-		call ModuleCtrl.start(next_module());
+		call ModuleCtrl.start(get_module_id(current_conf, current_layer));
 	} else {
 		next_layer();
 
-		if (active_layer == UNKNOWN_LAYER) {
+		if (current_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STARTED;
 			signal ProtocolStack.startConfDone(SUCCESS);
 			return;
 		} else {
-			call ModuleCtrl.start(next_module());
+			call ModuleCtrl.start(get_module_id(current_conf, current_layer));
 		}
 	}
 }
@@ -88,104 +88,44 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 	dbg("ProtocolStack", "ProtocolStack ModuleCtrl.stopDone(%d, %d)", module_id, error);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
-		call ModuleCtrl.stop(next_module());
+		call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
 	} else {
 		next_layer();
-		if (active_layer == UNKNOWN_LAYER) {
+		if (current_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STOPPED;
 			signal ProtocolStack.stopConfDone(SUCCESS);
 			return;
 		} else {
-			call ModuleCtrl.stop(next_module());
+			call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
 		}
 	}
 }
 
 event void Timer.fired() {
 	if (state == S_STARTING) {
-		call ModuleCtrl.start(next_module());
+		call ModuleCtrl.start(get_module_id(current_conf, current_layer));
 
 	} else {
-		call ModuleCtrl.stop(next_module());
+		call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
 	}
-}
-
-
-
-uint8_t ctrl_conf(uint16_t conf_id) {
-	//dbg("System", "Protocol Stack in ctrl_conf");
-        if (state == S_STARTING) {
-                active_layer = F_RADIO;
-		//dbg("System", "System: active layer is %d %d", active_layer, F_RADIO);
-        } else {
-                active_layer = F_APPLICATION;
-        }
-	if (state == S_STARTING) {
-		call ModuleCtrl.start(next_module());
-	} else {
-		call ModuleCtrl.stop(next_module());
-	}
-        return 0;
 }
 
 
 
 void next_layer() {
         if (state == S_STARTING) {
-                if (active_layer == F_APPLICATION) active_layer = UNKNOWN_LAYER;
-                if (active_layer == F_NETWORK) active_layer = F_APPLICATION;
-                if (active_layer == F_MAC) active_layer = F_NETWORK;
-                if (active_layer == F_RADIO) active_layer = F_MAC;
+                if (current_layer == F_APPLICATION) current_layer = UNKNOWN_LAYER;
+                if (current_layer == F_NETWORK) current_layer = F_APPLICATION;
+                if (current_layer == F_MAC) current_layer = F_NETWORK;
+                if (current_layer == F_RADIO) current_layer = F_MAC;
         } else {
-                if (active_layer == F_RADIO) active_layer = UNKNOWN_LAYER;
-                if (active_layer == F_MAC) active_layer = F_RADIO;
-                if (active_layer == F_NETWORK) active_layer = F_MAC;
-                if (active_layer == F_APPLICATION) active_layer = F_NETWORK;
+                if (current_layer == F_RADIO) current_layer = UNKNOWN_LAYER;
+                if (current_layer == F_MAC) current_layer = F_RADIO;
+                if (current_layer == F_NETWORK) current_layer = F_MAC;
+                if (current_layer == F_APPLICATION) current_layer = F_NETWORK;
         }
 }
 
-
-error_t copy_default_params(uint16_t conf_id) {
-/*
-        memcpy( defaults[conf_id].application_cache,
-                defaults[conf_id].application_default_params,
-                defaults[conf_id].application_default_size);
-
-        memcpy( defaults[conf_id].network_cache,
-                defaults[conf_id].network_default_params,
-                defaults[conf_id].network_default_size);
-
-        memcpy( defaults[conf_id].mac_cache,
-                defaults[conf_id].mac_default_params,
-                defaults[conf_id].mac_default_size);
-
-        memcpy( defaults[conf_id].radio_cache,
-                defaults[conf_id].radio_default_params,
-                defaults[conf_id].radio_default_size);
-
-	dbg("ProtocolStack", "ProtocolStack copy_default_params");
-*/
-	return SUCCESS;
-}
-
-
-uint16_t next_module() {
-        switch(active_layer) {
-        case F_APPLICATION:
-		dbg("ProtocolStack", "ProtocolStack: next module is F_APPLICATION");
-                return configurations[active_state].application;
-        case F_NETWORK:
-		dbg("ProtocolStack", "ProtocolStack: next module is F_NETWORK");
-                return configurations[active_state].network;
-        case F_MAC:
-		dbg("ProtocolStack", "ProtocolStack: next module is F_MAC");
-                return configurations[active_state].mac;
-        case F_RADIO:
-		dbg("ProtocolStack", "ProtocolStack: next module is F_RADIO");
-                return configurations[active_state].radio;
-        }
-        return UNKNOWN;
-}
 
 }

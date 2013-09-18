@@ -31,7 +31,7 @@ void turnEvents(bool flag) {
 */
 
 
-module_t get_module_id(conf_t conf, layer_t layer) {
+module_t get_module_id(conf_t conf, layer_t layer) @C() {
 
 	if (conf >= NUMBER_OF_CONFIGURATIONS) {
 		return UNKNOWN_LAYER;

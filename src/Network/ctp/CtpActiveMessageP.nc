@@ -151,7 +151,6 @@ implementation {
   }
 
   event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
-    dbg("Network", "Network CTPAM receive status %d\n", status_flag);
     if (layer == F_RADIO) {
       if (status_flag == ON) signal SplitControl.startDone(SUCCESS);
       if (status_flag == OFF) signal SplitControl.stopDone(SUCCESS);
