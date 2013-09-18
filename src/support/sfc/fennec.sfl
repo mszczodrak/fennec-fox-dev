@@ -124,5 +124,5 @@ use source light $(FENNEC_FOX_LIB)/Events/Light ()
 use source voltage $(FENNEC_FOX_LIB)/Events/Voltage ()
 
 
-use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0)
-use source timerSecondE $(FENNEC_FOX_LIB)/Application/timerSecond (uint32_t delay = 1000, uint16_t src = 0)
+use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
+use source timerSecondE $(FENNEC_FOX_LIB)/Application/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)
