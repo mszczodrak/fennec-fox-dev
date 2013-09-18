@@ -81,18 +81,37 @@ conf_t get_conf_id(module_t module_id) @C() {
 	return UNKNOWN_CONFIGURATION;
 }
 
+uint16_t get_conf_id_in_state(module_t module_id) @C() {
+	uint8_t i;
+	conf_t conf_id;
+	
+	for (i = 0; i < states[get_state_id()].num_confs; i++) {
+		conf_id = states[get_state_id()].conf_list[i];
+		if ( 
+			(configurations[conf_id].application == module_id)
+			||
+			(configurations[conf_id].network == module_id)
+			||
+			(configurations[conf_id].mac == module_id)
+			||
+			(configurations[conf_id].radio == module_id)
+		) { 
+			return i;
+		}
+	}
+	return UNKNOWN_CONFIGURATION;
+}
+
+
 module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_it) @C() {
 	return get_module_id(get_conf_id(from_module_id), to_layer_it);
 }
 
 
 
-
-
-
 struct stack_params get_conf_params(module_t module_id) @C() {
 //	conf = get_conf_id(module_id);
-        return states[get_state_id()].conf_params[get_conf_id(module_id)];
+        return states[get_state_id()].conf_params[get_conf_id_in_state(module_id)];
 }
 
 
