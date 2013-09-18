@@ -44,10 +44,6 @@ module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_id);
 
 struct stack_params get_conf_params(module_t module_id) @C();
 
-void* get_param(char *param_name, module_t id);
-error_t set_param(char *param_name, void *param_value, module_t id);
-
-
 bool check_configuration(conf_t conf_id);
 
 metadata_t* getMetadata( message_t* msg );
