@@ -25,40 +25,40 @@
  * Last Modified: 1/5/2012
  */
 
-configuration timerAppC {
-  provides interface Mgmt;
-  provides interface Module;
+configuration timerMilliAppC {
+provides interface Mgmt;
+provides interface Module;
 
-  uses interface timerAppParams;
+uses interface timerMilliAppParams;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
 provides interface Event;
 }
 
 implementation {
-components timerAppP;
-Mgmt = timerAppP;
-Module = timerAppP;
+components timerMilliAppP;
+Mgmt = timerMilliAppP;
+Module = timerMilliAppP;
 
-timerAppParams = timerAppP;
+timerMilliAppParams = timerMilliAppP;
 
-NetworkAMSend = timerAppP.NetworkAMSend;
-NetworkReceive = timerAppP.NetworkReceive;
-NetworkSnoop = timerAppP.NetworkSnoop;
-NetworkAMPacket = timerAppP.NetworkAMPacket;
-NetworkPacket = timerAppP.NetworkPacket;
-NetworkPacketAcknowledgements = timerAppP.NetworkPacketAcknowledgements;
-NetworkStatus = timerAppP.NetworkStatus;
+NetworkAMSend = timerMilliAppP.NetworkAMSend;
+NetworkReceive = timerMilliAppP.NetworkReceive;
+NetworkSnoop = timerMilliAppP.NetworkSnoop;
+NetworkAMPacket = timerMilliAppP.NetworkAMPacket;
+NetworkPacket = timerMilliAppP.NetworkPacket;
+NetworkPacketAcknowledgements = timerMilliAppP.NetworkPacketAcknowledgements;
+NetworkStatus = timerMilliAppP.NetworkStatus;
 
-Event = timerAppP;
+Event = timerMilliAppP;
 
 components new TimerMilliC();
-timerAppP.Timer -> TimerMilliC;
+timerMilliAppP.Timer -> TimerMilliC;
 }

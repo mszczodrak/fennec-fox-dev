@@ -26,13 +26,13 @@
  */
 
 #include <Fennec.h>
-#include "timerApp.h"
+#include "timerMilliApp.h"
 
-module timerAppP {
+module timerMilliAppP {
 provides interface Mgmt;
 provides interface Module;
 
-uses interface timerAppParams;
+uses interface timerMilliAppParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -48,6 +48,12 @@ provides interface Event;
 
 implementation {
 
+/** Available Parameters
+	uint32_t delay = 1000,
+	uint16_t src = 0
+*/
+
+
 uint16_t threshold;
 uint8_t op;
 am_addr_t addr;
@@ -55,10 +61,13 @@ bool occures;
 
 command error_t Mgmt.start() {
 	occures = FALSE;
-	dbg("Application", "timerApp Mgmt.start()");
+	dbg("Application", "timerMilliApp Mgmt.start()");
 	signal Mgmt.startDone(SUCCESS);
 /*
 	threshold = en->value;
+
+call CounterAppParams.get_delay()
+
 	op = en->operation;
 	addr = en->addr;
 	if ((NODE == addr) || (TOS_NODE_ID == addr)) {
@@ -72,7 +81,7 @@ command error_t Mgmt.start() {
 command error_t Mgmt.stop() {
 	call Timer.stop();
 	dbg("TimerEvent", "TimerEvent stopped\n");
-	dbg("Application", "timerApp Mgmt.start()");
+	dbg("Application", "timerMilliApp Mgmt.start()");
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }

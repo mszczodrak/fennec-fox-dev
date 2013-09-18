@@ -26,8 +26,8 @@
  */
 
 
-#ifndef __timer_APP_H_
-#define __timer_APP_H_
+#ifndef __timerSecond_APP_H_
+#define __timerSecond_APP_H_
 
 
 #endif

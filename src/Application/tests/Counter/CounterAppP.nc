@@ -50,6 +50,15 @@ uses interface Timer<TMilli>;
 
 implementation {
 
+/**
+ Available Parameters:
+	uint16_t delay,
+	uint16_t delay_scale,
+	uint16_t src,
+	uint16_t dest
+*/
+
+
 message_t packet;
 bool sendBusy = FALSE;
 uint16_t seqno;
