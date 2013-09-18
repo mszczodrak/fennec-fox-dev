@@ -251,6 +251,7 @@ command void* Send.getPayload(message_t* m, uint8_t len) {
   }
 
 
+
 void requestInitialBackoff(message_t *msg) {
 	metadata_t* metadata = (metadata_t*) msg->metadata;
 	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
