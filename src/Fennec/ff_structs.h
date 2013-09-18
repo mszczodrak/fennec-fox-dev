@@ -186,15 +186,9 @@ struct configuration_cache {
 };
 
 struct fennec_policy {
-	uint8_t  src_conf;
+	uint16_t  src_conf;
 	uint16_t event_mask;
-	uint8_t  dst_conf;
-};
-
-struct fennec_event {
-	uint8_t operation;
-	uint32_t value;
-	am_addr_t addr;
+	uint16_t  dst_conf;
 };
 
 nx_struct accept_conf {

@@ -54,36 +54,28 @@ am_addr_t addr;
 bool occures;
 
 command error_t Mgmt.start() {
+	occures = FALSE;
 	dbg("Application", "timerApp Mgmt.start()");
 	signal Mgmt.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t Mgmt.stop() {
-	dbg("Application", "timerApp Mgmt.start()");
-	signal Mgmt.stopDone(SUCCESS);
-	return SUCCESS;
-}
-
-
-command void Event.start(struct fennec_event *en) {
-	occures = FALSE;
+/*
 	threshold = en->value;
 	op = en->operation;
 	addr = en->addr;
-
 	if ((NODE == addr) || (TOS_NODE_ID == addr)) {
 		call Timer.startPeriodic(DEFAULT_FENNEC_SENSE_PERIOD);
 		dbg("TimerEvent", "TimerEvent started with op %d and value %d\n", op, threshold);
 	}
+*/
+	return SUCCESS;
 }
 
-command void Event.stop() {
+command error_t Mgmt.stop() {
 	call Timer.stop();
 	dbg("TimerEvent", "TimerEvent stopped\n");
+	dbg("Application", "timerApp Mgmt.start()");
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
 }
-
-
 
 
 event void Timer.fired() {

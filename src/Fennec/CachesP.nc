@@ -19,11 +19,6 @@ command void SimpleStart.start() {
 	signal SimpleStart.startDone(SUCCESS);
 }
 
-command struct fennec_event *EventCache.getEntry(uint8_t ev) {
-	//return &eventsTable[--ev];
-}
-
-
 /*
 void turnEvents(bool flag) {
 	uint8_t i;
