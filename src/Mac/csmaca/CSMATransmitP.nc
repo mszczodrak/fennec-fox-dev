@@ -244,12 +244,11 @@ command void* Send.getPayload(message_t* m, uint8_t len) {
   /**
    * Shut down all sub-components and turn off the radio
    */
-  void shutdown() {
-    m_state = S_STOPPED;
-    call BackoffTimer.stop();
-    post stopDone_task();
-  }
-
+void shutdown() {
+	m_state = S_STOPPED;
+	call BackoffTimer.stop();
+	post stopDone_task();
+}
 
 
 void requestInitialBackoff(message_t *msg) {

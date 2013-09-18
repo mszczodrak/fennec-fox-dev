@@ -377,6 +377,5 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
     call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
   }
 
-  
 }
 

@@ -317,7 +317,6 @@ implementation {
   default event void SplitControl.stopDone(error_t error) {
   }
 
-
 }
 
 
