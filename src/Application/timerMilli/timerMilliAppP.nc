@@ -56,26 +56,27 @@ implementation {
 
 command error_t Mgmt.start() {
 	dbg("Application", "timerMilliApp Mgmt.start()");
+	dbg("Application", "timerMilliApp src: %d ms\n", call timerMilliAppParams.get_src());
 	if ((call timerMilliAppParams.get_src() == BROADCAST) || 
 		(call timerMilliAppParams.get_src() == TOS_NODE_ID)) {
-
+		dbg("Application", "timerMilliApp will fire in %d ms\n", call timerMilliAppParams.get_delay());
 		call Timer.startPeriodic(call timerMilliAppParams.get_delay());
 
 	}
-
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t Mgmt.stop() {
 	call Timer.stop();
-	dbg("Application", "timerMilliApp Mgmt.start()");
+	dbg("Application", "timerMilliApp Mgmt.stop()");
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 
 event void Timer.fired() {
+	dbg("Application", "timerMilliApp signal Event.occured(TRUE)");
 	signal Event.occured(TRUE);
 }
 
@@ -91,6 +92,5 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
 }
-
 
 }
