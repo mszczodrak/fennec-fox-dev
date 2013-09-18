@@ -187,7 +187,7 @@ bool check_configuration(conf_t conf_id) @C() {
 
 
 
-void event_occured(module_t module_id, uint16_t oc) {
+void event_occured(module_t module_id, uint16_t oc) @C() {
 
 }
 
