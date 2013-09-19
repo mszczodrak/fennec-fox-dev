@@ -2,6 +2,7 @@
 
 module NetworkSchedulerP @safe() {
 
+provides interface SplitControl;
 provides interface SimpleStart;
 
 uses interface ProtocolStack;
@@ -74,6 +75,14 @@ task void stop_protocol_stack() {
 		dbg("NetworkScheduler", "NetworkScheduler finished stopping ProtocolStack");
 		conf = UNKNOWN_CONFIGURATION;
 	}
+}
+
+command error_t SplitControl.start() {
+	post start_state();
+}
+
+command error_t SplitControl.stop() {
+	post stop_state();
 }
 
 command void SimpleStart.start() {

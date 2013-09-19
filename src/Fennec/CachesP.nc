@@ -2,6 +2,7 @@
 #include "ff_caches.h"
 
 module CachesP @safe() {
+provides interface Fennec;
 provides interface SimpleStart;
 provides interface EventCache;
 provides interface PolicyCache;
@@ -241,5 +242,11 @@ command bool EventCache.eventStatus(uint16_t event_num) {
 	}
 	return 0;
 }
+
+
+command state_t Fennec.getStateId() {
+	return get_state_id();
+}
+
 }
 
