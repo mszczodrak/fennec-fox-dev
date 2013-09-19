@@ -12,16 +12,40 @@ uses interface PolicyCache;
 
 implementation {
 
-uint8_t num_of_proc = 0;
 uint8_t state = S_STOPPED;
 
 uint16_t processing_state;
 struct state* state_record;
 uint16_t conf = UNKNOWN_CONFIGURATION;
 
-task void start_protocol_stack() {
+task void start_protocol_stack();
+task void stop_protocol_stack();
+
+
+task void start_done() {
+
+
+}
+
+
+task void start_state() {
+	conf = UNKNOWN_CONFIGURATION;
+	state = S_STARTING;
 	processing_state = call PolicyCache.getNetworkState();
-	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack network_state = %d", processing_state);
+	dbg("NetworkScheduler", "NetworkScheduler start_state() state = %d", processing_state);
+	post start_protocol_stack();
+}
+
+task void stop_state() {
+	conf = UNKNOWN_CONFIGURATION;
+	state = S_STOPPING;
+	processing_state = call PolicyCache.getNetworkState();
+	dbg("NetworkScheduler", "NetworkScheduler stop_state() state = %d", processing_state);
+	post stop_protocol_stack();
+
+}
+
+task void start_protocol_stack() {
 	state_record = call PolicyCache.getStateRecord(processing_state);
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack id = %d, num_confs = %d", 
 		state_record->state_id, state_record->num_confs);
@@ -41,7 +65,6 @@ task void start_protocol_stack() {
 		/* that's all folks, all configurations are running */
 		dbg("NetworkScheduler", "NetworkScheduler finished starting ProtocolStack");
 		conf = UNKNOWN_CONFIGURATION;
-
 	}
 	
 }
@@ -49,8 +72,6 @@ task void start_protocol_stack() {
 
 
 task void stop_protocol_stack() {
-	processing_state = call PolicyCache.getNodeState();
-	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack network_state = %d", processing_state);
 	state_record = call PolicyCache.getStateRecord(processing_state);
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack id = %d, num_confs = %d", 
 		state_record->state_id, state_record->num_confs);
@@ -61,14 +82,9 @@ task void stop_protocol_stack() {
 
 
 command void SimpleStart.start() {
-	num_of_proc = 0;
-	conf = UNKNOWN_CONFIGURATION;
-
 	dbg("NetworkScheduler", "NetworkScheduler SimpleStart.start()");
-
+	post start_state();
 	signal SimpleStart.startDone(SUCCESS);
-	state = S_STARTING;
-	post start_protocol_stack();
 }
 
 event void PolicyCache.newConf(conf_t new_conf) {
