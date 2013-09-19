@@ -25,40 +25,36 @@
  * Last Modified: 1/5/2012
  */
 configuration CounterAppC {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface CounterAppParams;
+uses interface CounterAppParams;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
 
-  components CounterAppP;
-  Mgmt = CounterAppP;
-  Module = CounterAppP;
+components CounterAppP;
+Mgmt = CounterAppP;
 
-  CounterAppParams = CounterAppP;
+CounterAppParams = CounterAppP;
 
-  NetworkAMSend = CounterAppP.NetworkAMSend;
-  NetworkReceive = CounterAppP.NetworkReceive;
-  NetworkSnoop = CounterAppP.NetworkSnoop;
-  NetworkAMPacket = CounterAppP.NetworkAMPacket;
-  NetworkPacket = CounterAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = CounterAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = CounterAppP.NetworkStatus;
+NetworkAMSend = CounterAppP.NetworkAMSend;
+NetworkReceive = CounterAppP.NetworkReceive;
+NetworkSnoop = CounterAppP.NetworkSnoop;
+NetworkAMPacket = CounterAppP.NetworkAMPacket;
+NetworkPacket = CounterAppP.NetworkPacket;
+NetworkPacketAcknowledgements = CounterAppP.NetworkPacketAcknowledgements;
 
-  components LedsC;
-  components new TimerMilliC();
+components LedsC;
+components new TimerMilliC();
 
-  CounterAppP.Leds -> LedsC;
-  CounterAppP.Timer -> TimerMilliC;
+CounterAppP.Leds -> LedsC;
+CounterAppP.Timer -> TimerMilliC;
 
 }

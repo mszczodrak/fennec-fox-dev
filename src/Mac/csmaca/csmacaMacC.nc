@@ -28,101 +28,97 @@
 #include "csmacaMac.h"
 
 configuration csmacaMacC {
-  provides interface Mgmt;
-  provides interface AMSend as MacAMSend;
-  provides interface Receive as MacReceive;
-  provides interface Receive as MacSnoop;
-  provides interface AMPacket as MacAMPacket;
-  provides interface Packet as MacPacket;
-  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-  provides interface ModuleStatus as MacStatus;
+provides interface Mgmt;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
+provides interface AMPacket as MacAMPacket;
+provides interface Packet as MacPacket;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface csmacaMacParams;
+uses interface csmacaMacParams;
 
-  uses interface Receive as RadioReceive;
-  uses interface ModuleStatus as RadioStatus;
+uses interface Receive as RadioReceive;
 
-  uses interface RadioConfig;
-  uses interface RadioPower;
-  uses interface Read<uint16_t> as ReadRssi;
-  uses interface Resource as RadioResource;
+uses interface RadioConfig;
+uses interface RadioPower;
+uses interface Read<uint16_t> as ReadRssi;
+uses interface Resource as RadioResource;
 
-  uses interface SplitControl as RadioControl;
-  uses interface RadioBuffer;
-  uses interface RadioSend;
-  uses interface RadioPacket;
-  uses interface ReceiveIndicator as PacketIndicator;
-  uses interface ReceiveIndicator as ByteIndicator;
-  uses interface ReceiveIndicator as EnergyIndicator;
+uses interface SplitControl as RadioControl;
+uses interface RadioBuffer;
+uses interface RadioSend;
+uses interface RadioPacket;
+uses interface ReceiveIndicator as PacketIndicator;
+uses interface ReceiveIndicator as ByteIndicator;
+uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
 
-  components csmacaMacP;
+components csmacaMacP;
 
-  Mgmt = csmacaMacP;
-  MacStatus = csmacaMacP;
-  MacAMSend = csmacaMacP.MacAMSend;
-  MacReceive = csmacaMacP.MacReceive;
-  MacSnoop = csmacaMacP.MacSnoop;
-  MacPacket = csmacaMacP.MacPacket;
-  MacAMPacket = csmacaMacP.MacAMPacket;
-  MacPacketAcknowledgements = csmacaMacP.MacPacketAcknowledgements;
-  csmacaMacParams = csmacaMacP;
+Mgmt = csmacaMacP;
+MacAMSend = csmacaMacP.MacAMSend;
+MacReceive = csmacaMacP.MacReceive;
+MacSnoop = csmacaMacP.MacSnoop;
+MacPacket = csmacaMacP.MacPacket;
+MacAMPacket = csmacaMacP.MacAMPacket;
+MacPacketAcknowledgements = csmacaMacP.MacPacketAcknowledgements;
+csmacaMacParams = csmacaMacP;
 
-  RadioConfig = csmacaMacP.RadioConfig;
-  RadioPower = csmacaMacP.RadioPower;
-  ReadRssi = csmacaMacP.ReadRssi;
-  RadioResource = csmacaMacP.RadioResource;
-  RadioPacket = csmacaMacP.RadioPacket;
-  RadioStatus = csmacaMacP.RadioStatus;
+RadioConfig = csmacaMacP.RadioConfig;
+RadioPower = csmacaMacP.RadioPower;
+ReadRssi = csmacaMacP.ReadRssi;
+RadioResource = csmacaMacP.RadioResource;
+RadioPacket = csmacaMacP.RadioPacket;
 
-  components CSMATransmitC;
-  RadioPower = CSMATransmitC.RadioPower;
-  RadioResource = CSMATransmitC.RadioResource;
+components CSMATransmitC;
+RadioPower = CSMATransmitC.RadioPower;
+RadioResource = CSMATransmitC.RadioResource;
 
-  components DefaultLplC as LplC;
-  csmacaMacP.RadioControl -> LplC.SplitControl;
+components DefaultLplC as LplC;
+csmacaMacP.RadioControl -> LplC.SplitControl;
 
-  components UniqueSendC;
-  components UniqueReceiveC;
+components UniqueSendC;
+components UniqueReceiveC;
 
-  RadioPacket = UniqueReceiveC.RadioPacket;
+RadioPacket = UniqueReceiveC.RadioPacket;
 
-  csmacaMacP.SubSend -> UniqueSendC;
-  csmacaMacP.SubReceive -> LplC;
+csmacaMacP.SubSend -> UniqueSendC;
+csmacaMacP.SubReceive -> LplC;
 
-  // SplitControl Layers
+// SplitControl Layers
 
-  LplC.MacPacketAcknowledgements -> csmacaMacP.MacPacketAcknowledgements;
-  LplC.SubControl -> CSMATransmitC;
+LplC.MacPacketAcknowledgements -> csmacaMacP.MacPacketAcknowledgements;
+LplC.SubControl -> CSMATransmitC;
 
-  UniqueSendC.SubSend -> LplC.Send;
-  LplC.SubSend -> CSMATransmitC;
+UniqueSendC.SubSend -> LplC.Send;
+LplC.SubSend -> CSMATransmitC;
 
-  LplC.SubReceive -> UniqueReceiveC.Receive;
-  UniqueReceiveC.SubReceive =  RadioReceive;
+LplC.SubReceive -> UniqueReceiveC.Receive;
+UniqueReceiveC.SubReceive =  RadioReceive;
 
-  components PowerCycleC;
-  PacketIndicator = PowerCycleC.PacketIndicator;
-  EnergyIndicator = PowerCycleC.EnergyIndicator;
-  ByteIndicator = PowerCycleC.ByteIndicator;
+components PowerCycleC;
+PacketIndicator = PowerCycleC.PacketIndicator;
+EnergyIndicator = PowerCycleC.EnergyIndicator;
+ByteIndicator = PowerCycleC.ByteIndicator;
 
-  csmacaMacParams = PowerCycleC.csmacaMacParams;
-  csmacaMacParams = LplC.csmacaMacParams;
-  csmacaMacParams = CSMATransmitC.csmacaMacParams;
+csmacaMacParams = PowerCycleC.csmacaMacParams;
+csmacaMacParams = LplC.csmacaMacParams;
+csmacaMacParams = CSMATransmitC.csmacaMacParams;
 
-  components RandomC;
-  csmacaMacP.Random -> RandomC;
+components RandomC;
+csmacaMacP.Random -> RandomC;
 
-  components LedsC;
-  csmacaMacP.Leds -> LedsC;
+components LedsC;
+csmacaMacP.Leds -> LedsC;
 
-  RadioBuffer = CSMATransmitC.RadioBuffer;
-  RadioSend = CSMATransmitC.RadioSend;
-  RadioPacket = CSMATransmitC.RadioPacket;
-  EnergyIndicator = CSMATransmitC.EnergyIndicator;
-  LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
-  RadioControl = CSMATransmitC.RadioControl;
+RadioBuffer = CSMATransmitC.RadioBuffer;
+RadioSend = CSMATransmitC.RadioSend;
+RadioPacket = CSMATransmitC.RadioPacket;
+EnergyIndicator = CSMATransmitC.EnergyIndicator;
+LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
+RadioControl = CSMATransmitC.RadioControl;
 }
 

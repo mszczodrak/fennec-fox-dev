@@ -38,7 +38,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 }
 
 implementation {
@@ -53,7 +52,6 @@ NetworkSnoop = BlinkAppP.NetworkSnoop;
 NetworkAMPacket = BlinkAppP.NetworkAMPacket;
 NetworkPacket = BlinkAppP.NetworkPacket;
 NetworkPacketAcknowledgements = BlinkAppP.NetworkPacketAcknowledgements;
-NetworkStatus = BlinkAppP.NetworkStatus;
 
 components LedsC;
 BlinkAppP.Leds -> LedsC;

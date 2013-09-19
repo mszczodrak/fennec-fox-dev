@@ -23,7 +23,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 
 uses interface PolicyCache;
 
@@ -269,6 +268,5 @@ command error_t Mgmt.stop() {
 }
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {return msg;}
-event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 
 }

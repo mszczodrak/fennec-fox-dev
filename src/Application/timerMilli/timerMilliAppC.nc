@@ -27,7 +27,6 @@
 
 configuration timerMilliAppC {
 provides interface Mgmt;
-provides interface Module;
 
 uses interface timerMilliAppParams;
 
@@ -37,7 +36,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 
 provides interface Event;
 }
@@ -45,7 +43,6 @@ provides interface Event;
 implementation {
 components timerMilliAppP;
 Mgmt = timerMilliAppP;
-Module = timerMilliAppP;
 
 timerMilliAppParams = timerMilliAppP;
 
@@ -55,7 +52,6 @@ NetworkSnoop = timerMilliAppP.NetworkSnoop;
 NetworkAMPacket = timerMilliAppP.NetworkAMPacket;
 NetworkPacket = timerMilliAppP.NetworkPacket;
 NetworkPacketAcknowledgements = timerMilliAppP.NetworkPacketAcknowledgements;
-NetworkStatus = timerMilliAppP.NetworkStatus;
 
 Event = timerMilliAppP;
 

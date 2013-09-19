@@ -32,7 +32,6 @@
 
 module csmacaMacP @safe() {
 provides interface Mgmt;
-provides interface ModuleStatus as MacStatus;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -46,7 +45,6 @@ uses interface csmacaMacParams;
 
 uses interface SplitControl as RadioControl;
 
-uses interface ModuleStatus as RadioStatus;
 uses interface RadioPacket;
 uses interface RadioConfig;
 uses interface RadioPower;
@@ -129,7 +127,6 @@ event void RadioControl.startDone(error_t err) {
 		call RadioControl.start();
 	} else {
 		status = S_STARTED;
-		signal MacStatus.status(F_RADIO, ON);
 		signal Mgmt.startDone(SUCCESS);
 	}
 }
@@ -145,7 +142,6 @@ event void RadioControl.stopDone(error_t err) {
 		call RadioControl.stop();
 	} else {
 		status = S_STOPPED;
-		signal MacStatus.status(F_RADIO, OFF);
 		signal Mgmt.stopDone(SUCCESS);
 	}
 }
@@ -211,12 +207,7 @@ async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
 }
 
 
-event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
-	return signal MacStatus.status(layer, status_flag);
-}
-
 event void RadioConfig.syncDone(error_t error) {
-  
 }
 
 async event void RadioPower.startVRegDone() {

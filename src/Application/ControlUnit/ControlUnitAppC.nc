@@ -39,46 +39,44 @@
 #include <Fennec.h>
 
 configuration ControlUnitAppC {
-  provides interface Mgmt;
+provides interface Mgmt;
 
-  uses interface ControlUnitAppParams;
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface ControlUnitAppParams;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
- 
-  components ControlUnitAppP;
-  Mgmt = ControlUnitAppP;
-  ControlUnitAppParams = ControlUnitAppP;
 
-  NetworkAMSend = ControlUnitAppP;
-  NetworkReceive = ControlUnitAppP.NetworkReceive;
-  NetworkSnoop = ControlUnitAppP.NetworkSnoop;
-  NetworkAMPacket = ControlUnitAppP.NetworkAMPacket;
-  NetworkPacket = ControlUnitAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = ControlUnitAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = ControlUnitAppP.NetworkStatus;
+components ControlUnitAppP;
+Mgmt = ControlUnitAppP;
+ControlUnitAppParams = ControlUnitAppP;
+
+NetworkAMSend = ControlUnitAppP;
+NetworkReceive = ControlUnitAppP.NetworkReceive;
+NetworkSnoop = ControlUnitAppP.NetworkSnoop;
+NetworkAMPacket = ControlUnitAppP.NetworkAMPacket;
+NetworkPacket = ControlUnitAppP.NetworkPacket;
+NetworkPacketAcknowledgements = ControlUnitAppP.NetworkPacketAcknowledgements;
 
 //  components ProtocolStackC;
 //  ControlUnitAppP.ProtocolStack -> ProtocolStackC;
 
-  components CachesC;
-  ControlUnitAppP.PolicyCache -> CachesC;
+components CachesC;
+ControlUnitAppP.PolicyCache -> CachesC;
 
-  components RandomC;
-  ControlUnitAppP.Random -> RandomC;
+components RandomC;
+ControlUnitAppP.Random -> RandomC;
 
-  components LedsC;
-  ControlUnitAppP.Leds -> LedsC;
+components LedsC;
+ControlUnitAppP.Leds -> LedsC;
 
-  components new TimerMilliC() as Timer;
-  ControlUnitAppP.Timer -> Timer;
+components new TimerMilliC() as Timer;
+ControlUnitAppP.Timer -> Timer;
 
 }
 
