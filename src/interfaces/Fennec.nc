@@ -2,6 +2,6 @@
 interface Fennec {
 	command state_t getStateId();
 	command struct state* getStateRecord();
-	command error_t setStateSeq(nx_struct network_state);
-	command nx_struct network_state getStateSeq();
+	command error_t setStateAndSeq(state_t state, uint16_t seq);
+	command uint16_t getStateSeq();
 }

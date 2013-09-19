@@ -67,7 +67,7 @@ NetworkPacketAcknowledgements = ControlUnitAppP.NetworkPacketAcknowledgements;
 //  ControlUnitAppP.ProtocolStack -> ProtocolStackC;
 
 components CachesC;
-ControlUnitAppP.PolicyCache -> CachesC;
+ControlUnitAppP.Fennec -> CachesC;
 
 components RandomC;
 ControlUnitAppP.Random -> RandomC;

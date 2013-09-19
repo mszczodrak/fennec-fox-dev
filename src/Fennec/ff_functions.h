@@ -27,8 +27,7 @@
 #ifndef FF_FUNCTIONS_H
 #define FF_FUNCTIONS_H
 
-//#include "message.h"
-#include "Fennec.h"
+#include <Fennec.h>
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -36,7 +35,7 @@
 void force_new_configuration(uint8_t new_conf);
 
 
-module_t get_module_id(layer_t layer, conf_t conf);
+module_t get_module_id(conf_t cond, layer_t layer);
 conf_t get_conf_id(module_t module_id);
 state_t get_state_id();
 module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_id);

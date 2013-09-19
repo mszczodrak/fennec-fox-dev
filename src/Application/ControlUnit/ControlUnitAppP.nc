@@ -24,7 +24,7 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface PolicyCache;
+uses interface Fennec;
 
 uses interface Random;
 uses interface Timer<TMilli> as Timer;
@@ -71,14 +71,12 @@ void set_new_state(state_t conf, uint16_t seq) {
 		status = S_STARTING;
 		resend_confs = POLICY_RESEND_RECONF;
 		/* Start Policy State */
-		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
-		//call ProtocolStack.start();
+		//call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
 		break;
 
 	case S_NONE:
 		resend_confs = 0;  /* skip resending at the first time */
-		call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
-		//call ProtocolStack.start();
+		//call PolicyCache.set_active_configuration(POLICY_CONFIGURATION);
 		break;
 
 	case S_COMPLETED:
@@ -91,7 +89,6 @@ void set_new_state(state_t conf, uint16_t seq) {
 		/* Here we are done with sending control messages and we
 		 * moving into stopping all modules of the stack */
 		status = S_STOPPING;
-		//call ProtocolStack.stop();
 		break;
 	}
 }
@@ -117,17 +114,15 @@ task void continue_reconfiguration() {
 	}
 }
 
-event void PolicyCache.newConf(conf_t new_conf) {
-//	set_new_state(new_conf, configuration_seq + 1);
-}
-
+/*
 event void PolicyCache.wrong_conf() {
-	/*
+
 	dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_WRONG_CONF_MSG,
 					configuration_id, configuration_seq);
-	*/
+	
 	reset_control();
 }
+*/
 
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -140,9 +135,9 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 	//dbgs(F_CONTROL_UNIT, status, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
-	if (!call PolicyCache.valid_policy_msg(cu_msg)) {
-		goto done_receive;
-	}
+//	if (!call PolicyCache.valid_policy_msg(cu_msg)) { /* check numn of confs */
+//		goto done_receive;
+//	}
 
 	if ((status != S_STARTED) && (status != S_COMPLETED)) {
 		goto done_receive;
@@ -187,10 +182,12 @@ reset:
 	goto done_receive;
 
 reconfigure:
+/*
 	if ((cu_msg->conf_id != configuration_id) && 
 		(cu_msg->conf_id < call PolicyCache.get_number_of_configurations()) ){
 		set_new_state(cu_msg->conf_id, cu_msg->seq);
 	}
+*/
 
 done_receive:
 	return msg;

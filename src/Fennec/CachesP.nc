@@ -5,7 +5,6 @@ module CachesP @safe() {
 provides interface Fennec;
 provides interface SimpleStart;
 provides interface EventCache;
-provides interface PolicyCache;
 
 uses interface SplitControl;
 }
@@ -68,6 +67,7 @@ module_t get_module_id(conf_t conf, layer_t layer) @C() {
 }
 
 state_t get_state_id() @C() {
+	//return fennec_state.state;
 	return active_state;
 }
 
@@ -147,57 +147,7 @@ event void SplitControl.stopDone(error_t err) {
 
 
 
-
-command error_t PolicyCache.set_active_configuration(state_t new_state) {
-	atomic active_state = new_state;
-	return SUCCESS;
-}
-
-command uint16_t PolicyCache.getNetworkSequence() {
-	return network_sequence;
-}
-
-command void PolicyCache.setNetworkSequence(uint16_t seq) {
-	network_sequence = seq;
-}
-
-command uint16_t PolicyCache.getNodeSequence() {
-	return node_sequence;
-}
-
-command void PolicyCache.setNodeSequence(uint16_t seq) {
-	node_sequence = seq;
-}
-
-command uint16_t PolicyCache.getNetworkState() {
-	return active_state;
-}
-
-command void PolicyCache.setNetworkState(uint16_t state) {
-	active_state = state;
-}
-
-command uint16_t PolicyCache.getNodeState() {
-	return node_state;
-}
-
-command void PolicyCache.setNodeState(uint16_t state) {
-	node_state = state;
-}
-
-command struct state* PolicyCache.getStateRecord(uint16_t id) {
-	return &states[id];
-}
-
-
-
-command uint16_t PolicyCache.get_number_of_configurations() {
-	return NUMBER_OF_CONFIGURATIONS;
-}
-
-command void PolicyCache.control_unit_support(bool status) {
-}
-
+/*
 command bool PolicyCache.valid_policy_msg(nx_struct FFControl *policy_msg) {
 	if (policy_msg->conf_id >= NUMBER_OF_CONFIGURATIONS)
 		return FALSE;
@@ -207,12 +157,14 @@ command bool PolicyCache.valid_policy_msg(nx_struct FFControl *policy_msg) {
 command uint8_t PolicyCache.add_accepts(nx_struct FFControl *conf) {
 	return 1;
 }
+*/
 
 task void wrong_conf() {
-	signal PolicyCache.wrong_conf();
+	//signal PolicyCache.wrong_conf();
 }
 
 task void check_event() {
+/*
 	uint8_t i;
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if (((policies[i].src_conf == ANY) || (policies[i].src_conf == active_state))
@@ -220,6 +172,7 @@ task void check_event() {
 			signal PolicyCache.newConf( policies[i].dst_conf );
 		}
 	}
+*/
 }
 
 
@@ -256,6 +209,7 @@ command void EventCache.clearBit(uint16_t bit) {
 }
 
 command bool EventCache.eventStatus(uint16_t event_num) {
+/*
 	uint8_t i;
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ){
 		if (((policies[i].src_conf == ANY) || 
@@ -265,6 +219,7 @@ command bool EventCache.eventStatus(uint16_t event_num) {
 		}
 	}
 	return 0;
+*/
 }
 
 
@@ -273,15 +228,15 @@ command state_t Fennec.getStateId() {
 }
 
 command struct state* Fennec.getStateRecord() {
-	return &states[active_state];
+	return &states[get_state_id()];
 }
 
-command error_t Fennec.setStateSeq(nx_struct network_state) {
+command error_t Fennec.setStateAndSeq(state_t state, uint16_t seq) {
 
 	return SUCCESS;
 }
 
-command nx_struct network_state Fennec.getStateSeq() {
+command uint16_t Fennec.getStateSeq() {
 
 }
 
