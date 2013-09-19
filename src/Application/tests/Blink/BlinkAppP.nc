@@ -28,22 +28,20 @@
 #include <Fennec.h>
 
 module BlinkAppP {
+provides interface Mgmt;
 
-  provides interface Mgmt;
-  provides interface Module;
+uses interface BlinkAppParams;
 
-  uses interface BlinkAppParams;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
-
-  uses interface Leds;
-  uses interface Timer<TMilli> as Timer;
+uses interface Leds;
+uses interface Timer<TMilli> as Timer;
 }
 
 implementation {
@@ -63,24 +61,24 @@ command error_t Mgmt.stop() {
 	return SUCCESS;
 }
 
-  event void Timer.fired() {
-    dbg("Application", "Application Blink set LED to %d\n", 
-				call BlinkAppParams.get_led());
-    //dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkAppParams.get_led(), on);
-    on ? call Leds.set(0) : call Leds.set(call BlinkAppParams.get_led()) ;
-    on = !on;
-  }
+event void Timer.fired() {
+	dbg("Application", "Application Blink set LED to %d", 
+		call BlinkAppParams.get_led());
+	//dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkAppParams.get_led(), on);
+	on ? call Leds.set(0) : call Leds.set(call BlinkAppParams.get_led()) ;
+	on = !on;
+}
 
-  event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 
-  event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    return msg;
-  }
+event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
 
-  event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return msg;
-  }
+event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
 
-  event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
-  }
+event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
+}
 }
