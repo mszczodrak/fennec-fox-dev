@@ -138,10 +138,8 @@ implementation {
 
     /* Keeps track of whether the radio is on. No sense updating or sending
      * beacons if radio is off */
-    bool radioOn = FALSE;
     /* Controls whether the node's periodic timer will fire. The node will not
      * send any beacon, and will not update the route. Start and stop control this. */
-    bool running = FALSE;
     /* Guards the beacon buffer: only one beacon being sent at a time */
     bool sending = FALSE;
 
@@ -211,10 +209,7 @@ implementation {
        call BeaconTimer.startOneShot(remaining);
     }
 
-    void do_init() {
-//        uint8_t maxLength;
-//        radioOn = FALSE;
-        running = FALSE;
+void do_init() {
         parentChanges = 0;
         state_is_root = 0;
         routeInfoInit(&routeInfo);
@@ -229,47 +224,29 @@ implementation {
       return SUCCESS;
     }
 
-    command error_t StdControl.start() {
-      do_init();
-      my_ll_addr = call AMPacket.address();
-      //start will (re)start the sending of messages
-      if (!running) {
-	running = TRUE;
+command error_t StdControl.start() {
+	uint16_t nextInt;
+	do_init();
+	my_ll_addr = call AMPacket.address();
+	nextInt = call Random.rand16() % BEACON_INTERVAL;
+	nextInt += BEACON_INTERVAL >> 1;
+	//start will (re)start the sending of messages
 	resetInterval();
 	call RouteTimer.startPeriodic(BEACON_INTERVAL);
-	dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
-      }     
-      return SUCCESS;
-    }
+	return SUCCESS;
+}
 
-    command error_t StdControl.stop() {
-        running = FALSE;
-        dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
-        return SUCCESS;
-    } 
+command error_t StdControl.stop() {
+	call RouteTimer.stop();
+	return SUCCESS;
+} 
 
-    event void RadioControl.startDone(error_t error) {
-      
-      dbg("Network", "Network CTP: received RadioControl.startDone at RoutingEngine\n");
-        radioOn = TRUE;
-        dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
-        if (running) {
-            uint16_t nextInt;
-            nextInt = call Random.rand16() % BEACON_INTERVAL;
-            nextInt += BEACON_INTERVAL >> 1;
-        }
-    } 
 
-    event void RadioControl.stopDone(error_t error) {
-        radioOn = FALSE;
-        dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
-    }
-
-    /* Is this quality measure better than the minimum threshold? */
-    // Implemented assuming quality is EETX
-    bool passLinkEtxThreshold(uint16_t etx) {
-        return (etx < ETX_THRESHOLD);
-    }
+/* Is this quality measure better than the minimum threshold? */
+// Implemented assuming quality is EETX
+bool passLinkEtxThreshold(uint16_t etx) {
+	return (etx < ETX_THRESHOLD);
+}
 
 
     /* updates the routing information, using the info that has been received
@@ -394,7 +371,6 @@ implementation {
     
 
     /* send a beacon advertising this node's routeInfo */
-    // only posted if running and radioOn
     task void sendBeaconTask() {
         error_t eval;
         if (sending) {
@@ -432,27 +408,23 @@ implementation {
         if (eval == SUCCESS) {
             sending = TRUE;
         } else if (eval == EOFF) {
-            radioOn = FALSE;
-            dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
+	 /* probably the radio is off */
         }
-    }
+}
 
-    event void BeaconSend.sendDone(message_t* msg, error_t error) {
+event void BeaconSend.sendDone(message_t* msg, error_t error) {
         if ((msg != &beaconMsgBuffer) || !sending) {
             //something smells bad around here
             return;
         }
         sending = FALSE;
-    }
+}
 
-    event void RouteTimer.fired() {
-      if (radioOn && running) {
-         post updateRouteTask();
-      }
-    }
+event void RouteTimer.fired() {
+	post updateRouteTask();
+}
       
-    event void BeaconTimer.fired() {
-      if (radioOn && running) {
+event void BeaconTimer.fired() {
         if (!tHasPassed) {
           post updateRouteTask(); //always send the most up to date info
           post sendBeaconTask();
@@ -462,13 +434,12 @@ implementation {
         else {
           decayInterval();
         }
-      }
-    }
+}
 
 
-    ctp_routing_header_t* getHeader(message_t* ONE m) {
-      return (ctp_routing_header_t*)call BeaconSend.getPayload(m, call BeaconSend.maxPayloadLength());
-    }
+ctp_routing_header_t* getHeader(message_t* ONE m) {
+	return (ctp_routing_header_t*)call BeaconSend.getPayload(m, call BeaconSend.maxPayloadLength());
+}
     
     
     /* Handle the receiving of beacon messages from the neighbors. We update the

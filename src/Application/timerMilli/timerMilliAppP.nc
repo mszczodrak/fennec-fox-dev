@@ -54,10 +54,10 @@ implementation {
 
 command error_t Mgmt.start() {
 	dbg("Application", "timerMilliApp Mgmt.start()");
-	dbg("Application", "timerMilliApp src: %d ms\n", call timerMilliAppParams.get_src());
+	dbg("Application", "timerMilliApp src: %d ms", call timerMilliAppParams.get_src());
 	if ((call timerMilliAppParams.get_src() == BROADCAST) || 
 		(call timerMilliAppParams.get_src() == TOS_NODE_ID)) {
-		dbg("Application", "timerMilliApp will fire in %d ms\n", call timerMilliAppParams.get_delay());
+		dbg("Application", "timerMilliApp will fire in %d ms", call timerMilliAppParams.get_delay());
 		call Timer.startPeriodic(call timerMilliAppParams.get_delay());
 
 	}
