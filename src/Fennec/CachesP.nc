@@ -19,6 +19,9 @@ uint16_t node_state = 0;
 
 
 
+
+
+
 /*
 void turnEvents(bool flag) {
 	uint8_t i;
@@ -132,11 +135,12 @@ command void SimpleStart.start() {
 }
 
 event void SplitControl.startDone(error_t err) {
-
+	dbg("Caches", "Caches SplitControl.startDone(%d)\n", err);
 }
 
 
 event void SplitControl.stopDone(error_t err) {
+	dbg("Caches", "Caches SplitControl.stopDone(%d)\n", err);
 
 }
 
@@ -270,6 +274,15 @@ command state_t Fennec.getStateId() {
 
 command struct state* Fennec.getStateRecord() {
 	return &states[active_state];
+}
+
+command error_t Fennec.setStateSeq(nx_struct network_state) {
+
+	return SUCCESS;
+}
+
+command nx_struct network_state Fennec.getStateSeq() {
+
 }
 
 }

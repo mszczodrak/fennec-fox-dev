@@ -50,6 +50,7 @@ task void start_protocol_stack() {
 		/* that's all folks, all configurations are running */
 		dbg("NetworkScheduler", "NetworkScheduler finished starting ProtocolStack");
 		conf = UNKNOWN_CONFIGURATION;
+		signal SplitControl.startDone(SUCCESS);
 	}
 }
 
@@ -68,6 +69,7 @@ task void stop_protocol_stack() {
 		/* that's all folks, all configurations are running */
 		dbg("NetworkScheduler", "NetworkScheduler finished stopping ProtocolStack");
 		conf = UNKNOWN_CONFIGURATION;
+		signal SplitControl.stopDone(SUCCESS);
 	}
 }
 
