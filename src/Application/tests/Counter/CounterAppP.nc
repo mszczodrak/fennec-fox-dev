@@ -69,9 +69,11 @@ command error_t Mgmt.start() {
 	dbg("Application", "CounterApp Mgmt.start()");
 
 	dbg("Application", "CounterApp starting delay: %d", send_delay);
+	dbg("Application", "CounterApp starting src: %d  dest: %d",
+		call CounterAppParams.get_src(), call CounterAppParams.get_dest());
 	seqno = 0;
 
-	if ((call CounterAppParams.get_src() == NODE) || 
+	if ((call CounterAppParams.get_src() == BROADCAST) || 
 	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
 		call Leds.led1On();
 		call Timer.startPeriodic(send_delay);

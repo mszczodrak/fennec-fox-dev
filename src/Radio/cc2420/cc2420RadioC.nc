@@ -57,7 +57,6 @@ cc2420RadioP.RadioResource -> cc2420ControlC.RadioResource;
 
 Mgmt = cc2420RadioP;
 cc2420RadioParams = cc2420RadioP;
-RadioStatus = cc2420RadioP.RadioStatus;
 
 RadioControl = cc2420RadioP.SplitControl;
 
