@@ -31,7 +31,6 @@
 
 module cc2420RadioP @safe() {
 provides interface Mgmt;
-provides interface ModuleStatus as RadioStatus;
 provides interface SplitControl;
 
 uses interface Leds;

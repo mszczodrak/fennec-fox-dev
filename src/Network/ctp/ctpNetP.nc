@@ -29,24 +29,23 @@
 #include "ctpNet.h"
 
 module ctpNetP {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface ctpNetParams;
-  uses interface Leds;
+uses interface ctpNetParams;
+uses interface Leds;
 
-  provides interface ModuleStatus as NetworkStatus;
-  provides interface AMSend as NetworkAMSend;
-  provides interface AMPacket as NetworkAMPacket;
-  provides interface Packet as NetworkPacket;
-  provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface ModuleStatus as NetworkStatus;
+provides interface AMSend as NetworkAMSend;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface StdControl as RoutingControl;
-  uses interface RootControl;
-  uses interface Send as CtpSend;
-  uses interface AMPacket as CtpAMPacket;
-  uses interface Packet as CtpPacket;
-  uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
+uses interface StdControl as RoutingControl;
+uses interface RootControl;
+uses interface Send as CtpSend;
+uses interface AMPacket as CtpAMPacket;
+uses interface Packet as CtpPacket;
+uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
 }
 
 implementation {

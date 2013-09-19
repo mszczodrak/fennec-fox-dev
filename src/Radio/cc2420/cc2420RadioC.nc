@@ -26,63 +26,62 @@
  */
 
 configuration cc2420RadioC {
-  provides interface Mgmt;
-  provides interface Receive as RadioReceive;
-  provides interface ModuleStatus as RadioStatus;
+provides interface Mgmt;
+provides interface Receive as RadioReceive;
 
-  uses interface cc2420RadioParams;
-  provides interface Resource as RadioResource;
-  provides interface RadioConfig;
-  provides interface RadioPower;
-  provides interface Read<uint16_t> as ReadRssi;
-  provides interface SplitControl as RadioControl;
-  provides interface RadioSend;
-  provides interface RadioPacket;
-  provides interface RadioBuffer;
-  provides interface ReceiveIndicator as PacketIndicator;
-  provides interface ReceiveIndicator as EnergyIndicator;
-  provides interface ReceiveIndicator as ByteIndicator;
+uses interface cc2420RadioParams;
+provides interface Resource as RadioResource;
+provides interface RadioConfig;
+provides interface RadioPower;
+provides interface Read<uint16_t> as ReadRssi;
+provides interface SplitControl as RadioControl;
+provides interface RadioSend;
+provides interface RadioPacket;
+provides interface RadioBuffer;
+provides interface ReceiveIndicator as PacketIndicator;
+provides interface ReceiveIndicator as EnergyIndicator;
+provides interface ReceiveIndicator as ByteIndicator;
 }
 
 implementation {
 
-  components cc2420RadioP;
-  components cc2420ControlC;
-  components cc2420DriverC;
-  EnergyIndicator = cc2420DriverC.EnergyIndicator;
-  cc2420RadioParams = cc2420DriverC.cc2420RadioParams;
-  ByteIndicator = cc2420DriverC.ByteIndicator;
+components cc2420RadioP;
+components cc2420ControlC;
+components cc2420DriverC;
+EnergyIndicator = cc2420DriverC.EnergyIndicator;
+cc2420RadioParams = cc2420DriverC.cc2420RadioParams;
+ByteIndicator = cc2420DriverC.ByteIndicator;
 
-  cc2420RadioP.RadioPower -> cc2420ControlC.RadioPower;
-  cc2420RadioP.RadioResource -> cc2420ControlC.RadioResource;
+cc2420RadioP.RadioPower -> cc2420ControlC.RadioPower;
+cc2420RadioP.RadioResource -> cc2420ControlC.RadioResource;
 
-  Mgmt = cc2420RadioP;
-  cc2420RadioParams = cc2420RadioP;
-  RadioStatus = cc2420RadioP.RadioStatus;
+Mgmt = cc2420RadioP;
+cc2420RadioParams = cc2420RadioP;
+RadioStatus = cc2420RadioP.RadioStatus;
 
-  RadioControl = cc2420RadioP.SplitControl;
+RadioControl = cc2420RadioP.SplitControl;
 
-  RadioResource = cc2420ControlC.RadioResource;
-  RadioConfig = cc2420ControlC.RadioConfig;
-  RadioPower = cc2420ControlC.RadioPower;
-  ReadRssi = cc2420ControlC.ReadRssi;
+RadioResource = cc2420ControlC.RadioResource;
+RadioConfig = cc2420ControlC.RadioConfig;
+RadioPower = cc2420ControlC.RadioPower;
+ReadRssi = cc2420ControlC.ReadRssi;
 
-  cc2420RadioParams = cc2420ControlC;
+cc2420RadioParams = cc2420ControlC;
 
-  cc2420RadioP.RadioConfig -> cc2420ControlC.RadioConfig;
+cc2420RadioP.RadioConfig -> cc2420ControlC.RadioConfig;
 
-  components cc2420ReceiveC;
-  cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
-  PacketIndicator = cc2420ReceiveC.PacketIndicator;
-  cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
+components cc2420ReceiveC;
+cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
+PacketIndicator = cc2420ReceiveC.PacketIndicator;
+cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
-  RadioReceive = cc2420ReceiveC.Receive;
-  RadioBuffer = cc2420DriverC.RadioBuffer;
-  RadioSend = cc2420DriverC.RadioSend;
-  RadioPacket = cc2420DriverC.RadioPacket;
-  cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
+RadioReceive = cc2420ReceiveC.Receive;
+RadioBuffer = cc2420DriverC.RadioBuffer;
+RadioSend = cc2420DriverC.RadioSend;
+RadioPacket = cc2420DriverC.RadioPacket;
+cc2420RadioP.TransmitControl -> cc2420DriverC.StdControl;
 
-  cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
+cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
 
 components LedsC;
 cc2420RadioP.Leds -> LedsC;

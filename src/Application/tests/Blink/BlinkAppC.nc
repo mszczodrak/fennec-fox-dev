@@ -28,38 +28,36 @@
 #include "BlinkApp.h"
 
 configuration BlinkAppC {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface BlinkAppParams;
+uses interface BlinkAppParams;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 }
 
 implementation {
-  components BlinkAppP;
-  Mgmt = BlinkAppP;
-  Module = BlinkAppP;
+components BlinkAppP;
+Mgmt = BlinkAppP;
 
-  BlinkAppParams = BlinkAppP;
+BlinkAppParams = BlinkAppP;
 
-  NetworkAMSend = BlinkAppP.NetworkAMSend;
-  NetworkReceive = BlinkAppP.NetworkReceive;
-  NetworkSnoop = BlinkAppP.NetworkSnoop;
-  NetworkAMPacket = BlinkAppP.NetworkAMPacket;
-  NetworkPacket = BlinkAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = BlinkAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = BlinkAppP.NetworkStatus;
+NetworkAMSend = BlinkAppP.NetworkAMSend;
+NetworkReceive = BlinkAppP.NetworkReceive;
+NetworkSnoop = BlinkAppP.NetworkSnoop;
+NetworkAMPacket = BlinkAppP.NetworkAMPacket;
+NetworkPacket = BlinkAppP.NetworkPacket;
+NetworkPacketAcknowledgements = BlinkAppP.NetworkPacketAcknowledgements;
+NetworkStatus = BlinkAppP.NetworkStatus;
 
-  components LedsC;
-  BlinkAppP.Leds -> LedsC;
+components LedsC;
+BlinkAppP.Leds -> LedsC;
 
-  components new TimerMilliC() as Timer;
-  BlinkAppP.Timer -> Timer;
+components new TimerMilliC() as Timer;
+BlinkAppP.Timer -> Timer;
 }
