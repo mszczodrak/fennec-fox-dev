@@ -26,56 +26,54 @@
  */
 
 configuration capeRadioC {
-  provides interface Mgmt;
-  provides interface Receive as RadioReceive;
-  provides interface ModuleStatus as RadioStatus;
+provides interface Mgmt;
+provides interface Receive as RadioReceive;
 
-  uses interface capeRadioParams;
+uses interface capeRadioParams;
 
-  provides interface Resource as RadioResource;
-  provides interface RadioConfig;
-  provides interface RadioPower;
-  provides interface Read<uint16_t> as ReadRssi;
+provides interface Resource as RadioResource;
+provides interface RadioConfig;
+provides interface RadioPower;
+provides interface Read<uint16_t> as ReadRssi;
 
-  provides interface SplitControl as RadioControl;
+provides interface SplitControl as RadioControl;
 
-  provides interface RadioPacket;
-  provides interface RadioBuffer;
-  provides interface RadioSend;
+provides interface RadioPacket;
+provides interface RadioBuffer;
+provides interface RadioSend;
 
-  provides interface ReceiveIndicator as PacketIndicator;
-  provides interface ReceiveIndicator as EnergyIndicator;
-  provides interface ReceiveIndicator as ByteIndicator;
+provides interface ReceiveIndicator as PacketIndicator;
+provides interface ReceiveIndicator as EnergyIndicator;
+provides interface ReceiveIndicator as ByteIndicator;
 
 }
 
 implementation {
 
-  components capeRadioP;
-  Mgmt = capeRadioP;
-  capeRadioParams = capeRadioP;
-  RadioReceive = capeRadioP.RadioReceive;
-  RadioStatus = capeRadioP.RadioStatus;
+components capeRadioP;
+Mgmt = capeRadioP;
+capeRadioParams = capeRadioP;
+RadioReceive = capeRadioP.RadioReceive;
 
-  PacketIndicator = capeRadioP.PacketIndicator;
-  EnergyIndicator = capeRadioP.EnergyIndicator;
-  ByteIndicator = capeRadioP.ByteIndicator;
+PacketIndicator = capeRadioP.PacketIndicator;
+EnergyIndicator = capeRadioP.EnergyIndicator;
+ByteIndicator = capeRadioP.ByteIndicator;
 
-  RadioResource = capeRadioP.RadioResource;
-  RadioConfig = capeRadioP.RadioConfig;
-  RadioPower = capeRadioP.RadioPower;
-  ReadRssi = capeRadioP.ReadRssi;
+RadioResource = capeRadioP.RadioResource;
+RadioConfig = capeRadioP.RadioConfig;
+RadioPower = capeRadioP.RadioPower;
+ReadRssi = capeRadioP.ReadRssi;
 
-  RadioBuffer = capeRadioP.RadioBuffer;
-  RadioPacket = capeRadioP.RadioPacket;
-  RadioSend = capeRadioP.RadioSend;
-  RadioControl = capeRadioP.SplitControl;
+RadioBuffer = capeRadioP.RadioBuffer;
+RadioPacket = capeRadioP.RadioPacket;
+RadioSend = capeRadioP.RadioSend;
+RadioControl = capeRadioP.SplitControl;
 
-  components CapePacketModelC as Network;
-  components CpmModelC as Model;
+components CapePacketModelC as Network;
+components CpmModelC as Model;
 
-  capeRadioP.AMControl -> Network;
-  capeRadioP.Model -> Network.Packet;
+capeRadioP.AMControl -> Network;
+capeRadioP.Model -> Network.Packet;
 
-  Network.GainRadioModel -> Model;
+Network.GainRadioModel -> Model;
 }

@@ -10,7 +10,6 @@ provides interface PacketAcknowledgements;
 uses interface AMSend as MacAMSend;
 uses interface Receive as MacReceive;
 uses interface Receive as MacSnoop;
-uses interface ModuleStatus as MacStatus;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;

@@ -33,7 +33,6 @@ module capeRadioP @safe() {
 
 provides interface Mgmt;
 provides interface Receive as RadioReceive;
-provides interface ModuleStatus as RadioStatus;
 provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
