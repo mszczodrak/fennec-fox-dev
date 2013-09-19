@@ -36,14 +36,12 @@
  */
 
 configuration NetworkSchedulerC {
-provides interface SimpleStart;
 provides interface SplitControl;
 }
 
 implementation {
 
 components NetworkSchedulerP;
-SimpleStart = NetworkSchedulerP;
 SplitControl = NetworkSchedulerP;
 
 components ProtocolStackC;

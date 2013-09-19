@@ -35,7 +35,6 @@ uses interface Leds;
 uses interface SimpleStart as DbgSerial;
 uses interface SimpleStart as RandomStart;
 uses interface SimpleStart as Caches;
-uses interface SimpleStart as NetworkScheduler;
 uses interface SimpleStart as Registry;
 }
 
@@ -50,11 +49,6 @@ event void Boot.booted() {
 task void start_random() {
 	dbg("Fennec", "Fennec start_random()");
 	call RandomStart.start();
-}
-
-task void start_network_scheduler() {
-	dbg("Fennec", "Fennec start_network_scheduler()");
-	call NetworkScheduler.start();
 }
 
 task void start_caches() {
@@ -81,13 +75,11 @@ event void RandomStart.startDone(error_t err) {
 
 event void Caches.startDone(error_t err) {
 	if (err == SUCCESS) {
-		call NetworkScheduler.start();
+		dbg("Fennec", "Fennec Caches.startDone()");
 	} else {
 		post start_caches();
 	}
 }
-
-event void NetworkScheduler.startDone(error_t err) {}
 
 event void Registry.startDone(error_t err) {}
 

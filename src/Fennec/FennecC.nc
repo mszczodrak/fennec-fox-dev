@@ -43,9 +43,6 @@ FennecP.RandomStart -> RandomC;
 components CachesC;
 FennecP.Caches -> CachesC;
 
-components NetworkSchedulerC;
-FennecP.NetworkScheduler -> NetworkSchedulerC;
-
 components LedsC;
 FennecP.Leds -> LedsC;
 
@@ -71,9 +68,6 @@ components SerialPrintfC;
 #ifdef FENNEC_LOGGER
 components LoggerC;
 #endif
-
-components ProtocolStackC;
-
 
 }
 

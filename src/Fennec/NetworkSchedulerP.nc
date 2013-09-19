@@ -2,7 +2,6 @@
 
 module NetworkSchedulerP @safe() {
 provides interface SplitControl;
-provides interface SimpleStart;
 uses interface ProtocolStack;
 uses interface Fennec;
 }
@@ -73,17 +72,15 @@ task void stop_protocol_stack() {
 }
 
 command error_t SplitControl.start() {
+	dbg("NetworkScheduler", "NetworkSchedulerP SplitControl.start()");
 	post start_state();
+	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
+	dbg("NetworkScheduler", "NetworkSchedulerP SplitControl.stop()");
 	post stop_state();
-}
-
-command void SimpleStart.start() {
-	dbg("NetworkScheduler", "NetworkScheduler SimpleStart.start()");
-	post start_state();
-	signal SimpleStart.startDone(SUCCESS);
+	return SUCCESS;
 }
 
 event void ProtocolStack.startConfDone(error_t err) {

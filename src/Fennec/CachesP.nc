@@ -6,6 +6,8 @@ provides interface Fennec;
 provides interface SimpleStart;
 provides interface EventCache;
 provides interface PolicyCache;
+
+uses interface SplitControl;
 }
 
 implementation {
@@ -16,9 +18,6 @@ uint16_t node_sequence = 0;
 uint16_t node_state = 0;
 
 
-command void SimpleStart.start() {
-	signal SimpleStart.startDone(SUCCESS);
-}
 
 /*
 void turnEvents(bool flag) {
@@ -122,6 +121,27 @@ struct stack_params get_conf_params(module_t module_id) @C() {
 //	conf = get_conf_id(module_id);
         return states[get_state_id()].conf_params[get_conf_id_in_state(module_id)];
 }
+
+
+
+
+
+command void SimpleStart.start() {
+	signal SimpleStart.startDone(SUCCESS);
+	call SplitControl.start();
+}
+
+event void SplitControl.startDone(error_t err) {
+
+}
+
+
+event void SplitControl.stopDone(error_t err) {
+
+}
+
+
+
 
 
 command error_t PolicyCache.set_active_configuration(state_t new_state) {
