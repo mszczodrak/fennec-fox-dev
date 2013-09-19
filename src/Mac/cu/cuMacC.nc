@@ -28,77 +28,72 @@
 #include "cuMac.h"
 
 configuration cuMacC {
-  provides interface Mgmt;
-  provides interface AMSend as MacAMSend;
-  provides interface Receive as MacReceive;
-  provides interface Receive as MacSnoop;
-  provides interface AMPacket as MacAMPacket;
-  provides interface Packet as MacPacket;
-  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-  provides interface ModuleStatus as MacStatus;
+provides interface Mgmt;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
+provides interface AMPacket as MacAMPacket;
+provides interface Packet as MacPacket;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface cuMacParams;
+uses interface cuMacParams;
 
-  uses interface Receive as RadioReceive;
-  uses interface ModuleStatus as RadioStatus;
+uses interface Receive as RadioReceive;
 
-  uses interface RadioConfig;
-  uses interface RadioPower;
-  uses interface Read<uint16_t> as ReadRssi;
-  uses interface Resource as RadioResource;
+uses interface RadioConfig;
+uses interface RadioPower;
+uses interface Read<uint16_t> as ReadRssi;
+uses interface Resource as RadioResource;
 
-  uses interface SplitControl as RadioControl;
-  uses interface RadioBuffer;
-  uses interface RadioSend;
-  uses interface RadioPacket;
-  uses interface ReceiveIndicator as PacketIndicator;
-  uses interface ReceiveIndicator as ByteIndicator;
-  uses interface ReceiveIndicator as EnergyIndicator;
+uses interface SplitControl as RadioControl;
+uses interface RadioBuffer;
+uses interface RadioSend;
+uses interface RadioPacket;
+uses interface ReceiveIndicator as PacketIndicator;
+uses interface ReceiveIndicator as ByteIndicator;
+uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
 
-  components cuMacP;
+components cuMacP;
 
-  Mgmt = cuMacP;
-  MacStatus = cuMacP;
-  MacAMSend = cuMacP.MacAMSend;
-  MacReceive = cuMacP.MacReceive;
-  MacSnoop = cuMacP.MacSnoop;
-  MacPacket = cuMacP.MacPacket;
-  MacAMPacket = cuMacP.MacAMPacket;
-  MacPacketAcknowledgements = cuMacP.MacPacketAcknowledgements;
-  cuMacParams = cuMacP;
+Mgmt = cuMacP;
+MacAMSend = cuMacP.MacAMSend;
+MacReceive = cuMacP.MacReceive;
+MacSnoop = cuMacP.MacSnoop;
+MacPacket = cuMacP.MacPacket;
+MacAMPacket = cuMacP.MacAMPacket;
+MacPacketAcknowledgements = cuMacP.MacPacketAcknowledgements;
+cuMacParams = cuMacP;
 
-  RadioConfig = cuMacP.RadioConfig;
-  RadioPower = cuMacP.RadioPower;
-  ReadRssi = cuMacP.ReadRssi;
-  RadioResource = cuMacP.RadioResource;
-  RadioPacket = cuMacP.RadioPacket;
+RadioConfig = cuMacP.RadioConfig;
+RadioPower = cuMacP.RadioPower;
+ReadRssi = cuMacP.ReadRssi;
+RadioResource = cuMacP.RadioResource;
+RadioPacket = cuMacP.RadioPacket;
 
-  RadioStatus = cuMacP.RadioStatus;
+components cuTransmitC;
+RadioPower = cuTransmitC.RadioPower;
+RadioResource = cuTransmitC.RadioResource;
 
-  components cuTransmitC;
-  RadioPower = cuTransmitC.RadioPower;
-  RadioResource = cuTransmitC.RadioResource;
+cuMacP.RadioControl -> cuTransmitC;
 
-  cuMacP.RadioControl -> cuTransmitC;
+cuMacP.SubSend -> cuTransmitC;
+RadioReceive = cuMacP.SubReceive;
 
-  cuMacP.SubSend -> cuTransmitC;
-  RadioReceive = cuMacP.SubReceive;
+PacketIndicator = cuMacP.PacketIndicator;
+ByteIndicator = cuMacP.ByteIndicator;
 
-  PacketIndicator = cuMacP.PacketIndicator;
-  ByteIndicator = cuMacP.ByteIndicator;
+cuMacParams = cuTransmitC.cuMacParams;
 
-  cuMacParams = cuTransmitC.cuMacParams;
+components RandomC;
+cuMacP.Random -> RandomC;
 
-  components RandomC;
-  cuMacP.Random -> RandomC;
-
-  RadioBuffer = cuTransmitC.RadioBuffer;
-  RadioSend = cuTransmitC.RadioSend;
-  RadioPacket = cuTransmitC.RadioPacket;
-  EnergyIndicator = cuTransmitC.EnergyIndicator;
-  RadioControl = cuTransmitC.RadioControl;
+RadioBuffer = cuTransmitC.RadioBuffer;
+RadioSend = cuTransmitC.RadioSend;
+RadioPacket = cuTransmitC.RadioPacket;
+EnergyIndicator = cuTransmitC.EnergyIndicator;
+RadioControl = cuTransmitC.RadioControl;
 }
 

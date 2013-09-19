@@ -32,7 +32,6 @@
 module nullRadioP @safe() {
 provides interface Mgmt;
 provides interface Receive as RadioReceive;
-provides interface ModuleStatus as RadioStatus;
 provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
@@ -127,32 +126,32 @@ command error_t RadioControl.stop() {
 }
 
 async command error_t RadioPower.startVReg() {
-    return SUCCESS;
-  }
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.stopVReg() {
-    return SUCCESS;
-  }
+async command error_t RadioPower.stopVReg() {
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.startOscillator() {
-    return SUCCESS;
-  }
+async command error_t RadioPower.startOscillator() {
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.stopOscillator() {
-    return SUCCESS;
-  }
+async command error_t RadioPower.stopOscillator() {
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.rxOn() {
-    return SUCCESS;
-  }
+async command error_t RadioPower.rxOn() {
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.rfOff() {
-    return SUCCESS;
-  }
+async command error_t RadioPower.rfOff() {
+	return SUCCESS;
+}
 
-  command uint8_t RadioConfig.getChannel() {
-    return channel;
-  }
+command uint8_t RadioConfig.getChannel() {
+	return channel;
+}
 
 command void RadioConfig.setChannel( uint8_t new_channel ) {
 	atomic channel = new_channel;

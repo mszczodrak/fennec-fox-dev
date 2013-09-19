@@ -28,65 +28,61 @@
 #include "nullMac.h"
 
 configuration nullMacC {
-  provides interface Mgmt;
-  provides interface AMSend as MacAMSend;
-  provides interface Receive as MacReceive;
-  provides interface Receive as MacSnoop;
-  provides interface AMPacket as MacAMPacket;
-  provides interface Packet as MacPacket;
-  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-  provides interface ModuleStatus as MacStatus;
+provides interface Mgmt;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
+provides interface AMPacket as MacAMPacket;
+provides interface Packet as MacPacket;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface nullMacParams;
-  uses interface Receive as RadioReceive;
-  uses interface ModuleStatus as RadioStatus;
+uses interface nullMacParams;
+uses interface Receive as RadioReceive;
 
-  uses interface RadioConfig;
-  uses interface RadioPower;
-  uses interface Read<uint16_t> as ReadRssi;
-  uses interface Resource as RadioResource;
+uses interface RadioConfig;
+uses interface RadioPower;
+uses interface Read<uint16_t> as ReadRssi;
+uses interface Resource as RadioResource;
 
-  uses interface SplitControl as RadioControl;
-  uses interface RadioPacket;
-  uses interface RadioBuffer;
-  uses interface RadioSend;
-  uses interface ReceiveIndicator as PacketIndicator;
-  uses interface ReceiveIndicator as ByteIndicator;
-  uses interface ReceiveIndicator as EnergyIndicator;
+uses interface SplitControl as RadioControl;
+uses interface RadioPacket;
+uses interface RadioBuffer;
+uses interface RadioSend;
+uses interface ReceiveIndicator as PacketIndicator;
+uses interface ReceiveIndicator as ByteIndicator;
+uses interface ReceiveIndicator as EnergyIndicator;
 }
 
 implementation {
 
-  components nullMacP;
-  Mgmt = nullMacP;
-  MacStatus = nullMacP;
-  MacAMSend = nullMacP.MacAMSend;
-  MacReceive = nullMacP.MacReceive;
-  MacSnoop = nullMacP.MacSnoop;
-  MacPacket = nullMacP.MacPacket;
-  MacAMPacket = nullMacP.MacAMPacket;
-  MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
+components nullMacP;
+Mgmt = nullMacP;
+MacAMSend = nullMacP.MacAMSend;
+MacReceive = nullMacP.MacReceive;
+MacSnoop = nullMacP.MacSnoop;
+MacPacket = nullMacP.MacPacket;
+MacAMPacket = nullMacP.MacAMPacket;
+MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
 
-  nullMacParams = nullMacP;
+nullMacParams = nullMacP;
 
-  RadioConfig = nullMacP.RadioConfig;
-  RadioPower = nullMacP.RadioPower;
-  ReadRssi = nullMacP.ReadRssi;
-  RadioResource = nullMacP.RadioResource;
-  RadioStatus = nullMacP.RadioStatus;
-  RadioPacket = nullMacP.RadioPacket;
-  RadioBuffer = nullMacP.RadioBuffer;
-  RadioSend = nullMacP.RadioSend;
-  RadioControl = nullMacP.RadioControl;
-  RadioReceive = nullMacP.RadioReceive;
+RadioConfig = nullMacP.RadioConfig;
+RadioPower = nullMacP.RadioPower;
+ReadRssi = nullMacP.ReadRssi;
+RadioResource = nullMacP.RadioResource;
+RadioPacket = nullMacP.RadioPacket;
+RadioBuffer = nullMacP.RadioBuffer;
+RadioSend = nullMacP.RadioSend;
+RadioControl = nullMacP.RadioControl;
+RadioReceive = nullMacP.RadioReceive;
 
-  EnergyIndicator = nullMacP.EnergyIndicator;
-  ByteIndicator = nullMacP.ByteIndicator;
-  PacketIndicator = nullMacP.PacketIndicator;
+EnergyIndicator = nullMacP.EnergyIndicator;
+ByteIndicator = nullMacP.ByteIndicator;
+PacketIndicator = nullMacP.PacketIndicator;
 
-  components RandomC;
-  nullMacP.Random -> RandomC;
-  components new StateC();
-  nullMacP.SplitControlState -> StateC;
+components RandomC;
+nullMacP.Random -> RandomC;
+components new StateC();
+nullMacP.SplitControlState -> StateC;
 }
 

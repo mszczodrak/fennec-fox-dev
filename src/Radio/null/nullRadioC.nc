@@ -26,49 +26,47 @@
  */
 
 configuration nullRadioC {
-  provides interface Mgmt;
-  provides interface Receive as RadioReceive;
-  provides interface ModuleStatus as RadioStatus;
+provides interface Mgmt;
+provides interface Receive as RadioReceive;
 
-  uses interface nullRadioParams;
+uses interface nullRadioParams;
 
-  provides interface Resource as RadioResource;
-  provides interface RadioConfig;
-  provides interface RadioPower;
-  provides interface Read<uint16_t> as ReadRssi;
+provides interface Resource as RadioResource;
+provides interface RadioConfig;
+provides interface RadioPower;
+provides interface Read<uint16_t> as ReadRssi;
 
-  provides interface SplitControl as RadioControl;
+provides interface SplitControl as RadioControl;
 
-  provides interface RadioPacket;
-  provides interface RadioBuffer;
-  provides interface RadioSend;
+provides interface RadioPacket;
+provides interface RadioBuffer;
+provides interface RadioSend;
 
-  provides interface ReceiveIndicator as PacketIndicator;
-  provides interface ReceiveIndicator as EnergyIndicator;
-  provides interface ReceiveIndicator as ByteIndicator;
+provides interface ReceiveIndicator as PacketIndicator;
+provides interface ReceiveIndicator as EnergyIndicator;
+provides interface ReceiveIndicator as ByteIndicator;
 
 }
 
 implementation {
 
-  components nullRadioP;
-  Mgmt = nullRadioP;
-  nullRadioParams = nullRadioP;
-  RadioReceive = nullRadioP.RadioReceive;
-  RadioStatus = nullRadioP.RadioStatus;
+components nullRadioP;
+Mgmt = nullRadioP;
+nullRadioParams = nullRadioP;
+RadioReceive = nullRadioP.RadioReceive;
 
-  PacketIndicator = nullRadioP.PacketIndicator;
-  EnergyIndicator = nullRadioP.EnergyIndicator;
-  ByteIndicator = nullRadioP.ByteIndicator;
+PacketIndicator = nullRadioP.PacketIndicator;
+EnergyIndicator = nullRadioP.EnergyIndicator;
+ByteIndicator = nullRadioP.ByteIndicator;
 
-  RadioResource = nullRadioP.RadioResource;
-  RadioConfig = nullRadioP.RadioConfig;
-  RadioPower = nullRadioP.RadioPower;
-  ReadRssi = nullRadioP.ReadRssi;
+RadioResource = nullRadioP.RadioResource;
+RadioConfig = nullRadioP.RadioConfig;
+RadioPower = nullRadioP.RadioPower;
+ReadRssi = nullRadioP.ReadRssi;
 
-  RadioBuffer = nullRadioP.RadioBuffer;
-  RadioPacket = nullRadioP.RadioPacket;
-  RadioSend = nullRadioP.RadioSend;
-  RadioControl = nullRadioP.RadioControl;
+RadioBuffer = nullRadioP.RadioBuffer;
+RadioPacket = nullRadioP.RadioPacket;
+RadioSend = nullRadioP.RadioSend;
+RadioControl = nullRadioP.RadioControl;
 
 }

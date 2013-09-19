@@ -29,117 +29,105 @@
 #include <Ieee154.h> 
 #include "nullMac.h"
 
-
 module nullMacP @safe() {
-  provides interface Mgmt;
-  provides interface ModuleStatus as MacStatus;
-  provides interface AMSend as MacAMSend;
-  provides interface Receive as MacReceive;
-  provides interface Receive as MacSnoop;
+provides interface Mgmt;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
 
-  provides interface Packet as MacPacket;
-  provides interface AMPacket as MacAMPacket;
-  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface Packet as MacPacket;
+provides interface AMPacket as MacAMPacket;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface nullMacParams;
-  uses interface RadioBuffer;
-  uses interface RadioPacket;
-  uses interface RadioSend;
+uses interface nullMacParams;
+uses interface RadioBuffer;
+uses interface RadioPacket;
+uses interface RadioSend;
 
-  uses interface SplitControl as RadioControl;
-  uses interface ModuleStatus as RadioStatus;
+uses interface SplitControl as RadioControl;
 
-  uses interface RadioConfig;
-  uses interface RadioPower;
-  uses interface Read<uint16_t> as ReadRssi;
-  uses interface Resource as RadioResource;
+uses interface RadioConfig;
+uses interface RadioPower;
+uses interface Read<uint16_t> as ReadRssi;
+uses interface Resource as RadioResource;
 
-  uses interface Receive as RadioReceive;
+uses interface Receive as RadioReceive;
 
-  uses interface Random;
-  uses interface ReceiveIndicator as EnergyIndicator;
-  uses interface ReceiveIndicator as ByteIndicator;
-  uses interface ReceiveIndicator as PacketIndicator;
+uses interface Random;
+uses interface ReceiveIndicator as EnergyIndicator;
+uses interface ReceiveIndicator as ByteIndicator;
+uses interface ReceiveIndicator as PacketIndicator;
 
-  uses interface State as SplitControlState;
+uses interface State as SplitControlState;
 }
 
 implementation {
 
-  uint8_t status = S_STOPPED;
-  norace message_t * ONE_NOK m_msg;
-  norace uint8_t m_state = S_STOPPED;
+uint8_t status = S_STOPPED;
+norace message_t * ONE_NOK m_msg;
+norace uint8_t m_state = S_STOPPED;
 
-  enum {
-    S_STOPPED,
-    S_STARTING,
-    S_STARTED,
-    S_STOPPING,
-    S_TRANSMITTING,
-  };
+enum {
+	S_STOPPED,
+	S_STARTING,
+	S_STARTED,
+	S_STOPPING,
+	S_TRANSMITTING,
+};
 
-  error_t sendErr = SUCCESS;
+error_t sendErr = SUCCESS;
 
-  /****************** Prototypes ****************/
-  task void startDone_task();
-  task void stopDone_task();
-  task void sendDone_task();
+/****************** Prototypes ****************/
+task void startDone_task();
+task void stopDone_task();
+task void sendDone_task();
 
-  task void startDone_task() {
-    m_state = S_STARTED;
-    call SplitControlState.forceState(S_STARTED);
-  }
+task void startDone_task() {
+	m_state = S_STARTED;
+	call SplitControlState.forceState(S_STARTED);
+}
 
-  task void stopDone_task() {
-    call SplitControlState.forceState(S_STOPPED);
-  }
+task void stopDone_task() {
+	call SplitControlState.forceState(S_STOPPED);
+}
 
-  void shutdown() {
-    m_state = S_STOPPED;
-    post stopDone_task();
-  }
+void shutdown() {
+	m_state = S_STOPPED;
+	post stopDone_task();
+}
 
-  error_t SplitControl_start() {
+error_t SplitControl_start() {
 
-    if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      call RadioControl.start();
-      return SUCCESS;
+	if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
+		call RadioControl.start();
+		return SUCCESS;
+	} else if(call SplitControlState.isState(S_STARTED)) {
+		return EALREADY;
+	} else if(call SplitControlState.isState(S_STARTING)) {
+		return SUCCESS;
+	}
+	return EBUSY;
+}
 
-    } else if(call SplitControlState.isState(S_STARTED)) {
-      return EALREADY;
-
-    } else if(call SplitControlState.isState(S_STARTING)) {
-      return SUCCESS;
-    }
-
-    return EBUSY;
-  }
-
-  error_t SplitControl_stop() {
-    if (call SplitControlState.isState(S_STARTED)) {
-      call SplitControlState.forceState(S_STOPPING);
-      call RadioControl.stop();
-      return SUCCESS;
-
-    } else if(call SplitControlState.isState(S_STOPPED)) {
-      return EALREADY;
-
-    } else if(call SplitControlState.isState(S_TRANSMITTING)) {
-      call SplitControlState.forceState(S_STOPPING);
-      // At sendDone, the radio will shut down
-      return SUCCESS;
-
-    } else if(call SplitControlState.isState(S_STOPPING)) {
-      return SUCCESS;
-    }
-
-    return EBUSY;
-  }
+error_t SplitControl_stop() {
+	if (call SplitControlState.isState(S_STARTED)) {
+		call SplitControlState.forceState(S_STOPPING);
+		call RadioControl.stop();
+		return SUCCESS;	
+	} else if(call SplitControlState.isState(S_STOPPED)) {
+		return EALREADY;
+	} else if(call SplitControlState.isState(S_TRANSMITTING)) {
+		call SplitControlState.forceState(S_STOPPING);
+		// At sendDone, the radio will shut down
+		return SUCCESS;
+	} else if(call SplitControlState.isState(S_STOPPING)) {
+		return SUCCESS;
+	}
+	return EBUSY;
+}
 
 
-
-
-  /* Functions */
+/* Functions */
 
 command error_t Mgmt.start() {
 	dbg("Mac", "nullMac Mgmt.start()");
@@ -262,10 +250,6 @@ async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
 async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
 	metadata_t* metadata = (metadata_t*) p_msg->metadata;
 	return metadata->ack;
-}
-
-event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
-	return signal MacStatus.status(layer, status_flag);
 }
 
 event void RadioConfig.syncDone(error_t error) {

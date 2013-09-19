@@ -31,38 +31,35 @@
 #include <Ieee154.h> 
 #include "cuMac.h"
 
-
 module cuMacP @safe() {
-  provides interface Mgmt;
-  provides interface ModuleStatus as MacStatus;
-  provides interface AMSend as MacAMSend;
-  provides interface Receive as MacReceive;
-  provides interface Receive as MacSnoop;
+provides interface Mgmt;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
 
-  provides interface Packet as MacPacket;
-  provides interface AMPacket as MacAMPacket;
+provides interface Packet as MacPacket;
+provides interface AMPacket as MacAMPacket;
 
-  provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-  uses interface ReceiveIndicator as ByteIndicator;
-  uses interface ReceiveIndicator as PacketIndicator;
+uses interface ReceiveIndicator as ByteIndicator;
+uses interface ReceiveIndicator as PacketIndicator;
 
-  uses interface cuMacParams;
+uses interface cuMacParams;
 
-  uses interface SplitControl as RadioControl;
+uses interface SplitControl as RadioControl;
 
-  uses interface ModuleStatus as RadioStatus;
 
-  uses interface RadioPacket;
-  uses interface RadioConfig;
-  uses interface RadioPower;
-  uses interface Read<uint16_t> as ReadRssi;
-  uses interface Resource as RadioResource;
+uses interface RadioPacket;
+uses interface RadioConfig;
+uses interface RadioPower;
+uses interface Read<uint16_t> as ReadRssi;
+uses interface Resource as RadioResource;
 
-  uses interface Send as SubSend;
-  uses interface Receive as SubReceive;
+uses interface Send as SubSend;
+uses interface Receive as SubReceive;
 
-  uses interface Random;
+uses interface Random;
 
 }
 
@@ -110,7 +107,6 @@ command error_t Mgmt.stop() {
       if (status == S_STARTING) {
         dbg("Mac", "Mac cu got RadioControl startDone\n");
         status = S_STARTED;
-        signal MacStatus.status(F_RADIO, ON);
         signal Mgmt.startDone(SUCCESS);
       }
     }
@@ -124,7 +120,6 @@ command error_t Mgmt.stop() {
       if (status == S_STOPPING) {
         dbg("Mac", "Mac cu got RadioControl stopDone\n");
         status = S_STOPPED;
-        signal MacStatus.status(F_RADIO, OFF);
         signal Mgmt.stopDone(SUCCESS);
       }
     }
@@ -183,10 +178,6 @@ command error_t Mgmt.stop() {
     return metadata->ack;
   }
 
-
-event void RadioStatus.status(uint8_t layer, uint8_t status_flag) {
-    return signal MacStatus.status(layer, status_flag);
-}
 
 event void RadioConfig.syncDone(error_t error) {
 }
