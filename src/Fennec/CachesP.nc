@@ -248,5 +248,9 @@ command state_t Fennec.getStateId() {
 	return get_state_id();
 }
 
+command struct state* Fennec.getStateRecord() {
+	return &states[active_state];
+}
+
 }
 

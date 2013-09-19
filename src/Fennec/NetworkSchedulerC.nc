@@ -36,20 +36,21 @@
  */
 
 configuration NetworkSchedulerC {
-  provides interface SimpleStart;
+provides interface SimpleStart;
+provides interface SplitControl;
 }
 
 implementation {
 
-  components NetworkSchedulerP;
-  SimpleStart = NetworkSchedulerP;
+components NetworkSchedulerP;
+SimpleStart = NetworkSchedulerP;
+SplitControl = NetworkSchedulerP;
 
-  components ProtocolStackC;
-  NetworkSchedulerP.ProtocolStack -> ProtocolStackC;
+components ProtocolStackC;
+NetworkSchedulerP.ProtocolStack -> ProtocolStackC;
 
-  components CachesC;
-  NetworkSchedulerP.EventCache -> CachesC;
-  NetworkSchedulerP.PolicyCache -> CachesC;
+components CachesC;
+NetworkSchedulerP.Fennec -> CachesC;
 }
 
 

@@ -1,20 +1,15 @@
 #include <Fennec.h>
 
 module NetworkSchedulerP @safe() {
-
 provides interface SplitControl;
 provides interface SimpleStart;
-
 uses interface ProtocolStack;
-uses interface EventCache;
-uses interface PolicyCache;
-
+uses interface Fennec;
 }
 
 implementation {
 
 
-uint16_t processing_state;
 struct state* state_record;
 uint16_t conf = UNKNOWN_CONFIGURATION;
 
@@ -30,20 +25,20 @@ task void start_done() {
 
 task void start_state() {
 	conf = 0;
-	processing_state = call PolicyCache.getNetworkState();
-	dbg("NetworkScheduler", "NetworkScheduler start_state() state = %d", processing_state);
+	dbg("NetworkScheduler", "NetworkScheduler start_state() state = %d", 
+						call Fennec.getStateId());
 	post start_protocol_stack();
 }
 
 task void stop_state() {
 	conf = 0;
-	processing_state = call PolicyCache.getNetworkState();
-	dbg("NetworkScheduler", "NetworkScheduler stop_state() state = %d", processing_state);
+	dbg("NetworkScheduler", "NetworkScheduler stop_state() state = %d",
+						call Fennec.getStateId());
 	post stop_protocol_stack();
 }
 
 task void start_protocol_stack() {
-	state_record = call PolicyCache.getStateRecord(processing_state);
+	state_record = call Fennec.getStateRecord();
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack id = %d, num_confs = %d", 
 		state_record->state_id, state_record->num_confs);
 	if (state_record->num_confs > conf) {
@@ -60,7 +55,7 @@ task void start_protocol_stack() {
 }
 
 task void stop_protocol_stack() {
-	state_record = call PolicyCache.getStateRecord(processing_state);
+	state_record = call Fennec.getStateRecord();
 	dbg("NetworkScheduler", "NetworkScheduler stop_protocol_stack id = %d, num_confs = %d", 
 		state_record->state_id, state_record->num_confs);
 
@@ -90,15 +85,6 @@ command void SimpleStart.start() {
 	post start_state();
 	signal SimpleStart.startDone(SUCCESS);
 }
-
-event void PolicyCache.newConf(conf_t new_conf) {
-//      set_new_state(new_conf, configuration_seq + 1);
-}
-
-event void PolicyCache.wrong_conf() {
-        //reset_control();
-}
-
 
 event void ProtocolStack.startConfDone(error_t err) {
 	dbg("NetworkScheduler", "ProtocolStack.startConfDone(%d)", err);
