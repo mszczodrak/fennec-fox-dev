@@ -51,6 +51,8 @@ implementation {
 
 command error_t Mgmt.start() {
 	call RoutingControl.start();
+	dbg("Network", "ctpNet Mgmt.start()");
+	dbg("Network", "ctpNet Mgmt.start() - root: %d", call ctpNetParams.get_root());
 	if (TOS_NODE_ID == call ctpNetParams.get_root()) {
 		call RootControl.setRoot();
 	}

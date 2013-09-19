@@ -573,12 +573,14 @@ ctp_routing_header_t* getHeader(message_t* ONE m) {
     /* RootControl interface */
     /** sets the current node as a root, if not already a root */
     /*  returns FAIL if it's not possible for some reason      */
-    command error_t RootControl.setRoot() {
+command error_t RootControl.setRoot() {
         bool route_found = FALSE;
         route_found = (routeInfo.parent == INVALID_ADDR);
 	state_is_root = 1;
 	routeInfo.parent = my_ll_addr; //myself
 	routeInfo.etx = 0;
+	
+	dbg("Network", "ctpNet CtpRoutingEngineP RootControl.setRoot()");
 
         if (route_found) 
             signal Routing.routeFound();
