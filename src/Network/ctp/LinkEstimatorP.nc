@@ -45,7 +45,6 @@ module LinkEstimatorP {
     interface AMSend as Send;
     interface Receive;
     interface LinkEstimator;
-    interface Init;
     interface Packet;
     interface CompareBit;
   }
@@ -431,11 +430,6 @@ implementation {
   void do_init() {
     dbg("LI", "Link estimator init\n");
     initNeighborTable();
-  }
-
-  // initialize the link estimator
-  command error_t Init.init() {
-    return SUCCESS;
   }
 
   command error_t StdControl.start() {

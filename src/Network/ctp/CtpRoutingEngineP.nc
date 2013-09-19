@@ -113,14 +113,12 @@ generic module CtpRoutingEngineP(uint8_t routingTableSize, uint32_t minInterval,
         interface CtpInfo;
         interface StdControl;
         interface CtpRoutingPacket;
-        interface Init;
     } 
     uses {
         interface AMSend as BeaconSend;
         interface Receive as BeaconReceive;
         interface LinkEstimator;
         interface AMPacket;
-        interface SplitControl as RadioControl;
         interface Timer<TMilli> as BeaconTimer;
         interface Timer<TMilli> as RouteTimer;
         interface Random;
@@ -220,10 +218,6 @@ void do_init() {
 //              sizeof(beaconMsg), maxLength);
     }
 
-    command error_t Init.init() {
-      return SUCCESS;
-    }
-
 command error_t StdControl.start() {
 	uint16_t nextInt;
 	do_init();
@@ -238,6 +232,7 @@ command error_t StdControl.start() {
 
 command error_t StdControl.stop() {
 	call RouteTimer.stop();
+	call BeaconTimer.stop();
 	return SUCCESS;
 } 
 

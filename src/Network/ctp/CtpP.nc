@@ -110,7 +110,6 @@ implementation {
 
   components CtpActiveMessageC;
   components new CtpForwardingEngineP() as Forwarder;
-  components MainC;
   components LedsC;
   
   Send = Forwarder;
@@ -152,7 +151,6 @@ implementation {
   StdControl = Router;
   StdControl = Estimator;
   RootControl = Router;
-  MainC.SoftwareInit -> Router;
   Router.BeaconSend -> Estimator.Send;
   Router.BeaconReceive -> Estimator.Receive;
   Router.LinkEstimator -> Estimator.LinkEstimator;
@@ -160,7 +158,6 @@ implementation {
   Router.CompareBit -> Estimator.CompareBit;
 
   Router.AMPacket -> CtpActiveMessageC;
-  Router.RadioControl -> CtpActiveMessageC;
   Router.BeaconTimer -> RoutingBeaconTimer;
   Router.RouteTimer -> RouteUpdateTimer;
   Router.CollectionDebug = CollectionDebug;
@@ -177,8 +174,6 @@ implementation {
   Router.Random -> RandomC;
   Forwarder.Random -> RandomC;
 
-  MainC.SoftwareInit -> Forwarder;
-
   Forwarder.SubSend -> AMSenderC;
   Forwarder.SubReceive -> CtpActiveMessageC.Receive[AM_CTP_DATA]; //AMReceiverC;  
   Forwarder.SubSnoop -> CtpActiveMessageC.Snoop[AM_CTP_DATA]; //AMSnooperC;
@@ -186,7 +181,6 @@ implementation {
   Forwarder.SubPacket -> CtpActiveMessageC;
   Forwarder.RootControl -> Router;
   Forwarder.UnicastNameFreeRouting -> Router.Routing;
-  Forwarder.RadioControl -> CtpActiveMessageC;
   Forwarder.PacketAcknowledgements -> CtpActiveMessageC;
   Forwarder.SubAMPacket -> CtpActiveMessageC;
 
@@ -201,6 +195,4 @@ implementation {
   Estimator.SubAMPacket -> CtpActiveMessageC;
 
   //Estimator.LinkPacketMetadata -> CtpActiveMessageC;
-
-  MainC.SoftwareInit -> Estimator;
 }

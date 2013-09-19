@@ -106,7 +106,6 @@
    
 generic module CtpForwardingEngineP() {
   provides {
-    interface Init;
     interface StdControl;
     interface Send[uint8_t client];
     interface Receive[collection_id_t id];
@@ -160,7 +159,6 @@ interface Leds;
     // The ForwardingEngine monitors whether the underlying
     // radio is on or not in order to start/stop forwarding
     // as appropriate.
-    interface SplitControl as RadioControl;
   }
 }
 implementation {
@@ -176,7 +174,6 @@ implementation {
   enum {
     QUEUE_CONGESTED  = 0x1, // Need to set C bit?
     ROUTING_ON       = 0x2, // Forwarding running?
-    RADIO_ON         = 0x4, // Radio is on?
     ACK_PENDING      = 0x8, // Have an ACK pending?
     SENDING          = 0x10 // Am sending a packet?
   };
@@ -206,14 +203,14 @@ implementation {
      the loopbackMsgPtr and performs a buffer swap with it.
      See sendTask(). */
      
-  message_t loopbackMsg;
-  message_t* ONE_NOK loopbackMsgPtr;
+message_t loopbackMsg;
+message_t* ONE_NOK loopbackMsgPtr;
 
-  command error_t Init.init() {
-    return SUCCESS;
-  }
-
-  void do_init() {
+/* sendTask is where the first phase of all send logic
+ * exists (the second phase is in SubSend.sendDone()). */
+task void sendTask();
+  
+void do_init() {
     int i;
     for (i = 0; i < CLIENT_COUNT; i++) {
       clientPtrs[i] = clientEntries + i;
@@ -221,36 +218,22 @@ implementation {
     }
     loopbackMsgPtr = &loopbackMsg;
     seqno = 0;
-  }
+}
 
-  command error_t StdControl.start() {
-    do_init();
-    setState(ROUTING_ON);
-    return SUCCESS;
-  }
+command error_t StdControl.start() {
+	do_init();
+	setState(ROUTING_ON);
+	if (!call SendQueue.empty()) {
+		dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+		post sendTask();
+	}
+	return SUCCESS;
+}
 
-  command error_t StdControl.stop() {
-    clearState(ROUTING_ON);
-    return SUCCESS;
-  }
-
-  /* sendTask is where the first phase of all send logic
-   * exists (the second phase is in SubSend.sendDone()). */
-  task void sendTask();
-  
-  /* ForwardingEngine keeps track of whether the underlying
-     radio is powered on. If not, it enqueues packets;
-     when it turns on, it then starts sending packets. */ 
-  event void RadioControl.startDone(error_t err) {
-    dbg("Network", "Network CTP: received RadioControl.startDone at ForwardingEngine\n");
-    if (err == SUCCESS) {
-      setState(RADIO_ON);
-      if (!call SendQueue.empty()) {
-	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-        post sendTask();
-      }
-    }
-  }
+command error_t StdControl.stop() {
+	clearState(ROUTING_ON);
+	return SUCCESS;
+}
 
   static void startRetxmitTimer(uint16_t window, uint16_t offset) {
     uint16_t r = call Random.rand16();
@@ -276,12 +259,6 @@ implementation {
     // operation on the routeFound event
   }
   
-  event void RadioControl.stopDone(error_t err) {
-    if (err == SUCCESS) {
-      clearState(RADIO_ON);
-    }
-  }
-
   ctp_data_header_t* getHeader(message_t* m) {
     return (ctp_data_header_t*)call SubPacket.getPayload(m, sizeof(ctp_data_header_t));
   }
@@ -323,7 +300,7 @@ implementation {
     qe->retries = MAX_RETRIES;
     dbg("Forwarder", "%s: queue entry for %hhu is %hhu deep\n", __FUNCTION__, client, call SendQueue.size());
     if (call SendQueue.enqueue(qe) == SUCCESS) {
-      if (hasState(RADIO_ON) && !hasState(SENDING)) {
+      if (!hasState(SENDING)) {
 	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
         post sendTask();
       }
@@ -375,7 +352,7 @@ implementation {
    * or to a successful send.
    */
 
-  task void sendTask() {
+task void sendTask() {
     uint16_t gradient;
     dbg("Forwarder", "%s: Trying to send a packet. Queue size is %hhu.\n", __FUNCTION__, call SendQueue.size());
     if (hasState(SENDING) || call SendQueue.empty()) {
