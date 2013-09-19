@@ -29,25 +29,22 @@
 #include "nullNet.h"
 
 module nullNetP {
-  provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as NetworkAMSend;
-  provides interface Receive as NetworkReceive;
-  provides interface Receive as NetworkSnoop;
-  provides interface AMPacket as NetworkAMPacket;
-  provides interface Packet as NetworkPacket;
-  provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  provides interface ModuleStatus as NetworkStatus;
+provides interface Mgmt;
+provides interface AMSend as NetworkAMSend;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface nullNetParams;
+uses interface nullNetParams;
 
-  uses interface AMSend as MacAMSend;
-  uses interface Receive as MacReceive;
-  uses interface Receive as MacSnoop;
-  uses interface AMPacket as MacAMPacket;
-  uses interface Packet as MacPacket;
-  uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-  uses interface ModuleStatus as MacStatus;
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
@@ -199,9 +196,6 @@ async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
 
 async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 	return call MacPacketAcknowledgements.wasAcked(msg);
-}
-
-event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
 }
 
 }

@@ -34,7 +34,6 @@ provides interface Mgmt;
 uses interface ctpNetParams;
 uses interface Leds;
 
-provides interface ModuleStatus as NetworkStatus;
 provides interface AMSend as NetworkAMSend;
 provides interface AMPacket as NetworkAMPacket;
 provides interface Packet as NetworkPacket;

@@ -29,25 +29,22 @@
 #include "cuNet.h"
 
 module cuNetP {
-  provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as NetworkAMSend;
-  provides interface Receive as NetworkReceive;
-  provides interface Receive as NetworkSnoop;
-  provides interface AMPacket as NetworkAMPacket;
-  provides interface Packet as NetworkPacket;
-  provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  provides interface ModuleStatus as NetworkStatus;
+provides interface Mgmt;
+provides interface AMSend as NetworkAMSend;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface cuNetParams;
+uses interface cuNetParams;
 
-  uses interface AMSend as MacAMSend;
-  uses interface Receive as MacReceive;
-  uses interface Receive as MacSnoop;
-  uses interface AMPacket as MacAMPacket;
-  uses interface Packet as MacPacket;
-  uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-  uses interface ModuleStatus as MacStatus;
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
@@ -128,47 +125,44 @@ command am_group_t NetworkAMPacket.group(message_t* amsg) {
 	return call MacAMPacket.group(amsg);
 }
 
-  command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-    return call MacAMPacket.setGroup(amsg, grp);
-  }
+command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	return call MacAMPacket.setGroup(amsg, grp);
+}
 
-  command am_group_t NetworkAMPacket.localGroup() {
-    return call MacAMPacket.localGroup();
-  }
+command am_group_t NetworkAMPacket.localGroup() {
+	return call MacAMPacket.localGroup();
+}
 
-  command void NetworkPacket.clear(message_t* msg) {
-    return call MacPacket.clear(msg);
-  }
+command void NetworkPacket.clear(message_t* msg) {
+	return call MacPacket.clear(msg);
+}
 
-  command uint8_t NetworkPacket.payloadLength(message_t* msg) {
-    return call MacPacket.payloadLength(msg);
-  }
+command uint8_t NetworkPacket.payloadLength(message_t* msg) {
+	return call MacPacket.payloadLength(msg);
+}
 
-  command void NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    return call MacPacket.setPayloadLength(msg, len);
-  }
+command void NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {
+	return call MacPacket.setPayloadLength(msg, len);
+}
 
-  command uint8_t NetworkPacket.maxPayloadLength() {
-    return call MacPacket.maxPayloadLength();
-  }
+command uint8_t NetworkPacket.maxPayloadLength() {
+	return call MacPacket.maxPayloadLength();
+}
 
-  command void* NetworkPacket.getPayload(message_t* msg, uint8_t len) {
-    return call MacPacket.getPayload(msg, len);
-  }
+command void* NetworkPacket.getPayload(message_t* msg, uint8_t len) {
+	return call MacPacket.getPayload(msg, len);
+}
 
-  async command error_t NetworkPacketAcknowledgements.requestAck( message_t* msg ) {
-    return call MacPacketAcknowledgements.requestAck(msg);
-  }
+async command error_t NetworkPacketAcknowledgements.requestAck( message_t* msg ) {
+	return call MacPacketAcknowledgements.requestAck(msg);
+}
 
-  async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
-    return call MacPacketAcknowledgements.noAck(msg);
-  }
+async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
+	return call MacPacketAcknowledgements.noAck(msg);
+}
 
-  async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
-    return call MacPacketAcknowledgements.wasAcked(msg);
-  }
-
-  event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
-  }
+async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
+	return call MacPacketAcknowledgements.wasAcked(msg);
+}
 
 }

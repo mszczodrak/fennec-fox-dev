@@ -28,46 +28,40 @@
 #include <Fennec.h>
 
 configuration nullNetC {
-  provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as NetworkAMSend;
-  provides interface Receive as NetworkReceive;
-  provides interface Receive as NetworkSnoop;
-  provides interface AMPacket as NetworkAMPacket;
-  provides interface Packet as NetworkPacket;
-  provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  provides interface ModuleStatus as NetworkStatus;
+provides interface Mgmt;
+provides interface AMSend as NetworkAMSend;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface nullNetParams;
+uses interface nullNetParams;
 
-  uses interface AMSend as MacAMSend;
-  uses interface Receive as MacReceive;
-  uses interface Receive as MacSnoop;
-  uses interface AMPacket as MacAMPacket;
-  uses interface Packet as MacPacket;
-  uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-  uses interface ModuleStatus as MacStatus;
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
 
-  components nullNetP;
-  Mgmt = nullNetP;
-  Module = nullNetP;
-  nullNetParams = nullNetP;
-  NetworkAMSend = nullNetP.NetworkAMSend;
-  NetworkReceive = nullNetP.NetworkReceive;
-  NetworkSnoop = nullNetP.NetworkSnoop;
-  NetworkAMPacket = nullNetP.NetworkAMPacket;
-  NetworkPacket = nullNetP.NetworkPacket;
-  NetworkPacketAcknowledgements = nullNetP.NetworkPacketAcknowledgements;
-  NetworkStatus = nullNetP.NetworkStatus;
+components nullNetP;
+Mgmt = nullNetP;
+nullNetParams = nullNetP;
+NetworkAMSend = nullNetP.NetworkAMSend;
+NetworkReceive = nullNetP.NetworkReceive;
+NetworkSnoop = nullNetP.NetworkSnoop;
+NetworkAMPacket = nullNetP.NetworkAMPacket;
+NetworkPacket = nullNetP.NetworkPacket;
+NetworkPacketAcknowledgements = nullNetP.NetworkPacketAcknowledgements;
 
-  MacAMSend = nullNetP;
-  MacReceive = nullNetP.MacReceive;
-  MacSnoop = nullNetP.MacSnoop;
-  MacAMPacket = nullNetP.MacAMPacket;
-  MacPacket = nullNetP.MacPacket;
-  MacPacketAcknowledgements = nullNetP.MacPacketAcknowledgements;
-  MacStatus = nullNetP.MacStatus;
+MacAMSend = nullNetP;
+MacReceive = nullNetP.MacReceive;
+MacSnoop = nullNetP.MacSnoop;
+MacAMPacket = nullNetP.MacAMPacket;
+MacPacket = nullNetP.MacPacket;
+MacPacketAcknowledgements = nullNetP.MacPacketAcknowledgements;
 }

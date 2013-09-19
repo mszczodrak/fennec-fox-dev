@@ -28,46 +28,40 @@
 #include <Fennec.h>
 
 configuration cuNetC {
-  provides interface Mgmt;
-  provides interface Module;
-  provides interface AMSend as NetworkAMSend;
-  provides interface Receive as NetworkReceive;
-  provides interface Receive as NetworkSnoop;
-  provides interface AMPacket as NetworkAMPacket;
-  provides interface Packet as NetworkPacket;
-  provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  provides interface ModuleStatus as NetworkStatus;
+provides interface Mgmt;
+provides interface AMSend as NetworkAMSend;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface cuNetParams;
+uses interface cuNetParams;
 
-  uses interface AMSend as MacAMSend;
-  uses interface Receive as MacReceive;
-  uses interface Receive as MacSnoop;
-  uses interface AMPacket as MacAMPacket;
-  uses interface Packet as MacPacket;
-  uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-  uses interface ModuleStatus as MacStatus;
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
 
-  components cuNetP;
-  Mgmt = cuNetP;
-  Module = cuNetP;
-  cuNetParams = cuNetP;
-  NetworkAMSend = cuNetP.NetworkAMSend;
-  NetworkReceive = cuNetP.NetworkReceive;
-  NetworkSnoop = cuNetP.NetworkSnoop;
-  NetworkAMPacket = cuNetP.NetworkAMPacket;
-  NetworkPacket = cuNetP.NetworkPacket;
-  NetworkPacketAcknowledgements = cuNetP.NetworkPacketAcknowledgements;
-  NetworkStatus = cuNetP.NetworkStatus;
+components cuNetP;
+Mgmt = cuNetP;
+cuNetParams = cuNetP;
+NetworkAMSend = cuNetP.NetworkAMSend;
+NetworkReceive = cuNetP.NetworkReceive;
+NetworkSnoop = cuNetP.NetworkSnoop;
+NetworkAMPacket = cuNetP.NetworkAMPacket;
+NetworkPacket = cuNetP.NetworkPacket;
+NetworkPacketAcknowledgements = cuNetP.NetworkPacketAcknowledgements;
 
-  MacAMSend = cuNetP;
-  MacReceive = cuNetP.MacReceive;
-  MacSnoop = cuNetP.MacSnoop;
-  MacAMPacket = cuNetP.MacAMPacket;
-  MacPacket = cuNetP.MacPacket;
-  MacPacketAcknowledgements = cuNetP.MacPacketAcknowledgements;
-  MacStatus = cuNetP.MacStatus;
+MacAMSend = cuNetP;
+MacReceive = cuNetP.MacReceive;
+MacSnoop = cuNetP.MacSnoop;
+MacAMPacket = cuNetP.MacAMPacket;
+MacPacket = cuNetP.MacPacket;
+MacPacketAcknowledgements = cuNetP.MacPacketAcknowledgements;
 }

@@ -26,32 +26,28 @@
  */
 
 configuration nullAppC {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface nullAppParams;
+uses interface nullAppParams;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-  components nullAppP;
-  Mgmt = nullAppP;
-  Module = nullAppP;
+components nullAppP;
+Mgmt = nullAppP;
 
-  nullAppParams = nullAppP;
+nullAppParams = nullAppP;
 
-  NetworkAMSend = nullAppP.NetworkAMSend;
-  NetworkReceive = nullAppP.NetworkReceive;
-  NetworkSnoop = nullAppP.NetworkSnoop;
-  NetworkAMPacket = nullAppP.NetworkAMPacket;
-  NetworkPacket = nullAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = nullAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = nullAppP.NetworkStatus;
+NetworkAMSend = nullAppP.NetworkAMSend;
+NetworkReceive = nullAppP.NetworkReceive;
+NetworkSnoop = nullAppP.NetworkSnoop;
+NetworkAMPacket = nullAppP.NetworkAMPacket;
+NetworkPacket = nullAppP.NetworkPacket;
+NetworkPacketAcknowledgements = nullAppP.NetworkPacketAcknowledgements;
 }

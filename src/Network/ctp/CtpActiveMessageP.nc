@@ -1,19 +1,19 @@
 generic module CtpActiveMessageP() {
-  provides interface SplitControl;
-  provides interface AMSend[am_id_t id];
-  provides interface Receive[am_id_t id];
-  provides interface Receive as Snoop[am_id_t id];
-  provides interface AMPacket;
-  provides interface Packet;
-  provides interface PacketAcknowledgements;
+provides interface SplitControl;
+provides interface AMSend[am_id_t id];
+provides interface Receive[am_id_t id];
+provides interface Receive as Snoop[am_id_t id];
+provides interface AMPacket;
+provides interface Packet;
+provides interface PacketAcknowledgements;
 
-  uses interface AMSend as MacAMSend;
-  uses interface Receive as MacReceive;
-  uses interface Receive as MacSnoop;
-  uses interface ModuleStatus as MacStatus;
-  uses interface AMPacket as MacAMPacket;
-  uses interface Packet as MacPacket;
-  uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface ModuleStatus as MacStatus;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
@@ -137,32 +137,25 @@ implementation {
     return call MacPacketAcknowledgements.wasAcked(msg);
   }
 
-  event void MacAMSend.sendDone(message_t *msg, error_t error) {
-    do_sendDone(msg, error);
-  }
+event void MacAMSend.sendDone(message_t *msg, error_t error) {
+	do_sendDone(msg, error);
+}
 
-  event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
-    //dbgs(F_NETWORK, S_NONE, DBGS_GOT_RECEIVE, 0, 0);
-    return do_receive(msg, payload, len);
-  }
+event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	//dbgs(F_NETWORK, S_NONE, DBGS_GOT_RECEIVE, 0, 0);
+	return do_receive(msg, payload, len);
+}
 
-  event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-    return do_snoop(msg, payload, len);
-  }
+event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return do_snoop(msg, payload, len);
+}
 
-  event void MacStatus.status(uint8_t layer, uint8_t status_flag) {
-    if (layer == F_RADIO) {
-      if (status_flag == ON) signal SplitControl.startDone(SUCCESS);
-      if (status_flag == OFF) signal SplitControl.stopDone(SUCCESS);
-    }
-  }
+default event message_t* Receive.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {
+	return msg;
+}
 
-  default event message_t* Receive.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {
-    return msg;
-  }
-
-  default event message_t* Snoop.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {
-    return msg;
-  }
+default event message_t* Snoop.receive[am_id_t id](message_t *msg, void *payload, uint8_t len) {
+	return msg;
+}
 
 }

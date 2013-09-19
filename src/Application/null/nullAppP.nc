@@ -30,7 +30,6 @@
 
 module nullAppP {
 provides interface Mgmt;
-provides interface Module;
 
 uses interface nullAppParams;
 
@@ -40,7 +39,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 }
 
 implementation {
@@ -66,9 +64,5 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
-
-event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
-}
-
 
 }
