@@ -191,12 +191,6 @@ struct fennec_policy {
 	uint16_t  dst_conf;
 };
 
-nx_struct accept_conf {
-	fennec_header_t fennec;
-	nx_uint8_t vnet_id;
-	nx_uint8_t local_conf;
-};
-
 
 
 #endif
