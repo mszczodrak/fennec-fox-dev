@@ -12,7 +12,6 @@ uses interface PolicyCache;
 
 implementation {
 
-uint8_t state = S_STOPPED;
 
 uint16_t processing_state;
 struct state* state_record;
@@ -30,7 +29,6 @@ task void start_done() {
 
 task void start_state() {
 	conf = 0;
-	state = S_STARTING;
 	processing_state = call PolicyCache.getNetworkState();
 	dbg("NetworkScheduler", "NetworkScheduler start_state() state = %d", processing_state);
 	post start_protocol_stack();
@@ -38,11 +36,9 @@ task void start_state() {
 
 task void stop_state() {
 	conf = 0;
-	state = S_STOPPING;
 	processing_state = call PolicyCache.getNetworkState();
 	dbg("NetworkScheduler", "NetworkScheduler stop_state() state = %d", processing_state);
 	post stop_protocol_stack();
-
 }
 
 task void start_protocol_stack() {
@@ -62,8 +58,6 @@ task void start_protocol_stack() {
 	}
 }
 
-
-
 task void stop_protocol_stack() {
 	state_record = call PolicyCache.getStateRecord(processing_state);
 	dbg("NetworkScheduler", "NetworkScheduler stop_protocol_stack id = %d, num_confs = %d", 
@@ -81,7 +75,6 @@ task void stop_protocol_stack() {
 		conf = UNKNOWN_CONFIGURATION;
 	}
 }
-
 
 command void SimpleStart.start() {
 	dbg("NetworkScheduler", "NetworkScheduler SimpleStart.start()");

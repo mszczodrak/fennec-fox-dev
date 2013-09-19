@@ -30,6 +30,14 @@ void turnEvents(bool flag) {
 }
 */
 
+error_t switch_to_state(state_t state_id, uint16_t seq) @C() {
+//	call NetworkScheduler.switch(state_t state_id);
+
+
+}
+
+
+
 
 module_t get_module_id(conf_t conf, layer_t layer) @C() {
 
