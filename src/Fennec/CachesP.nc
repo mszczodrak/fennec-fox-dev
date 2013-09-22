@@ -126,19 +126,6 @@ event_t get_event_id(module_t module_id, conf_t conf_id) {
 }
 
 
-void event_occured(module_t module_id, uint16_t oc) @C() {
-	conf_t conf_id = get_conf_id(module_id);
-	uint8_t event_id = get_event_id(module_id, conf_id);
-	dbg("Caches", "CachesP event_occured(%d, %d)", module_id, oc);
-	if (oc) {
-		event_mask |= (1 << event_id);
-	} else {
-		event_mask &= ~(1 << event_id);
-	}
-	post check_event();
-}
-
-
 command void SimpleStart.start() {
 	event_mask = 0;
 	signal SimpleStart.startDone(SUCCESS);
