@@ -15,18 +15,10 @@ uint16_t node_sequence = 0;
 
 uint16_t node_state = 0;
 
-
-
-
-
+event_t event_mask;
 
 error_t switch_to_state(state_t state_id, uint16_t seq) @C() {
-//	call NetworkScheduler.switch(state_t state_id);
-
-
 }
-
-
 
 
 module_t get_module_id(conf_t conf, layer_t layer) @C() {
@@ -114,49 +106,14 @@ struct stack_params get_conf_params(module_t module_id) @C() {
 }
 
 
-
-
-
-command void SimpleStart.start() {
-	signal SimpleStart.startDone(SUCCESS);
-	call SplitControl.start();
-}
-
-event void SplitControl.startDone(error_t err) {
-	dbg("Caches", "Caches SplitControl.startDone(%d)\n", err);
-}
-
-
-event void SplitControl.stopDone(error_t err) {
-	dbg("Caches", "Caches SplitControl.stopDone(%d)\n", err);
-
-}
-
-
-
-task void wrong_conf() {
-	//signal PolicyCache.wrong_conf();
-}
-
 task void check_event() {
 	uint8_t i;
+	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
-		if (((policies[i].src_conf == ANY) || (policies[i].src_conf == active_state))
-				&& (policies[i].event_mask == event_mask)) {
-			dbg("Caches", "CachesP check_event() reconfigure");
+		if ((policies[i].src_conf == active_state) && (policies[i].event_mask == event_mask)) {
+			call Fennec.setStateAndSeq(policies[i].dst_conf, node_sequence++);
 		}
 	}
-}
-
-
-bool check_configuration(conf_t conf_id) @C() {
-/*
-	if ((conf_id != POLICY_CONFIGURATION) && (conf_id != active_state)) {
-		signal PolicyCache.wrong_conf();
-		return 1;
-	}
-*/
-	return 0;
 }
 
 
@@ -175,21 +132,33 @@ event_t get_event_id(module_t module_id, conf_t conf_id) {
 void event_occured(module_t module_id, uint16_t oc) @C() {
 	conf_t conf_id = get_conf_id(module_id);
 	uint8_t event_id = get_event_id(module_id, conf_id);
-	dbg("Caches", "event_occured(%d, %d)\n", module_id, oc);
+	dbg("Caches", "CachesP event_occured(%d, %d)", module_id, oc);
 	if (oc) {
-		event_mask += event_id;
+		event_mask += (1 << event_id);
 	} else {
-		event_mask -= event_id;
+		event_mask -= (1 << event_id);
 	}
 	post check_event();
 }
 
 
+command void SimpleStart.start() {
+	event_mask = 0;
+	signal SimpleStart.startDone(SUCCESS);
+	call SplitControl.start();
+}
 
-//command void EventCache.clearMask() {
-//	event_mask = 0;
-//}
+event void SplitControl.startDone(error_t err) {
+	dbg("Caches", "Caches SplitControl.startDone(%d)", err);
+	event_mask = 0;
+}
 
+
+event void SplitControl.stopDone(error_t err) {
+	dbg("Caches", "Caches SplitControl.stopDone(%d)", err);
+	event_mask = 0;
+
+}
 
 command state_t Fennec.getStateId() {
 	return get_state_id();
@@ -199,8 +168,9 @@ command struct state* Fennec.getStateRecord() {
 	return &states[get_state_id()];
 }
 
-command error_t Fennec.setStateAndSeq(state_t state, uint16_t seq) {
-
+command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
+	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", state_id, seq);
+//	call NetworkScheduler.switch(state_t state_id);
 	return SUCCESS;
 }
 
