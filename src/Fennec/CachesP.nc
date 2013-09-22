@@ -17,9 +17,6 @@ uint16_t node_state = 0;
 
 event_t event_mask;
 
-error_t switch_to_state(state_t state_id, uint16_t seq) @C() {
-}
-
 
 module_t get_module_id(conf_t conf, layer_t layer) @C() {
 
@@ -177,6 +174,19 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 command uint16_t Fennec.getStateSeq() {
 
 }
+
+command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
+	conf_t conf_id = get_conf_id(module_id);
+	uint8_t event_id = get_event_id(module_id, conf_id);
+	dbg("Caches", "CachesP event_occured(%d, %d)", module_id, oc);
+	if (oc) {
+		event_mask |= (1 << event_id);
+	} else {
+		event_mask &= ~(1 << event_id);
+	}
+	post check_event();
+}
+
 
 }
 

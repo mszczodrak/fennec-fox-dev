@@ -31,26 +31,18 @@
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
-/* Forces a change in configuration */
-void force_new_configuration(uint8_t new_conf);
-
 
 module_t get_module_id(conf_t cond, layer_t layer);
 conf_t get_conf_id(module_t module_id);
 state_t get_state_id();
 module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_id);
 
+struct stack_params get_conf_params(module_t module_id);
+void event_occured(module_t module_id, uint16_t oc);
 
-struct stack_params get_conf_params(module_t module_id) @C();
 
-bool check_configuration(conf_t conf_id);
 
 metadata_t* getMetadata( message_t* msg );
-
-void event_occured(module_t module_id, uint16_t oc);
-void turnEvents(bool flag);
-
-
 void PacketTimeStampclear(message_t* msg);
 void PacketTimeStampset(message_t* msg, uint32_t value);
 bool PacketTimeSyncOffsetisSet(message_t* msg);
