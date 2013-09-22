@@ -91,18 +91,6 @@ uint16_t get_conf_id_in_state(module_t module_id) {
 }
 
 
-module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_it) {
-	return get_module_id(get_conf_id(from_module_id), to_layer_it);
-}
-
-
-
-struct stack_params get_conf_params(module_t module_id) {
-//	conf = get_conf_id(module_id);
-        return states[get_state_id()].conf_params[get_conf_id_in_state(module_id)];
-}
-
-
 task void check_event() {
 	uint8_t i;
 	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
@@ -222,6 +210,15 @@ command conf_t Fennec.getConfId(module_t module_id) {
 	return UNKNOWN_CONFIGURATION;
 
 }
+
+command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
+	return get_module_id(get_conf_id(from_module_id), to_layer_it);
+}
+
+command struct stack_params Fennec.getConfParams(module_t module_id) {
+        return states[get_state_id()].conf_params[get_conf_id_in_state(module_id)];
+}
+
 
 }
 
