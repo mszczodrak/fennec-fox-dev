@@ -36,6 +36,7 @@ provides interface ProtocolStack;
 uses interface ModuleCtrl;
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
+uses interface Fennec;
 }
 
 implementation {
@@ -51,7 +52,7 @@ command error_t ProtocolStack.startConf(uint16_t conf) {
 	state = S_STARTING;
 	current_layer = F_RADIO;
 	current_conf = conf;
-	call ModuleCtrl.start(get_module_id(current_conf, current_layer));
+	call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
 	return 0;
 }
 
@@ -60,7 +61,7 @@ command error_t ProtocolStack.stopConf(uint16_t conf) {
 	state = S_STOPPING;
 	current_layer = F_APPLICATION;
 	current_conf = conf;
-	call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
+	call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
 	return 0;
 }
 
@@ -68,7 +69,7 @@ event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 	dbg("ProtocolStack", "ProtocolStack ModuleCtrl.startDone(%d, %d)", module_id, error);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
-		call ModuleCtrl.start(get_module_id(current_conf, current_layer));
+		call ModuleCtrl.start(module_id);
 	} else {
 		next_layer();
 
@@ -78,7 +79,7 @@ event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 			signal ProtocolStack.startConfDone(SUCCESS);
 			return;
 		} else {
-			call ModuleCtrl.start(get_module_id(current_conf, current_layer));
+			call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
 		}
 	}
 }
@@ -88,7 +89,7 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 	dbg("ProtocolStack", "ProtocolStack ModuleCtrl.stopDone(%d, %d)", module_id, error);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	if (error != SUCCESS) {
-		call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
+		call ModuleCtrl.stop(module_id);
 	} else {
 		next_layer();
 		if (current_layer == UNKNOWN_LAYER) {
@@ -97,17 +98,17 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 			signal ProtocolStack.stopConfDone(SUCCESS);
 			return;
 		} else {
-			call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
+			call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
 		}
 	}
 }
 
 event void Timer.fired() {
 	if (state == S_STARTING) {
-		call ModuleCtrl.start(get_module_id(current_conf, current_layer));
+		call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
 
 	} else {
-		call ModuleCtrl.stop(get_module_id(current_conf, current_layer));
+		call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
 	}
 }
 

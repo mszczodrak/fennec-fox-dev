@@ -32,11 +32,10 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-module_t get_module_id(conf_t cond, layer_t layer);
-conf_t get_conf_id(module_t module_id);
-module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_id);
+//conf_t get_conf_id(module_t module_id);
+//module_t get_next_module_id(module_t from_module_id, uint8_t to_layer_id);
 
-struct stack_params get_conf_params(module_t module_id);
+//struct stack_params get_conf_params(module_t module_id);
 
 
 metadata_t* getMetadata( message_t* msg );

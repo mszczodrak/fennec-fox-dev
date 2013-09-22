@@ -45,6 +45,8 @@ ProtocolStackP.Timer -> Timer;
 components LedsC;
 ProtocolStackP.Leds -> LedsC;
 
+components CachesC;
+ProtocolStackP.Fennec -> CachesC;
 
 
 }
