@@ -134,7 +134,7 @@ void event_occured(module_t module_id, uint16_t oc) @C() {
 	uint8_t event_id = get_event_id(module_id, conf_id);
 	dbg("Caches", "CachesP event_occured(%d, %d)", module_id, oc);
 	if (oc) {
-		event_mask += (1 << event_id);
+		event_mask |= (1 << event_id);
 	} else {
 		event_mask -= (1 << event_id);
 	}
