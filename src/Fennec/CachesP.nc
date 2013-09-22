@@ -189,7 +189,7 @@ bool check_configuration(conf_t conf_id) @C() {
 
 
 void event_occured(module_t module_id, uint16_t oc) @C() {
-
+	dbg("Caches", "event_occured(%d, %d)\n", module_id, oc);
 }
 
 
