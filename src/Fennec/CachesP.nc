@@ -189,7 +189,7 @@ command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
 
 }
 
-command conf_t Fennec.getConfId(module_t module_id) {
+async command conf_t Fennec.getConfId(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
 	
@@ -211,8 +211,8 @@ command conf_t Fennec.getConfId(module_t module_id) {
 
 }
 
-command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
-	return get_module_id(get_conf_id(from_module_id), to_layer_it);
+async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
+	return get_module_id(get_conf_id(from_module_id), to_layer_id);
 }
 
 command struct stack_params Fennec.getConfParams(module_t module_id) {
