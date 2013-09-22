@@ -136,7 +136,7 @@ void event_occured(module_t module_id, uint16_t oc) @C() {
 	if (oc) {
 		event_mask |= (1 << event_id);
 	} else {
-		event_mask -= (1 << event_id);
+		event_mask &= ~(1 << event_id);
 	}
 	post check_event();
 }
