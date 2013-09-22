@@ -187,9 +187,19 @@ bool check_configuration(conf_t conf_id) @C() {
 }
 
 
+event_t get_event_id(module_t module_id, conf_t conf_id) {
+	uint8_t i;
+	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
+//		if (event_module_conf[i]
+	}
+}
+
 
 void event_occured(module_t module_id, uint16_t oc) @C() {
+	conf_t conf_id = get_conf_id(module_id);
+	uint8_t event_id = get_event_id(module_id, conf_id);
 	dbg("Caches", "event_occured(%d, %d)\n", module_id, oc);
+	
 }
 
 

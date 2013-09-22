@@ -35,9 +35,7 @@ typedef uint16_t state_t;
 typedef uint16_t conf_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
-
-//#define MAX_STATES      5
-//#define MAX_CONFS_PER_STATE     5
+typedef uint16_t event_t;
 
 typedef nx_struct fennec_header_t {
   nxle_uint8_t length;
@@ -132,7 +130,11 @@ typedef nx_struct message_t {
 } message_t;
 
 
-
+struct event_module_conf {
+	event_t 	event_id;
+	module_t 	module_id;
+	conf_t 		conf_id;
+};
 
 nx_struct FFControl {
 	/* source of the of the configuration - variable based on Addressing */
