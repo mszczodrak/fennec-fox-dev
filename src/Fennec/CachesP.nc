@@ -12,39 +12,21 @@ implementation {
 
 uint16_t network_sequence = 0;
 uint16_t node_sequence = 0;
-
 uint16_t node_state = 0;
-
 event_t event_mask;
 
-
-module_t get_module_id(conf_t conf, layer_t layer) {
-
-	if (conf >= NUMBER_OF_CONFIGURATIONS) {
-		return UNKNOWN_LAYER;
-	}
-
-	switch(layer) {
-
-	case F_APPLICATION:
-		return configurations[ conf ].application;
-
-	case F_NETWORK:
-		return configurations[ conf ].network;
-
-	case F_MAC:
-		return configurations[ conf ].mac;
-
-	case F_RADIO:
-		return configurations[ conf ].radio;
-
-	default:
-		return UNKNOWN_LAYER;
+task void check_event() {
+	uint8_t i;
+	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
+	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
+		if ((policies[i].src_conf == active_state) && (policies[i].event_mask == event_mask)) {
+			call Fennec.setStateAndSeq(policies[i].dst_conf, node_sequence++);
+		}
 	}
 }
 
+
 state_t get_state_id() {
-	//return fennec_state.state;
 	return active_state;
 }
 
@@ -88,17 +70,6 @@ uint16_t get_conf_id_in_state(module_t module_id) {
 		}
 	}
 	return UNKNOWN_CONFIGURATION;
-}
-
-
-task void check_event() {
-	uint8_t i;
-	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
-	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
-		if ((policies[i].src_conf == active_state) && (policies[i].event_mask == event_mask)) {
-			call Fennec.setStateAndSeq(policies[i].dst_conf, node_sequence++);
-		}
-	}
 }
 
 
@@ -163,7 +134,7 @@ command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
 }
 
 
-command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
+async command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
 
 	if (conf >= NUMBER_OF_CONFIGURATIONS) {
 		return UNKNOWN_LAYER;
@@ -212,10 +183,10 @@ async command conf_t Fennec.getConfId(module_t module_id) {
 }
 
 async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
-	return get_module_id(get_conf_id(from_module_id), to_layer_id);
+	return call Fennec.getModuleId(get_conf_id(from_module_id), to_layer_id);
 }
 
-command struct stack_params Fennec.getConfParams(module_t module_id) {
+async command struct stack_params Fennec.getConfParams(module_t module_id) {
         return states[get_state_id()].conf_params[get_conf_id_in_state(module_id)];
 }
 
