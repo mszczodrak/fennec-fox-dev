@@ -4,7 +4,6 @@
 module CachesP @safe() {
 provides interface Fennec;
 provides interface SimpleStart;
-provides interface EventCache;
 
 uses interface SplitControl;
 }
@@ -20,17 +19,6 @@ uint16_t node_state = 0;
 
 
 
-
-/*
-void turnEvents(bool flag) {
-	uint8_t i;
-	for(i = 0 ; i < NUMBER_OF_EVENTS; i++ ) {
-		if ( call EventCache.eventStatus(i)) {
-			setEvent(i + 1, flag);
-		}
-	}
-}
-*/
 
 error_t switch_to_state(state_t state_id, uint16_t seq) @C() {
 //	call NetworkScheduler.switch(state_t state_id);
@@ -146,33 +134,18 @@ event void SplitControl.stopDone(error_t err) {
 
 
 
-
-/*
-command bool PolicyCache.valid_policy_msg(nx_struct FFControl *policy_msg) {
-	if (policy_msg->conf_id >= NUMBER_OF_CONFIGURATIONS)
-		return FALSE;
-	return TRUE;
-}
-
-command uint8_t PolicyCache.add_accepts(nx_struct FFControl *conf) {
-	return 1;
-}
-*/
-
 task void wrong_conf() {
 	//signal PolicyCache.wrong_conf();
 }
 
 task void check_event() {
-/*
 	uint8_t i;
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if (((policies[i].src_conf == ANY) || (policies[i].src_conf == active_state))
 				&& (policies[i].event_mask == event_mask)) {
-			signal PolicyCache.newConf( policies[i].dst_conf );
+			dbg("Caches", "CachesP check_event() reconfigure");
 		}
 	}
-*/
 }
 
 
@@ -190,8 +163,12 @@ bool check_configuration(conf_t conf_id) @C() {
 event_t get_event_id(module_t module_id, conf_t conf_id) {
 	uint8_t i;
 	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
-//		if (event_module_conf[i]
+		if ((event_module_conf[i].module_id == module_id) &&
+			(event_module_conf[i].conf_id == conf_id)) {
+			return event_module_conf[i].event_id;
+		}
 	}
+	return 0;
 }
 
 
@@ -199,38 +176,19 @@ void event_occured(module_t module_id, uint16_t oc) @C() {
 	conf_t conf_id = get_conf_id(module_id);
 	uint8_t event_id = get_event_id(module_id, conf_id);
 	dbg("Caches", "event_occured(%d, %d)\n", module_id, oc);
-	
-}
-
-
-
-command void EventCache.clearMask() {
-	event_mask = 0;
-}
-
-command void EventCache.setBit(uint16_t bit) {
-	event_mask |= (1 << (bit - 1));
-	post check_event();
-}
-
-command void EventCache.clearBit(uint16_t bit) {
-	event_mask &= ~(1 << (bit - 1));
-	post check_event();
-}
-
-command bool EventCache.eventStatus(uint16_t event_num) {
-/*
-	uint8_t i;
-	for( i=0; i < NUMBER_OF_POLICIES; i++ ){
-		if (((policies[i].src_conf == ANY) || 
-			(policies[i].src_conf == active_state)) &&
-			(policies[i].event_mask & (1 << event_num))) {
-			return 1;
-		}
+	if (oc) {
+		event_mask += event_id;
+	} else {
+		event_mask -= event_id;
 	}
-	return 0;
-*/
+	post check_event();
 }
+
+
+
+//command void EventCache.clearMask() {
+//	event_mask = 0;
+//}
 
 
 command state_t Fennec.getStateId() {
