@@ -43,7 +43,7 @@ module_t get_module_id(conf_t conf, layer_t layer) @C() {
 	}
 }
 
-state_t get_state_id() @C() {
+state_t get_state_id() {
 	//return fennec_state.state;
 	return active_state;
 }
