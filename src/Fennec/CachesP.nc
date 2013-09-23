@@ -10,19 +10,18 @@ uses interface SplitControl;
 
 implementation {
 
-uint16_t network_sequence = 0;
-uint16_t node_sequence = 0;
-uint16_t node_state = 0;
-
 uint16_t active_seq = 0;
 event_t event_mask;
+
+state_t next_state = 0;
+uint16_t next_seq = 0;
 
 task void check_event() {
 	uint8_t i;
 	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == active_state) && (policies[i].event_mask == event_mask)) {
-			call Fennec.setStateAndSeq(policies[i].dst_conf, node_sequence++);
+			call Fennec.setStateAndSeq(policies[i].dst_conf, active_seq + 1);
 		}
 	}
 }
@@ -106,6 +105,10 @@ async command state_t Fennec.getStateId() {
 	return active_state;
 }
 
+command uint16_t Fennec.getStateSeq() {
+	return active_seq;
+}
+
 command struct state* Fennec.getStateRecord() {
 	return &states[call Fennec.getStateId()];
 }
@@ -116,10 +119,6 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 	active_seq = seq;
 //	call NetworkScheduler.switch(state_t state_id);
 	return SUCCESS;
-}
-
-command uint16_t Fennec.getStateSeq() {
-
 }
 
 command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
