@@ -25,17 +25,12 @@ task void check_event() {
 	}
 }
 
-
-state_t get_state_id() {
-	return active_state;
-}
-
 conf_t get_conf_id(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
 	
-	for (i = 0; i < states[get_state_id()].num_confs; i++) {
-		conf_id = states[get_state_id()].conf_list[i];
+	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
+		conf_id = states[call Fennec.getStateId()].conf_list[i];
 		if ( 
 			(configurations[conf_id].application == module_id)
 			||
@@ -55,8 +50,8 @@ uint16_t get_conf_id_in_state(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
 	
-	for (i = 0; i < states[get_state_id()].num_confs; i++) {
-		conf_id = states[get_state_id()].conf_list[i];
+	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
+		conf_id = states[call Fennec.getStateId()].conf_list[i];
 		if ( 
 			(configurations[conf_id].application == module_id)
 			||
@@ -103,12 +98,12 @@ event void SplitControl.stopDone(error_t err) {
 
 }
 
-command state_t Fennec.getStateId() {
-	return get_state_id();
+async command state_t Fennec.getStateId() {
+	return call Fennec.getStateId();
 }
 
 command struct state* Fennec.getStateRecord() {
-	return &states[get_state_id()];
+	return &states[call Fennec.getStateId()];
 }
 
 command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
@@ -164,8 +159,8 @@ async command conf_t Fennec.getConfId(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
 	
-	for (i = 0; i < states[get_state_id()].num_confs; i++) {
-		conf_id = states[get_state_id()].conf_list[i];
+	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
+		conf_id = states[call Fennec.getStateId()].conf_list[i];
 		if ( 
 			(configurations[conf_id].application == module_id)
 			||
@@ -187,7 +182,7 @@ async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t t
 }
 
 async command struct stack_params Fennec.getConfParams(module_t module_id) {
-        return states[get_state_id()].conf_params[get_conf_id_in_state(module_id)];
+        return states[call Fennec.getStateId()].conf_params[get_conf_id_in_state(module_id)];
 }
 
 
