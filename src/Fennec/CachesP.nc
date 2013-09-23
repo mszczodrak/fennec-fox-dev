@@ -98,9 +98,11 @@ event void SplitControl.startDone(error_t err) {
 
 event void SplitControl.stopDone(error_t err) {
 	dbg("Caches", "Caches SplitControl.stopDone(%d)", err);
-	event_mask = 0;
-	active_state = next_state;
-	active_seq = next_seq;
+	atomic {
+		event_mask = 0;
+		active_state = next_state;
+		active_seq = next_seq;
+	}
 	call SplitControl.start();
 }
 
