@@ -396,7 +396,8 @@ bool passLinkEtxThreshold(uint16_t etx) {
                   beaconMsg->etx);
         call CollectionDebug.logEventRoute(NET_C_TREE_SENT_BEACON, beaconMsg->parent, 0, beaconMsg->etx);
 
-        dbg("Network", "Network CTP send beacon message\n");	
+        dbg("Network", "CtpRoutingEngineP call BeaconSend.send(%d, 0x%1x, %d)",
+			AM_BROADCAST_ADDR, &beaconMsgBuffer, sizeof(ctp_routing_header_t));	
         eval = call BeaconSend.send(AM_BROADCAST_ADDR, 
                                     &beaconMsgBuffer, 
                                     sizeof(ctp_routing_header_t));

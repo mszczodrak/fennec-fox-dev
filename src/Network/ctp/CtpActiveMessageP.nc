@@ -17,80 +17,83 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 implementation {
 
-  uint8_t getCtpType(message_t* msg) {
+uint8_t getCtpType(message_t* msg) {
     uint8_t t;
     uint8_t *ptr = (uint8_t*)call MacAMSend.getPayload(msg, sizeof(2));
     ptr++;
     t = *ptr;
     return t;
-  }
+}
 
-  void do_sendDone(message_t *msg, error_t error) {
-    dbg("Network", "Network CTP sendDone %d\n", getCtpType(msg));
-    signal AMSend.sendDone[getCtpType(msg)](msg, error);
-  }
+void do_sendDone(message_t *msg, error_t error) {
+	dbg("Network", "CtpActiveMessageP do_sendDone(0x%1x, %d) - type %d",
+				msg, error, getCtpType(msg));
+	signal AMSend.sendDone[getCtpType(msg)](msg, error);
+}
 
-  message_t* do_receive(message_t *msg, void *payload, uint8_t len) {
-    dbg("Network", "Network CTP receive %d\n", getCtpType(msg));
-    return signal Receive.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
-  }
+message_t* do_receive(message_t *msg, void *payload, uint8_t len) {
+	dbg("Network", "CtpActiveMessageP do_receive(0x%1x, 0x%1x, %d) - type %d",
+				msg, payload, len, getCtpType(msg));
+	return signal Receive.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
+}
 
-  message_t* do_snoop(message_t *msg, void *payload, uint8_t len) {
-    dbg("Network", "Network CTP snoop %d\n", getCtpType(msg));
-    return signal Snoop.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
-  }
+message_t* do_snoop(message_t *msg, void *payload, uint8_t len) {
+	dbg("Network", "CtpActiveMessageP do_snoop(0x%1x, 0x%1x, %d) - type %d",
+				msg, payload, len, getCtpType(msg));
+	return signal Snoop.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
+}
 
-  command error_t SplitControl.start() { return SUCCESS; }
-  command error_t SplitControl.stop() { return SUCCESS; }
+command error_t SplitControl.start() { return SUCCESS; }
+command error_t SplitControl.stop() { return SUCCESS; }
 
 
-  command void* AMSend.getPayload[am_id_t id](message_t *msg, uint8_t len) {
-    return call MacAMSend.getPayload(msg, len);
-  }
+command void* AMSend.getPayload[am_id_t id](message_t *msg, uint8_t len) {
+	return call MacAMSend.getPayload(msg, len);
+}
 
-  command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t *msg, uint8_t len) {
-    return call MacAMSend.send(addr, msg, len);
-  }
+command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t *msg, uint8_t len) {
+	return call MacAMSend.send(addr, msg, len);
+}
 
-  command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
-    return call MacAMSend.maxPayloadLength();
-  }
+command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
+	return call MacAMSend.maxPayloadLength();
+}
 
-  command error_t AMSend.cancel[am_id_t id](message_t *msg) {
-    return call MacAMSend.cancel(msg);
-  }
+command error_t AMSend.cancel[am_id_t id](message_t *msg) {
+	return call MacAMSend.cancel(msg);
+}
 
-  command am_addr_t AMPacket.address() {
-    return call MacAMPacket.address();
-  }
+command am_addr_t AMPacket.address() {
+	return call MacAMPacket.address();
+}
 
-  command am_addr_t AMPacket.destination(message_t* amsg) {
-    return call MacAMPacket.destination(amsg);
-  }
+command am_addr_t AMPacket.destination(message_t* amsg) {
+	return call MacAMPacket.destination(amsg);
+}
 
-  command am_addr_t AMPacket.source(message_t* amsg) {
-    return call MacAMPacket.source(amsg);
-  }
+command am_addr_t AMPacket.source(message_t* amsg) {
+	return call MacAMPacket.source(amsg);
+}
 
-  command void AMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    return call MacAMPacket.setDestination(amsg, addr);
-  }
+command void AMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+	return call MacAMPacket.setDestination(amsg, addr);
+}
 
-  command void AMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    return call MacAMPacket.setSource(amsg, addr);
-  }
+command void AMPacket.setSource(message_t* amsg, am_addr_t addr) {
+	return call MacAMPacket.setSource(amsg, addr);
+}
 
-  command bool AMPacket.isForMe(message_t* amsg) {
-    return call MacAMPacket.isForMe(amsg);
-  }
+command bool AMPacket.isForMe(message_t* amsg) {
+	return call MacAMPacket.isForMe(amsg);
+}
 
-  command am_id_t AMPacket.type(message_t* amsg) {
-    return getCtpType(amsg);
-  }
+command am_id_t AMPacket.type(message_t* amsg) {
+	return getCtpType(amsg);
+}
 
-  command void AMPacket.setType(message_t* amsg, am_id_t t) {
+command void AMPacket.setType(message_t* amsg, am_id_t t) {
 //    return call MacAMPacket.setType(amsg, t);
-  }
+}
 
   command am_group_t AMPacket.group(message_t* amsg) {
     return call MacAMPacket.group(amsg);

@@ -49,6 +49,7 @@ bool on;
 command error_t Mgmt.start() {
 	on = 0;
 	call Timer.startPeriodic(call BlinkAppParams.get_delay());
+	dbg("Application", "BlinkAppP Mgmt.start()");
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -56,6 +57,7 @@ command error_t Mgmt.start() {
 command error_t Mgmt.stop() {
 	call Timer.stop();
 	call Leds.set(0);
+	dbg("Application", "BlinkAppP Mgmt.stop()");
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
