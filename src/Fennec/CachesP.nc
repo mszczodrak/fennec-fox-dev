@@ -13,6 +13,8 @@ implementation {
 uint16_t network_sequence = 0;
 uint16_t node_sequence = 0;
 uint16_t node_state = 0;
+
+uint16_t active_seq = 0;
 event_t event_mask;
 
 task void check_event() {
@@ -98,8 +100,10 @@ event void SplitControl.stopDone(error_t err) {
 
 }
 
+/** Fennec Interface **/
+
 async command state_t Fennec.getStateId() {
-	return call Fennec.getStateId();
+	return active_state;
 }
 
 command struct state* Fennec.getStateRecord() {
@@ -108,6 +112,8 @@ command struct state* Fennec.getStateRecord() {
 
 command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", state_id, seq);
+	active_state = state_id;
+	active_seq = seq;
 //	call NetworkScheduler.switch(state_t state_id);
 	return SUCCESS;
 }
