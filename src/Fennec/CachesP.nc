@@ -14,6 +14,7 @@ event_t event_mask;
 
 state_t next_state = 0;
 uint16_t next_seq = 0;
+bool state_transitioning = TRUE;
 
 task void check_event() {
 	uint8_t i;
@@ -83,6 +84,7 @@ command void SimpleStart.start() {
 	active_seq = 0;
 	next_state = active_state;
 	next_seq = active_seq;
+	state_transitioning = TRUE;
 	call SplitControl.start();
 	signal SimpleStart.startDone(SUCCESS);
 }
@@ -90,6 +92,7 @@ command void SimpleStart.start() {
 event void SplitControl.startDone(error_t err) {
 	dbg("Caches", "Caches SplitControl.startDone(%d)", err);
 	event_mask = 0;
+	state_transitioning = FALSE;
 }
 
 
@@ -118,12 +121,13 @@ command struct state* Fennec.getStateRecord() {
 command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", state_id, seq);
 	/* check if there is ongoing reconfiguration */
-	if ((next_state != active_state) || (next_seq != active_seq)) {
+	if (state_transitioning) {
 		dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d) - EBUSY", state_id, seq);
 		return EBUSY;	
 	}
 	next_state = state_id;
 	next_seq = seq;
+	state_transitioning = TRUE;
 	return call SplitControl.stop();
 }
 
@@ -141,7 +145,6 @@ command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
 
 
 async command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
-
 	if (conf >= NUMBER_OF_CONFIGURATIONS) {
 		return UNKNOWN_LAYER;
 	}
@@ -163,7 +166,6 @@ async command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
 	default:
 		return UNKNOWN_LAYER;
 	}
-
 }
 
 async command conf_t Fennec.getConfId(module_t module_id) {
