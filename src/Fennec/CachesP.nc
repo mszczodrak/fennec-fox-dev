@@ -4,7 +4,6 @@
 module CachesP @safe() {
 provides interface Fennec;
 provides interface SimpleStart;
-
 uses interface SplitControl;
 }
 
@@ -68,7 +67,6 @@ uint16_t get_conf_id_in_state(module_t module_id) {
 	return UNKNOWN_CONFIGURATION;
 }
 
-
 event_t get_event_id(module_t module_id, conf_t conf_id) {
 	uint8_t i;
 	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
@@ -80,11 +78,13 @@ event_t get_event_id(module_t module_id, conf_t conf_id) {
 	return 0;
 }
 
-
 command void SimpleStart.start() {
 	event_mask = 0;
-	signal SimpleStart.startDone(SUCCESS);
+	active_seq = 0;
+	next_state = active_state;
+	next_seq = active_seq;
 	call SplitControl.start();
+	signal SimpleStart.startDone(SUCCESS);
 }
 
 event void SplitControl.startDone(error_t err) {
@@ -96,7 +96,9 @@ event void SplitControl.startDone(error_t err) {
 event void SplitControl.stopDone(error_t err) {
 	dbg("Caches", "Caches SplitControl.stopDone(%d)", err);
 	event_mask = 0;
-
+	active_state = next_state;
+	active_seq = next_seq;
+	call SplitControl.start();
 }
 
 /** Fennec Interface **/
@@ -115,10 +117,14 @@ command struct state* Fennec.getStateRecord() {
 
 command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", state_id, seq);
-	active_state = state_id;
-	active_seq = seq;
-//	call NetworkScheduler.switch(state_t state_id);
-	return SUCCESS;
+	/* check if there is ongoing reconfiguration */
+	if ((next_state != active_state) || (next_seq != active_seq)) {
+		dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d) - EBUSY", state_id, seq);
+		return EBUSY;	
+	}
+	next_state = state_id;
+	next_seq = seq;
+	return call SplitControl.stop();
 }
 
 command void Fennec.eventOccured(module_t module_id, uint16_t oc) {

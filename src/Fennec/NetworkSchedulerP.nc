@@ -12,30 +12,6 @@ implementation {
 struct state* state_record;
 uint16_t conf = UNKNOWN_CONFIGURATION;
 
-task void start_protocol_stack();
-task void stop_protocol_stack();
-
-
-task void start_done() {
-
-
-}
-
-
-task void start_state() {
-	conf = 0;
-	dbg("NetworkScheduler", "NetworkScheduler start_state() state = %d", 
-						call Fennec.getStateId());
-	post start_protocol_stack();
-}
-
-task void stop_state() {
-	conf = 0;
-	dbg("NetworkScheduler", "NetworkScheduler stop_state() state = %d",
-						call Fennec.getStateId());
-	post stop_protocol_stack();
-}
-
 task void start_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
 	dbg("NetworkScheduler", "NetworkScheduler start_protocol_stack id = %d, num_confs = %d", 
@@ -71,6 +47,20 @@ task void stop_protocol_stack() {
 		conf = UNKNOWN_CONFIGURATION;
 		signal SplitControl.stopDone(SUCCESS);
 	}
+}
+
+task void start_state() {
+	conf = 0;
+	dbg("NetworkScheduler", "NetworkScheduler start_state() state = %d", 
+						call Fennec.getStateId());
+	post start_protocol_stack();
+}
+
+task void stop_state() {
+	conf = 0;
+	dbg("NetworkScheduler", "NetworkScheduler stop_state() state = %d",
+						call Fennec.getStateId());
+	post stop_protocol_stack();
 }
 
 command error_t SplitControl.start() {
