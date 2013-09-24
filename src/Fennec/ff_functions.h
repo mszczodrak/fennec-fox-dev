@@ -56,5 +56,7 @@ void cleanLog();
 void printLog();
 #endif
 
+state_t get_state_id();
+
 
 #endif
