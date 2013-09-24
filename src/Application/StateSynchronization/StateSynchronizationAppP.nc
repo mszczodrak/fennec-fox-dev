@@ -18,7 +18,6 @@
  *
  */
 
-
 /*
  * Application: State Synchronization module
  * Author: Marcin Szczodrak
@@ -75,7 +74,6 @@ task void reset_sync() {
 
 task void send_state_sync_msg() {
 	nx_struct FFControl *cu_msg;
-	confmsg.conf = POLICY_CONFIGURATION;
 
 	cu_msg = (nx_struct FFControl*) 
 	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
@@ -117,7 +115,6 @@ async event void FennecWarnings.detectWrongConfiguration() {
 command error_t Mgmt.start() {
 	dbg("ControlUnit", "Mgmt.start()");
 	resend_confs = 0;  /* skip resending at the first time */
-	confmsg.conf = POLICY_CONFIGURATION;
 	busy_sending = FALSE;
 	post reset_sync();
 	signal Mgmt.startDone(SUCCESS);
@@ -133,7 +130,6 @@ command error_t Mgmt.stop() {
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
-
 	if (cu_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq, 
 						len - sizeof(cu_msg->crc))) {
 		goto done_receive;
