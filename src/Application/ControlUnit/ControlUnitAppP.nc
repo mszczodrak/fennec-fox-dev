@@ -124,6 +124,23 @@ event void PolicyCache.wrong_conf() {
 }
 */
 
+command error_t Mgmt.start() {
+	dbg("ControlUnit", "SimpleStart.start()");
+	configuration_id = UNKNOWN_CONFIGURATION;
+	configuration_seq = 0;
+	resend_confs = 0;  /* skip resending at the first time */
+	confmsg.conf = POLICY_CONFIGURATION;
+	busy_sending = FALSE;
+	status = S_NONE;
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
+
+command error_t Mgmt.stop() {
+	call Timer.stop();
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct FFControl *cu_msg = (nx_struct FFControl*) payload;
@@ -243,25 +260,6 @@ task void sendConfigurationMsg() {
 		busy_sending = TRUE;
 		//dbgs(F_CONTROL_UNIT, status, DBGS_SEND_CONTROL_MSG, configuration_id, configuration_seq);
 	}
-}
-
-
-command error_t Mgmt.start() {
-	dbg("ControlUnit", "SimpleStart.start()");
-	configuration_id = UNKNOWN_CONFIGURATION;
-	configuration_seq = 0;
-	resend_confs = 0;  /* skip resending at the first time */
-	confmsg.conf = POLICY_CONFIGURATION;
-	busy_sending = FALSE;
-	status = S_NONE;
-	signal Mgmt.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t Mgmt.stop() {
-	call Timer.stop();
-	signal Mgmt.stopDone(SUCCESS);
-	return SUCCESS;
 }
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {return msg;}
