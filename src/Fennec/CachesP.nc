@@ -137,7 +137,7 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
 	conf_t conf_id = get_conf_id(module_id);
 	uint8_t event_id = get_event_id(module_id, conf_id);
-	dbg("Caches", "CachesP event_occured(%d, %d)", module_id, oc);
+	dbg("Caches", "CachesP Fennec.eventOccured(%d, %d)", module_id, oc);
 	if (oc) {
 		event_mask |= (1 << event_id);
 	} else {
@@ -202,7 +202,10 @@ async command struct stack_params Fennec.getConfParams(module_t module_id) {
 }
 
 async command error_t Fennec.checkPacket(message_t *msg, uint8_t len) {
-
+	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
+		dbg("Caches", "CachesP Fennec.checPacket(0x%1x, %d) - FAIL", msg, len);
+		return FAIL;
+	} 
 	return SUCCESS;
 }
 
