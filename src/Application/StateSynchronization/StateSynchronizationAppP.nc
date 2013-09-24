@@ -56,6 +56,7 @@ message_t confmsg;
 
 task void schedule_state_sync_msg() {
 	if (resend_confs == 0) {
+		dbg("StateSynchronization", "StateSynchronizationAppP scheduled_state_sync_msg - finished()");
 		return;
 	}
 
@@ -67,6 +68,7 @@ task void schedule_state_sync_msg() {
 
 
 task void reset_sync() {
+	dbg("StateSynchronization", "StateSynchronizationAppP reset_sync");
 	resend_confs = call StateSynchronizationAppParams.get_resend();
 	post schedule_state_sync_msg();
 }
@@ -74,6 +76,7 @@ task void reset_sync() {
 
 task void send_state_sync_msg() {
 	nx_struct FFControl *cu_msg;
+	dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg()");
 
 	cu_msg = (nx_struct FFControl*) 
 	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
@@ -97,10 +100,12 @@ task void send_state_sync_msg() {
 
 	if (call NetworkAMSend.send(BROADCAST, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
 		post schedule_state_sync_msg();
+		dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg() - FAIL");
 //		dbgs(F_CONTROL_UNIT, 0, DBGS_SEND_CONTROL_MSG_FAILED, 
 //				call Fennec.getStateId(), call Fennec.getStateSeq());
 	} else {
 		busy_sending = TRUE;
+		dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg() - SUCCESS");
 //		dbgs(F_CONTROL_UNIT, 0, DBGS_SEND_CONTROL_MSG, 
 //				call Fennec.getStateId(), call Fennec.getStateSeq());
 	}
@@ -109,12 +114,12 @@ task void send_state_sync_msg() {
 
 async event void FennecWarnings.detectWrongConfiguration() {
 //	dbgs(F_CONTROL_UNIT, 0, DBGS_RECEIVE_WRONG_CONF_MSG, 0, 0);
+	dbg("StateSynchronization", "StateSynchronizationAppP FennecWarnings.detectWrongConfiguration()");
 	post reset_sync();
 }
 
 command error_t Mgmt.start() {
-	dbg("ControlUnit", "Mgmt.start()");
-	resend_confs = 0;  /* skip resending at the first time */
+	dbg("StateSynchronization", "StateSynchronizationAppP Mgmt.start()");
 	busy_sending = FALSE;
 	post reset_sync();
 	signal Mgmt.startDone(SUCCESS);
@@ -122,7 +127,7 @@ command error_t Mgmt.start() {
 }
 
 command error_t Mgmt.stop() {
-	dbg("ControlUnit", "Mgmt.stop()");
+	dbg("StateSynchronization", "StateSynchronizationAppP Mgmt.stop()");
 	call Timer.stop();
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
@@ -134,6 +139,8 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 						len - sizeof(cu_msg->crc))) {
 		goto done_receive;
 	}
+	dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
+				msg, payload, len);
 
 	dbgs(F_CONTROL_UNIT, 0, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
 
@@ -144,17 +151,20 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	// First time receives Configuration
 	if ( (call Fennec.getStateSeq() == CONFIGURATION_SEQ_UNKNOWN) && 
 		(cu_msg->seq != CONFIGURATION_SEQ_UNKNOWN )) {
+		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - first time");
 		goto reconfigure;
 	} 
 
 	/* Received configuration message with unknown sequence */
 	if ((cu_msg->seq == CONFIGURATION_SEQ_UNKNOWN) && 
 		(call Fennec.getStateSeq() != CONFIGURATION_SEQ_UNKNOWN)) {
+		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - msg with unknown seq");
 		goto reset;
 	}
 
 	/* Received configuration message with lower sequence */
 	if (cu_msg->seq < call Fennec.getStateSeq()) {
+		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - reset");
 		goto reset;
 	}
 
@@ -163,6 +173,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
       
 		/* Received same sequence with the same configuration id */
 		if (cu_msg->conf_id == call Fennec.getStateId()) {
+		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - same seq");
 			same_msg_counter++;
 			goto done_receive;
 		}
@@ -172,11 +183,13 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 			call Fennec.getStateSeq() + ((call Random.rand16() % 
 			call StateSynchronizationAppParams.get_rand_seq_mod()) + 
 			call StateSynchronizationAppParams.get_rand_seq_offset()));
+		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - inconsistency");
 		goto reset;
 	}
 
 	/* Received configuration message with larger sequence number */
 	if (cu_msg->seq > call Fennec.getStateSeq()) {
+		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - reconfigure");
 		goto reconfigure;
 	}
 
@@ -192,11 +205,14 @@ done_receive:
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	atomic busy_sending = FALSE;
+	dbg("StateSynchronization", "StateSynchronizationAppP NetworkAMSend.sendDone(0x%1x, %d)",
+			msg, error);
+	busy_sending = FALSE;
 	post schedule_state_sync_msg();
 }
 
 event void Timer.fired() {
+	dbg("StateSynchronization", "StateSynchronizationAppP Timer.fired()");
 	if (busy_sending == TRUE) {
 		post schedule_state_sync_msg();
 	} else {
