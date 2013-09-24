@@ -403,14 +403,18 @@ bool passLinkEtxThreshold(uint16_t etx) {
                                     sizeof(ctp_routing_header_t));
         if (eval == SUCCESS) {
             sending = TRUE;
-        } else if (eval == EOFF) {
+        } else {
+        	dbg("Network", "CtpRoutingEngineP call BeaconSend.send(%d, 0x%1x, %d) - FAILED",
+			AM_BROADCAST_ADDR, &beaconMsgBuffer, sizeof(ctp_routing_header_t));	
 	 /* probably the radio is off */
         }
 }
 
 event void BeaconSend.sendDone(message_t* msg, error_t error) {
-        if ((msg != &beaconMsgBuffer) || !sending) {
+        if ((msg != &beaconMsgBuffer) || !sending || error != SUCCESS) {
             //something smells bad around here
+        	dbg("Network", "CtpRoutingEngineP event BeaconSend.sendDone(0x%1x, %d) - FAILED",
+			&beaconMsgBuffer, error);	
             return;
         }
         sending = FALSE;

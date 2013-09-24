@@ -131,7 +131,7 @@ implementation {
     if (maxEntries > NUM_ENTRIES_FLAG) {
       maxEntries = NUM_ENTRIES_FLAG;
     }
-    dbg("LI", "Max payload is: %d, maxEntries is: %d\n", call SubPacket.maxPayloadLength(), maxEntries);
+    dbg("LI", "Max payload is: %d, maxEntries is: %d", call SubPacket.maxPayloadLength(), maxEntries);
 
     j = 0;
     newPrevSentIdx = 0;

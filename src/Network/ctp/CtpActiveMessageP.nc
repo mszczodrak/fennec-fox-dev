@@ -18,11 +18,15 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 implementation {
 
 uint8_t getCtpType(message_t* msg) {
-    uint8_t t;
-    uint8_t *ptr = (uint8_t*)call MacAMSend.getPayload(msg, sizeof(2));
-    ptr++;
-    t = *ptr;
-    return t;
+	uint8_t t;
+	uint8_t *ptr = (uint8_t*)call MacAMSend.getPayload(msg, sizeof(2));
+	if (ptr == NULL) {
+		dbg("Network", "CtpActiveMessageP getCtpType(0x%1x) - got NULL", msg);
+		return 0;
+	}
+	ptr++;
+	t = *ptr;
+	return t;
 }
 
 void do_sendDone(message_t *msg, error_t error) {
@@ -56,6 +60,7 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t *msg, uint8_t 
 }
 
 command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
+	dbg("Network", "ctpActiveMessageP AMSend.maxPayloadLength()");
 	return call MacAMSend.maxPayloadLength();
 }
 
@@ -95,49 +100,50 @@ command void AMPacket.setType(message_t* amsg, am_id_t t) {
 //    return call MacAMPacket.setType(amsg, t);
 }
 
-  command am_group_t AMPacket.group(message_t* amsg) {
-    return call MacAMPacket.group(amsg);
-  }
+command am_group_t AMPacket.group(message_t* amsg) {
+	return call MacAMPacket.group(amsg);
+}
 
-  command void AMPacket.setGroup(message_t* amsg, am_group_t grp) {
-    return call MacAMPacket.setGroup(amsg, grp);
-  }
+command void AMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	return call MacAMPacket.setGroup(amsg, grp);
+}
 
-  command am_group_t AMPacket.localGroup() {
-    return call MacAMPacket.localGroup();
-  }
+command am_group_t AMPacket.localGroup() {
+	return call MacAMPacket.localGroup();
+}
 
-  command void Packet.clear(message_t* msg) {
-    return call MacPacket.clear(msg);
-  }
+command void Packet.clear(message_t* msg) {
+	return call MacPacket.clear(msg);
+}
 
-  command uint8_t Packet.payloadLength(message_t* msg) {
-    return call MacPacket.payloadLength(msg);
-  }
+command uint8_t Packet.payloadLength(message_t* msg) {
+	return call MacPacket.payloadLength(msg);
+}
 
-  command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
-    return call MacPacket.setPayloadLength(msg, len);
-  }
+command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
+	return call MacPacket.setPayloadLength(msg, len);
+}
 
-  command uint8_t Packet.maxPayloadLength() {
-    return call MacPacket.maxPayloadLength();
-  }
+command uint8_t Packet.maxPayloadLength() {
+	dbg("Network", "ctpActiveMessageP Packet.maxPayloadLength()");
+	return call MacPacket.maxPayloadLength();
+}
 
-  command void* Packet.getPayload(message_t* msg, uint8_t len) {
-    return call MacPacket.getPayload(msg, len);
-  }
+command void* Packet.getPayload(message_t* msg, uint8_t len) {
+	return call MacPacket.getPayload(msg, len);
+}
 
-  async command error_t PacketAcknowledgements.requestAck( message_t* msg ) {
-    return call MacPacketAcknowledgements.requestAck(msg);
-  }
+async command error_t PacketAcknowledgements.requestAck( message_t* msg ) {
+	return call MacPacketAcknowledgements.requestAck(msg);
+}
 
-  async command error_t PacketAcknowledgements.noAck( message_t* msg ) {
-    return call MacPacketAcknowledgements.noAck(msg);
-  }
+async command error_t PacketAcknowledgements.noAck( message_t* msg ) {
+	return call MacPacketAcknowledgements.noAck(msg);
+}
 
-  async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
-    return call MacPacketAcknowledgements.wasAcked(msg);
-  }
+async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
+	return call MacPacketAcknowledgements.wasAcked(msg);
+}
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	do_sendDone(msg, error);

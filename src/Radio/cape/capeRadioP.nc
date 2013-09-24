@@ -322,6 +322,7 @@ async command error_t RadioSend.cancel(message_t *msg) {
 }
 
 async command uint8_t RadioPacket.maxPayloadLength() {
+	dbg("Radio", "capeRadioP RadioPacket.maxPayloadLength()");
 	return 128;
 }
 
