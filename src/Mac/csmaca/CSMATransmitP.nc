@@ -356,6 +356,9 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
    */
 async event void BackoffTimer.fired() {
 	dbg("Mac", "csmaMac CSMATransmitP BackoffTimer.fired()");
+	if(call SplitControlState.isState(S_STOPPING)) {
+		shutdown();
+	}
 
     switch( m_state ) {
         
