@@ -216,26 +216,27 @@ implementation {
 //              sizeof(beaconMsg), maxLength);
     }
 
-    command error_t StdControl.start() {
-         uint16_t nextInt;
-      do_init();
-      my_ll_addr = call AMPacket.address();
-      //start will (re)start the sending of messages
-      if (!running) {
-	running = TRUE;
-	resetInterval();
-	call RouteTimer.startPeriodic(BEACON_INTERVAL);
-     }     
-         nextInt = call Random.rand16() % BEACON_INTERVAL;
-         nextInt += BEACON_INTERVAL >> 1;
+command error_t StdControl.start() {
+	uint16_t nextInt;
+	dbg("Network", "CtpRoutingEngineP StdControl.start()");
+	do_init();
+	my_ll_addr = call AMPacket.address();
+	//start will (re)start the sending of messages
+	if (!running) {
+		running = TRUE;
+		resetInterval();
+		call RouteTimer.startPeriodic(BEACON_INTERVAL);
+	}     
+	nextInt = call Random.rand16() % BEACON_INTERVAL;
+	nextInt += BEACON_INTERVAL >> 1;
+	return SUCCESS;
+}
 
-      return SUCCESS;
-    }
-
-    command error_t StdControl.stop() {
-        running = FALSE;
-        return SUCCESS;
-    } 
+command error_t StdControl.stop() {
+	dbg("Network", "CtpRoutingEngineP StdControl.stop()");
+	running = FALSE;
+	return SUCCESS;
+} 
 
 
     /* Is this quality measure better than the minimum threshold? */
