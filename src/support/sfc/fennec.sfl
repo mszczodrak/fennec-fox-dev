@@ -1,4 +1,16 @@
 
+# Fennec OS Processes
+# Applications
+use application cuApp $(FENNEC_FOX_LIB)/Application/StateSynchronization ()
+# Network
+use network cuNet $(FENNEC_FOX_LIB)/Network/cu ()
+# MAC
+use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backoff=10,
+        uint8_t ack=1, uint8_t cca=1, uint8_t crc=1)
+
+
+
+
 # Standard Fennec Fox Applications
 use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
 	uint8_t led=1, uint16_t delay=1024)
@@ -10,7 +22,8 @@ use application counterEH $(FENNEC_FOX_LIB)/Application/tests/CounterEH (
 	uint16_t delay, uint16_t delay_scale, uint16_t src, uint16_t dest )
 
 use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
-use application cuApp $(FENNEC_FOX_LIB)/Application/ControlUnit ()
+
+
 
 use application genericSensor $(FENNEC_FOX_LIB)/Application/tests/genericSensor (
 	uint32_t freq = 5000)
@@ -62,15 +75,12 @@ use application phidget_1142and1111 $(FENNEC_FOX_LIB)/Application/tests/phidget1
 # NETWORK
 
 use network nullNet $(FENNEC_FOX_LIB)/Network/null ()
-use network cuNet $(FENNEC_FOX_LIB)/Network/cu ()
 use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
 use network ftsp /home/marcin/github/fennec-fox-dev/src/Network/ftsp ()
 
 # MAC
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
 
-use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backoff=10,
-        uint8_t ack=1, uint8_t cca=1, uint8_t crc=1)
 
 use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (uint16_t sink_addr,
 	uint16_t delay_after_receive, uint16_t backoff, uint16_t min_backoff,
@@ -88,24 +98,11 @@ use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
 	uint8_t channel=26, uint8_t power=31, 
 	uint8_t ack=1, uint8_t crc=1)
 
+
+# Cape Fox simulator radio
 use radio cape $(FENNEC_FOX_LIB)/Radio/cape ()
 
 
-#use application temp $(FENNEC_FOX_LIB)/Application/tests/Temperature ()
-#use application hum $(FENNEC_FOX_LIB)/Application/tests/Humidity ()
-#use application ligt $(FENNEC_FOX_LIB)/Application/tests/Light ()
-#use application bat $(FENNEC_FOX_LIB)/Application/tests/Battery ()
-#use application acc $(FENNEC_FOX_LIB)/Application/tests/Accelerometer ()
-#use application magn $(FENNEC_FOX_LIB)/Application/tests/Magnetic ()
-#use application pir $(FENNEC_FOX_LIB)/Application/tests/PIR ()
-#use application sound $(FENNEC_FOX_LIB)/Application/tests/Sound ()
-#use application cam $(FENNEC_FOX_LIB)/Application/tests/Camera ()
-#use application vib $(FENNEC_FOX_LIB)/Application/tests/Vibration ()
-#use application thfrc $(FENNEC_FOX_LIB)/Application/tests/ThinForce ()
-
-
-#use application counter $(FENNEC_FOX_LIB)/Application/Counter ()
-#use application remoteblink http://www.cs.columbia.edu/~msz/fennec/libs/RemoteBlink ()
 
 # Standard Fennec Fox Network Protocols
 #use network fixedPath $(FENNEC_FOX_LIB)/Network/fixedPath ()
@@ -116,13 +113,5 @@ use radio cape $(FENNEC_FOX_LIB)/Radio/cape ()
 #use network trickle $(FENNEC_FOX_LIB)/Network/trickle ()
 
 # Events
-use source temperature $(FENNEC_FOX_LIB)/Events/Temperature ()
-use source timer $(FENNEC_FOX_LIB)/Events/Timer ()
-use source timerg $(FENNEC_FOX_LIB)/Events/TimerG ()
-use source humidity $(FENNEC_FOX_LIB)/Events/Humidity ()
-use source light $(FENNEC_FOX_LIB)/Events/Light ()
-use source voltage $(FENNEC_FOX_LIB)/Events/Voltage ()
-
-
 use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
 use source timerSecondE $(FENNEC_FOX_LIB)/Application/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)
