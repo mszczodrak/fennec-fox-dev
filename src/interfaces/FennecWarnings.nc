@@ -1,3 +1,3 @@
 interface FennecWarnings {
-	event void detectWrongConfiguration();
+	async event void detectWrongConfiguration();
 }

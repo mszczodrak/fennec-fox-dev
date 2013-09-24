@@ -204,10 +204,13 @@ async command struct stack_params Fennec.getConfParams(module_t module_id) {
 async command error_t Fennec.checkPacket(message_t *msg, uint8_t len) {
 	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
 		dbg("Caches", "CachesP Fennec.checPacket(0x%1x, %d) - FAIL", msg, len);
+		signal FennecWarnings.detectWrongConfiguration();
 		return FAIL;
 	} 
 	return SUCCESS;
 }
+
+default async event void FennecWarnings.detectWrongConfiguration() {}
 
 
 }
