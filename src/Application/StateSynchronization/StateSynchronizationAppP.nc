@@ -1,8 +1,30 @@
 /*
- * Application: Fennec Fox Control Unit
- * Author: Marcin Szczodrak
- * Date: 3/1/2011
+ *  State Synchronization application module for Fennec Fox platform.
+ *
+ *  Copyright (C) 2009-2013 Marcin Szczodrak
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
+
+
+/*
+ * Application: State Synchronization module
+ * Author: Marcin Szczodrak
+ * Date: 9/21/2013
+ */
+
 
 #include <Fennec.h>
 #include "hashing.h"
@@ -13,10 +35,10 @@
 #define POLICY_RAND_SEND	10
 #define SAME_MSG_COUNTER_THRESHOLD 1
 
-module ControlUnitAppP @safe() {
+module StateSynchronizationAppP @safe() {
 provides interface Mgmt;
 
-uses interface ControlUnitAppParams;
+uses interface StateSynchronizationAppParams;
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
 uses interface Receive as NetworkSnoop;
