@@ -170,8 +170,8 @@ async command conf_t Fennec.getConfId(module_t module_id) {
 			||
 			(configurations[conf_id].radio == module_id)
 		) { 
-			dbg("Caches", "Fennec.getConfId(%d) returns %d",
-				module_id, configurations[conf_id].conf_id);
+			//dbg("Caches", "Fennec.getConfId(%d) returns %d",
+			//	module_id, configurations[conf_id].conf_id);
 			return configurations[conf_id].conf_id;
 		}
 	}
