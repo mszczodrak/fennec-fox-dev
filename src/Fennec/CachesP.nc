@@ -27,27 +27,6 @@ task void check_event() {
 	}
 }
 
-conf_t get_conf_id(module_t module_id) {
-	uint8_t i;
-	conf_t conf_id;
-	
-	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
-		conf_id = states[call Fennec.getStateId()].conf_list[i];
-		if ( 
-			(configurations[conf_id].application == module_id)
-			||
-			(configurations[conf_id].network == module_id)
-			||
-			(configurations[conf_id].mac == module_id)
-			||
-			(configurations[conf_id].radio == module_id)
-		) { 
-			return configurations[conf_id].conf_id;
-		}
-	}
-	return UNKNOWN_CONFIGURATION;
-}
-
 uint16_t get_conf_id_in_state(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
@@ -140,7 +119,7 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 }
 
 command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
-	conf_t conf_id = get_conf_id(module_id);
+	conf_t conf_id = call Fennec.getConfId(module_id);
 	uint8_t event_id = get_event_id(module_id, conf_id);
 	dbg("Caches", "CachesP Fennec.eventOccured(%d, %d)", module_id, oc);
 	if (oc) {
@@ -179,7 +158,7 @@ async command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
 async command conf_t Fennec.getConfId(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
-	
+
 	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
 		conf_id = states[call Fennec.getStateId()].conf_list[i];
 		if ( 
@@ -191,15 +170,20 @@ async command conf_t Fennec.getConfId(module_t module_id) {
 			||
 			(configurations[conf_id].radio == module_id)
 		) { 
+			dbg("Caches", "Fennec.getConfId(%d) returns %d",
+				module_id, configurations[conf_id].conf_id);
 			return configurations[conf_id].conf_id;
 		}
 	}
+	dbg("Caches", "Fennec.getConfId(%d) returns %d",
+			module_id, UNKNOWN_CONFIGURATION);
 	return UNKNOWN_CONFIGURATION;
 
 }
 
 async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
-	return call Fennec.getModuleId(get_conf_id(from_module_id), to_layer_id);
+//	conf_t c = call Fennec.getConfId(from_module_id);
+	return call Fennec.getModuleId(call Fennec.getConfId(from_module_id), to_layer_id);
 }
 
 async command struct stack_params Fennec.getConfParams(module_t module_id) {
