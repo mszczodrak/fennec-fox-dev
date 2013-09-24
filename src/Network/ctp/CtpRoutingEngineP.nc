@@ -179,33 +179,34 @@ implementation {
     uint32_t t; 
     bool tHasPassed;
 
-    void chooseAdvertiseTime() {
-       t = currentInterval;
-       t /= 2;
-       t += call Random.rand32() % t;
-       tHasPassed = FALSE;
-       call BeaconTimer.startOneShot(t);
-    }
+void chooseAdvertiseTime() {
+	t = currentInterval;
+	t /= 2;
+	t += call Random.rand32() % t;
+	tHasPassed = FALSE;
+		
+	call BeaconTimer.startOneShot(t);
+}
 
-    void resetInterval() {
-      currentInterval = minInterval;
-      chooseAdvertiseTime();
-    }
+void resetInterval() {
+	currentInterval = minInterval;
+	chooseAdvertiseTime();
+}
 
-    void decayInterval() {
-        currentInterval *= 2;
-        if (currentInterval > maxInterval) {
-          currentInterval = maxInterval;
-        }
-      chooseAdvertiseTime();
-    }
+void decayInterval() {
+	currentInterval *= 2;
+	if (currentInterval > maxInterval) {
+		currentInterval = maxInterval;
+	}
+	chooseAdvertiseTime();
+}
 
-    void remainingInterval() {
-       uint32_t remaining = currentInterval;
-       remaining -= t;
-       tHasPassed = TRUE;
-       call BeaconTimer.startOneShot(remaining);
-    }
+void remainingInterval() {
+	uint32_t remaining = currentInterval;
+	remaining -= t;
+	tHasPassed = TRUE;
+	call BeaconTimer.startOneShot(remaining);
+}
 
 void do_init() {
         parentChanges = 0;
@@ -220,6 +221,7 @@ void do_init() {
 
 command error_t StdControl.start() {
 	uint16_t nextInt;
+	dbg("Network", "CtpRoutingEngineP StdControl.start()");
 	do_init();
 	my_ll_addr = call AMPacket.address();
 	nextInt = call Random.rand16() % BEACON_INTERVAL;
@@ -231,6 +233,7 @@ command error_t StdControl.start() {
 }
 
 command error_t StdControl.stop() {
+	dbg("Network", "CtpRoutingEngineP StdControl.stop()");
 	call RouteTimer.stop();
 	call BeaconTimer.stop();
 	return SUCCESS;
