@@ -53,11 +53,9 @@ NetworkAMPacket = StateSynchronizationAppP.NetworkAMPacket;
 NetworkPacket = StateSynchronizationAppP.NetworkPacket;
 NetworkPacketAcknowledgements = StateSynchronizationAppP.NetworkPacketAcknowledgements;
 
-//  components ProtocolStackC;
-//  StateSynchronizationAppP.ProtocolStack -> ProtocolStackC;
-
 components CachesC;
 StateSynchronizationAppP.Fennec -> CachesC;
+StateSynchronizationAppP.FennecWarnings -> CachesC;
 
 components RandomC;
 StateSynchronizationAppP.Random -> RandomC;

@@ -128,6 +128,11 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 		dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d) - EBUSY", state_id, seq);
 		return EBUSY;	
 	}
+	/* check if this is only sequence change */
+	if (state_id == call Fennec.getStateId()) {
+		active_seq = seq;
+		return SUCCESS;
+	}
 	next_state = state_id;
 	next_seq = seq;
 	state_transitioning = TRUE;
