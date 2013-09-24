@@ -4,6 +4,7 @@
 module CachesP @safe() {
 provides interface Fennec;
 provides interface SimpleStart;
+provides interface FennecWarnings;
 uses interface SplitControl;
 }
 
@@ -198,6 +199,11 @@ async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t t
 
 async command struct stack_params Fennec.getConfParams(module_t module_id) {
         return states[call Fennec.getStateId()].conf_params[get_conf_id_in_state(module_id)];
+}
+
+async command error_t Fennec.checkPacket(message_t *msg, uint8_t len) {
+
+	return SUCCESS;
 }
 
 
