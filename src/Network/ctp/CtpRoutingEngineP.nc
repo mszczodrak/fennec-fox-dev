@@ -107,26 +107,22 @@
 #include "ctpNet.h"
 
 generic module CtpRoutingEngineP(uint8_t routingTableSize, uint32_t minInterval, uint32_t maxInterval) {
-    provides {
-        interface UnicastNameFreeRouting as Routing;
-        interface RootControl;
-        interface CtpInfo;
-        interface StdControl;
-        interface CtpRoutingPacket;
-    } 
-    uses {
-        interface AMSend as BeaconSend;
-        interface Receive as BeaconReceive;
-        interface LinkEstimator;
-        interface AMPacket;
-        interface Timer<TMilli> as BeaconTimer;
-        interface Timer<TMilli> as RouteTimer;
-        interface Random;
-        interface CollectionDebug;
-        interface CtpCongestion;
+provides interface UnicastNameFreeRouting as Routing;
+provides interface RootControl;
+provides interface CtpInfo;
+provides interface StdControl;
+provides interface CtpRoutingPacket;
 
-	interface CompareBit;
-    }
+uses interface AMSend as BeaconSend;
+uses interface Receive as BeaconReceive;
+uses interface LinkEstimator;
+uses interface AMPacket;
+uses interface Timer<TMilli> as BeaconTimer;
+uses interface Timer<TMilli> as RouteTimer;
+uses interface Random;
+uses interface CollectionDebug;
+uses interface CtpCongestion;
+uses interface CompareBit;
 }
 
 
@@ -138,6 +134,7 @@ implementation {
      * beacons if radio is off */
     /* Controls whether the node's periodic timer will fire. The node will not
      * send any beacon, and will not update the route. Start and stop control this. */
+    bool running = FALSE;
     /* Guards the beacon buffer: only one beacon being sent at a time */
     bool sending = FALSE;
 
@@ -179,36 +176,36 @@ implementation {
     uint32_t t; 
     bool tHasPassed;
 
-void chooseAdvertiseTime() {
-	t = currentInterval;
-	t /= 2;
-	t += call Random.rand32() % t;
-	tHasPassed = FALSE;
-		
-	call BeaconTimer.startOneShot(t);
-}
+    void chooseAdvertiseTime() {
+       t = currentInterval;
+       t /= 2;
+       t += call Random.rand32() % t;
+       tHasPassed = FALSE;
+       call BeaconTimer.startOneShot(t);
+    }
 
-void resetInterval() {
-	currentInterval = minInterval;
-	chooseAdvertiseTime();
-}
+    void resetInterval() {
+      currentInterval = minInterval;
+      chooseAdvertiseTime();
+    }
 
-void decayInterval() {
-	currentInterval *= 2;
-	if (currentInterval > maxInterval) {
-		currentInterval = maxInterval;
-	}
-	chooseAdvertiseTime();
-}
+    void decayInterval() {
+        currentInterval *= 2;
+        if (currentInterval > maxInterval) {
+          currentInterval = maxInterval;
+        }
+      chooseAdvertiseTime();
+    }
 
-void remainingInterval() {
-	uint32_t remaining = currentInterval;
-	remaining -= t;
-	tHasPassed = TRUE;
-	call BeaconTimer.startOneShot(remaining);
-}
+    void remainingInterval() {
+       uint32_t remaining = currentInterval;
+       remaining -= t;
+       tHasPassed = TRUE;
+       call BeaconTimer.startOneShot(remaining);
+    }
 
-void do_init() {
+    void do_init() {
+        running = FALSE;
         parentChanges = 0;
         state_is_root = 0;
         routeInfoInit(&routeInfo);
@@ -219,32 +216,33 @@ void do_init() {
 //              sizeof(beaconMsg), maxLength);
     }
 
-command error_t StdControl.start() {
-	uint16_t nextInt;
-	dbg("Network", "CtpRoutingEngineP StdControl.start()");
-	do_init();
-	my_ll_addr = call AMPacket.address();
-	nextInt = call Random.rand16() % BEACON_INTERVAL;
-	nextInt += BEACON_INTERVAL >> 1;
-	//start will (re)start the sending of messages
+    command error_t StdControl.start() {
+         uint16_t nextInt;
+      do_init();
+      my_ll_addr = call AMPacket.address();
+      //start will (re)start the sending of messages
+      if (!running) {
+	running = TRUE;
 	resetInterval();
 	call RouteTimer.startPeriodic(BEACON_INTERVAL);
-	return SUCCESS;
-}
+     }     
+         nextInt = call Random.rand16() % BEACON_INTERVAL;
+         nextInt += BEACON_INTERVAL >> 1;
 
-command error_t StdControl.stop() {
-	dbg("Network", "CtpRoutingEngineP StdControl.stop()");
-	call RouteTimer.stop();
-	call BeaconTimer.stop();
-	return SUCCESS;
-} 
+      return SUCCESS;
+    }
+
+    command error_t StdControl.stop() {
+        running = FALSE;
+        return SUCCESS;
+    } 
 
 
-/* Is this quality measure better than the minimum threshold? */
-// Implemented assuming quality is EETX
-bool passLinkEtxThreshold(uint16_t etx) {
-	return (etx < ETX_THRESHOLD);
-}
+    /* Is this quality measure better than the minimum threshold? */
+    // Implemented assuming quality is EETX
+    bool passLinkEtxThreshold(uint16_t etx) {
+        return (etx < ETX_THRESHOLD);
+    }
 
 
     /* updates the routing information, using the info that has been received
@@ -369,6 +367,7 @@ bool passLinkEtxThreshold(uint16_t etx) {
     
 
     /* send a beacon advertising this node's routeInfo */
+    // only posted if running  
     task void sendBeaconTask() {
         error_t eval;
         if (sending) {
@@ -399,35 +398,32 @@ bool passLinkEtxThreshold(uint16_t etx) {
                   beaconMsg->etx);
         call CollectionDebug.logEventRoute(NET_C_TREE_SENT_BEACON, beaconMsg->parent, 0, beaconMsg->etx);
 
-        dbg("Network", "CtpRoutingEngineP call BeaconSend.send(%d, 0x%1x, %d)",
-			AM_BROADCAST_ADDR, &beaconMsgBuffer, sizeof(ctp_routing_header_t));	
+        dbg("Network", "Network CTP send beacon message\n");	
         eval = call BeaconSend.send(AM_BROADCAST_ADDR, 
                                     &beaconMsgBuffer, 
                                     sizeof(ctp_routing_header_t));
         if (eval == SUCCESS) {
             sending = TRUE;
-        } else {
-        	dbg("Network", "CtpRoutingEngineP call BeaconSend.send(%d, 0x%1x, %d) - FAILED",
-			AM_BROADCAST_ADDR, &beaconMsgBuffer, sizeof(ctp_routing_header_t));	
-	 /* probably the radio is off */
+        } else if (eval == EOFF) {
         }
-}
+    }
 
-event void BeaconSend.sendDone(message_t* msg, error_t error) {
-        if ((msg != &beaconMsgBuffer) || !sending || error != SUCCESS) {
+    event void BeaconSend.sendDone(message_t* msg, error_t error) {
+        if ((msg != &beaconMsgBuffer) || !sending) {
             //something smells bad around here
-        	dbg("Network", "CtpRoutingEngineP event BeaconSend.sendDone(0x%1x, %d) - FAILED",
-			&beaconMsgBuffer, error);	
             return;
         }
         sending = FALSE;
-}
+    }
 
-event void RouteTimer.fired() {
-	post updateRouteTask();
-}
+    event void RouteTimer.fired() {
+      if (running) {
+         post updateRouteTask();
+      }
+    }
       
-event void BeaconTimer.fired() {
+    event void BeaconTimer.fired() {
+      if (running) {
         if (!tHasPassed) {
           post updateRouteTask(); //always send the most up to date info
           post sendBeaconTask();
@@ -437,12 +433,13 @@ event void BeaconTimer.fired() {
         else {
           decayInterval();
         }
-}
+      }
+    }
 
 
-ctp_routing_header_t* getHeader(message_t* ONE m) {
-	return (ctp_routing_header_t*)call BeaconSend.getPayload(m, call BeaconSend.maxPayloadLength());
-}
+    ctp_routing_header_t* getHeader(message_t* ONE m) {
+      return (ctp_routing_header_t*)call BeaconSend.getPayload(m, call BeaconSend.maxPayloadLength());
+    }
     
     
     /* Handle the receiving of beacon messages from the neighbors. We update the
@@ -581,14 +578,12 @@ ctp_routing_header_t* getHeader(message_t* ONE m) {
     /* RootControl interface */
     /** sets the current node as a root, if not already a root */
     /*  returns FAIL if it's not possible for some reason      */
-command error_t RootControl.setRoot() {
+    command error_t RootControl.setRoot() {
         bool route_found = FALSE;
         route_found = (routeInfo.parent == INVALID_ADDR);
 	state_is_root = 1;
 	routeInfo.parent = my_ll_addr; //myself
 	routeInfo.etx = 0;
-	
-	dbg("Network", "ctpNet CtpRoutingEngineP RootControl.setRoot()");
 
         if (route_found) 
             signal Routing.routeFound();
