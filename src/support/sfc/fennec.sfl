@@ -1,7 +1,10 @@
 
 # Fennec OS Processes
 # Applications
-use application cuApp $(FENNEC_FOX_LIB)/Application/StateSynchronization ()
+use application cuApp $(FENNEC_FOX_LIB)/Application/StateSynchronization (
+		uint8_t resend = 6, uint8_t supress = 1, 
+		uint8_t send_delay = 10, uint8_t rand_seq_mod = 10,
+		uint8_t rand_seq_offset = 1)
 # Network
 use network cuNet $(FENNEC_FOX_LIB)/Network/cu ()
 # MAC

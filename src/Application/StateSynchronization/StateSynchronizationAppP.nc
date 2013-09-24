@@ -28,12 +28,6 @@
 
 #include <Fennec.h>
 #include "hashing.h"
-#define POLICY_RESEND_RECONF		6
-
-#define POLICY_RAND_MOD 	10
-#define POLICY_RAND_OFFSET	1
-#define POLICY_RAND_SEND	10
-#define SAME_MSG_COUNTER_THRESHOLD 1
 
 module StateSynchronizationAppP @safe() {
 provides interface Mgmt;
@@ -57,7 +51,7 @@ uses interface Leds;
 implementation {
 
 uint8_t same_msg_counter = 0;
-uint16_t resend_confs = POLICY_RESEND_RECONF;
+uint16_t resend_confs = 0;
 bool busy_sending = FALSE;
 message_t confmsg;
 
@@ -68,12 +62,13 @@ task void schedule_state_sync_msg() {
 
 	same_msg_counter = 0;
 	resend_confs--;
-	call Timer.startOneShot(call Random.rand16() % POLICY_RAND_SEND + 1);
+	call Timer.startOneShot(call Random.rand16() % 
+		call StateSynchronizationAppParams.get_send_delay() + 1);
 }
 
 
 task void reset_sync() {
-	resend_confs = POLICY_RESEND_RECONF;
+	resend_confs = call StateSynchronizationAppParams.get_resend();
 	post schedule_state_sync_msg();
 }
 
@@ -85,7 +80,7 @@ task void send_state_sync_msg() {
 	cu_msg = (nx_struct FFControl*) 
 	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
    
-	if (same_msg_counter > SAME_MSG_COUNTER_THRESHOLD) {
+	if (same_msg_counter > call StateSynchronizationAppParams.get_supress()) {
 		post schedule_state_sync_msg();
 		return;
 	}
@@ -177,8 +172,10 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 		}
 
 		/* there is an inconsistency in a network */
-		call Fennec.setStateAndSeq(call Fennec.getStateId(), call Fennec.getStateSeq() + 
-		((call Random.rand16() % POLICY_RAND_MOD) + POLICY_RAND_OFFSET));
+		call Fennec.setStateAndSeq(call Fennec.getStateId(), 
+			call Fennec.getStateSeq() + ((call Random.rand16() % 
+			call StateSynchronizationAppParams.get_rand_seq_mod()) + 
+			call StateSynchronizationAppParams.get_rand_seq_offset()));
 		goto reset;
 	}
 
