@@ -1,7 +1,7 @@
 /*
  *  dxp network module for Fennec Fox platform.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2009-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -49,7 +49,11 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 implementation {
 
+uint16_t id;
+
+
 command error_t Mgmt.start() {
+	id = UNKNOWN;
 	dbg("Network", "dxpNetP Mgmt.start()");
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
