@@ -52,21 +52,7 @@ uses interface TrickleTimer[uint16_t key];
 
 implementation {
 
-command error_t Mgmt.start() {
-	dbg("Network", "trickleNetP Mgmt.start()");
-	signal Mgmt.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t Mgmt.stop() {
-	dbg("Network", "trickleNetP Mgmt.stop()");
-	signal Mgmt.stopDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	dbg("Network", "trickleNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
-
+error_t send_data_message(am_addr_t addr, message_t* msg, uint8_t len) {
 	if ((addr == TOS_NODE_ID) || (addr == NODE)) {
 		dbg("Network", "trickleNet NetworkAMSend.sendDone(0x%1x, %d )", msg, SUCCESS);
 		signal NetworkAMSend.sendDone(msg, SUCCESS);
@@ -79,6 +65,32 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 
 	return call MacAMSend.send(addr, msg, len + 
 		sizeof(nx_struct trickle_net_header));
+}
+
+error_t send_probe() {
+
+}
+
+
+command error_t Mgmt.start() {
+	dbg("Network", "trickleNetP Mgmt.start()");
+	call TrickleTimer.start[TRICKLE_ID]();
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
+
+command error_t Mgmt.stop() {
+	dbg("Network", "trickleNetP Mgmt.stop()");
+	call TrickleTimer.stop[TRICKLE_ID]();
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
+
+command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	dbg("Network", "trickleNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
+	call TrickleTimer.reset[TRICKLE_ID]();
+	return send_data_message(addr, msg, len);
+
 }
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
@@ -105,7 +117,7 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	signal NetworkAMSend.sendDone(msg, error);
 }
 
-event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+message_t * receive_data(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
 	dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
@@ -113,6 +125,35 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	return signal NetworkReceive.receive(msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
+
+}
+
+message_t * receive_probe(message_t *msg, void* payload, uint8_t len) {
+
+	uint8_t *ptr = (uint8_t*) payload;
+	dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+	return signal NetworkReceive.receive(msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+
+}
+
+
+
+event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	nx_struct trickle_net_header *header = (nx_struct trickle_net_header*) payload;
+
+	if (header->flags == TRICKLE_DATA) {
+		return receive_data(msg, payload, len);
+	}
+	
+	if (header->flags == TRICKLE_BEACON) {
+		return receive_probe(msg, payload, len);
+	}
+	return msg;
+
 }
 
 event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
@@ -204,5 +245,11 @@ async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 event void TrickleTimer.fired[ uint16_t key ]() {
 
 }
+
+
+default command error_t TrickleTimer.start[uint16_t key]() { return FAIL; }
+default command void TrickleTimer.stop[uint16_t key]() { }
+default command void TrickleTimer.reset[uint16_t key]() { }
+default command void TrickleTimer.incrementCounter[uint16_t key]() { }
 
 }
