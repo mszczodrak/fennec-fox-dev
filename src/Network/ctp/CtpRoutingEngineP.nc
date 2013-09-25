@@ -204,8 +204,8 @@ implementation {
        call BeaconTimer.startOneShot(remaining);
     }
 
-    void do_init() {
-        running = FALSE;
+command error_t StdControl.start() {
+	uint16_t nextInt;
         parentChanges = 0;
         state_is_root = 0;
         routeInfoInit(&routeInfo);
@@ -214,19 +214,14 @@ implementation {
 //        maxLength = call BeaconSend.maxPayloadLength();
 //        dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
 //              sizeof(beaconMsg), maxLength);
-    }
 
-command error_t StdControl.start() {
-	uint16_t nextInt;
 	dbg("Network", "CtpRoutingEngineP StdControl.start()");
-	do_init();
+
 	my_ll_addr = call AMPacket.address();
 	//start will (re)start the sending of messages
-	if (!running) {
-		running = TRUE;
-		resetInterval();
-		call RouteTimer.startPeriodic(BEACON_INTERVAL);
-	}     
+	running = TRUE;
+	resetInterval();
+	call RouteTimer.startPeriodic(BEACON_INTERVAL);     
 	nextInt = call Random.rand16() % BEACON_INTERVAL;
 	nextInt += BEACON_INTERVAL >> 1;
 	return SUCCESS;
@@ -235,6 +230,8 @@ command error_t StdControl.start() {
 command error_t StdControl.stop() {
 	dbg("Network", "CtpRoutingEngineP StdControl.stop()");
 	running = FALSE;
+	call RouteTimer.stop();
+	call BeaconTimer.stop();
 	return SUCCESS;
 } 
 
@@ -405,9 +402,8 @@ command error_t StdControl.stop() {
                                     sizeof(ctp_routing_header_t));
         if (eval == SUCCESS) {
             sending = TRUE;
-        } else if (eval == EOFF) {
         }
-    }
+}
 
     event void BeaconSend.sendDone(message_t* msg, error_t error) {
         if ((msg != &beaconMsgBuffer) || !sending) {
@@ -417,25 +413,26 @@ command error_t StdControl.stop() {
         sending = FALSE;
     }
 
-    event void RouteTimer.fired() {
-      if (running) {
-         post updateRouteTask();
-      }
-    }
+event void RouteTimer.fired() {
+	dbg("Network", "CtpRoutingEngineP RouteTimer.fired()");
+	if (running) {
+		post updateRouteTask();
+	}
+}
       
-    event void BeaconTimer.fired() {
-      if (running) {
-        if (!tHasPassed) {
-          post updateRouteTask(); //always send the most up to date info
-          post sendBeaconTask();
-          dbg("RoutingTimer", "Beacon timer fired at %s\n", sim_time_string());
-          remainingInterval();
-        }
-        else {
-          decayInterval();
-        }
-      }
-    }
+event void BeaconTimer.fired() {
+	dbg("Network", "CtpRoutingEngineP BeaconTimer.fired()");
+	if (running) {
+        	if (!tHasPassed) {
+          		post updateRouteTask(); //always send the most up to date info
+          		post sendBeaconTask();
+          		dbg("RoutingTimer", "Beacon timer fired at %s\n", sim_time_string());
+          		remainingInterval();
+        	} else {
+			decayInterval();
+		}
+	}
+}
 
 
     ctp_routing_header_t* getHeader(message_t* ONE m) {

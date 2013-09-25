@@ -81,7 +81,7 @@ event void SplitControl.startDone(error_t err) {
 
 
 state_t get_state_id() @C() {
-	dbg("Caches", "CachesP get_state_id() returns %d", active_state);
+	//dbg("Caches", "CachesP get_state_id() returns %d", active_state);
 	return active_state;
 }
 
@@ -102,7 +102,7 @@ event void SplitControl.stopDone(error_t err) {
 /** Fennec Interface **/
 
 async command state_t Fennec.getStateId() {
-	dbg("Caches", "CachesP Fennec.getStateId() returns %d", active_state);
+	//dbg("Caches", "CachesP Fennec.getStateId() returns %d", active_state);
 	return active_state;
 }
 
