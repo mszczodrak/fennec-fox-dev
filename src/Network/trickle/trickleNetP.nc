@@ -53,8 +53,12 @@ uses interface TrickleTimer[uint16_t key];
 implementation {
 
 message_t probe_msg;
+message_t data_msg;
+uint8_t data_len;
 bool tx_busy = FALSE;
 nxle_uint32_t seqno;
+
+#define DISSEMINATION_SEQNO_UNKNOWN 0
 
 error_t send_message(message_t* msg, uint8_t len, uint8_t type) {
 	nx_struct trickle_net_header *header = (nx_struct trickle_net_header*)
@@ -78,7 +82,7 @@ error_t send_message(message_t* msg, uint8_t len, uint8_t type) {
 command error_t Mgmt.start() {
 	dbg("Network", "trickleNetP Mgmt.start()");
 	tx_busy = FALSE;
-	seqno = 0;
+	seqno = DISSEMINATION_SEQNO_UNKNOWN;
 	call TrickleTimer.start[TRICKLE_ID]();
 	signal Mgmt.startDone(SUCCESS);
 	return SUCCESS;
@@ -94,6 +98,9 @@ command error_t Mgmt.stop() {
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	dbg("Network", "trickleNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
+	memcpy(msg, &data_msg, sizeof(message_t));
+	data_len = len;
+
 	/* Increment the counter and append the local node ID. */
 	seqno = seqno >> 16;
 	seqno++;
@@ -102,7 +109,7 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 	seqno += TOS_NODE_ID;
 
 	call TrickleTimer.reset[TRICKLE_ID]();
-	return send_message(msg, len, TRICKLE_DATA);
+	return send_message(&data_msg, len, TRICKLE_DATA);
 }
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
@@ -139,14 +146,25 @@ message_t * receive_data(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
 
 
+	if (seqno == DISSEMINATION_SEQNO_UNKNOWN &&
+		header->seq != DISSEMINATION_SEQNO_UNKNOWN) {
 
-	dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+		dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
-	return signal NetworkReceive.receive(msg, 
+
+		memcpy(msg, &data_msg, sizeof(message_t));
+		data_len = len;
+
+		call TrickleTimer.reset[ TRICKLE_ID ]();
+
+		return signal NetworkReceive.receive(msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
+	}
 
+
+	return msg;
 }
 
 message_t * receive_probe(message_t *msg, void* payload, uint8_t len) {
