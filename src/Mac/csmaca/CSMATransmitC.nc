@@ -19,30 +19,30 @@ uses interface Resource as RadioResource;
 
 implementation {
 
-  components CSMATransmitP;
-  CSMATransmit = CSMATransmitP;
-  EnergyIndicator = CSMATransmitP.EnergyIndicator;
+components CSMATransmitP;
+CSMATransmit = CSMATransmitP;
+EnergyIndicator = CSMATransmitP.EnergyIndicator;
 
-  RadioStdControl = CSMATransmitP.RadioStdControl;
-  RadioControl = CSMATransmitP.RadioControl;
+RadioStdControl = CSMATransmitP.RadioStdControl;
+RadioControl = CSMATransmitP.RadioControl;
 
-  components new MuxAlarm32khz32C() as Alarm;
-  CSMATransmitP.BackoffTimer -> Alarm;
+components new MuxAlarm32khz32C() as Alarm;
+CSMATransmitP.BackoffTimer -> Alarm;
 
-  RadioBuffer = CSMATransmitP.RadioBuffer;
-  RadioSend = CSMATransmitP.RadioSend;
-  RadioPacket = CSMATransmitP.RadioPacket;
+RadioBuffer = CSMATransmitP.RadioBuffer;
+RadioSend = CSMATransmitP.RadioSend;
+RadioPacket = CSMATransmitP.RadioPacket;
 
-  csmacaMacParams = CSMATransmitP.csmacaMacParams;
+csmacaMacParams = CSMATransmitP.csmacaMacParams;
 
-  components RandomC;
-  CSMATransmitP.Random -> RandomC;
+components RandomC;
+CSMATransmitP.Random -> RandomC;
 
-  SplitControl = CSMATransmitP;
-  Send = CSMATransmitP;
-  RadioPower = CSMATransmitP.RadioPower;
-  RadioResource = CSMATransmitP.RadioResource;
+SplitControl = CSMATransmitP;
+Send = CSMATransmitP;
+RadioPower = CSMATransmitP.RadioPower;
+RadioResource = CSMATransmitP.RadioResource;
 
-  components new StateC();
-  CSMATransmitP.SplitControlState -> StateC;
+components new StateC();
+CSMATransmitP.SplitControlState -> StateC;
 }

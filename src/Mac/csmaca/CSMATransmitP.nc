@@ -46,69 +46,77 @@ implementation {
   /** TRUE if we are to use CCA when sending the current packet */
   norace bool ccaOn;
 
-  /****************** Prototypes ****************/
-  task void startDone_task();
-  task void stopDone_task();
-  task void sendDone_task();
+/****************** Prototypes ****************/
+task void startDone_task();
+task void stopDone_task();
+task void sendDone_task();
 
-  void shutdown();
+void shutdown();
 
-  task void signalSendDone() {
-    m_state = S_STARTED;
-    atomic sendErr = sendDoneErr;
-    post sendDone_task();
-  }
+task void signalSendDone() {
+	m_state = S_STARTED;
+	atomic sendErr = sendDoneErr;
+	post sendDone_task();
+}
 
-  /** Total CCA checks that showed no activity before the NoAck LPL send */
-  norace int8_t totalCcaChecks;
+/** Total CCA checks that showed no activity before the NoAck LPL send */
+norace int8_t totalCcaChecks;
   
-  /** The initial backoff period */
-  norace uint16_t myInitialBackoff;
+/** The initial backoff period */
+norace uint16_t myInitialBackoff;
   
-  /** The congestion backoff period */
-  norace uint16_t myCongestionBackoff;
+/** The congestion backoff period */
+norace uint16_t myCongestionBackoff;
 
 
-  /***************** SplitControl Commands ****************/
-  command error_t SplitControl.start() {
-    if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-      if (call RadioControl.start() == EALREADY) {
-        signal RadioControl.startDone(SUCCESS);
-      }
-      return SUCCESS;
+/***************** SplitControl Commands ****************/
+command error_t SplitControl.start() {
+	if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start()");
+		if (call RadioControl.start() == EALREADY) {
+			dbg("Mac", "csmaMac CSMATransmitP SplitControl.start() - got EALREADY");
+			signal RadioControl.startDone(SUCCESS);
+		}
+		return SUCCESS;
 
-    } else if(call SplitControlState.isState(S_STARTED)) {
-      return EALREADY;
+	} else if(call SplitControlState.isState(S_STARTED)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start() - S_STARTED");
+		return EALREADY;
 
-    } else if(call SplitControlState.isState(S_STARTING)) {
-      return SUCCESS;
-    }
+	} else if(call SplitControlState.isState(S_STARTING)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start() - S_STARTING");
+		return SUCCESS;
+	}
 
-    return EBUSY;
-  }
+	return EBUSY;
+}
 
-  command error_t SplitControl.stop() {
-    if (call SplitControlState.isState(S_STARTED)) {
-      call SplitControlState.forceState(S_STOPPING);
-      if (call RadioControl.stop() == EALREADY) {
-        signal RadioControl.stopDone(SUCCESS);
-      }
-      return SUCCESS;
+command error_t SplitControl.stop() {
+	if (call SplitControlState.isState(S_STARTED)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STARTED");
+		call SplitControlState.forceState(S_STOPPING);
+		if (call RadioControl.stop() == EALREADY) {
+			dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - got EALREADY");
+			signal RadioControl.stopDone(SUCCESS);
+		}
+		return SUCCESS;
 
-    } else if(call SplitControlState.isState(S_STOPPED)) {
-      return EALREADY;
+	} else if(call SplitControlState.isState(S_STOPPED)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STOPPED");
+		return EALREADY;
 
-    } else if(call SplitControlState.isState(S_TRANSMITTING)) {
-      call SplitControlState.forceState(S_STOPPING);
-      // At sendDone, the radio will shut down
-      return SUCCESS;
+	} else if(call SplitControlState.isState(S_TRANSMITTING)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_TRANSMITTING");
+		call SplitControlState.forceState(S_STOPPING);
+		// At sendDone, the radio will shut down
+		return SUCCESS;
 
-    } else if(call SplitControlState.isState(S_STOPPING)) {
-      return SUCCESS;
-    }
-
-    return EBUSY;
-  }
+	} else if(call SplitControlState.isState(S_STOPPING)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STOPPING");
+		return SUCCESS;
+	}
+	return EBUSY;
+}
 
   /***************** Send Commands ****************/
 command error_t Send.cancel( message_t* p_msg ) {
@@ -317,6 +325,10 @@ void requestInitialBackoff(message_t *msg) {
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d)", msg, error);
+	if(call SplitControlState.isState(S_STOPPING)) {
+		shutdown();
+		return;
+	}
 	if (error != SUCCESS) {
 		sendDoneErr = error;
 		post signalSendDone();
@@ -358,6 +370,7 @@ async event void BackoffTimer.fired() {
 	dbg("Mac", "csmaMac CSMATransmitP BackoffTimer.fired()");
 	if(call SplitControlState.isState(S_STOPPING)) {
 		shutdown();
+		return;
 	}
 
     switch( m_state ) {
@@ -391,7 +404,8 @@ async event void BackoffTimer.fired() {
     }
   }
       
-  async event void RadioSend.sendDone(message_t *msg, error_t error) {
+async event void RadioSend.sendDone(message_t *msg, error_t error) {
+	dbg("Mac", "csmaMac CSMATransmitP RadioSend.sendDone(0x%1x, %d)", msg, error);
     if (m_state == S_CANCEL){
       sendDoneErr = ECANCEL;
       post signalSendDone();
@@ -408,17 +422,21 @@ async event void BackoffTimer.fired() {
     }
   }
 
-  event void RadioControl.startDone( error_t err) {
-    if (call SplitControlState.isState(S_STARTING)) {
-      post startDone_task();
-    }
-  }
+event void RadioControl.startDone( error_t err) {
+	dbg("Mac", "csmaMac CSMATransmitP RadioControl.startDone(%d)", err);
+	if (call SplitControlState.isState(S_STARTING)) {
+		dbg("Mac", "csmaMac CSMATransmitP RadioControl.startDone(%d) - post startDone_task", err);
+		post startDone_task();
+	}
+}
 
-  event void RadioControl.stopDone( error_t err) {
-    if (call SplitControlState.isState(S_STOPPING)) {
-      shutdown();
-    }
-  }
+event void RadioControl.stopDone( error_t err) {
+	dbg("Mac", "csmaMac CSMATransmitP RadioControl.stopDone(%d)", err);
+	if (call SplitControlState.isState(S_STOPPING)) {
+	dbg("Mac", "csmaMac CSMATransmitP RadioControl.stopDone(%d) - shutdown()", err);
+		shutdown();
+	}
+}
 
 }
 

@@ -14,4 +14,8 @@ FennecWarnings = CachesP;
 components NetworkSchedulerC;
 CachesP.SplitControl -> NetworkSchedulerC;
 
+components new TimerMilliC();
+CachesP.Timer -> TimerMilliC;
+
+
 }

@@ -88,6 +88,7 @@ command error_t Mgmt.start() {
 		return FAIL;
 	}
 
+	dbg("Mac", "csmaMac Mgmt.stop - STARTING");
 	status = S_STARTING;
 	return SUCCESS;
 }
@@ -112,13 +113,15 @@ command error_t Mgmt.stop() {
 		return FAIL;
 	}
 
+	dbg("Mac", "csmaMac Mgmt.stop - STOPPING");
+
 	status = S_STOPPING;
 	return SUCCESS;
 }
 
 
 event void RadioControl.startDone(error_t err) {
-	dbg("Mac", "csmaMac RadioControl.startDone()");
+	dbg("Mac", "csmaMac RadioControl.startDone(%d)", err);
 	if (status != S_STARTING) {
 		return;
 	}
@@ -133,7 +136,7 @@ event void RadioControl.startDone(error_t err) {
 
 
 event void RadioControl.stopDone(error_t err) {
-	dbg("Mac", "csmaMac RadioControl.stopDone()");
+	dbg("Mac", "csmaMac RadioControl.stopDone(%d)", err);
 	if (status != S_STOPPING) {
 		return;
 	}

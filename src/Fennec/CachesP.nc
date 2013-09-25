@@ -6,23 +6,26 @@ provides interface Fennec;
 provides interface SimpleStart;
 provides interface FennecWarnings;
 uses interface SplitControl;
+uses interface Timer<TMilli>;
 }
 
 implementation {
 
-uint16_t active_seq = 0;
-event_t event_mask;
+norace uint16_t current_seq = 0;
+norace uint16_t current_state = 0;
 
-state_t next_state = 0;
-uint16_t next_seq = 0;
-bool state_transitioning = TRUE;
+norace event_t event_mask;
+
+norace state_t next_state = 0;
+norace uint16_t next_seq = 0;
+norace bool state_transitioning = TRUE;
 
 task void check_event() {
 	uint8_t i;
 	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == call Fennec.getStateId()) && (policies[i].event_mask == event_mask)) {
-			call Fennec.setStateAndSeq(policies[i].dst_conf, active_seq + 1);
+			call Fennec.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
 		}
 	}
 }
@@ -61,7 +64,8 @@ event_t get_event_id(module_t module_id, conf_t conf_id) {
 
 command void SimpleStart.start() {
 	event_mask = 0;
-	active_seq = 0;
+	current_seq = 0;
+	current_state = active_state;
 	next_state = call Fennec.getStateId();
 	next_seq = call Fennec.getStateSeq();
 	state_transitioning = TRUE;
@@ -73,41 +77,47 @@ event void SplitControl.startDone(error_t err) {
 	dbg("Caches", "CachesP SplitControl.startDone(%d)", err);
 	event_mask = 0;
 	state_transitioning = FALSE;
-	call Fennec.getStateId();
+	dbg("Caches", "CachesP running in state %d", call Fennec.getStateId());
 	dbg("Caches", " ");
 	dbg("Caches", " ");
 	dbg("Caches", " ");
 }
 
 
-state_t get_state_id() @C() {
-	//dbg("Caches", "CachesP get_state_id() returns %d", active_state);
-	return active_state;
-}
+event void Timer.fired() {
 
-event void SplitControl.stopDone(error_t err) {
-	dbg("Caches", "CachesP SplitControl.stopDone(%d)", err);
 	atomic {
 		event_mask = 0;
-		active_state = next_state;
-		active_seq = next_seq;
-	dbg("Caches", "CachesP SplitControl.stopDone(%d) - active state becomes %d", err, active_state);
+		current_state = next_state;
+		current_seq = next_seq;
 	}
+	dbg("Caches", "CachesP starting - active state becomes %d", call Fennec.getStateId());
 	dbg("Caches", " ");
 	dbg("Caches", " ");
 	dbg("Caches", " ");
 	call SplitControl.start();
 }
 
+
+event void SplitControl.stopDone(error_t err) {
+	dbg("Caches", "CachesP SplitControl.stopDone(%d)", err);
+	dbg("Caches", "CachesP running in state %d", call Fennec.getStateId());
+	/**
+	TODO: this is weird, but apparetnly we need this delay
+	- or maybe it's just TOSSIM bug?
+	*/
+	call Timer.startOneShot(5);
+}
+
 /** Fennec Interface **/
 
 async command state_t Fennec.getStateId() {
-	//dbg("Caches", "CachesP Fennec.getStateId() returns %d", active_state);
-	return active_state;
+	//dbg("Caches", "CachesP Fennec.getStateId() returns %d", current_state);
+	return current_state;
 }
 
 command uint16_t Fennec.getStateSeq() {
-	return active_seq;
+	return current_seq;
 }
 
 command struct state* Fennec.getStateRecord() {
@@ -126,7 +136,7 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 	}
 	/* check if this is only sequence change */
 	if (state_id == call Fennec.getStateId()) {
-		active_seq = seq;
+		current_seq = seq;
 		return SUCCESS;
 	}
 	next_state = state_id;
@@ -192,6 +202,7 @@ async command conf_t Fennec.getConfId(module_t module_id) {
 			return configurations[conf_id].conf_id;
 		}
 	}
+	dbg("Caches", "Current state is %d", call Fennec.getStateId());
 	dbg("Caches", "Fennec.getConfId(%d) returns %d",
 			module_id, UNKNOWN_CONFIGURATION);
 	return UNKNOWN_CONFIGURATION;

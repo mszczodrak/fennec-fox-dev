@@ -218,7 +218,8 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
    * A transmitter was detected.  You must now take action to
    * turn the radio off when the transaction is complete.
    */
-  event void PowerCycle.detected() {
+event void PowerCycle.detected() {
+	dbg("Mac", "csmaMac DefaultLplP PowerCycle.detected()");
     // At this point, the duty cycling has been disabled temporary
     // and it will be this component's job to turn the radio back off
     // Wait long enough to see if we actually receive a packet, which is
@@ -231,6 +232,7 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
   
   /***************** SubControl Events ***************/
   event void SubControl.startDone(error_t error) {
+	dbg("Mac", "csmaMac DefaultLplP SubControl.startDone(%d)", error);
     if(!error) {
       call RadioPowerState.forceState(S_ON);
       
@@ -242,6 +244,7 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
   }
     
   event void SubControl.stopDone(error_t error) {
+	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
     if(!error) {
 
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
@@ -258,6 +261,7 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
   
   /***************** SubSend Events ***************/
   event void SubSend.sendDone(message_t* msg, error_t error) {
+	dbg("Mac", "csmaMac DefaultLplP SubSend.sendDone(0x%1x, %d)", msg, error);
    
     switch(call SendState.getState()) {
     case S_LPL_SENDING:
@@ -294,14 +298,15 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
    * that this message should be ignored, especially if the destination address
    * as the broadcast address
    */
-  event message_t *SubReceive.receive(message_t* msg, void* payload, 
+event message_t *SubReceive.receive(message_t* msg, void* payload, 
       uint8_t len) {
     startOffTimer();
     return signal Receive.receive(msg, payload, len);
-  }
+}
   
   /***************** Timer Events ****************/
   event void OffTimer.fired() {    
+	dbg("Mac", "csmaMac DefaultLplP OffTimer.fired()");
     /*
      * Only stop the radio if the radio is supposed to be off permanently
      * or if the duty cycle is on and our sleep interval is not 0
@@ -319,6 +324,7 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
    * to a node that is receive check duty cycling.
    */
   event void SendDoneTimer.fired() {
+	dbg("Mac", "csmaMac DefaultLplP SendDoneTimer.fired()");
     if(call SendState.getState() == S_LPL_SENDING) {
       // The next time SubSend.sendDone is signaled, send is complete.
       call SendState.forceState(S_LPL_CLEAN_UP);

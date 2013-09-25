@@ -50,8 +50,8 @@ uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
 implementation {
 
 command error_t Mgmt.start() {
-	call RoutingControl.start();
 	dbg("Network", "ctpNetP Mgmt.start()");
+	call RoutingControl.start();
 	dbg("Network", "ctpNetP Mgmt.start() - root: %d", call ctpNetParams.get_root());
 	if (TOS_NODE_ID == call ctpNetParams.get_root()) {
 		call RootControl.setRoot();
@@ -62,8 +62,8 @@ command error_t Mgmt.start() {
 }
 
 command error_t Mgmt.stop() {
-	call RoutingControl.stop();
 	dbg("Network", "ctpNetP Mgmt.stop()");
+	call RoutingControl.stop();
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
