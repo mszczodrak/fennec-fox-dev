@@ -60,7 +60,7 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t *msg, uint8_t 
 }
 
 command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
-	dbg("Network", "ctpActiveMessageP AMSend.maxPayloadLength()");
+	dbg("Network", "TrickleActiveMessageP AMSend.maxPayloadLength()");
 	return call MacAMSend.maxPayloadLength();
 }
 
@@ -125,7 +125,7 @@ command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
 }
 
 command uint8_t Packet.maxPayloadLength() {
-	dbg("Network", "ctpActiveMessageP Packet.maxPayloadLength()");
+	dbg("Network", "TrickleActiveMessageP Packet.maxPayloadLength()");
 	return call MacPacket.maxPayloadLength();
 }
 
