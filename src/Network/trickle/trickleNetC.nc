@@ -65,4 +65,13 @@ MacAMPacket = trickleNetP.MacAMPacket;
 MacPacket = trickleNetP.MacPacket;
 MacPacketAcknowledgements = trickleNetP.MacPacketAcknowledgements;
 
+  enum {
+    TIMER_ID = unique("DisseminationTimerC.TrickleTimer")
+  };
+
+
+components DisseminationTimerP;
+trickleNetP.TrickleTimer[0x117] ->
+    DisseminationTimerP.TrickleTimer[TIMER_ID];
+
 }

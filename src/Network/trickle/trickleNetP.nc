@@ -46,6 +46,8 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
+uses interface TrickleTimer[uint16_t key];
+
 }
 
 implementation {
@@ -197,6 +199,10 @@ async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
 
 async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 	return call MacPacketAcknowledgements.wasAcked(msg);
+}
+
+event void TrickleTimer.fired[ uint16_t key ]() {
+
 }
 
 }
