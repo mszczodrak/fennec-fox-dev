@@ -1,7 +1,7 @@
 /*
  *  trickle network module for Fennec Fox platform.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2009-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  * Network: trickle Network Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
- * Last Modified: 1/5/2012
+ * Last Modified: 9/5/2013
  */
 
 #include <Fennec.h>
@@ -45,6 +45,7 @@ uses interface Receive as MacSnoop;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+
 }
 
 implementation {

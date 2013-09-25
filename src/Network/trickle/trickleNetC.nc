@@ -64,4 +64,5 @@ MacSnoop = trickleNetP.MacSnoop;
 MacAMPacket = trickleNetP.MacAMPacket;
 MacPacket = trickleNetP.MacPacket;
 MacPacketAcknowledgements = trickleNetP.MacPacketAcknowledgements;
+
 }
