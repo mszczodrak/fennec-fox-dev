@@ -6,7 +6,6 @@ provides interface Fennec;
 provides interface SimpleStart;
 provides interface FennecWarnings;
 uses interface SplitControl;
-uses interface Timer<TMilli>;
 }
 
 implementation {
@@ -29,6 +28,27 @@ task void check_event() {
 		}
 	}
 }
+
+task void stop_state() {
+	call SplitControl.stop();
+}
+
+task void start_state() {
+	call SplitControl.start();
+}
+
+task void stop_done() {
+	event_mask = 0;
+	current_state = next_state;
+	current_seq = next_seq;
+	post start_state();
+}
+
+task void start_done() {
+	state_transitioning = FALSE;
+}
+
+
 
 uint16_t get_conf_id_in_state(module_t module_id) {
 	uint8_t i;
@@ -69,44 +89,24 @@ command void SimpleStart.start() {
 	next_state = call Fennec.getStateId();
 	next_seq = call Fennec.getStateSeq();
 	state_transitioning = TRUE;
-	call SplitControl.start();
+	post start_state();
 	signal SimpleStart.startDone(SUCCESS);
 }
 
 event void SplitControl.startDone(error_t err) {
 	dbg("Caches", "CachesP SplitControl.startDone(%d)", err);
 	event_mask = 0;
-	state_transitioning = FALSE;
-	dbg("Caches", "CachesP running in state %d", call Fennec.getStateId());
 	dbg("Caches", " ");
 	dbg("Caches", " ");
 	dbg("Caches", " ");
-}
-
-
-event void Timer.fired() {
-
-	atomic {
-		event_mask = 0;
-		current_state = next_state;
-		current_seq = next_seq;
-	}
-	dbg("Caches", "CachesP starting - active state becomes %d", call Fennec.getStateId());
-	dbg("Caches", " ");
-	dbg("Caches", " ");
-	dbg("Caches", " ");
-	call SplitControl.start();
+	post start_done();
 }
 
 
 event void SplitControl.stopDone(error_t err) {
 	dbg("Caches", "CachesP SplitControl.stopDone(%d)", err);
 	dbg("Caches", "CachesP running in state %d", call Fennec.getStateId());
-	/**
-	TODO: this is weird, but apparetnly we need this delay
-	- or maybe it's just TOSSIM bug?
-	*/
-	call Timer.startOneShot(5);
+	post stop_done();
 }
 
 /** Fennec Interface **/
@@ -142,7 +142,8 @@ command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
 	next_state = state_id;
 	next_seq = seq;
 	state_transitioning = TRUE;
-	return call SplitControl.stop();
+	post stop_state();
+	return SUCCESS;
 }
 
 command void Fennec.eventOccured(module_t module_id, uint16_t oc) {

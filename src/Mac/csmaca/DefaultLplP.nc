@@ -243,21 +243,23 @@ event void PowerCycle.detected() {
     }
   }
     
-  event void SubControl.stopDone(error_t error) {
+event void SubControl.stopDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
-    if(!error) {
-
-      if(call SendState.getState() == S_LPL_FIRST_MESSAGE
-          || call SendState.getState() == S_LPL_SENDING) {
-        // We're in the middle of sending a message; start the radio back up
-        post startRadio();
-        
-      } else {        
-        call OffTimer.stop();
-        call SendDoneTimer.stop();
-      }
-    }
-  }
+	if(!error) {
+		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
+	        	  || call SendState.getState() == S_LPL_SENDING) {
+			// We're in the middle of sending a message; start the radio back up
+			/** TODO:
+ 			temporarly we comment out the forcing radio on
+			dbg("Mac", "csmaMac DefaultLplP SubControl.startDone - force radio back");
+			post startRadio();
+			*/
+		} else {        
+			call OffTimer.stop();
+			call SendDoneTimer.stop();
+		}
+	}
+}
   
   /***************** SubSend Events ***************/
   event void SubSend.sendDone(message_t* msg, error_t error) {
@@ -345,19 +347,21 @@ event message_t *SubReceive.receive(message_t* msg, void* payload,
     }
   }
   
-  task void startRadio() {
-    if(call SubControl.start() != SUCCESS) {
-      post startRadio();
-    }
-  }
+task void startRadio() {
+	dbg("Mac", "DefaultLplP startRadio");
+	if(call SubControl.start() != SUCCESS) {
+		post startRadio();
+	}
+}
   
-  task void stopRadio() {
-    if(call SendState.getState() == S_LPL_NOT_SENDING) {
-      if(call SubControl.stop() != SUCCESS) {
-        post stopRadio();
-      }
-    }
-  }
+task void stopRadio() {
+	dbg("Mac", "DefaultLplP stopRadio");
+	if(call SendState.getState() == S_LPL_NOT_SENDING) {
+		if(call SubControl.stop() != SUCCESS) {
+			post stopRadio();
+		}
+	}
+}
   
   /***************** Functions ***************/
   void initializeSend() {

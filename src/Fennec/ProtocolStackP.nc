@@ -46,6 +46,22 @@ uint8_t current_layer = UNKNOWN_LAYER;
 void next_layer();
 uint16_t current_conf;
 
+task void start_conf_done() {
+	signal ProtocolStack.startConfDone(SUCCESS);
+}
+
+task void stop_conf_done() {
+	signal ProtocolStack.stopConfDone(SUCCESS);
+}
+
+task void start_next_module() {
+	call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
+}
+
+task void stop_next_module() {
+	call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
+}
+
 
 command error_t ProtocolStack.startConf(uint16_t conf) {
 	dbg("ProtocolStack", "ProtocolStackP ProtocolStack.startConf(%d)", conf);
@@ -76,10 +92,10 @@ event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 		if (current_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STARTED;
-			signal ProtocolStack.startConfDone(SUCCESS);
+			post start_conf_done();
 			return;
 		} else {
-			call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
+			post start_next_module();
 		}
 	}
 }
@@ -95,10 +111,10 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 		if (current_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STOPPED;
-			signal ProtocolStack.stopConfDone(SUCCESS);
+			post stop_conf_done();
 			return;
 		} else {
-			call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
+			post stop_next_module();
 		}
 	}
 }
