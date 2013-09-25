@@ -79,7 +79,8 @@ use application phidget_1142and1111 $(FENNEC_FOX_LIB)/Application/tests/phidget1
 
 use network nullNet $(FENNEC_FOX_LIB)/Network/null ()
 use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
-use network ftsp /home/marcin/github/fennec-fox-dev/src/Network/ftsp ()
+use network ftsp $(FENNEC_FOX_LIB)/Network/ftsp ()
+use network trickle $(FENNEC_FOX_LIB)/Network/trickle (uint16_t root)
 use network dxp $(FENNEC_FOX_LIB)/Network/dxp (uint16_t root)
 
 # MAC
@@ -114,7 +115,6 @@ use radio cape $(FENNEC_FOX_LIB)/Radio/cape ()
 #use network oneHop $(FENNEC_FOX_LIB)/Network/oneHop ()
 #use network sdrp $(FENNEC_FOX_LIB)/Network/sdrp ()
 #use network idep $(FENNEC_FOX_LIB)/Network/idep ()
-#use network trickle $(FENNEC_FOX_LIB)/Network/trickle ()
 
 # Events
 use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)

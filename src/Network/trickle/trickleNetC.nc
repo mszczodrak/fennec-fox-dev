@@ -1,7 +1,7 @@
 /*
- *  Trickle network module for Fennec Fox platform.
+ *  trickle network module for Fennec Fox platform.
  *
- *  Copyright (C) 2010-2011 Marcin Szczodrak
+ *  Copyright (C) 2010-2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,43 +19,49 @@
  */
 
 /*
- * Network: Trickle Dissemination Protocol
+ * Network: trickle Network Protocol
  * Author: Marcin Szczodrak
- * Date: 9/18/2011
- * Last Modified: 9/19/2011
+ * Date: 8/20/2010
+ * Last Modified: 1/5/2012
  */
 
 #include <Fennec.h>
 
-generic configuration trickleNetC(uint16_t short_period, uint16_t long_period,
-                                uint16_t period_threshold, uint16_t scale) {
-  provides interface Mgmt;
-  provides interface Module;
-  provides interface NetworkCall;
-  provides interface NetworkSignal;
+configuration trickleNetC {
+provides interface Mgmt;
+provides interface AMSend as NetworkAMSend;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface MacCall;
-  uses interface MacSignal;
+uses interface trickleNetParams;
+
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
 
-  components new trickleNetP(short_period, long_period, period_threshold, scale);
-  Mgmt = trickleNetP;
-  Module = trickleNetP;
-  NetworkCall = trickleNetP;
-  NetworkSignal = trickleNetP;
-  MacCall = trickleNetP;
-  MacSignal = trickleNetP;
+components trickleNetP;
+Mgmt = trickleNetP;
+trickleNetParams = trickleNetP;
+NetworkAMSend = trickleNetP.NetworkAMSend;
+NetworkReceive = trickleNetP.NetworkReceive;
+NetworkSnoop = trickleNetP.NetworkSnoop;
+NetworkAMPacket = trickleNetP.NetworkAMPacket;
+NetworkPacket = trickleNetP.NetworkPacket;
+NetworkPacketAcknowledgements = trickleNetP.NetworkPacketAcknowledgements;
 
-  components AddressingC;
-  trickleNetP.Addressing -> AddressingC.Addressing[F_NETWORK_ADDRESSING];
-
-  components RandomC;
-  components new TimerMilliC() as Timer0;
-  components new TimerMilliC() as Timer1;
-  trickleNetP.Timer0 -> Timer0;
-  trickleNetP.Timer1 -> Timer1;
-  trickleNetP.Random -> RandomC;
-
+MacAMSend = trickleNetP;
+MacReceive = trickleNetP.MacReceive;
+MacSnoop = trickleNetP.MacSnoop;
+MacAMPacket = trickleNetP.MacAMPacket;
+MacPacket = trickleNetP.MacPacket;
+MacPacketAcknowledgements = trickleNetP.MacPacketAcknowledgements;
 }

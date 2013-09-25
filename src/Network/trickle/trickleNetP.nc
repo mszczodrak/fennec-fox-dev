@@ -1,7 +1,7 @@
 /*
- *  Trickle network module for Fennec Fox platform.
+ *  trickle network module for Fennec Fox platform.
  *
- *  Copyright (C) 2010-2011 Marcin Szczodrak
+ *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,263 +19,183 @@
  */
 
 /*
- * Network: Trickle Dissemination Protocol
+ * Network: trickle Network Protocol
  * Author: Marcin Szczodrak
- * Date: 9/18/2011
- * Last Modified: 9/19/2011
+ * Date: 8/20/2010
+ * Last Modified: 1/5/2012
  */
-
 
 #include <Fennec.h>
 #include "trickleNet.h"
 
-generic module trickleNetP(uint16_t short_period, uint16_t long_period, 
-                                uint16_t period_threshold, uint16_t scale) {
-  provides interface Mgmt;
-  provides interface Module;
-  provides interface NetworkCall;
-  provides interface NetworkSignal;
+module trickleNetP {
+provides interface Mgmt;
+provides interface AMSend as NetworkAMSend;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
+provides interface AMPacket as NetworkAMPacket;
+provides interface Packet as NetworkPacket;
+provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-  uses interface Addressing;
-  uses interface MacCall;
-  uses interface MacSignal;
+uses interface trickleNetParams;
 
-  uses interface Timer<TMilli> as Timer0;
-  uses interface Timer<TMilli> as Timer1;
-  uses interface Random;
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
 
-  uint16_t seq = 0;
-  uint16_t period;
-  uint16_t counter;
+command error_t Mgmt.start() {
+	dbg("Network", "trickleNetP Mgmt.start()");
+	signal Mgmt.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-  msg_t *local_buffer;
-  msg_t *apps_message;
-  bool sending_data;
+command error_t Mgmt.stop() {
+	dbg("Network", "trickleNetP Mgmt.stop()");
+	signal Mgmt.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-  task void send_data() {
-    dbg("Network", "Network trickle sends data with sequence %d\n", seq);
-    if (call MacCall.send(local_buffer) != SUCCESS) {
-      dbg("Network", "Network failed to send app data, retry\n");
-      call Timer0.startOneShot(call Random.rand16() % TRICKLE_MAX_SEND_DELAY);
-    }
-  }
+command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	dbg("Network", "trickleNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
+	if ((addr == TOS_NODE_ID) || (addr == NODE)) {
+		dbg("Network", "trickleNet NetworkAMSend.sendDone(0x%1x, %d )", msg, SUCCESS);
+		signal NetworkAMSend.sendDone(msg, SUCCESS);
+		signal MacReceive.receive(msg, 
+		call NetworkAMSend.getPayload(msg, len + 
+				sizeof(nx_struct trickle_net_header)), 
+		len + sizeof(nx_struct trickle_net_header));
+		return SUCCESS;
+	}
 
-  task void send_beacon() {
-    msg_t *msg = signal Module.next_message();
-    nx_struct trickle_net_header *header;
+	return call MacAMSend.send(addr, msg, len + 
+		sizeof(nx_struct trickle_net_header));
+}
 
-    if (msg == NULL) {
-      return;
-    }
+command error_t NetworkAMSend.cancel(message_t* msg) {
+	dbg("Network", "trickleNetP NetworkAMSend.cancel(0x%1x)", msg);
+	return call MacAMSend.cancel(msg);
+}
 
-    dbg("Network", "Network trickle is sending beacon\n");
+command uint8_t NetworkAMSend.maxPayloadLength() {
+	dbg("Network", "trickleNetP NetworkAMSend.maxPayloadLength()");
+	return (call MacAMSend.maxPayloadLength() - 
+		sizeof(nx_struct trickle_net_header));
+}
 
-    header = (nx_struct trickle_net_header*) call MacCall.getPayload(msg);
-    header->seq = seq;
-    header->flags = TRICKLE_BEACON;
+command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
+	uint8_t *ptr; 
+	dbg("Network", "trickleNetP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
+	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
+				len + sizeof(nx_struct trickle_net_header));
+	return (void*) (ptr + sizeof(nx_struct trickle_net_header));
+}
 
-    msg->len = sizeof(nx_struct trickle_net_header);
-    msg->next_hop = BROADCAST;
+event void MacAMSend.sendDone(message_t *msg, error_t error) {
+	dbg("Network", "trickleNetP NetworkAMSend.sendDone(0x%1x, %d )", msg, error);
+	signal NetworkAMSend.sendDone(msg, error);
+}
 
-    if (call MacCall.send(msg) != SUCCESS) {
-      signal Module.drop_message(msg);
-    }
-  }
+event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	uint8_t *ptr = (uint8_t*) payload;
+	dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+	return signal NetworkReceive.receive(msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+}
 
-  command error_t Mgmt.start() {
-    nx_struct trickle_net_header *header;
-    counter = 0;
-    sending_data = FALSE;
-    apps_message = NULL;
+event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	uint8_t *ptr = (uint8_t*) payload;
+	dbg("Network", "trickleNetP NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+	return signal NetworkSnoop.receive(msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+}
 
-    /* by default start with long period */
-    period = long_period;  
-    call Timer1.startOneShot(period);
+command am_addr_t NetworkAMPacket.address() {
+	return call MacAMPacket.address();
+}
 
-    local_buffer = signal Module.next_message();  
+command am_addr_t NetworkAMPacket.destination(message_t* amsg) {
+	return call MacAMPacket.destination(amsg);
+}
 
-    if (local_buffer == NULL) {
-      signal Mgmt.startDone(FAIL);
-      return FAIL;
-    }
+command am_addr_t NetworkAMPacket.source(message_t* amsg) {
+	return call MacAMPacket.source(amsg);
+}
 
-    header = (nx_struct trickle_net_header*) call MacCall.getPayload(local_buffer);
-    header->seq = seq;
-    header->flags = TRICKLE_BEACON;
+command void NetworkAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+	return call MacAMPacket.setDestination(amsg, addr);
+}
 
-    local_buffer->len = sizeof(nx_struct trickle_net_header);
-    local_buffer->next_hop = BROADCAST;
+command void NetworkAMPacket.setSource(message_t* amsg, am_addr_t addr) {
+	return call MacAMPacket.setSource(amsg, addr);
+}
 
-    signal Mgmt.startDone(SUCCESS);
-    return SUCCESS;
-  }
+command bool NetworkAMPacket.isForMe(message_t* amsg) {
+	return call MacAMPacket.isForMe(amsg);
+}
 
-  command error_t Mgmt.stop() {
-    call Timer0.stop();
-    call Timer1.stop();
-    signal Module.drop_message(local_buffer);
-    signal Module.drop_message(apps_message);
-    signal Mgmt.stopDone(SUCCESS);
-    return SUCCESS;
-  }
+command am_id_t NetworkAMPacket.type(message_t* amsg) {
+	return call MacAMPacket.type(amsg);
+}
 
-  command uint8_t* NetworkCall.getPayload(msg_t* msg) {
-    return call MacCall.getPayload(msg) + sizeof(nx_struct trickle_net_header);
-  }
+command void NetworkAMPacket.setType(message_t* amsg, am_id_t t) {
+	return call MacAMPacket.setType(amsg, t);
+}
 
-  command error_t NetworkCall.send(msg_t *msg) {
-    nx_struct trickle_net_header *header = (nx_struct trickle_net_header*) 
-						call MacCall.getPayload(msg);
-    if (apps_message != NULL) {
-      dbg("Network", "Network: trickle is busy\n");
-      return FAIL;
-    }
+command am_group_t NetworkAMPacket.group(message_t* amsg) {
+	return call MacAMPacket.group(amsg);
+}
 
-    header->seq = ++seq;
-    header->flags = TRICKLE_DATA;
- 
-    msg->len += sizeof(nx_struct trickle_net_header);
-    msg->next_hop = BROADCAST;
+command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	return call MacAMPacket.setGroup(amsg, grp);
+}
 
-    apps_message = msg;
-    sending_data = TRUE;
-    counter = 0;
-    period = short_period;
-    call Timer1.startOneShot(period);
+command am_group_t NetworkAMPacket.localGroup() {
+	return call MacAMPacket.localGroup();
+}
 
-    memcpy(local_buffer, msg, sizeof(msg_t));
+command void NetworkPacket.clear(message_t* msg) {
+	return call MacPacket.clear(msg);
+}
 
-    call Timer0.startOneShot(call Random.rand16() % TRICKLE_MAX_SEND_DELAY);
+command uint8_t NetworkPacket.payloadLength(message_t* msg) {
+	return call MacPacket.payloadLength(msg);
+}
 
-    return SUCCESS;
-  }
+command void NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {
+	return call MacPacket.setPayloadLength(msg, len);
+}
 
-  command uint8_t NetworkCall.getMaxSize(msg_t *msg) {
-    return call MacCall.getMaxSize(msg) - sizeof(nx_struct trickle_net_header);
-  }
+command uint8_t NetworkPacket.maxPayloadLength() {
+	return call MacPacket.maxPayloadLength();
+}
 
-  command uint8_t* NetworkCall.getSource(msg_t* msg) {
-    return NULL;
-  }
+command void* NetworkPacket.getPayload(message_t* msg, uint8_t len) {
+	return call MacPacket.getPayload(msg, len);
+}
 
-  command uint8_t* NetworkCall.getDestination(msg_t* msg) {
-    return NULL;
-  }
+async command error_t NetworkPacketAcknowledgements.requestAck( message_t* msg ) {
+	return call MacPacketAcknowledgements.requestAck(msg);
+}
 
-  event void MacSignal.sendDone(msg_t *msg, error_t err) {
-    nx_struct trickle_net_header *header = (nx_struct trickle_net_header*)
-                                              call MacCall.getPayload(msg);
-    sending_data = FALSE;
+async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
+	return call MacPacketAcknowledgements.noAck(msg);
+}
 
-    //dbg("Network", "Network got send done\n");
-    if (apps_message != NULL && apps_message == msg) {
-      apps_message = NULL;
-      dbg("Network", "Network sent apps data, signal send done\n");
-      signal NetworkSignal.sendDone(msg, err);
-      period = short_period;
-      call Timer0.startOneShot(period);
-      return;
-    }
-
-    if (header->flags == TRICKLE_DATA) {
-      //dbg("Network", "Network sent data\n");
-    } else {
-      signal Module.drop_message(msg);
-      //dbg("Network", "Network sent beacon\n");
-    }
-  }
-
-  event void MacSignal.receive(msg_t *msg, uint8_t *payload, uint8_t len) {
-    nx_struct trickle_net_header *header = (nx_struct trickle_net_header *)payload;
-
-    //dbg("Network", "Network received message\n");
-
-    if (len <= 0) {
-      //dbg("Network", "Network received too small message\n");
-      signal Module.drop_message(msg);
-      return;
-    }
-
-    if (header->seq == seq) {
-      /* same sequence */
-      counter++;	
-      //dbg("Network", "Network receive the same sequence %d, increase counter to %d\n",
-									//seq, counter);
-      signal Module.drop_message(msg); 
-      return;
-    }
-
-    if (header->seq < seq) {
-      dbg("Network", "Network trickle seq less %d < %d\n", header->seq, seq);
-
-      signal Module.drop_message(msg); 
-      sending_data = TRUE;
-      counter = 0;
-      call Timer0.startOneShot(call Random.rand16() % TRICKLE_MAX_SEND_DELAY);
-      return;
-    }
-
-    if (header->seq > seq) {
-      /* new sequence number */
-      dbg("Network", "Network trickle seq greater %d > %d\n", header->seq, seq);
-
-      if (header->flags == TRICKLE_DATA) {
-        seq = header->seq;
-        counter = 0;
-        period = short_period;
-        call Timer1.startOneShot(period);
-
-        memcpy(local_buffer, msg, sizeof(msg_t));
-
-        msg->len -= sizeof(nx_struct trickle_net_header);
-        payload += sizeof(nx_struct trickle_net_header);
-
-        signal NetworkSignal.receive(msg, payload, msg->len);
-      } else {
-        counter = 0;
-        call Timer0.startOneShot(call Random.rand16() % TRICKLE_MAX_SEND_DELAY);
-        signal Module.drop_message(msg);
-      }
-    }
-  }
-
-
-  /* The t timer */
-  event void Timer0.fired() {
-    if (counter < period_threshold) {
-      if (sending_data) {
-        dbg("Network", "Network sends apps' data with seq %d\n", seq);
-        post send_data();
-      } else {
-        //dbg("Network", "Network sends beacon %d - counter is %d and threshold is %d\n",
-	//  seq, counter, period_threshold);
-        post send_beacon();
-      }
-    }
-  }
-
-
-  /* The Tau timer */
-  event void Timer1.fired() {
-    /* check if we have already transmitted */
-
-//    dbg("Network", "Network: end of period check status\n");
-    counter = 0;
-    sending_data = FALSE;
-
-    period *= scale;
-
-    if (long_period < period) {
-      period = long_period;
-    }
-
-    call Timer1.startOneShot(period);
-    call Timer0.startOneShot(call Random.rand16() % period);
-  }
-
+async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
+	return call MacPacketAcknowledgements.wasAcked(msg);
+}
 
 }
