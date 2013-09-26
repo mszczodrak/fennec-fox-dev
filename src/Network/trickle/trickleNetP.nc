@@ -65,7 +65,7 @@ error_t send_message(message_t* msg, uint8_t len, uint8_t type) {
 	nx_struct trickle_net_header *header = (nx_struct trickle_net_header*)
 		call MacAMSend.getPayload(msg, len + sizeof(nx_struct trickle_net_header));
 
-	if ((tx_busy == TRUE) || (header == NULL)) {
+	if ((tx_busy == TRUE) || (header == NULL) || (seqno == DISSEMINATION_SEQNO_UNKNOWN)) {
 		return FAIL;
 	}
 	header->flags = type;
