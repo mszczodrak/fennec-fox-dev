@@ -39,7 +39,6 @@ enum {
 
 nx_struct trickle_net_header {
 	nxle_uint32_t seq;
-	nxle_uint8_t flags;
 };
 
 #endif
