@@ -71,8 +71,7 @@ error_t send_message(message_t* msg, uint8_t len, uint8_t type) {
 	header->flags = type;
 	header->seq = seqno;
 
-	if (call MacAMSend.send(BROADCAST, msg, len + 
-		sizeof(nx_struct trickle_net_header)) == SUCCESS) {
+	if (call MacAMSend.send(BROADCAST, msg, len + sizeof(nx_struct trickle_net_header)) == SUCCESS) {
 		tx_busy = TRUE;
 		return SUCCESS;
 	}
@@ -101,7 +100,7 @@ command error_t Mgmt.stop() {
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	dbg("Network", "trickleNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
-	memcpy(msg, &data_msg, sizeof(message_t));
+	memcpy(&data_msg, msg, sizeof(message_t));
 	data_len = len;
 
 	/* Increment the counter and append the local node ID. */
@@ -162,7 +161,7 @@ message_t * receive_data(message_t *msg, void* payload, uint8_t len) {
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
 
-		memcpy(msg, &data_msg, sizeof(message_t));
+		memcpy(&data_msg, msg, sizeof(message_t));
 		data_len = len;
 		seqno = header->seq;
 
@@ -180,7 +179,7 @@ message_t * receive_data(message_t *msg, void* payload, uint8_t len) {
 	}
 
 	if ((int32_t)(header->seq - seqno) > 0) {
-		memcpy(msg, &data_msg, sizeof(message_t));
+		memcpy(&data_msg, msg, sizeof(message_t));
 		data_len = len;
 		seqno = header->seq;
 		call TrickleTimer.reset[TRICKLE_ID]();
