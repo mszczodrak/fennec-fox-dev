@@ -52,23 +52,27 @@ generic configuration TrickleTimerMilliC(uint16_t low,
 					 uint16_t high,
 					 uint8_t k,
 					 uint8_t count) {
-  provides interface TrickleTimer[uint8_t];
+provides interface TrickleTimer[uint8_t];
+uses interface trickleNetParams;
 }
 implementation {
-  components new TrickleTimerImplP(low, high, k, count, 10), MainC, RandomC;
-  components new TimerMilliC();
-  components new BitVectorC(count) as PendingVector;
-  components new BitVectorC(count) as ChangeVector;
-  components LedsC;
-  TrickleTimer = TrickleTimerImplP;
 
-  TrickleTimerImplP.Timer -> TimerMilliC;
-  TrickleTimerImplP.Random -> RandomC;
-  TrickleTimerImplP.Changed -> ChangeVector;
-  TrickleTimerImplP.Pending -> PendingVector;
+components new TrickleTimerImplP(low, high, k, count, 10), MainC, RandomC;
+components new TimerMilliC();
+components new BitVectorC(count) as PendingVector;
+components new BitVectorC(count) as ChangeVector;
+components LedsC;
+TrickleTimer = TrickleTimerImplP;
+
+TrickleTimerImplP.Timer -> TimerMilliC;
+TrickleTimerImplP.Random -> RandomC;
+TrickleTimerImplP.Changed -> ChangeVector;
+TrickleTimerImplP.Pending -> PendingVector;
   
-  TrickleTimerImplP.Leds -> LedsC;
-  MainC.SoftwareInit -> TrickleTimerImplP;
+TrickleTimerImplP.Leds -> LedsC;
+MainC.SoftwareInit -> TrickleTimerImplP;
+
+trickleNetParams = TrickleTimerImplP;
 }
 
   

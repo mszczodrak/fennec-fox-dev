@@ -68,5 +68,6 @@ MacPacketAcknowledgements = trickleNetP.MacPacketAcknowledgements;
 components new TrickleTimerMilliC(1, 1024, 1, 1);
 trickleNetP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
 
+trickleNetParams = TrickleTimerMilliC;
 
 }
