@@ -167,41 +167,19 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if (seqno == DISSEMINATION_SEQNO_UNKNOWN &&
 		header->seq != DISSEMINATION_SEQNO_UNKNOWN) {
+		goto receive;
 
-		dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
-			ptr + sizeof(nx_struct trickle_net_header), 
-			len - sizeof(nx_struct trickle_net_header));
-
-		memcpy(&data_msg, msg, sizeof(message_t));
-		data_len = len;
-		seqno = header->seq;
-		call TrickleTimer.reset[ TRICKLE_ID ]();
-
-		return signal NetworkReceive.receive(msg, 
-			ptr + sizeof(nx_struct trickle_net_header), 
-			len - sizeof(nx_struct trickle_net_header));
 	}
 
 	if (header->seq == DISSEMINATION_SEQNO_UNKNOWN &&
 		seqno != DISSEMINATION_SEQNO_UNKNOWN) {
 		call TrickleTimer.reset[TRICKLE_ID]();
-		return msg;
+		goto snoop;
 	}
 
 	if ((int32_t)(header->seq - seqno) > 0) {
+		goto receive;
 
-		dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
-			ptr + sizeof(nx_struct trickle_net_header), 
-			len - sizeof(nx_struct trickle_net_header));
-
-		memcpy(&data_msg, msg, sizeof(message_t));
-		data_len = len;
-		seqno = header->seq;
-		call TrickleTimer.reset[TRICKLE_ID]();
-
-		return signal NetworkReceive.receive(msg, 
-			ptr + sizeof(nx_struct trickle_net_header), 
-			len - sizeof(nx_struct trickle_net_header));
 
 	} else if ( (int32_t)(header->seq - seqno) == 0) {
 		call TrickleTimer.incrementCounter[TRICKLE_ID]();
@@ -210,7 +188,25 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		/* Immediate send */
 		post send_message();
 	}
-	return msg;
+
+snoop:
+	return signal NetworkSnoop.receive(msg, 
+		ptr + sizeof(nx_struct trickle_net_header), 
+		len - sizeof(nx_struct trickle_net_header));
+
+receive:
+	dbg("Network", "trickleNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+		ptr + sizeof(nx_struct trickle_net_header), 
+		len - sizeof(nx_struct trickle_net_header));
+
+	memcpy(&data_msg, msg, sizeof(message_t));
+	data_len = len;
+	seqno = header->seq;
+	call TrickleTimer.reset[ TRICKLE_ID ]();
+
+	return signal NetworkReceive.receive(msg, 
+		ptr + sizeof(nx_struct trickle_net_header), 
+		len - sizeof(nx_struct trickle_net_header));
 }
 
 
