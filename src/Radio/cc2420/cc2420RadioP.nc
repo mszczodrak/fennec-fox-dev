@@ -45,7 +45,6 @@ uses interface Resource as RadioResource;
 implementation {
 
 norace uint8_t state = S_STOPPED;
-uint8_t mgmt = FALSE;
 norace error_t err;
 
 void start_done() {
@@ -53,10 +52,7 @@ void start_done() {
 		state = S_STARTED;
 	}
 	signal SplitControl.startDone(err);
-	if (mgmt == TRUE) {
 		signal Mgmt.startDone(err);
-		mgmt = FALSE;
-	}
 }
 
 task void finish_starting_radio() {
@@ -72,25 +68,18 @@ task void stop_done() {
 		state = S_STOPPED;
 	}
 	signal SplitControl.stopDone(err);
-	if (mgmt == TRUE) {
 		signal Mgmt.stopDone(err);
-		mgmt = FALSE;
-	}
 }
 
-command error_t Mgmt.start() {
-	mgmt = TRUE;
-	call SplitControl.start();
-	return SUCCESS;
-}
-
-command error_t Mgmt.stop() {
-	mgmt = TRUE;
-	call SplitControl.stop();
+command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
 command error_t SplitControl.start() {
+	return SUCCESS;
+}
+
+command error_t Mgmt.start() {
 	err = SUCCESS;
 
 	if (state == S_STARTED) {
@@ -104,7 +93,7 @@ command error_t SplitControl.start() {
 }
 
 
-command error_t SplitControl.stop() {
+command error_t Mgmt.stop() {
 	err = SUCCESS;
 
 	if (state == S_STOPPED) {
@@ -122,29 +111,6 @@ command error_t SplitControl.stop() {
 	post stop_done();
 	return SUCCESS;
 }
-
-/*
-  command error_t SplitControl.stop() {
-    err = SUCCESS;
-    if (state == S_STARTED) {
-      state = S_STOPPING;
-      if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
-      if (call TransmitControl.stop() != SUCCESS) err = FAIL;
-      if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
-      post stop_done();
-      return SUCCESS;
-
-    } else if(state == S_STOPPED) {
-      post stop_done();
-      return EALREADY;
-
-    } else if(state == S_STOPPING) {
-      return SUCCESS;
-    }
-
-    return EBUSY;
-  }
-*/
 
 
 /****************** RadioConfig Events ****************/

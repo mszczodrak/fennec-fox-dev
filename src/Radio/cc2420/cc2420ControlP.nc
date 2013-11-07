@@ -206,30 +206,30 @@ implementation {
     return call SpiResource.isOwner();
   }
 
-  async command error_t RadioResource.release() {
+async command error_t RadioResource.release() {
     atomic {
       call CSN.set();
       return call SpiResource.release();
     }
-  }
+}
 
-  task void report_start() {
-    on_time = call StartupTimer.getNow();
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, 0, 0);
-    //printf("radio on\n");
-    //printfflush();
-  }
+task void report_start() {
+	on_time = call StartupTimer.getNow();
+	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
+	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, 0, 0);
+	printf("radio on\n");
+	printfflush();
+}
 
-  task void report_stop() {
-    //on_time = (call StartupTimer.getNow() - on_time);
-    on_time = call StartupTimer.getNow();
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, 0, 0);
-    //printf("radio off\n");
-    //printfflush();
-    //dbgs(F_RADIO, S_NONE, DBGS_RADIO_ON_PERIOD, (uint16_t)(on_time >> 16), (uint16_t)on_time);
-  }
+task void report_stop() {
+	//on_time = (call StartupTimer.getNow() - on_time);
+	on_time = call StartupTimer.getNow();
+	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
+	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, 0, 0);
+	printf("radio off\n");
+	printfflush();
+	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_ON_PERIOD, (uint16_t)(on_time >> 16), (uint16_t)on_time);
+}
 
   /***************** RadioPower Commands ****************/
   async command error_t RadioPower.startVReg() {
