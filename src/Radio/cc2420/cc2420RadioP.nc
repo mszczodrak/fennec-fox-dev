@@ -31,7 +31,6 @@
 
 module cc2420RadioP @safe() {
 provides interface Mgmt;
-provides interface SplitControl;
 
 uses interface Leds;
 uses interface cc2420RadioParams;
@@ -47,12 +46,11 @@ implementation {
 norace uint8_t state = S_STOPPED;
 norace error_t err;
 
-void start_done() {
+task void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	}
-	signal SplitControl.startDone(err);
-		signal Mgmt.startDone(err);
+	signal Mgmt.startDone(err);
 }
 
 task void finish_starting_radio() {
@@ -60,30 +58,21 @@ task void finish_starting_radio() {
 	if (call RadioResource.release() != SUCCESS) err = FAIL;
 	if (call ReceiveControl.start() != SUCCESS) err = FAIL;
 	if (call TransmitControl.start() != SUCCESS) err = FAIL;
-	start_done();
+	post start_done();
 }
 
 task void stop_done() {
 	if (err == SUCCESS) {
 		state = S_STOPPED;
 	}
-	signal SplitControl.stopDone(err);
-		signal Mgmt.stopDone(err);
-}
-
-command error_t SplitControl.stop() {
-	return SUCCESS;
-}
-
-command error_t SplitControl.start() {
-	return SUCCESS;
+	signal Mgmt.stopDone(err);
 }
 
 command error_t Mgmt.start() {
 	err = SUCCESS;
 
 	if (state == S_STARTED) {
-		start_done();
+		post start_done();
 		return SUCCESS;
 	}
 

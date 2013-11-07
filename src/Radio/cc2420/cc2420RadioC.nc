@@ -34,7 +34,6 @@ provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
 provides interface Read<uint16_t> as ReadRssi;
-provides interface SplitControl as RadioControl;
 provides interface RadioSend;
 provides interface RadioPacket;
 provides interface RadioBuffer;
@@ -57,8 +56,6 @@ cc2420RadioP.RadioResource -> cc2420ControlC.RadioResource;
 
 Mgmt = cc2420RadioP;
 cc2420RadioParams = cc2420RadioP;
-
-RadioControl = cc2420RadioP.SplitControl;
 
 RadioResource = cc2420ControlC.RadioResource;
 RadioConfig = cc2420ControlC.RadioConfig;
