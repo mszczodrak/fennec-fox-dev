@@ -65,7 +65,7 @@ command error_t Mgmt.start() {
 	uint32_t send_delay = call CounterAppParams.get_delay() * 
 		call CounterAppParams.get_delay_scale();
 	//call Leds.led0On();
-	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
+	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
 	dbg("Application", "CounterApp Mgmt.start()");
 
 	dbg("Application", "CounterApp starting delay: %d", send_delay);
@@ -87,7 +87,7 @@ command error_t Mgmt.start() {
 command error_t Mgmt.stop() {
 	call Timer.stop();
 	dbg("Application", "CounterApp Mgmt.stop()");
-	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
+	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -104,7 +104,7 @@ void sendMessage() {
 	msg->seqno = seqno;
 
 	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
+	//dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
 
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
@@ -136,7 +136,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 	dbg("Application", "CounterApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
 	dbg("Application", "CounterApp receive seqno: %d source: %d", cm->seqno, cm->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+	//dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	call Leds.set(cm->seqno);
 	return msg;
 }

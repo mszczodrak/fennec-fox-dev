@@ -349,7 +349,7 @@ event message_t *SubReceive.receive(message_t* msg, void* payload,
   
 task void startRadio() {
 	dbg("Mac", "DefaultLplP startRadio");
-    	dbgs(F_MAC, S_NONE, DBGS_RADIO_START_V_REG, 0, 0);
+    	//dbgs(F_MAC, S_NONE, DBGS_RADIO_START_V_REG, 0, 0);
 	//printf("mac start\n");
 	//printfflush();
 	if(call SubControl.start() != SUCCESS) {
@@ -360,7 +360,7 @@ task void startRadio() {
 task void stopRadio() {
 	dbg("Mac", "DefaultLplP stopRadio");
 	if(call SendState.getState() == S_LPL_NOT_SENDING) {
-    		dbgs(F_MAC, S_NONE, DBGS_RADIO_STOP_V_REG, 0, 0);
+    		//dbgs(F_MAC, S_NONE, DBGS_RADIO_STOP_V_REG, 0, 0);
 		//printf("mac stop\n");
 		//printfflush();
 		if(call SubControl.stop() != SUCCESS) {
