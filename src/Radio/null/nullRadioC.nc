@@ -36,8 +36,6 @@ provides interface RadioConfig;
 provides interface RadioPower;
 provides interface Read<uint16_t> as ReadRssi;
 
-provides interface SplitControl as RadioControl;
-
 provides interface RadioPacket;
 provides interface RadioBuffer;
 provides interface RadioSend;
@@ -67,6 +65,5 @@ ReadRssi = nullRadioP.ReadRssi;
 RadioBuffer = nullRadioP.RadioBuffer;
 RadioPacket = nullRadioP.RadioPacket;
 RadioSend = nullRadioP.RadioSend;
-RadioControl = nullRadioP.RadioControl;
 
 }

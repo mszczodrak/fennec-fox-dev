@@ -36,7 +36,6 @@ provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
 provides interface Read<uint16_t> as ReadRssi;
-provides interface SplitControl as RadioControl;
 provides interface RadioBuffer;
 provides interface RadioPacket;
 provides interface RadioSend;
@@ -50,18 +49,12 @@ uses interface nullRadioParams;
 implementation {
 
 uint8_t channel;
-uint8_t mgmt = FALSE;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
 
 task void start_done() {
 	state = S_STARTED;
-
-	signal RadioControl.startDone(SUCCESS);
-	if (mgmt == TRUE) {
-		signal Mgmt.startDone(SUCCESS);
-		mgmt = FALSE;
-	}
+	signal Mgmt.startDone(SUCCESS);
 }
 
 task void finish_starting_radio() {
@@ -70,28 +63,12 @@ task void finish_starting_radio() {
 
 task void stop_done() {
 	state = S_STOPPED;
-	signal RadioControl.stopDone(SUCCESS);
-	if (mgmt == TRUE) {
-		signal Mgmt.stopDone(SUCCESS);
-		mgmt = FALSE;
-	}
+	signal Mgmt.stopDone(SUCCESS);
 }
 
 command error_t Mgmt.start() {
 	dbg("Radio", "nullRadio Mgmt.start()");
-	mgmt = TRUE;
-	call RadioControl.start();
-	return SUCCESS;
-}
 
-command error_t Mgmt.stop() {
-	dbg("Radio", "nullRadio Mgmt.stop()");
-	mgmt = TRUE;
-	call RadioControl.stop();
-	return SUCCESS;
-}
-
-command error_t RadioControl.start() {
 	if (state == S_STOPPED) {
 		state = S_STARTING;
 		post start_done();
@@ -101,28 +78,25 @@ command error_t RadioControl.start() {
 		post start_done();
 		return EALREADY;
 
-    } else if(state == S_STARTING) {
-      return SUCCESS;
-    }
-
-	return EBUSY;
+	} else if(state == S_STARTING) {
+		return SUCCESS;
+	}
+	return SUCCESS;
 }
 
-command error_t RadioControl.stop() {
+command error_t Mgmt.stop() {
+	dbg("Radio", "nullRadio Mgmt.stop()");
 	if (state == S_STARTED) {
-      state = S_STOPPING;
-      post stop_done();
-      return SUCCESS;
-
-    } else if(state == S_STOPPED) {
-      post stop_done();
-      return EALREADY;
-
-    } else if(state == S_STOPPING) {
-      return SUCCESS;
-    }
-
-	return EBUSY;
+		state = S_STOPPING;
+		post stop_done();
+		return SUCCESS;
+	} else if(state == S_STOPPED) {
+		post stop_done();
+		return EALREADY;
+	} else if(state == S_STOPPING) {
+		return SUCCESS;
+	}
+	return SUCCESS;
 }
 
 async command error_t RadioPower.startVReg() {

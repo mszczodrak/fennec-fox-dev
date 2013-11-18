@@ -26,36 +26,32 @@
  */
 
 configuration PrintfAppC {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface PrintfAppParams;
+uses interface PrintfAppParams;
 
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
 
-  components PrintfAppP;
-  Mgmt = PrintfAppP;
-  Module = PrintfAppP;
+components PrintfAppP;
+Mgmt = PrintfAppP;
 
-  PrintfAppParams = PrintfAppP;
+PrintfAppParams = PrintfAppP;
 
-  NetworkAMSend = PrintfAppP.NetworkAMSend;
-  NetworkReceive = PrintfAppP.NetworkReceive;
-  NetworkSnoop = PrintfAppP.NetworkSnoop;
-  NetworkAMPacket = PrintfAppP.NetworkAMPacket;
-  NetworkPacket = PrintfAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = PrintfAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = PrintfAppP.NetworkStatus;
+NetworkAMSend = PrintfAppP.NetworkAMSend;
+NetworkReceive = PrintfAppP.NetworkReceive;
+NetworkSnoop = PrintfAppP.NetworkSnoop;
+NetworkAMPacket = PrintfAppP.NetworkAMPacket;
+NetworkPacket = PrintfAppP.NetworkPacket;
+NetworkPacketAcknowledgements = PrintfAppP.NetworkPacketAcknowledgements;
 
-  components new TimerMilliC() as Timer;
-  PrintfAppP.Timer -> Timer;
+components new TimerMilliC() as Timer;
+PrintfAppP.Timer -> Timer;
 }
