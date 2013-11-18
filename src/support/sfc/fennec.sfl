@@ -18,6 +18,7 @@ use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backof
 use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
 	uint8_t led=1, uint16_t delay=1024)
 use application printf $(FENNEC_FOX_LIB)/Application/tests/Printf ()
+use application dbgs $(FENNEC_FOX_LIB)/Application/tests/Dbgs ()
 use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter ( 
 	uint16_t delay, uint16_t delay_scale, uint16_t src, uint16_t dest )
 
