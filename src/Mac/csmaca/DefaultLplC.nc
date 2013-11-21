@@ -60,8 +60,7 @@ uses interface ReceiveIndicator as ByteIndicator;
 }
 
 implementation {
-components MainC,
-      DefaultLplP,
+components DefaultLplP,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
@@ -84,10 +83,6 @@ SubReceive = DefaultLplP.SubReceive;
 SubSend = DefaultLplP.SubSend;
   
   
-MainC.SoftwareInit -> DefaultLplP;
-  
-//DefaultLplP.SplitControlState -> PowerCycleC.SplitControlState;
-//DefaultLplP.RadioPowerState -> PowerCycleC.RadioPowerState;
 DefaultLplP.SendState -> SendStateC;
 DefaultLplP.OffTimer -> OffTimerC;
 DefaultLplP.OnTimer -> OnTimerC;
@@ -95,16 +90,8 @@ DefaultLplP.SendDoneTimer -> SendDoneTimerC;
 DefaultLplP.Random -> RandomC;
 DefaultLplP.Leds -> LedsC;
 
-
 PacketIndicator = DefaultLplP.PacketIndicator;
 EnergyIndicator = DefaultLplP.EnergyIndicator;
 ByteIndicator = DefaultLplP.ByteIndicator;
-
-components new StateC() as RadioPowerStateC;
-components new StateC() as SplitControlStateC;
-
-DefaultLplP.RadioPowerState -> RadioPowerStateC;
-DefaultLplP.SplitControlState -> SplitControlStateC;
-
 
 }

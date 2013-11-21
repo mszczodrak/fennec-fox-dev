@@ -42,7 +42,6 @@
 #include "AM.h"
 
 module DefaultLplP {
-provides interface Init;
 provides interface LowPowerListening;
 provides interface Send;
 provides interface Receive;
@@ -54,8 +53,6 @@ uses interface Receive as SubReceive;
 uses interface SplitControl as SubControl;
 uses interface PacketAcknowledgements;
 uses interface State as SendState;
-uses interface State as RadioPowerState;
-uses interface State as SplitControlState;
 uses interface Timer<TMilli> as OffTimer;
 uses interface Timer<TMilli> as OnTimer;
 uses interface Timer<TMilli> as SendDoneTimer;
@@ -76,30 +73,13 @@ norace message_t *currentSendMsg;
 uint8_t currentSendLen;
   
 /** TRUE if the radio is duty cycling and not always on */
-bool dutyCycling;
+bool dutyCycling = FALSE;
 
-/**
- * Radio Power State
- */
-enum {
-  S_OFF, // off by default
-  S_TURNING_ON,
-  S_ON,
-  S_TURNING_OFF,
-  };
-  
-/**
- * Send States
- */
-enum {
-	S_IDLE,
-	S_SENDING,
-};
-  
-enum {
-    ONE_MESSAGE = 0,
-};
-  
+bool radioPowerState = FALSE;
+
+uint8_t state = S_STOPPED;
+
+
 /***************** Prototypes ***************/
 task void send();
 task void resend();
@@ -130,16 +110,16 @@ bool isDutyCycling();
 
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
-	if(call SplitControlState.isState(S_ON)) {
+	if( state == S_STARTED) {
 		return EALREADY;
-	} else if(call SplitControlState.isState(S_TURNING_ON)) {
+	} else if( state == S_STARTING) {
 		return SUCCESS;
-	} else if(!call SplitControlState.isState(S_OFF)) {
+	} else if(state != S_STOPPED) {
 		return EBUSY;
 	}
 
 	// Radio was off, now has been told to turn on or duty cycle.
-	call SplitControlState.forceState(S_TURNING_ON);
+	state = S_STARTING;
 
 	if (TOS_NODE_ID == call csmacaMacParams.get_sink_addr()) {
 		sleepInterval = 0;
@@ -158,15 +138,15 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	if(call SplitControlState.isState(S_OFF)) {
+	if(state == S_STOPPED) {
 		return EALREADY;
-	} else if(call SplitControlState.isState(S_TURNING_OFF)) {
+	} else if(state == S_STOPPING) {
 		return SUCCESS;
-	} else if(!call SplitControlState.isState(S_ON)) {
+	} else if(state != S_STARTED) {
 		return EBUSY;
 	}
 
-	call SplitControlState.forceState(S_TURNING_OFF);
+	state = S_STOPPING;
 	post powerStopRadio();
 	return SUCCESS;
 }
@@ -175,7 +155,10 @@ command error_t SplitControl.stop() {
 /***************** Timer Events ****************/
 event void OnTimer.fired() {
 	if(isDutyCycling()) {
-		if(call RadioPowerState.getState() == S_OFF) {
+		if(radioPowerState) {
+			// Someone else turned on the radio, try again in awhile
+			call OnTimer.startOneShot(sleepInterval);
+		} else {
 			ccaChecks = 0;
 
 			/*
@@ -184,9 +167,6 @@ event void OnTimer.fired() {
 	        	 */
 			post getCca();
 
-		} else {
-			// Someone else turned on the radio, try again in awhile
-			call OnTimer.startOneShot(sleepInterval);
 		}
 	}
 }
@@ -250,7 +230,7 @@ task void getCca() {
  * @return TRUE if the radio should be actively duty cycling
  */
 bool isDutyCycling() {
-	return sleepInterval > 0 && call SplitControlState.isState(S_ON);
+	return sleepInterval > 0 && (state == S_STARTED);
 }
 
 
@@ -258,14 +238,14 @@ bool isDutyCycling() {
  * @return TRUE if we successfully handled a SplitControl request
  */
 bool finishSplitControlRequests() {
-	if(call SplitControlState.isState(S_TURNING_OFF)) {
-		call SplitControlState.forceState(S_OFF);
+	if( state == S_STOPPING) {
+		state = S_STOPPED;
 		signal SplitControl.stopDone(SUCCESS);
 		return TRUE;
 
-	} else if(call SplitControlState.isState(S_TURNING_ON)) {
+	} else if(state == S_STARTING) {
 		// Starting while we're duty cycling first turns off the radio
-		call SplitControlState.forceState(S_ON);
+		state = S_STARTED;
 		signal SplitControl.startDone(SUCCESS);
 		return TRUE;
 	}
@@ -274,12 +254,6 @@ bool finishSplitControlRequests() {
 }
 
 
-/***************** Init Commands ***************/
-command error_t Init.init() {
-	dutyCycling = FALSE;
-	return SUCCESS;
-}
-  
 /***************** LowPowerListening Commands ***************/
 /**
  * Set this this node's radio wakeup interval, in milliseconds.
@@ -298,12 +272,12 @@ command void LowPowerListening.setLocalWakeupInterval(uint16_t sleepIntervalMs) 
 
 	sleepInterval = sleepIntervalMs;
 
-	if(sleepInterval == 0 && call SplitControlState.isState(S_ON)) {
+	if(sleepInterval == 0 && (state == S_STARTED)) {
 		/*
 		* Leave the radio on permanently if sleepInterval == 0 and the radio is
 		* supposed to be enabled
 		*/
-		if(call RadioPowerState.getState() == S_OFF) {
+		if(!radioPowerState) {
 			call SubControl.start();
 		}
 	}
@@ -347,7 +321,7 @@ command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
 command error_t Send.send(message_t *msg, uint8_t len) {
 	dbg("Mac", "csmaMac DefaultLplP Send.send(0x%1x, %d)", msg, len);
 
-	if(call SplitControlState.getState() == S_OFF) {
+	if(state == S_STOPPED) {
 		// Everything is off right now, start SplitControl and try again
 		return EOFF;
 	}
@@ -360,7 +334,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 		call OffTimer.stop();
 		call SendDoneTimer.stop();
       
-		if(call RadioPowerState.getState() == S_ON) {
+		if(radioPowerState) {
 			initializeSend();
 			return SUCCESS;
 		} else {
@@ -410,17 +384,15 @@ task void detected() {
 event void SubControl.startDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.startDone(%d)", error);
 	if(!error) {
-		call RadioPowerState.forceState(S_ON);
+		radioPowerState = TRUE;
 
-	    if(finishSplitControlRequests()) {
+		if(finishSplitControlRequests()) {
 
-	    } else if(isDutyCycling()) {
-		      post getCca();
-	    }
+		} else if(isDutyCycling()) {
+			post getCca();
+		}
 
-
-
-      
+    
 		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
 			|| call SendState.getState() == S_LPL_SENDING) {
 			initializeSend();
@@ -431,13 +403,13 @@ event void SubControl.startDone(error_t error) {
 event void SubControl.stopDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
 	if(!error) {
-		call RadioPowerState.forceState(S_OFF);
+	radioPowerState = FALSE;
 
-    if(finishSplitControlRequests()) {
+	if(finishSplitControlRequests()) {
 
-    } else if(isDutyCycling()) {
-      call OnTimer.startOneShot(sleepInterval);
-    }
+	} else if(isDutyCycling()) {
+		call OnTimer.startOneShot(sleepInterval);
+	}
 
 
 
@@ -508,9 +480,9 @@ event void OffTimer.fired() {
      * Only stop the radio if the radio is supposed to be off permanently
      * or if the duty cycle is on and our sleep interval is not 0
      */
-    if(call SplitControlState.getState() == S_OFF
+    if(state == S_STOPPED
         || (sleepInterval > 0
-            && call SplitControlState.getState() != S_OFF
+            && state != S_STOPPED
                 && call SendState.getState() == S_LPL_NOT_SENDING)) { 
       post stopRadio();
     }
@@ -569,8 +541,7 @@ task void stopRadio() {
   
 /***************** Functions ***************/
 void initializeSend() {
-    if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) 
-      > ONE_MESSAGE) {
+    if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) > 0) {
       csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(currentSendMsg, sizeof(csmaca_header_t)); 
       if(header->dest == IEEE154_BROADCAST_ADDR) {
         call PacketAcknowledgements.noAck(currentSendMsg);
