@@ -39,59 +39,57 @@
 //#warning "*** USING DEFAULT LOW POWER COMMUNICATIONS ***"
 
 configuration DefaultLplC {
-  provides {
-    interface LowPowerListening;
-    interface Send;
-    interface Receive;
-    interface SplitControl;
-    interface State as SendState;
-  }
+provides interface LowPowerListening;
+provides interface Send;
+provides interface Receive;
+provides interface SplitControl;
+provides interface State as SendState;
   
-  uses { 
-    interface Send as SubSend;
-    interface Receive as SubReceive;
-    interface SplitControl as SubControl;
-    interface PacketAcknowledgements as MacPacketAcknowledgements;
-  }
-  uses interface csmacaMacParams;
-  uses interface CSMATransmit;
+uses interface Send as SubSend;
+uses interface Receive as SubReceive;
+uses interface SplitControl as SubControl;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+
+uses interface csmacaMacParams;
+uses interface CSMATransmit;
 }
 
 implementation {
-  components MainC,
+components MainC,
       DefaultLplP,
       PowerCycleC,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
+      new TimerMilliC() as OnTimerC,
       new TimerMilliC() as SendDoneTimerC,
       LedsC;
   
-  LowPowerListening = DefaultLplP;
-  Send = DefaultLplP;
-  Receive = DefaultLplP;
-  SplitControl = PowerCycleC;
-  SendState = SendStateC;
-  MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
+LowPowerListening = DefaultLplP;
+Send = DefaultLplP;
+Receive = DefaultLplP;
+SplitControl = PowerCycleC;
+SendState = SendStateC;
+MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
 
-  CSMATransmit = DefaultLplP.CSMATransmit;
+CSMATransmit = DefaultLplP.CSMATransmit;
 
-  csmacaMacParams = DefaultLplP.csmacaMacParams;
-  SubControl = DefaultLplP.SubControl;
-  SubReceive = DefaultLplP.SubReceive;
-  SubSend = DefaultLplP.SubSend;
+csmacaMacParams = DefaultLplP.csmacaMacParams;
+SubControl = DefaultLplP.SubControl;
+SubReceive = DefaultLplP.SubReceive;
+SubSend = DefaultLplP.SubSend;
   
   
-  MainC.SoftwareInit -> DefaultLplP;
+MainC.SoftwareInit -> DefaultLplP;
   
-  
-  DefaultLplP.SplitControlState -> PowerCycleC.SplitControlState;
-  DefaultLplP.RadioPowerState -> PowerCycleC.RadioPowerState;
-  DefaultLplP.SendState -> SendStateC;
-  DefaultLplP.OffTimer -> OffTimerC;
-  DefaultLplP.SendDoneTimer -> SendDoneTimerC;
-  DefaultLplP.PowerCycle -> PowerCycleC;
-  DefaultLplP.Random -> RandomC;
-  DefaultLplP.Leds -> LedsC;
+DefaultLplP.SplitControlState -> PowerCycleC.SplitControlState;
+DefaultLplP.RadioPowerState -> PowerCycleC.RadioPowerState;
+DefaultLplP.SendState -> SendStateC;
+DefaultLplP.OffTimer -> OffTimerC;
+DefaultLplP.OnTimer -> OnTimerC;
+DefaultLplP.SendDoneTimer -> SendDoneTimerC;
+DefaultLplP.PowerCycle -> PowerCycleC;
+DefaultLplP.Random -> RandomC;
+DefaultLplP.Leds -> LedsC;
 
 }

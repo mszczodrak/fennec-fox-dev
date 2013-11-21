@@ -1,34 +1,3 @@
-/*
- * Copyright (c) 2005-2006 Rincon Research Corporation
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * - Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the
- *   distribution.
- * - Neither the name of the Rincon Research Corporation nor the names of
- *   its contributors may be used to endorse or promote products derived
- *   from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
- * RINCON RESEARCH OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE
- */
- 
 /** 
  * Module to duty cycle the radio on and off, performing CCA receive checks.
  * When a carrier is sensed, this will leave the radio on. It is then up
@@ -56,7 +25,7 @@
 module PowerCycleP {
   provides {
     interface PowerCycle;
-    interface SplitControl;
+    interface SplitControl as PowerSplitControl;
   }
 
   uses {
@@ -93,8 +62,8 @@ implementation {
   
   
   /***************** Prototypes ****************/
-  task void stopRadio();
-  task void startRadio();
+  task void powerStopRadio();
+  task void powerStartRadio();
   task void getCca();
   
   bool finishSplitControlRequests();
@@ -108,7 +77,7 @@ implementation {
   command void PowerCycle.setSleepInterval(uint16_t sleepIntervalMs) {
     if (!sleepInterval && sleepIntervalMs) {
       // We were always on, now lets duty cycle
-      post stopRadio();  // Might want to delay turning off the radio
+      post powerStopRadio();  // Might want to delay turning off the radio
     }
     
     sleepInterval = sleepIntervalMs;
@@ -133,7 +102,7 @@ implementation {
   
   
   /***************** SplitControl Commands ****************/
-  command error_t SplitControl.start() {
+  command error_t PowerSplitControl.start() {
     if(call SplitControlState.isState(S_ON)) {
       return EALREADY;
       
@@ -155,16 +124,16 @@ implementation {
     
     if(sleepInterval > 0) {
       // Begin duty cycling
-      post stopRadio();
+      post powerStopRadio();
       return SUCCESS;
       
     } else {
-      post startRadio();
+      post powerStartRadio();
       return SUCCESS;
     }
   }
   
-  command error_t SplitControl.stop() {
+  command error_t PowerSplitControl.stop() {
     if(call SplitControlState.isState(S_OFF)) {
       return EALREADY;
       
@@ -176,7 +145,7 @@ implementation {
     }
     
     call SplitControlState.forceState(S_TURNING_OFF);
-    post stopRadio();
+    post powerStopRadio();
     return SUCCESS;
   }
   
@@ -227,7 +196,7 @@ implementation {
   
   
   /***************** Tasks ****************/
-  task void stopRadio() {
+  task void powerStopRadio() {
     error_t error = call SubControl.stop();
     if(error != SUCCESS) {
       // Already stopped?
@@ -236,11 +205,11 @@ implementation {
     }
   }
 
-  task void startRadio() {
+  task void powerStartRadio() {
     error_t startResult = call SubControl.start();
     // If the radio wasn't started successfully, or already on, try again
     if ((startResult != SUCCESS && startResult != EALREADY)) {
-      post startRadio();
+      post powerStartRadio();
     }
   }
   
@@ -251,7 +220,7 @@ implementation {
       ccaChecks++;
       if(ccaChecks == 1) {
         // Microcontroller is ready, turn on the radio and sample a few times
-        post startRadio();
+        post powerStartRadio();
         return;
       }
 
@@ -274,7 +243,7 @@ implementation {
       }
       
       if(call SendState.isIdle()) {
-        post stopRadio();
+        post powerStopRadio();
       }
     }  
   }
@@ -293,29 +262,21 @@ implementation {
   bool finishSplitControlRequests() {
     if(call SplitControlState.isState(S_TURNING_OFF)) {
       call SplitControlState.forceState(S_OFF);
-      signal SplitControl.stopDone(SUCCESS);
+      signal PowerSplitControl.stopDone(SUCCESS);
       return TRUE;
       
     } else if(call SplitControlState.isState(S_TURNING_ON)) {
       // Starting while we're duty cycling first turns off the radio
       call SplitControlState.forceState(S_ON);
-      signal SplitControl.startDone(SUCCESS);
+      signal PowerSplitControl.startDone(SUCCESS);
       return TRUE;
     }
     
     return FALSE;
   }
   
-  /**************** Defaults ****************/
-  default event void PowerCycle.detected() {
-  }
 
 
-  default event void SplitControl.startDone(error_t error) {
-  }
-  
-  default event void SplitControl.stopDone(error_t error) {
-  }
 
 }
 

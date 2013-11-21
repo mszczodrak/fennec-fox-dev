@@ -63,6 +63,7 @@ module DefaultLplP {
     interface State as RadioPowerState;
     interface State as SplitControlState;
     interface Timer<TMilli> as OffTimer;
+    interface Timer<TMilli> as OnTimer;
     interface Timer<TMilli> as SendDoneTimer;
     interface Random;
     interface Leds;
@@ -111,6 +112,23 @@ implementation {
   
   void initializeSend();
   void startOffTimer();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /***************** Init Commands ***************/
   command error_t Init.init() {
@@ -320,6 +338,13 @@ event message_t *SubReceive.receive(message_t* msg, void* payload,
       post stopRadio();
     }
   }
+
+
+event void OnTimer.fired() {
+
+
+}
+
   
 /**
   * When this timer is running, that means we're sending repeating messages
