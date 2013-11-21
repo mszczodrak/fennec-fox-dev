@@ -398,15 +398,13 @@ event void SubControl.startDone(error_t error) {
 event void SubControl.stopDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
 	if(!error) {
-	radioPowerState = FALSE;
+		radioPowerState = FALSE;
 
-	if(finishSplitControlRequests()) {
-
-	} else if(isDutyCycling()) {
-		call OnTimer.startOneShot(sleepInterval);
-	}
-
-
+		if(finishSplitControlRequests()) {
+	
+		} else if(isDutyCycling()) {
+			call OnTimer.startOneShot(sleepInterval);
+		}
 
 		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
 	        	  || call SendState.getState() == S_LPL_SENDING) {
