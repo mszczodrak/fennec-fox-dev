@@ -50,6 +50,8 @@ module DefaultLplP {
     interface LowPowerListening;
     interface Send;
     interface Receive;
+    interface PowerCycle;
+    interface SplitControl as PowerSplitControl;
   }
   
   uses {
@@ -57,7 +59,6 @@ module DefaultLplP {
     interface CSMATransmit;
     interface Receive as SubReceive;
     interface SplitControl as SubControl;
-    interface PowerCycle;
     interface PacketAcknowledgements;
     interface State as SendState;
     interface State as RadioPowerState;
@@ -67,6 +68,10 @@ module DefaultLplP {
     interface Timer<TMilli> as SendDoneTimer;
     interface Random;
     interface Leds;
+    interface ReceiveIndicator as EnergyIndicator;
+    interface ReceiveIndicator as ByteIndicator;
+    interface ReceiveIndicator as PacketIndicator;
+
   }
   uses interface csmacaMacParams;
 }
@@ -117,73 +122,268 @@ implementation {
 
 
 
+  /** The current period of the duty cycle, equivalent of wakeup interval */
+  uint16_t sleepInterval = LPL_DEF_LOCAL_WAKEUP;
+
+  /** The number of times the CCA has been sampled in this wakeup period */
+  uint16_t ccaChecks;
+
+
+
+
+  /***************** Prototypes ****************/
+  task void powerStopRadio();
+  task void powerStartRadio();
+  task void getCca();
+
+  bool finishSplitControlRequests();
+  bool isDutyCycling();
 
 
 
 
 
 
+  /***************** PowerCycle Commands ****************/
+  /**
+   * Set the sleep interval, in binary milliseconds
+   * @param sleepIntervalMs the sleep interval in [ms]
+   */
+  command void PowerCycle.setSleepInterval(uint16_t sleepIntervalMs) {
+    if (!sleepInterval && sleepIntervalMs) {
+      // We were always on, now lets duty cycle
+      post powerStopRadio();  // Might want to delay turning off the radio
+    }
+
+    sleepInterval = sleepIntervalMs;
+
+    if(sleepInterval == 0 && call SplitControlState.isState(S_ON)) {
+      /*
+       * Leave the radio on permanently if sleepInterval == 0 and the radio is
+       * supposed to be enabled
+       */
+      if(call RadioPowerState.getState() == S_OFF) {
+        call SubControl.start();
+      }
+    }
+  }
+
+
+  /**
+   * @return the sleep interval in [ms]
+   */
+  command uint16_t PowerCycle.getSleepInterval() {
+    return sleepInterval;
+  }
 
 
 
 
+  /***************** SplitControl Commands ****************/
+  command error_t PowerSplitControl.start() {
+    if(call SplitControlState.isState(S_ON)) {
+      return EALREADY;
 
+    } else if(call SplitControlState.isState(S_TURNING_ON)) {
+      return SUCCESS;
 
+    } else if(!call SplitControlState.isState(S_OFF)) {
+      return EBUSY;
+    }
 
-  /***************** Init Commands ***************/
-  command error_t Init.init() {
-    dutyCycling = FALSE;
+    // Radio was off, now has been told to turn on or duty cycle.
+    call SplitControlState.forceState(S_TURNING_ON);
+
+    if (TOS_NODE_ID == call csmacaMacParams.get_sink_addr()) {
+      sleepInterval = 0;
+    } else {
+      sleepInterval = call csmacaMacParams.get_delay_after_receive();
+    }
+
+    if(sleepInterval > 0) {
+      // Begin duty cycling
+      post powerStopRadio();
+      return SUCCESS;
+
+    } else {
+      post powerStartRadio();
+      return SUCCESS;
+    }
+  }
+
+  command error_t PowerSplitControl.stop() {
+    if(call SplitControlState.isState(S_OFF)) {
+      return EALREADY;
+
+    } else if(call SplitControlState.isState(S_TURNING_OFF)) {
+      return SUCCESS;
+
+    } else if(!call SplitControlState.isState(S_ON)) {
+      return EBUSY;
+    }
+
+    call SplitControlState.forceState(S_TURNING_OFF);
+    post powerStopRadio();
     return SUCCESS;
   }
+
+
+/***************** Timer Events ****************/
+event void OnTimer.fired() {
+	if(isDutyCycling()) {
+		if(call RadioPowerState.getState() == S_OFF) {
+			ccaChecks = 0;
+
+			/*
+        		 * Turn on the radio only after the uC is fully awake.  ATmega128's
+	        	 * have this issue when running on an external crystal.
+	        	 */
+			post getCca();
+
+		} else {
+			// Someone else turned on the radio, try again in awhile
+			call OnTimer.startOneShot(sleepInterval);
+		}
+	}
+}
+
+
+/***************** Tasks ****************/
+task void powerStopRadio() {
+	error_t error = call SubControl.stop();
+	if(error != SUCCESS) {
+		// Already stopped?
+		finishSplitControlRequests();
+		call OnTimer.startOneShot(sleepInterval);
+	}
+}
+
+task void powerStartRadio() {
+	error_t startResult = call SubControl.start();
+	// If the radio wasn't started successfully, or already on, try again
+	if ((startResult != SUCCESS && startResult != EALREADY)) {
+		post powerStartRadio();
+	}
+}
+
+task void getCca() {
+	uint8_t detects = 0;
+	if(isDutyCycling()) {
+
+		ccaChecks++;
+		if(ccaChecks == 1) {
+			// Microcontroller is ready, turn on the radio and sample a few times
+			post powerStartRadio();
+			return;
+		}
+
+		atomic {
+			for( ; ccaChecks < MAX_LPL_CCA_CHECKS && call SendState.isIdle(); ccaChecks++) {
+				if(call PacketIndicator.isReceiving()) {
+					signal PowerCycle.detected();
+					return;
+				}
+	
+				if(call EnergyIndicator.isReceiving()) {
+					detects++;
+					if(detects > MIN_SAMPLES_BEFORE_DETECT) {
+						signal PowerCycle.detected();
+						return;
+					}
+					// Leave the radio on for upper layers to perform some transaction
+				}
+			}
+		}
+
+		if(call SendState.isIdle()) {
+			post powerStopRadio();
+		}
+	}
+}
+
+
+/**
+ * @return TRUE if the radio should be actively duty cycling
+ */
+bool isDutyCycling() {
+	return sleepInterval > 0 && call SplitControlState.isState(S_ON);
+}
+
+
+/**
+ * @return TRUE if we successfully handled a SplitControl request
+ */
+bool finishSplitControlRequests() {
+	if(call SplitControlState.isState(S_TURNING_OFF)) {
+		call SplitControlState.forceState(S_OFF);
+		signal PowerSplitControl.stopDone(SUCCESS);
+		return TRUE;
+
+	} else if(call SplitControlState.isState(S_TURNING_ON)) {
+		// Starting while we're duty cycling first turns off the radio
+		call SplitControlState.forceState(S_ON);
+		signal PowerSplitControl.startDone(SUCCESS);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/***************** Init Commands ***************/
+command error_t Init.init() {
+	dutyCycling = FALSE;
+	return SUCCESS;
+}
   
-  /***************** LowPowerListening Commands ***************/
-  /**
-   * Set this this node's radio wakeup interval, in milliseconds.
-   * Once every interval, the node will sleep and perform an Rx check 
-   * on the radio.  Setting the wakeup interval to 0 will keep the radio
-   * always on.
-   *
-   * @param intervalMs the length of this node's wakeup interval, in [ms]
-   */
-  command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
-    call PowerCycle.setSleepInterval(intervalMs);
-  }
+/***************** LowPowerListening Commands ***************/
+/**
+ * Set this this node's radio wakeup interval, in milliseconds.
+ * Once every interval, the node will sleep and perform an Rx check 
+ * on the radio.  Setting the wakeup interval to 0 will keep the radio
+ * always on.
+ *
+ * @param intervalMs the length of this node's wakeup interval, in [ms]
+ */
+command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
+	call PowerCycle.setSleepInterval(intervalMs);
+}
   
-  /**
-   * @return the local node's wakeup interval, in [ms]
-   */
-  command uint16_t LowPowerListening.getLocalWakeupInterval() {
-    return call PowerCycle.getSleepInterval();
-  }
+/**
+ * @return the local node's wakeup interval, in [ms]
+ */
+command uint16_t LowPowerListening.getLocalWakeupInterval() {
+	return call PowerCycle.getSleepInterval();
+}
   
-  /**
-   * Configure this outgoing message so it can be transmitted to a neighbor mote
-   * with the specified wakeup interval.
-   * @param msg Pointer to the message that will be sent
-   * @param intervalMs The receiving node's wakeup interval, in [ms]
-   */
-  command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, 
-      uint16_t intervalMs) {
-    metadata_t *metadata = (metadata_t*) msg->metadata;
-    metadata->rxInterval = intervalMs;
-  }
+/**
+ * Configure this outgoing message so it can be transmitted to a neighbor mote
+ * with the specified wakeup interval.
+ * @param msg Pointer to the message that will be sent
+ * @param intervalMs The receiving node's wakeup interval, in [ms]
+ */
+command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, 
+	uint16_t intervalMs) {
+	metadata_t *metadata = (metadata_t*) msg->metadata;
+	metadata->rxInterval = intervalMs;
+}
   
-  /**
-   * @return the destination node's wakeup interval configured in this message
-   */
-  command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
-    metadata_t *metadata = (metadata_t*) msg->metadata;
-    return metadata->rxInterval;
-  }
+/**
+  * @return the destination node's wakeup interval configured in this message
+  */
+command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
+	metadata_t *metadata = (metadata_t*) msg->metadata;
+	return metadata->rxInterval;
+}
   
-  /***************** Send Commands ***************/
-  /**
-   * Each call to this send command gives the message a single
-   * DSN that does not change for every copy of the message
-   * sent out.  For messages that are not acknowledged, such as
-   * a broadcast address message, the receiving end does not
-   * signal receive() more than once for that message.
-   */
+/***************** Send Commands ***************/
+/**
+ * Each call to this send command gives the message a single
+ * DSN that does not change for every copy of the message
+ * sent out.  For messages that are not acknowledged, such as
+ * a broadcast address message, the receiving end does not
+ * signal receive() more than once for that message.
+ */
 command error_t Send.send(message_t *msg, uint8_t len) {
 	dbg("Mac", "csmaMac DefaultLplP Send.send(0x%1x, %d)", msg, len);
 
@@ -236,15 +436,13 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
   * A transmitter was detected.  You must now take action to
   * turn the radio off when the transaction is complete.
   */
-event void PowerCycle.detected() {
-	dbg("Mac", "csmaMac DefaultLplP PowerCycle.detected()");
-    // At this point, the duty cycling has been disabled temporary
-    // and it will be this component's job to turn the radio back off
-    // Wait long enough to see if we actually receive a packet, which is
-    // just a little longer in case there is more than one lpl transmitter on
-    // the channel.
-    
-    startOffTimer();
+default event void PowerCycle.detected() {
+	// At this point, the duty cycling has been disabled temporary
+	// and it will be this component's job to turn the radio back off
+	// Wait long enough to see if we actually receive a packet, which is
+	// just a little longer in case there is more than one lpl transmitter on
+	// the channel.
+	startOffTimer();
 }
   
   
@@ -253,6 +451,15 @@ event void SubControl.startDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.startDone(%d)", error);
 	if(!error) {
 		call RadioPowerState.forceState(S_ON);
+
+	    if(finishSplitControlRequests()) {
+
+	    } else if(isDutyCycling()) {
+		      post getCca();
+	    }
+
+
+
       
 		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
 			|| call SendState.getState() == S_LPL_SENDING) {
@@ -264,6 +471,16 @@ event void SubControl.startDone(error_t error) {
 event void SubControl.stopDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
 	if(!error) {
+		call RadioPowerState.forceState(S_OFF);
+
+    if(finishSplitControlRequests()) {
+
+    } else if(isDutyCycling()) {
+      call OnTimer.startOneShot(sleepInterval);
+    }
+
+
+
 		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
 	        	  || call SendState.getState() == S_LPL_SENDING) {
 			// We're in the middle of sending a message; start the radio back up
@@ -310,22 +527,22 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 	signal Send.sendDone(msg, error);
 }
   
-  /***************** SubReceive Events ***************/
-  /**
-   * If the received message is new, we signal the receive event and
-   * start the off timer.  If the last message we received had the same
-   * DSN as this message, then the chances are pretty good
-   * that this message should be ignored, especially if the destination address
-   * as the broadcast address
-   */
+/***************** SubReceive Events ***************/
+/**
+ * If the received message is new, we signal the receive event and
+ * start the off timer.  If the last message we received had the same
+ * DSN as this message, then the chances are pretty good
+ * that this message should be ignored, especially if the destination address
+ * as the broadcast address
+ */
 event message_t *SubReceive.receive(message_t* msg, void* payload, 
       uint8_t len) {
     startOffTimer();
     return signal Receive.receive(msg, payload, len);
 }
   
-  /***************** Timer Events ****************/
-  event void OffTimer.fired() {    
+/***************** Timer Events ****************/
+event void OffTimer.fired() {    
 	dbg("Mac", "csmaMac DefaultLplP OffTimer.fired()");
     /*
      * Only stop the radio if the radio is supposed to be off permanently
@@ -337,13 +554,9 @@ event message_t *SubReceive.receive(message_t* msg, void* payload,
                 && call SendState.getState() == S_LPL_NOT_SENDING)) { 
       post stopRadio();
     }
-  }
-
-
-event void OnTimer.fired() {
-
-
 }
+
+
 
   
 /**
@@ -394,8 +607,8 @@ task void stopRadio() {
 	}
 }
   
-  /***************** Functions ***************/
-  void initializeSend() {
+/***************** Functions ***************/
+void initializeSend() {
     if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) 
       > ONE_MESSAGE) {
       csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(currentSendMsg, sizeof(csmaca_header_t)); 
@@ -411,12 +624,12 @@ task void stopRadio() {
     }
         
     post send();
-  }
+}
   
   
-  void startOffTimer() {
+void startOffTimer() {
     call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
-  }
+}
 
 }
 

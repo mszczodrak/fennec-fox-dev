@@ -52,12 +52,16 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 uses interface csmacaMacParams;
 uses interface CSMATransmit;
+
+uses interface ReceiveIndicator as PacketIndicator;
+uses interface ReceiveIndicator as EnergyIndicator;
+uses interface ReceiveIndicator as ByteIndicator;
+
 }
 
 implementation {
 components MainC,
       DefaultLplP,
-      PowerCycleC,
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
@@ -68,7 +72,7 @@ components MainC,
 LowPowerListening = DefaultLplP;
 Send = DefaultLplP;
 Receive = DefaultLplP;
-SplitControl = PowerCycleC;
+SplitControl = DefaultLplP;
 SendState = SendStateC;
 MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
 
@@ -82,14 +86,25 @@ SubSend = DefaultLplP.SubSend;
   
 MainC.SoftwareInit -> DefaultLplP;
   
-DefaultLplP.SplitControlState -> PowerCycleC.SplitControlState;
-DefaultLplP.RadioPowerState -> PowerCycleC.RadioPowerState;
+//DefaultLplP.SplitControlState -> PowerCycleC.SplitControlState;
+//DefaultLplP.RadioPowerState -> PowerCycleC.RadioPowerState;
 DefaultLplP.SendState -> SendStateC;
 DefaultLplP.OffTimer -> OffTimerC;
 DefaultLplP.OnTimer -> OnTimerC;
 DefaultLplP.SendDoneTimer -> SendDoneTimerC;
-DefaultLplP.PowerCycle -> PowerCycleC;
 DefaultLplP.Random -> RandomC;
 DefaultLplP.Leds -> LedsC;
+
+
+PacketIndicator = DefaultLplP.PacketIndicator;
+EnergyIndicator = DefaultLplP.EnergyIndicator;
+ByteIndicator = DefaultLplP.ByteIndicator;
+
+components new StateC() as RadioPowerStateC;
+components new StateC() as SplitControlStateC;
+
+DefaultLplP.RadioPowerState -> RadioPowerStateC;
+DefaultLplP.SplitControlState -> SplitControlStateC;
+
 
 }

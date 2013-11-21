@@ -99,12 +99,10 @@ LplC.SubSend -> CSMATransmitC;
 LplC.SubReceive -> UniqueReceiveC.Receive;
 UniqueReceiveC.SubReceive =  RadioReceive;
 
-components PowerCycleC;
-PacketIndicator = PowerCycleC.PacketIndicator;
-EnergyIndicator = PowerCycleC.EnergyIndicator;
-ByteIndicator = PowerCycleC.ByteIndicator;
+PacketIndicator = LplC.PacketIndicator;
+EnergyIndicator = LplC.EnergyIndicator;
+ByteIndicator = LplC.ByteIndicator;
 
-csmacaMacParams = PowerCycleC.csmacaMacParams;
 csmacaMacParams = LplC.csmacaMacParams;
 csmacaMacParams = CSMATransmitC.csmacaMacParams;
 
