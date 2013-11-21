@@ -213,11 +213,11 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
 }
   
   
-  /***************** DutyCycle Events ***************/
-  /**
-   * A transmitter was detected.  You must now take action to
-   * turn the radio off when the transaction is complete.
-   */
+/***************** DutyCycle Events ***************/
+/**
+  * A transmitter was detected.  You must now take action to
+  * turn the radio off when the transaction is complete.
+  */
 event void PowerCycle.detected() {
 	dbg("Mac", "csmaMac DefaultLplP PowerCycle.detected()");
     // At this point, the duty cycling has been disabled temporary
@@ -227,21 +227,21 @@ event void PowerCycle.detected() {
     // the channel.
     
     startOffTimer();
-  }
+}
   
   
-  /***************** SubControl Events ***************/
-  event void SubControl.startDone(error_t error) {
+/***************** SubControl Events ***************/
+event void SubControl.startDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.startDone(%d)", error);
-    if(!error) {
-      call RadioPowerState.forceState(S_ON);
+	if(!error) {
+		call RadioPowerState.forceState(S_ON);
       
-      if(call SendState.getState() == S_LPL_FIRST_MESSAGE
-          || call SendState.getState() == S_LPL_SENDING) {
-        initializeSend();
-      }
-    }
-  }
+		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
+			|| call SendState.getState() == S_LPL_SENDING) {
+			initializeSend();
+		}
+	}
+}
     
 event void SubControl.stopDone(error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
@@ -261,36 +261,36 @@ event void SubControl.stopDone(error_t error) {
 	}
 }
   
-  /***************** SubSend Events ***************/
-  event void SubSend.sendDone(message_t* msg, error_t error) {
+/***************** SubSend Events ***************/
+event void SubSend.sendDone(message_t* msg, error_t error) {
 	dbg("Mac", "csmaMac DefaultLplP SubSend.sendDone(0x%1x, %d)", msg, error);
    
-    switch(call SendState.getState()) {
-    case S_LPL_SENDING:
-      if(call SendDoneTimer.isRunning()) {
-        if(!call PacketAcknowledgements.wasAcked(msg)) {
-          post resend();
-          return;
-        }
-      }
-      break;
+	switch(call SendState.getState()) {
+	case S_LPL_SENDING:
+		if(call SendDoneTimer.isRunning()) {
+			if(!call PacketAcknowledgements.wasAcked(msg)) {
+				post resend();
+				return;
+			}
+		}
+		break;
       
-    case S_LPL_CLEAN_UP:
-      /**
-       * We include this state so upper layers can't send a different message
-       * before the last message gets done sending
-       */
-      break;
+	case S_LPL_CLEAN_UP:
+	/**
+	* We include this state so upper layers can't send a different message
+	* before the last message gets done sending
+	*/
+		break;
       
-    default:
-      break;
-    }  
+	default:
+		break;
+	}  
     
-    call SendState.toIdle();
-    call SendDoneTimer.stop();
-    startOffTimer();
-    signal Send.sendDone(msg, error);
-  }
+	call SendState.toIdle();
+	call SendDoneTimer.stop();
+	startOffTimer();
+	signal Send.sendDone(msg, error);
+}
   
   /***************** SubReceive Events ***************/
   /**
@@ -321,31 +321,31 @@ event message_t *SubReceive.receive(message_t* msg, void* payload,
     }
   }
   
-  /**
-   * When this timer is running, that means we're sending repeating messages
-   * to a node that is receive check duty cycling.
-   */
-  event void SendDoneTimer.fired() {
+/**
+  * When this timer is running, that means we're sending repeating messages
+  * to a node that is receive check duty cycling.
+  */
+event void SendDoneTimer.fired() {
 	dbg("Mac", "csmaMac DefaultLplP SendDoneTimer.fired()");
     if(call SendState.getState() == S_LPL_SENDING) {
       // The next time SubSend.sendDone is signaled, send is complete.
       call SendState.forceState(S_LPL_CLEAN_UP);
     }
-  }
+}
   
   
-  /***************** Tasks ***************/
-  task void send() {
+/***************** Tasks ***************/
+task void send() {
     if(call SubSend.send(currentSendMsg, currentSendLen) != SUCCESS) {
       post send();
     }
-  }
+}
   
-  task void resend() {
-    if(call CSMATransmit.resend(currentSendMsg, TRUE) != SUCCESS) {
-      post resend();
-    }
-  }
+task void resend() {
+	if(call CSMATransmit.resend(currentSendMsg, TRUE) != SUCCESS) {
+		post resend();
+	}
+}
   
 task void startRadio() {
 	dbg("Mac", "DefaultLplP startRadio");
