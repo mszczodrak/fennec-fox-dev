@@ -90,6 +90,7 @@ task void detected();
   
 void initializeSend();
 void startOffTimer();
+task void getCca();
 
 
 /** The current period of the duty cycle, equivalent of wakeup interval */
@@ -97,12 +98,6 @@ uint16_t sleepInterval = LPL_DEF_LOCAL_WAKEUP;
 
 /** The number of times the CCA has been sampled in this wakeup period */
 uint16_t ccaChecks;
-
-
-/***************** Prototypes ****************/
-task void powerStopRadio();
-task void powerStartRadio();
-task void getCca();
 
 bool finishSplitControlRequests();
 bool isDutyCycling();
@@ -129,10 +124,10 @@ command error_t SplitControl.start() {
 
 	if(sleepInterval > 0) {
 		// Begin duty cycling
-		post powerStopRadio();
+		post stopRadio();
 		return SUCCESS;
 	} else {
-		post powerStartRadio();
+		post startRadio();
 		return SUCCESS;
 	}
 }
@@ -147,7 +142,7 @@ command error_t SplitControl.stop() {
 	}
 
 	state = S_STOPPING;
-	post powerStopRadio();
+	post stopRadio();
 	return SUCCESS;
 }
 
@@ -173,22 +168,22 @@ event void OnTimer.fired() {
 
 
 /***************** Tasks ****************/
-task void powerStopRadio() {
+task void stopRadio() {
 	error_t error = call SubControl.stop();
 	if(error != SUCCESS) {
-		// Already stopped?
 		finishSplitControlRequests();
 		call OnTimer.startOneShot(sleepInterval);
 	}
 }
 
-task void powerStartRadio() {
+
+task void startRadio() {
 	error_t startResult = call SubControl.start();
-	// If the radio wasn't started successfully, or already on, try again
 	if ((startResult != SUCCESS && startResult != EALREADY)) {
-		post powerStartRadio();
-	}
+                post startRadio();
+        }
 }
+
 
 task void getCca() {
 	uint8_t detects = 0;
@@ -197,7 +192,7 @@ task void getCca() {
 		ccaChecks++;
 		if(ccaChecks == 1) {
 			// Microcontroller is ready, turn on the radio and sample a few times
-			post powerStartRadio();
+			post startRadio();
 			return;
 		}
 
@@ -220,7 +215,7 @@ task void getCca() {
 		}
 
 		if(call SendState.isIdle()) {
-			post powerStopRadio();
+			post stopRadio();
 		}
 	}
 }
@@ -267,7 +262,7 @@ command void LowPowerListening.setLocalWakeupInterval(uint16_t sleepIntervalMs) 
 
 	if (!sleepInterval && sleepIntervalMs) {
 		// We were always on, now lets duty cycle
-		post powerStopRadio();  // Might want to delay turning off the radio
+		post stopRadio();  // Might want to delay turning off the radio
 	}
 
 	sleepInterval = sleepIntervalMs;
@@ -467,25 +462,21 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
  * that this message should be ignored, especially if the destination address
  * as the broadcast address
  */
-event message_t *SubReceive.receive(message_t* msg, void* payload, 
-      uint8_t len) {
-    startOffTimer();
-    return signal Receive.receive(msg, payload, len);
+event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
+	startOffTimer();
+	return signal Receive.receive(msg, payload, len);
 }
   
 /***************** Timer Events ****************/
 event void OffTimer.fired() {    
 	dbg("Mac", "csmaMac DefaultLplP OffTimer.fired()");
-    /*
-     * Only stop the radio if the radio is supposed to be off permanently
-     * or if the duty cycle is on and our sleep interval is not 0
-     */
-    if(state == S_STOPPED
-        || (sleepInterval > 0
-            && state != S_STOPPED
-                && call SendState.getState() == S_LPL_NOT_SENDING)) { 
-      post stopRadio();
-    }
+	/*
+	* Only stop the radio if the radio is supposed to be off permanently
+	* or if the duty cycle is on and our sleep interval is not 0
+	*/
+	if(state == S_STOPPED || (sleepInterval > 0 && state != S_STOPPED && call SendState.getState() == S_LPL_NOT_SENDING)) { 
+		post stopRadio();
+	}
 }
 
 
@@ -497,18 +488,18 @@ event void OffTimer.fired() {
   */
 event void SendDoneTimer.fired() {
 	dbg("Mac", "csmaMac DefaultLplP SendDoneTimer.fired()");
-    if(call SendState.getState() == S_LPL_SENDING) {
-      // The next time SubSend.sendDone is signaled, send is complete.
-      call SendState.forceState(S_LPL_CLEAN_UP);
-    }
+	if(call SendState.getState() == S_LPL_SENDING) {
+		// The next time SubSend.sendDone is signaled, send is complete.
+		call SendState.forceState(S_LPL_CLEAN_UP);
+	}
 }
   
   
 /***************** Tasks ***************/
 task void send() {
-    if(call SubSend.send(currentSendMsg, currentSendLen) != SUCCESS) {
-      post send();
-    }
+	if(call SubSend.send(currentSendMsg, currentSendLen) != SUCCESS) {
+		post send();
+	}
 }
   
 task void resend() {
@@ -517,49 +508,26 @@ task void resend() {
 	}
 }
   
-task void startRadio() {
-	dbg("Mac", "DefaultLplP startRadio");
-    	//dbgs(F_MAC, S_NONE, DBGS_RADIO_START_V_REG, 0, 0);
-	//printf("mac start\n");
-	//printfflush();
-	if(call SubControl.start() != SUCCESS) {
-		post startRadio();
-	}
-}
-  
-task void stopRadio() {
-	dbg("Mac", "DefaultLplP stopRadio");
-	if(call SendState.getState() == S_LPL_NOT_SENDING) {
-    		//dbgs(F_MAC, S_NONE, DBGS_RADIO_STOP_V_REG, 0, 0);
-		//printf("mac stop\n");
-		//printfflush();
-		if(call SubControl.stop() != SUCCESS) {
-			post stopRadio();
-		}
-	}
-}
-  
 /***************** Functions ***************/
 void initializeSend() {
-    if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) > 0) {
-      csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(currentSendMsg, sizeof(csmaca_header_t)); 
-      if(header->dest == IEEE154_BROADCAST_ADDR) {
-        call PacketAcknowledgements.noAck(currentSendMsg);
-      } else {
-        // Send it repetitively within our transmit window
-        call PacketAcknowledgements.requestAck(currentSendMsg);
-      }
+	if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) > 0) {
+		csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(currentSendMsg, sizeof(csmaca_header_t)); 
+		if(header->dest == IEEE154_BROADCAST_ADDR) {
+			call PacketAcknowledgements.noAck(currentSendMsg);
+		} else {
+			// Send it repetitively within our transmit window
+			call PacketAcknowledgements.requestAck(currentSendMsg);
+		}
 
-      call SendDoneTimer.startOneShot(
-          call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) + 20);
-    }
-        
-    post send();
+		call SendDoneTimer.startOneShot(
+		call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) + 20);
+	}
+	post send();
 }
   
   
 void startOffTimer() {
-    call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
+	call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
 }
 
 }
