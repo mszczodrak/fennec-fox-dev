@@ -58,6 +58,7 @@ bool tx_busy = FALSE;
 message_t *app_data = NULL;
 nxle_uint32_t seqno;
 
+/* Trickle Plus - remember the content of the message */
 void *app_payload = NULL;
 
 #define DISSEMINATION_SEQNO_UNKNOWN 0
@@ -147,7 +148,10 @@ command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 	dbg("Network", "tricklePlusNetP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
 	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
 				len + sizeof(nx_struct tricklePlus_net_header));
+
+	/* Trickle Plus - memorize the content of the message */
 	app_payload = (void*) (ptr + sizeof(nx_struct tricklePlus_net_header));
+
 	return (void*) (ptr + sizeof(nx_struct tricklePlus_net_header));
 }
 
@@ -179,7 +183,7 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		goto snoop;
 	}
 
-	/* Trickle Plus */
+	/* Trickle Plus - check message content */
 	if ((data_len != len) || !memcmp(payload, app_payload, len)) {
 		goto alert;
 	} 
@@ -210,6 +214,7 @@ receive:
 	seqno = header->seq;
 	call TrickleTimer.reset[ TRICKLE_ID ]();
 
+/* Trickle Plus - alert app when content disagrees */
 alert:
 	return signal NetworkReceive.receive(msg, 
 		ptr + sizeof(nx_struct tricklePlus_net_header), 
