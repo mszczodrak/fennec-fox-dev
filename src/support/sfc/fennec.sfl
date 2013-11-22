@@ -27,7 +27,7 @@ use application counterEH $(FENNEC_FOX_LIB)/Application/tests/CounterEH (
 
 use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 
-use application maxTest $(FENNEC_FOX_LIB)/Application/tests/maxTest ( uint32_t val = 0 )
+use application maxTest $(FENNEC_FOX_LIB)/Application/tests/maxTest ( uint32_t val = 0, uint32_t delay = 0 )
 
 
 use application genericSensor $(FENNEC_FOX_LIB)/Application/tests/genericSensor (

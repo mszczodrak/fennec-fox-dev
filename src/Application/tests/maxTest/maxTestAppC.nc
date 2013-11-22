@@ -56,4 +56,7 @@ maxTestAppP.Random -> RandomC;
 
 components LedsC;
 maxTestAppP.Leds -> LedsC;
+
+components new TimerMilliC();
+maxTestAppP.Timer -> TimerMilliC;
 }

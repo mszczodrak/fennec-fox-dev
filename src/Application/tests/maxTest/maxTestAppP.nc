@@ -42,6 +42,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 uses interface Random;
 uses interface Leds;
+uses interface Timer<TMilli>;
 }
 
 implementation {
@@ -62,7 +63,6 @@ task void send_msg() {
 	
 	if (call NetworkAMSend.send(BROADCAST, &packet, 
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
-
 	} else {
 		send_busy = TRUE;
 		call Leds.set(max_value);
@@ -77,7 +77,12 @@ command error_t Mgmt.start() {
 		max_value = call Random.rand32();
 	}
 	dbg("Application", "maxTestApp Mgmt.start() max_value is %d", max_value);
+
 	send_busy = FALSE;
+
+	if (call maxTestAppParams.get_delay() > 0) {
+		call Timer.startPeriodic(call maxTestAppParams.get_delay());
+	}
 
 	signal Mgmt.startDone(SUCCESS);
 	post send_msg();
@@ -111,6 +116,13 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
+}
+
+event void Timer.fired() {
+	dbg("Application", "maxTestApp Timer.fired() max_value is %d", max_value);
+	if (!send_busy) {
+		post send_msg();
+	}
 }
 
 }

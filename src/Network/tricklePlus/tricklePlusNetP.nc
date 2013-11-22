@@ -58,6 +58,8 @@ bool tx_busy = FALSE;
 message_t *app_data = NULL;
 nxle_uint32_t seqno;
 
+void *app_payload = NULL;
+
 #define DISSEMINATION_SEQNO_UNKNOWN 0
 
 task void send_message() {
@@ -145,6 +147,7 @@ command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 	dbg("Network", "tricklePlusNetP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
 	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
 				len + sizeof(nx_struct tricklePlus_net_header));
+	app_payload = (void*) (ptr + sizeof(nx_struct tricklePlus_net_header));
 	return (void*) (ptr + sizeof(nx_struct tricklePlus_net_header));
 }
 
@@ -168,7 +171,6 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	if (seqno == DISSEMINATION_SEQNO_UNKNOWN &&
 		header->seq != DISSEMINATION_SEQNO_UNKNOWN) {
 		goto receive;
-
 	}
 
 	if (header->seq == DISSEMINATION_SEQNO_UNKNOWN &&
@@ -177,9 +179,13 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		goto snoop;
 	}
 
+	/* Trickle Plus */
+	if ((data_len != len) || !memcmp(payload, app_payload, len)) {
+		goto alert;
+	} 
+
 	if ((int32_t)(header->seq - seqno) > 0) {
 		goto receive;
-
 
 	} else if ( (int32_t)(header->seq - seqno) == 0) {
 		call TrickleTimer.incrementCounter[TRICKLE_ID]();
@@ -204,6 +210,7 @@ receive:
 	seqno = header->seq;
 	call TrickleTimer.reset[ TRICKLE_ID ]();
 
+alert:
 	return signal NetworkReceive.receive(msg, 
 		ptr + sizeof(nx_struct tricklePlus_net_header), 
 		len - sizeof(nx_struct tricklePlus_net_header));
