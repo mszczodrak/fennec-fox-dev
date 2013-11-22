@@ -37,7 +37,6 @@ provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
 provides interface Read<uint16_t> as ReadRssi;
-provides interface SplitControl;
 provides interface RadioBuffer;
 provides interface RadioPacket;
 provides interface RadioSend;
@@ -56,7 +55,6 @@ implementation {
 
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
-uint8_t mgmt = FALSE;
 
 norace message_t *out_msg;
 norace error_t err;
@@ -69,12 +67,8 @@ task void start_done() {
         if (err == SUCCESS) {
                 state = S_STARTED;
         }
-        signal SplitControl.startDone(err);
-        if (mgmt == TRUE) {
-		dbg("Radio", "capeRadio signal Mgmt.startDone(%d)", err);
-                signal Mgmt.startDone(err);
-                mgmt = FALSE;
-        }
+	dbg("Radio", "capeRadio signal Mgmt.startDone(%d)", err);
+	signal Mgmt.startDone(err);
 }
 
 task void finish_starting_radio() {
@@ -90,12 +84,8 @@ task void stop_done() {
         if (err == SUCCESS) {
                 state = S_STOPPED;
         }
-        signal SplitControl.stopDone(err);
-        if (mgmt == TRUE) {
-		dbg("Radio", "capeRadio signal Mgmt.stopDone(%d)", err);
-                signal Mgmt.stopDone(err);
-                mgmt = FALSE;
-        }
+	dbg("Radio", "capeRadio signal Mgmt.stopDone(%d)", err);
+	signal Mgmt.stopDone(err);
 }
 
 task void load_done() {
@@ -135,29 +125,6 @@ command error_t Mgmt.start() {
 	dbg("Radio", "capeRadio Mgmt.start()");
 	call AMControl.start();
 
-        mgmt = TRUE;
-        call SplitControl.start();
-        return SUCCESS;
-}
-
-event void AMControl.startDone(error_t error) {
-}
-
-event void AMControl.stopDone(error_t error) {
-}
-
-command error_t Mgmt.stop() {
-	dbg("Radio", "capeRadio Mgmt.stop()");
-	call AMControl.stop();
-
-        mgmt = TRUE;
-        call SplitControl.stop();
-        return SUCCESS;
-}
-
-
-command error_t SplitControl.start() {
-	dbg("Radio", "capeRadio SplitControl.start()");
         err = SUCCESS;
 
         if (state == S_STARTED) {
@@ -173,8 +140,16 @@ command error_t SplitControl.start() {
         return SUCCESS;
 }
 
-command error_t SplitControl.stop() {
-	dbg("Radio", "capeRadio SplitControl.stop()");
+event void AMControl.startDone(error_t error) {
+}
+
+event void AMControl.stopDone(error_t error) {
+}
+
+command error_t Mgmt.stop() {
+	dbg("Radio", "capeRadio Mgmt.stop()");
+	call AMControl.stop();
+
         err = SUCCESS;
 
         if (state == S_STOPPED) {

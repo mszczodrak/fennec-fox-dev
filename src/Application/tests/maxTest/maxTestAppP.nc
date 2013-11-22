@@ -101,6 +101,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	nx_struct maxMsg *in_msg = (nx_struct maxMsg*) payload;
 	if (in_msg->max_value > max_value) {
 		max_value = in_msg->max_value;
+		dbg("Application", "maxTestApp NetworkReceive.receive() - got new max: %d", max_value);
 		post send_msg();
 	}
 

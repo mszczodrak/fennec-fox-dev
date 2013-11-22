@@ -36,8 +36,6 @@ provides interface RadioConfig;
 provides interface RadioPower;
 provides interface Read<uint16_t> as ReadRssi;
 
-provides interface SplitControl as RadioControl;
-
 provides interface RadioPacket;
 provides interface RadioBuffer;
 provides interface RadioSend;
@@ -67,7 +65,6 @@ ReadRssi = capeRadioP.ReadRssi;
 RadioBuffer = capeRadioP.RadioBuffer;
 RadioPacket = capeRadioP.RadioPacket;
 RadioSend = capeRadioP.RadioSend;
-RadioControl = capeRadioP.SplitControl;
 
 components CapePacketModelC as Network;
 components CpmModelC as Model;
