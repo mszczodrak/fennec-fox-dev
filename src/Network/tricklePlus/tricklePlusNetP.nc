@@ -118,11 +118,11 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 	app_data = msg;
 
 	/* Increment the counter and append the local node ID. */
-	seqno = seqno >> 16;
+//	seqno = seqno >> 16;
 	seqno++;
 	if ( seqno == 0 ) { seqno++; }
-	seqno = seqno << 16;
-	seqno += TOS_NODE_ID;
+//	seqno = seqno << 16;
+//	seqno += TOS_NODE_ID;
 
 	call TrickleTimer.reset[TRICKLE_ID]();
 	post send_message();

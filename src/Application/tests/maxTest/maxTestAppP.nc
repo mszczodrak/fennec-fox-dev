@@ -63,7 +63,9 @@ task void send_msg() {
 	
 	if (call NetworkAMSend.send(BROADCAST, &packet, 
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
+		dbg("Application", "maxTestApp send_msg() - cannot send");
 	} else {
+//		dbg("Application", "maxTestApp send_msg() - max_value %d", max_value);
 		send_busy = TRUE;
 		call Leds.set(max_value);
 	}
@@ -83,6 +85,9 @@ command error_t Mgmt.start() {
 	if (call maxTestAppParams.get_delay() > 0) {
 		call Timer.startPeriodic(call maxTestAppParams.get_delay());
 	}
+
+	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, (uint16_t) (max_value >> 16), 
+							(uint16_t) (max_value & 0x0000FFFFuL) );
 
 	signal Mgmt.startDone(SUCCESS);
 	post send_msg();
@@ -108,6 +113,12 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 		max_value = in_msg->max_value;
 		dbg("Application", "maxTestApp NetworkReceive.receive() - got new max: %d", max_value);
 		post send_msg();
+		dbgs(F_APPLICATION, S_RECEIVING, 0, (uint16_t) (max_value >> 16), 
+							(uint16_t) (max_value & 0x0000FFFFuL) );
+	}
+
+	if (in_msg->max_value < max_value) {
+		post send_msg();
 	}
 
 	return msg;
@@ -120,6 +131,8 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void Timer.fired() {
 	dbg("Application", "maxTestApp Timer.fired() max_value is %d", max_value);
+	dbgs(F_APPLICATION, S_INIT, 0, (uint16_t) (max_value >> 16), 
+							(uint16_t) (max_value & 0x0000FFFFuL) );
 	if (!send_busy) {
 		post send_msg();
 	}
