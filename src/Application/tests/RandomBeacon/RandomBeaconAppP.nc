@@ -106,8 +106,6 @@ void sendMessage() {
 		dbg("Application", "RandomBeaconApp call NetworkAMSend.send(%d, 0x%1x, %d)",
 					BROADCAST, &packet,
 					sizeof(RandomBeaconMsg));
-		printf("s %d\n", sizeof(RandomBeaconMsg));
-		printfflush();
 		sendBusy = TRUE;
 		call Leds.set(msg->seqno);
 	}
@@ -134,8 +132,6 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	dbg("Application", "RandomBeaconApp receive seqno: %d source: %d", cm->seqno, cm->source); 
 	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	call Leds.set(cm->seqno);
-		printf("r %d\n", len);
-		printfflush();
 	return msg;
 }
 
