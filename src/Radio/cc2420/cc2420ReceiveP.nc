@@ -5,34 +5,34 @@
 
 module cc2420ReceiveP @safe() {
 
-  provides interface Init;
-  provides interface StdControl;
-  provides interface CC2420Receive;
-  provides interface Receive;
-  provides interface ReceiveIndicator as PacketIndicator;
+provides interface Init;
+provides interface StdControl;
+provides interface CC2420Receive;
+provides interface Receive;
+provides interface ReceiveIndicator as PacketIndicator;
 
-  uses interface GeneralIO as CSN;
-  uses interface GeneralIO as FIFO;
-  uses interface GeneralIO as FIFOP;
-  uses interface GpioInterrupt as InterruptFIFOP;
+uses interface GeneralIO as CSN;
+uses interface GeneralIO as FIFO;
+uses interface GeneralIO as FIFOP;
+uses interface GpioInterrupt as InterruptFIFOP;
 
-  uses interface Resource as SpiResource;
-  uses interface CC2420Fifo as RXFIFO;
-  uses interface CC2420Strobe as SACK;
-  uses interface CC2420Strobe as SFLUSHRX;
-  uses interface RadioConfig;
-  uses interface RadioPacket;
+uses interface Resource as SpiResource;
+uses interface CC2420Fifo as RXFIFO;
+uses interface CC2420Strobe as SACK;
+uses interface CC2420Strobe as SFLUSHRX;
+uses interface RadioConfig;
+uses interface RadioPacket;
 
-  uses interface CC2420Strobe as SRXDEC;
-  uses interface CC2420Register as SECCTRL0;
-  uses interface CC2420Register as SECCTRL1;
-  uses interface CC2420Ram as KEY0;
-  uses interface CC2420Ram as KEY1;
-  uses interface CC2420Ram as RXNONCE;
-  uses interface CC2420Ram as RXFIFO_RAM;
-  uses interface CC2420Strobe as SNOP;
+uses interface CC2420Strobe as SRXDEC;
+uses interface CC2420Register as SECCTRL0;
+uses interface CC2420Register as SECCTRL1;
+uses interface CC2420Ram as KEY0;
+uses interface CC2420Ram as KEY1;
+uses interface CC2420Ram as RXNONCE;
+uses interface CC2420Ram as RXFIFO_RAM;
+uses interface CC2420Strobe as SNOP;
 
-  uses interface Leds;
+uses interface Leds;
 }
 
 implementation {
@@ -294,38 +294,34 @@ implementation {
     
   }
 
-  async event void RXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-  }  
-  
-  /***************** Tasks *****************/
-  /**
-   * Fill in metadata details, pass the packet up the stack, and
-   * get the next packet.
-   */
-  task void receiveDone_task() {
+ 
+/***************** Tasks *****************/
+/**
+ * Fill in metadata details, pass the packet up the stack, and
+ * get the next packet.
+ */
+task void receiveDone_task() {
     metadata_t* metadata = (metadata_t*)getMetadata( m_p_rx_buf );
     cc2420_hdr_t* header = (cc2420_hdr_t*)call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_hdr_t));
-    uint8_t length = header->length - CC2420_FOOTER;
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_hdr_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
 
-    //printf("receive\n");
-    //printfflush();
+    metadata->crc = buf[ header->length ] >> 7;
+    metadata->lqi = buf[ header->length ] & 0x7f;
+    metadata->rssi = buf[ header->length - 1 ];
 
-    metadata->crc = buf[ length ] >> 7;
-    metadata->lqi = buf[ length ] & 0x7f;
-    metadata->rssi = buf[ length - 1 ];
-
-
-    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_SIZE) {
+    if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && header->length >= CC2420_SIZE) {
       /* set conf before signaling receive */
       m_p_rx_buf->conf = header->destpan;
 
-      m_p_rx_buf = signal Receive.receive( m_p_rx_buf, m_p_rx_buf->data, length);
+      header->length -= CC2420_FOOTER;
+	
+
+      m_p_rx_buf = signal Receive.receive( m_p_rx_buf, m_p_rx_buf->data, header->length);
     }
     atomic receivingPacket = FALSE;
     waitForNextPacket();
-  }
+}
 
   /****************** RadioConfig Events ****************/
   event void RadioConfig.syncDone( error_t error ) {
@@ -446,5 +442,7 @@ implementation {
       return FALSE;
     }
   }
+
+async event void RXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {}
 
 }

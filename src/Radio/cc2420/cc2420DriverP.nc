@@ -398,8 +398,6 @@ implementation {
     metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
     uint8_t tx_power = meta->tx_power;
 
-    header->length += CC2420_FOOTER;
-
     if ( !tx_power ) {
       tx_power = param_tx_power;
     }
@@ -436,6 +434,9 @@ implementation {
     }
     post updateTXPower();
     if ( acquireSpiResource() == SUCCESS ) {
+        cc2420_hdr_t* header = (cc2420_hdr_t*) call RadioPacket.getPayload( msg, sizeof(cc2420_hdr_t) );
+        header->length += CC2420_FOOTER;
+
       loadTXFIFO();
     }
     return SUCCESS;
