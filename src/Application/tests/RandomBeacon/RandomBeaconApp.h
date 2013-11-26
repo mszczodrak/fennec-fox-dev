@@ -32,15 +32,15 @@
 #include <AM.h>
 
 enum {
- AM_TESTNETWORKMSG = 0x05,
- SAMPLE_RATE_KEY = 0x1,
- CL_TEST = 0xee,
- TEST_NETWORK_QUEUE_SIZE = 8,
+	AM_TESTNETWORKMSG = 0x05,
+	SAMPLE_RATE_KEY = 0x1,
+	CL_TEST = 0xee,
+	TEST_NETWORK_QUEUE_SIZE = 8,
 };
 
 typedef nx_struct RandomBeaconMsg {
-  nx_am_addr_t source;
-  nx_uint32_t seqno;
+	nx_am_addr_t source;
+	nx_uint32_t seqno;
 } RandomBeaconMsg;
 
 #endif

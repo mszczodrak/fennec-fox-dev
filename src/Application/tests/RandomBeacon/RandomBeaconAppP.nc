@@ -53,8 +53,6 @@ implementation {
  Available Parameters:
 	uint16_t delay,
 	uint16_t delay_scale,
-	uint16_t src,
-	uint16_t dest
 */
 
 

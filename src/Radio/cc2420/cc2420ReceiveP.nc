@@ -305,7 +305,7 @@ implementation {
   task void receiveDone_task() {
     metadata_t* metadata = (metadata_t*)getMetadata( m_p_rx_buf );
     cc2420_hdr_t* header = (cc2420_hdr_t*)call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_hdr_t));
-    uint8_t length = header->length;
+    uint8_t length = header->length - CC2420_FOOTER;
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_hdr_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
 
