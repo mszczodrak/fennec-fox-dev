@@ -16,6 +16,7 @@ use application goali $(FENNEC_FOX_LIB)/Application/goali ( uint16_t delay=1024 
 
 
 # Standard Fennec Fox Applications
+use application bridge $(FENNEC_FOX_LIB)/Application/tests/Bridge ()
 use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
 	uint8_t led=1, uint16_t delay=1024)
 use application printf $(FENNEC_FOX_LIB)/Application/tests/Printf ()
