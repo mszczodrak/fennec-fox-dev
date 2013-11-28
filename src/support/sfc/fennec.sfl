@@ -15,6 +15,7 @@ use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backof
 
 
 # Standard Fennec Fox Applications
+use application bridge $(FENNEC_FOX_LIB)/Application/tests/Bridge ()
 use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
 	uint8_t led=1, uint16_t delay=1024)
 use application printf $(FENNEC_FOX_LIB)/Application/tests/Printf ()
