@@ -39,6 +39,7 @@ uses interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
 uses interface Read<uint16_t> as Battery;
 uses interface Timer<TMilli> as Timer;   
 uses interface Timer<TMilli> as TimerSensor;
+uses interface Leds;
 }
 
 implementation {

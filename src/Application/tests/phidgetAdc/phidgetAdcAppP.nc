@@ -30,7 +30,6 @@
 
 module phidgetAdcAppP {
 provides interface Mgmt;
-provides interface Module;
 
 uses interface phidgetAdcAppParams ;
 
@@ -41,7 +40,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 
 uses interface SensorCtrl as Sensor_0_Ctrl;
 uses interface AdcSetup as Sensor_0_Setup;
@@ -96,7 +94,7 @@ command error_t Mgmt.start() {
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
 	if ((TOS_NODE_ID == call phidgetAdcAppParams.get_destination()) || 
-	        (NODE == call phidgetAdcAppParams.get_destination())) {
+	        (0 == call phidgetAdcAppParams.get_destination())) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
@@ -210,7 +208,6 @@ event void Sensor_1_Read.readDone(error_t error, ff_sensor_data_t data) {
 event void Timer.fired() {
 }
 
-event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 event void SerialSplitControl.stopDone(error_t errot){}
 event void SerialSplitControl.startDone(error_t error) {}
 

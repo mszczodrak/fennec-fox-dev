@@ -51,4 +51,7 @@ tmp102_0_driverP.Timer -> Timer;
 
 components new TimerMilliC() as TimerSensor;
 tmp102_0_driverP.TimerSensor -> TimerSensor;
+
+components LedsC;
+tmp102_0_driverP.Leds -> LedsC;
 }

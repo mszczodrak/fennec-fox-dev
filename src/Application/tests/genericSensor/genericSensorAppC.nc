@@ -28,52 +28,48 @@
 #include "genericSensorApp.h"
 
 configuration genericSensorAppC {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface genericSensorAppParams;
+uses interface genericSensorAppParams;
    
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
  
-  components genericSensorAppP;
-  Mgmt = genericSensorAppP;
-  Module = genericSensorAppP;
-  genericSensorAppParams = genericSensorAppP;
+components genericSensorAppP;
+Mgmt = genericSensorAppP;
+genericSensorAppParams = genericSensorAppP;
   
-  components new TimerMilliC() as TimerImp;
-  genericSensorAppP.Timer -> TimerImp;
+components new TimerMilliC() as TimerImp;
+genericSensorAppP.Timer -> TimerImp;
 
-  components LedsC;
-  genericSensorAppP.Leds -> LedsC;
+components LedsC;
+genericSensorAppP.Leds -> LedsC;
 
-  //components new phidget_1142_0_driverC() as GenericSensorC;
-  //components new adxl345_0_driverC() as GenericSensorC;
-  //components new sht11temp_0_driverC() as GenericSensorC;
-  //components new sht11hum_0_driverC() as GenericSensorC;
-  //components new s1087_0_driverC() as GenericSensorC;
-  //components new s1087_01_0_driverC() as GenericSensorC;
-  components new tmp102_0_driverC() as GenericSensorC;
+//components new phidget_1142_0_driverC() as GenericSensorC;
+//components new adxl345_0_driverC() as GenericSensorC;
+//components new sht11temp_0_driverC() as GenericSensorC;
+//components new sht11hum_0_driverC() as GenericSensorC;
+//components new s1087_0_driverC() as GenericSensorC;
+//components new s1087_01_0_driverC() as GenericSensorC;
+components new tmp102_0_driverC() as GenericSensorC;
 
-  genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
-  genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;
-  //genericSensorAppP.AdcSetup -> GenericSensorC.AdcSetup;
-  genericSensorAppP.Read -> GenericSensorC.Read;
+genericSensorAppP.SensorCtrl -> GenericSensorC.SensorCtrl;
+genericSensorAppP.SensorInfo -> GenericSensorC.SensorInfo;
+//genericSensorAppP.AdcSetup -> GenericSensorC.AdcSetup;
+genericSensorAppP.Read -> GenericSensorC.Read;
 
-  NetworkAMSend = genericSensorAppP.NetworkAMSend;
-  NetworkReceive = genericSensorAppP.NetworkReceive;
-  NetworkSnoop = genericSensorAppP.NetworkSnoop;
-  NetworkAMPacket = genericSensorAppP.NetworkAMPacket;
-  NetworkPacket = genericSensorAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = genericSensorAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = genericSensorAppP.NetworkStatus;
+NetworkAMSend = genericSensorAppP.NetworkAMSend;
+NetworkReceive = genericSensorAppP.NetworkReceive;
+NetworkSnoop = genericSensorAppP.NetworkSnoop;
+NetworkAMPacket = genericSensorAppP.NetworkAMPacket;
+NetworkPacket = genericSensorAppP.NetworkPacket;
+NetworkPacketAcknowledgements = genericSensorAppP.NetworkPacketAcknowledgements;
 }
 

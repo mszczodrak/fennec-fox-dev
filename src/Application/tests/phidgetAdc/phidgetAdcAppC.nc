@@ -28,75 +28,71 @@
 #include "phidgetAdcApp.h"
 
 configuration phidgetAdcAppC {
-  provides interface Mgmt;
-  provides interface Module;
+provides interface Mgmt;
 
-  uses interface phidgetAdcAppParams;
+uses interface phidgetAdcAppParams;
    
-  uses interface AMSend as NetworkAMSend;
-  uses interface Receive as NetworkReceive;
-  uses interface Receive as NetworkSnoop;
-  uses interface AMPacket as NetworkAMPacket;
-  uses interface Packet as NetworkPacket;
-  uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-  uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
  
-  enum {
+enum {
     SERIAL_PORT = 1
-  };
+};
  
-  components phidgetAdcAppP;
-  Mgmt = phidgetAdcAppP;
-  Module = phidgetAdcAppP;
-  phidgetAdcAppParams = phidgetAdcAppP;
+components phidgetAdcAppP;
+Mgmt = phidgetAdcAppP;
+phidgetAdcAppParams = phidgetAdcAppP;
   
-  components new TimerMilliC() as TimerImp;
-  phidgetAdcAppP.Timer -> TimerImp;
+components new TimerMilliC() as TimerImp;
+phidgetAdcAppP.Timer -> TimerImp;
 
-  /* Creating a queue for sending messages over the network */
-  components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
-  phidgetAdcAppP.NetworkQueue -> NetworkQueueC;
+/* Creating a queue for sending messages over the network */
+components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
+phidgetAdcAppP.NetworkQueue -> NetworkQueueC;
 
-  /* Creating a queue for sending messages over the serial interface */
-  components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
-  phidgetAdcAppP.SerialQueue -> SerialQueueC;
+/* Creating a queue for sending messages over the serial interface */
+components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+phidgetAdcAppP.SerialQueue -> SerialQueueC;
 
-  /* Creating a pool of message memory for network and serial communication */
-  components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
-  phidgetAdcAppP.MessagePool -> MessagePoolC;
+/* Creating a pool of message memory for network and serial communication */
+components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
+phidgetAdcAppP.MessagePool -> MessagePoolC;
 
-  components LedsC;
-  phidgetAdcAppP.Leds -> LedsC;
+components LedsC;
+phidgetAdcAppP.Leds -> LedsC;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_0;
-  phidgetAdcAppP.Sensor_0_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
-  phidgetAdcAppP.Sensor_0_Setup -> PhidgetAdcDriver_0.AdcSetup;
-  phidgetAdcAppP.Sensor_0_Read -> PhidgetAdcDriver_0.Read;
+components new phidget_adc_driverC() as PhidgetAdcDriver_0;
+phidgetAdcAppP.Sensor_0_Ctrl -> PhidgetAdcDriver_0.SensorCtrl;
+phidgetAdcAppP.Sensor_0_Setup -> PhidgetAdcDriver_0.AdcSetup;
+phidgetAdcAppP.Sensor_0_Read -> PhidgetAdcDriver_0.Read;
 
-  components new phidget_adc_driverC() as PhidgetAdcDriver_1;
-  phidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
-  phidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_1.AdcSetup;
-  phidgetAdcAppP.Sensor_1_Read -> PhidgetAdcDriver_1.Read;
+components new phidget_adc_driverC() as PhidgetAdcDriver_1;
+phidgetAdcAppP.Sensor_1_Ctrl -> PhidgetAdcDriver_1.SensorCtrl;
+phidgetAdcAppP.Sensor_1_Setup -> PhidgetAdcDriver_1.AdcSetup;
+phidgetAdcAppP.Sensor_1_Read -> PhidgetAdcDriver_1.Read;
 
-  components SerialActiveMessageC;
-  components new SerialAMSenderC(SERIAL_PORT);
-  components new SerialAMReceiverC(SERIAL_PORT);
-  phidgetAdcAppP.SerialAMSend -> SerialAMSenderC.AMSend;
-  phidgetAdcAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-  phidgetAdcAppP.SerialPacket -> SerialAMSenderC.Packet; 
-  phidgetAdcAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
-  phidgetAdcAppP.SerialReceive -> SerialAMReceiverC.Receive;
+components SerialActiveMessageC;
+components new SerialAMSenderC(SERIAL_PORT);
+components new SerialAMReceiverC(SERIAL_PORT);
+phidgetAdcAppP.SerialAMSend -> SerialAMSenderC.AMSend;
+phidgetAdcAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+phidgetAdcAppP.SerialPacket -> SerialAMSenderC.Packet; 
+phidgetAdcAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+phidgetAdcAppP.SerialReceive -> SerialAMReceiverC.Receive;
  
-  NetworkAMSend = phidgetAdcAppP.NetworkAMSend;
-  NetworkReceive = phidgetAdcAppP.NetworkReceive;
-  NetworkSnoop = phidgetAdcAppP.NetworkSnoop;
-  NetworkAMPacket = phidgetAdcAppP.NetworkAMPacket;
-  NetworkPacket = phidgetAdcAppP.NetworkPacket;
-  NetworkPacketAcknowledgements = phidgetAdcAppP.NetworkPacketAcknowledgements;
-  NetworkStatus = phidgetAdcAppP.NetworkStatus;
+NetworkAMSend = phidgetAdcAppP.NetworkAMSend;
+NetworkReceive = phidgetAdcAppP.NetworkReceive;
+NetworkSnoop = phidgetAdcAppP.NetworkSnoop;
+NetworkAMPacket = phidgetAdcAppP.NetworkAMPacket;
+NetworkPacket = phidgetAdcAppP.NetworkPacket;
+NetworkPacketAcknowledgements = phidgetAdcAppP.NetworkPacketAcknowledgements;
 
 }
 

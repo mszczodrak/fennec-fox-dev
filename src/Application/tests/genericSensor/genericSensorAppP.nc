@@ -31,7 +31,6 @@
 
 module genericSensorAppP {
 provides interface Mgmt;
-provides interface Module;
 
 uses interface genericSensorAppParams ;
 
@@ -42,7 +41,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 
 uses interface SensorCtrl;
 uses interface SensorInfo;
@@ -59,10 +57,11 @@ implementation {
 ff_sensor_data_t data;
 
 task void printf_sensor_info() {
+	call Leds.led1Toggle();
 	printf("Sensor ID: %d\t\tSensor Type: %d\n", data.id, data.type);
-	printf("Sampling Frequency: %u\n", call genericSensorAppParams.get_freq());
+	printf("Sampling Frequency: %lu\n", call genericSensorAppParams.get_freq());
 	printf("Measurement Size: %d\n", data.size);
-	printf("Sequence: %d\n", data.seq);
+	printf("Sequence: %lu\n", data.seq);
 	printf("Raw measurement: %d\n", *(uint16_t*)data.raw);
 	printf("Calibrated measurement: %d\n\n", *(uint16_t*)data.calibrated);
 	printfflush();
@@ -92,6 +91,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void Read.readDone(error_t error, ff_sensor_data_t new_data) {
 	if (error == SUCCESS) {
+		call Leds.led2Toggle();
 		memcpy(&data, &new_data, sizeof(ff_sensor_data_t));
 		post printf_sensor_info();
 	} else {
@@ -104,7 +104,5 @@ event void Timer.fired() {
 		call Leds.led0On();
 	}
 }
-
-event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
 
 }
