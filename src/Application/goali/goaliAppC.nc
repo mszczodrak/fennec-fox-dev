@@ -50,4 +50,18 @@ NetworkSnoop = goaliAppP.NetworkSnoop;
 NetworkAMPacket = goaliAppP.NetworkAMPacket;
 NetworkPacket = goaliAppP.NetworkPacket;
 NetworkPacketAcknowledgements = goaliAppP.NetworkPacketAcknowledgements;
+
+components new TimerMilliC() as TimerC;
+goaliAppP.Timer -> TimerC;
+
+components LedsC;
+goaliAppP.Leds -> LedsC;
+
+components new SimpleTMP102C() as Temperature;
+goaliAppP.TempSensor -> Temperature;
+
+components new ADXL345C();
+goaliAppP.axis -> ADXL345C.XYZ;
+goaliAppP.AccelControl -> ADXL345C.SplitControl;
+
 }
