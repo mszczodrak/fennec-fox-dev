@@ -1,5 +1,5 @@
 /*
- *  Bridge application module for Fennec Fox platform.
+ *  Rssi application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,15 +19,15 @@
  */
 
 /*
- * Application: Bridge Application Module
+ * Application: Rssi Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
 
-#ifndef __Bridge_APP_H_
-#define __Bridge_APP_H_
+#ifndef __Rssi_APP_H_
+#define __Rssi_APP_H_
 
 
 #endif

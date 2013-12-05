@@ -1,5 +1,5 @@
 /*
- *  Bridge application module for Fennec Fox platform.
+ *  Rssi application module for Fennec Fox platform.
  *
  *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
@@ -19,16 +19,16 @@
  */
 
 /*
- * Application: Bridge Application Module
+ * Application: Rssi Application Module
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
  * Last Modified: 1/5/2012
  */
 
-configuration BridgeAppC {
+configuration RssiAppC {
 provides interface Mgmt;
 
-uses interface BridgeAppParams;
+uses interface RssiAppParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -39,15 +39,25 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components BridgeAppP;
-Mgmt = BridgeAppP;
+components RssiAppP;
+Mgmt = RssiAppP;
 
-BridgeAppParams = BridgeAppP;
+RssiAppParams = RssiAppP;
 
-NetworkAMSend = BridgeAppP.NetworkAMSend;
-NetworkReceive = BridgeAppP.NetworkReceive;
-NetworkSnoop = BridgeAppP.NetworkSnoop;
-NetworkAMPacket = BridgeAppP.NetworkAMPacket;
-NetworkPacket = BridgeAppP.NetworkPacket;
-NetworkPacketAcknowledgements = BridgeAppP.NetworkPacketAcknowledgements;
+NetworkAMSend = RssiAppP.NetworkAMSend;
+NetworkReceive = RssiAppP.NetworkReceive;
+NetworkSnoop = RssiAppP.NetworkSnoop;
+NetworkAMPacket = RssiAppP.NetworkAMPacket;
+NetworkPacket = RssiAppP.NetworkPacket;
+NetworkPacketAcknowledgements = RssiAppP.NetworkPacketAcknowledgements;
+
+components LedsC;
+RssiAppP.Leds -> LedsC;
+
+components new TimerMilliC() as SendTimerC;
+RssiAppP.SendTimer -> SendTimerC;
+
+components new TimerMilliC() as LedTimerC;
+RssiAppP.LedTimer -> LedTimerC;
+
 }
