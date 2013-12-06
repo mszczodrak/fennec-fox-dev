@@ -60,8 +60,13 @@ message_t packet;
 bool busy_serial = FALSE;
 void *serial_data;
 
-task void send_serial_message() {
+/*
+LED 0 (red) reports any deadly errors.
+LED 1 (green) reports serial/network warnings.
+LED 2 (blue) report actvity
+*/
 
+task void send_serial_message() {
 	msg_queue_t *sm;
 
 	/* Check if there is anything to send */
@@ -69,15 +74,16 @@ task void send_serial_message() {
 		return;
 	}
 
+	/* Check if there are other ongoing transmissions */
 	if (busy_serial == TRUE) {
-		call Leds.led0On();
 		return;
 	}
 
 	sm = call SerialQueue.headptr();
 
+	/* Send message over the serial and check if serial started without error */
 	if (call SerialAMSend.send(BROADCAST, &packet, sm->len) != SUCCESS) {
-		call Leds.led0On();
+		call Leds.led1On();
 		signal SerialAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy_serial = TRUE;
@@ -98,16 +104,15 @@ command error_t Mgmt.stop() {
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	call SerialQueue.dequeue();
-	busy_serial = FALSE;
-	post send_serial_message();
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	msg_queue_t sm;
 
-	/* Check if there is anything to send */
-	if (call SerialQueue.empty()) {
+	call Leds.led2Toggle();
+
+	/* Check if there is space to save this message */
+	if (call SerialQueue.full()) {
 		return msg;
 	}
 
@@ -149,6 +154,10 @@ event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t le
 }
 
 event void SerialAMSend.sendDone(message_t *msg, error_t error) {
+	call SerialQueue.dequeue();
+	busy_serial = FALSE;
+	call Leds.led1Off();
+	post send_serial_message();
 }
 
 
