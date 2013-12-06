@@ -114,10 +114,17 @@ task void readDone() {
         }
 }
 
+task void start_sensor_timer() {
+}
+
 task void getMeasurement() {
         //call Battery.read();
+	call TimerSensor.startOneShot(100);
+	printf("getMeas\n");
+	busy = TRUE;
 	atomic P5DIR |= 0x01;
 	atomic P5OUT |= 0x01;
+	//post start_sensor_timer();
 }
 
 task void data_ready() {
@@ -155,6 +162,7 @@ command uint32_t SensorCtrl.getRate[uint8_t id]() {
 }
 
 command error_t Read.read[uint8_t id]() {
+	if (busy == TRUE) return EBUSY;
         clients[id].read = 1;
         post getMeasurement();
         return SUCCESS;
@@ -162,9 +170,7 @@ command error_t Read.read[uint8_t id]() {
 
 event void Timer.fired() {
 	if (busy == TRUE) return;
-	busy = TRUE;
 	post getMeasurement();
-	call TimerSensor.startOneShot(2);
 }
 
 void write_to_i2c() {
@@ -180,6 +186,7 @@ void write_to_i2c() {
 }
 
 event void TimerSensor.fired() {
+	printf(" here \n" );
 	if (call Resource.isOwner()) {
 		write_to_i2c();
 	} else {
