@@ -28,5 +28,14 @@
 #ifndef __UARTBridge_APP_H_
 #define __UARTBridge_APP_H_
 
+#define APP_SERIAL_QUEUE_SIZE           10
+#define BRIDGE_MAX_PAYLOAD_SIZE		120
+
+typedef struct msg_queue_t {
+	uint8_t len;
+	uint8_t data[BRIDGE_MAX_PAYLOAD_SIZE];
+} msg_queue_t;
+
+
 
 #endif

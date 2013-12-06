@@ -25,6 +25,8 @@
  * Last Modified: 10/09/2013
  */
 
+#include "UARTBridgeApp.h"
+
 configuration UARTBridgeAppC {
 provides interface Mgmt;
 
@@ -50,4 +52,21 @@ NetworkSnoop = UARTBridgeAppP.NetworkSnoop;
 NetworkAMPacket = UARTBridgeAppP.NetworkAMPacket;
 NetworkPacket = UARTBridgeAppP.NetworkPacket;
 NetworkPacketAcknowledgements = UARTBridgeAppP.NetworkPacketAcknowledgements;
+
+components LedsC;
+UARTBridgeAppP.Leds -> LedsC;
+
+components SerialActiveMessageC;
+components new SerialAMSenderC(100);
+components new SerialAMReceiverC(100);
+UARTBridgeAppP.SerialAMSend -> SerialAMSenderC.AMSend;
+UARTBridgeAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+UARTBridgeAppP.SerialPacket -> SerialAMSenderC.Packet;
+UARTBridgeAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+UARTBridgeAppP.SerialReceive -> SerialAMReceiverC.Receive;
+
+/* Creating a queue for sending messages over the serial interface */
+components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+UARTBridgeAppP.SerialQueue -> SerialQueueC;
+
 }
