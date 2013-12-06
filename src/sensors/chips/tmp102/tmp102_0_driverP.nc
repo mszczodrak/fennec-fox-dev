@@ -120,7 +120,6 @@ task void start_sensor_timer() {
 task void getMeasurement() {
         //call Battery.read();
 	call TimerSensor.startOneShot(100);
-	printf("getMeas\n");
 	busy = TRUE;
 	atomic P5DIR |= 0x01;
 	atomic P5OUT |= 0x01;
@@ -186,7 +185,6 @@ void write_to_i2c() {
 }
 
 event void TimerSensor.fired() {
-	printf(" here \n" );
 	if (call Resource.isOwner()) {
 		write_to_i2c();
 	} else {
