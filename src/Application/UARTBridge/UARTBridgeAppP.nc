@@ -79,7 +79,11 @@ task void send_serial_message() {
 		return;
 	}
 
+	/* Get the next message to send over the serial */
 	sm = call SerialQueue.head();
+
+	/* Put the message data into serial packet */
+	memcpy(serial_data, &sm.data, sm.len);
 
 	/* Send message over the serial and check if serial started without error */
 	if (call SerialAMSend.send(sm.dest, &packet, sm.len) != SUCCESS) {
