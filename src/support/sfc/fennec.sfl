@@ -16,7 +16,7 @@ use application goali /home/msz/github/goali/fennec-fox/Application/goali ( uint
 
 
 # Standard Fennec Fox Applications
-use application bridge $(FENNEC_FOX_LIB)/Application/tests/Bridge ()
+use application bridge $(FENNEC_FOX_LIB)/Application/UARTBridge (uint16_t am)
 use application rssi $(FENNEC_FOX_LIB)/Application/tests/Rssi (uint16_t delay)
 use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
 	uint8_t led=1, uint16_t delay=1024)
