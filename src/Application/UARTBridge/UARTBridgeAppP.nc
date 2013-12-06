@@ -67,7 +67,7 @@ LED 2 (blue) report actvity
 */
 
 task void send_serial_message() {
-	msg_queue_t *sm;
+	msg_queue_t sm;
 
 	/* Check if there is anything to send */
 		if (call SerialQueue.empty()) {
@@ -79,10 +79,10 @@ task void send_serial_message() {
 		return;
 	}
 
-	sm = call SerialQueue.headptr();
+	sm = call SerialQueue.head();
 
 	/* Send message over the serial and check if serial started without error */
-	if (call SerialAMSend.send(BROADCAST, &packet, sm->len) != SUCCESS) {
+	if (call SerialAMSend.send(sm.dest, &packet, sm.len) != SUCCESS) {
 		call Leds.led1On();
 		signal SerialAMSend.sendDone(&packet, FAIL);
 	} else {
@@ -116,6 +116,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 		return msg;
 	}
 
+	sm.dest = BROADCAST;
 	sm.len = len;
 	memcpy(&sm.data, payload, len);
 

@@ -32,6 +32,7 @@
 #define BRIDGE_MAX_PAYLOAD_SIZE		120
 
 typedef struct msg_queue_t {
+	uint16_t dest;
 	uint8_t len;
 	uint8_t data[BRIDGE_MAX_PAYLOAD_SIZE];
 } msg_queue_t;
