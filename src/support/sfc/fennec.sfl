@@ -12,7 +12,7 @@ use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backof
         uint8_t ack=1, uint8_t cca=1, uint8_t crc=1)
 
 
-use application goali $(FENNEC_FOX_LIB)/Application/goali ( uint16_t delay=1024 )
+use application goali /home/msz/github/goali/fennec-fox/Application/goali ( uint16_t delay=30, uint16_t scale = 1024, uint16_t dest = 0, uint8_t nom = 1 )
 
 
 # Standard Fennec Fox Applications

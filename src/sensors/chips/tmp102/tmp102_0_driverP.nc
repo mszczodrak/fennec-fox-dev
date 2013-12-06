@@ -193,7 +193,7 @@ event void Resource.granted(){
 
 async event void I2CBasicAddr.readDone(error_t error, uint16_t addr, 
 					uint8_t length, uint8_t *data) {
-	uint16_t tmp; 	
+	uint16_t tmp = 0; 	
 
 	if (!call Resource.isOwner()) {
 		return; 
