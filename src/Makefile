@@ -10,7 +10,7 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 
-PFLAGS+=-D__DBGS__
+#PFLAGS+=-D__DBGS__
 
 # 2. TinyOS printf
 #CFLAGS += -I$(TOSDIR)/lib/printf

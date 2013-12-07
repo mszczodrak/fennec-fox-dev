@@ -31,7 +31,7 @@
 #define APP_MAX_NUMBER_OF_SENSORS	2
 #define APP_NETWORK_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS + 6
 #define APP_SERIAL_QUEUE_SIZE 		APP_MAX_NUMBER_OF_SENSORS + 6
-#define APP_MESSAGE_POOL 		APP_NETWORK_QUEUE_SIZE + APP_SERIAL_QUEUE_SIZE + 10
+#define APP_MESSAGE_POOL 		APP_NETWORK_QUEUE_SIZE + APP_SERIAL_QUEUE_SIZE + 4
 
 /* this is the application structure that we send across the network */
 typedef nx_struct app_data_t {
