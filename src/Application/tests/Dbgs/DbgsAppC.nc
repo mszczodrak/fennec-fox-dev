@@ -26,7 +26,7 @@
  */
 
 configuration DbgsAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface DbgsAppParams;
 
@@ -41,7 +41,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 implementation {
 
 components DbgsAppP;
-Mgmt = DbgsAppP;
+SplitControl = DbgsAppP;
 
 DbgsAppParams = DbgsAppP;
 

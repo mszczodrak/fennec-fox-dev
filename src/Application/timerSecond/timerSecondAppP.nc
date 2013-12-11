@@ -29,7 +29,7 @@
 #include "timerSecondApp.h"
 
 module timerSecondAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Module;
 
 uses interface timerSecondAppParams;
@@ -54,8 +54,8 @@ implementation {
 */
 
 
-command error_t Mgmt.start() {
-	dbg("Application", "timerSecondApp Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Application", "timerSecondApp SplitControl.start()");
 	if ((call timerSecondAppParams.get_src() == BROADCAST) || 
 		(call timerSecondAppParams.get_src() == TOS_NODE_ID)) {
 
@@ -63,14 +63,14 @@ command error_t Mgmt.start() {
 
 	}
 
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "timerSecondApp Mgmt.start()");
-	signal Mgmt.stopDone(SUCCESS);
+	dbg("Application", "timerSecondApp SplitControl.start()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

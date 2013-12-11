@@ -28,7 +28,7 @@
 #include "csmacaMac.h"
 
 configuration csmacaMacC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -58,7 +58,7 @@ implementation {
 
 components csmacaMacP;
 
-Mgmt = csmacaMacP;
+SplitControl = csmacaMacP;
 MacAMSend = csmacaMacP.MacAMSend;
 MacReceive = csmacaMacP.MacReceive;
 MacSnoop = csmacaMacP.MacSnoop;

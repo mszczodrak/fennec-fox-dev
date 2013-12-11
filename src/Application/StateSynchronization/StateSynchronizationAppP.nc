@@ -29,7 +29,7 @@
 #include "hashing.h"
 
 module StateSynchronizationAppP @safe() {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface StateSynchronizationAppParams;
 uses interface AMSend as NetworkAMSend;
@@ -118,18 +118,18 @@ async event void FennecWarnings.detectWrongConfiguration() {
 	post reset_sync();
 }
 
-command error_t Mgmt.start() {
-	dbg("StateSynchronization", "StateSynchronizationAppP Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("StateSynchronization", "StateSynchronizationAppP SplitControl.start()");
 	busy_sending = FALSE;
 	post reset_sync();
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("StateSynchronization", "StateSynchronizationAppP Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("StateSynchronization", "StateSynchronizationAppP SplitControl.stop()");
 	call Timer.stop();
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

@@ -29,7 +29,7 @@
 #include "UARTBridgeApp.h"
 
 module UARTBridgeAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface UARTBridgeAppParams;
 
@@ -95,14 +95,14 @@ task void send_serial_message() {
 }
 
 
-command error_t Mgmt.start() {
-	dbg("Application", "UARTBridgeApp Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Application", "UARTBridgeApp SplitControl.start()");
 	call SerialSplitControl.start();
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("Application", "UARTBridgeApp Mgmt.start()");
+command error_t SplitControl.stop() {
+	dbg("Application", "UARTBridgeApp SplitControl.start()");
 	call SerialSplitControl.stop();
 	return SUCCESS;
 }
@@ -144,14 +144,14 @@ event void SerialSplitControl.startDone(error_t error) {
 	if (serial_data == NULL) {
 		call Leds.led0On();
 	}
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
 	if (error != SUCCESS) {
 		call Leds.led0On();
 	}
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 }
 
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {

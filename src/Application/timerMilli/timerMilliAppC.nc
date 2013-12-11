@@ -26,7 +26,7 @@
  */
 
 configuration timerMilliAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface timerMilliAppParams;
 
@@ -42,7 +42,7 @@ provides interface Event;
 
 implementation {
 components timerMilliAppP;
-Mgmt = timerMilliAppP;
+SplitControl = timerMilliAppP;
 
 timerMilliAppParams = timerMilliAppP;
 

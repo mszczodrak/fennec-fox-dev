@@ -29,7 +29,7 @@
 #include "DbgsApp.h"
 
 module DbgsAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface DbgsAppParams;
 
@@ -48,15 +48,15 @@ implementation {
 
 uint16_t c;
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	c = 0;
 	call Timer.startPeriodic(1000);
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	signal Mgmt.stopDone(SUCCESS);
+command error_t SplitControl.stop() {
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

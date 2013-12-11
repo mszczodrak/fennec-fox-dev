@@ -32,7 +32,7 @@
 #include "cuMac.h"
 
 module cuMacP @safe() {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -71,29 +71,29 @@ implementation {
 
   uint8_t localSendId;
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	if (status == S_STARTED) {
-		signal Mgmt.startDone(SUCCESS);
+		signal SplitControl.startDone(SUCCESS);
 		return SUCCESS;
 	}
 
 	localSendId = call Random.rand16();
 
 	if (call RadioControl.start() == FAIL) {
-		signal Mgmt.startDone(FAIL);
+		signal SplitControl.startDone(FAIL);
 	}
 	status = S_STARTING;
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	if (status == S_STOPPED) {
-		signal Mgmt.stopDone(SUCCESS);
+		signal SplitControl.stopDone(SUCCESS);
 		return SUCCESS;
 	}
 
 	if (call RadioControl.stop() == FAIL) {
-		signal Mgmt.stopDone(FAIL);
+		signal SplitControl.stopDone(FAIL);
 	}
 	status = S_STOPPING;
 	return SUCCESS;
@@ -107,7 +107,7 @@ command error_t Mgmt.stop() {
       if (status == S_STARTING) {
         dbg("Mac", "Mac cu got RadioControl startDone\n");
         status = S_STARTED;
-        signal Mgmt.startDone(SUCCESS);
+        signal SplitControl.startDone(SUCCESS);
       }
     }
   }
@@ -120,7 +120,7 @@ command error_t Mgmt.stop() {
       if (status == S_STOPPING) {
         dbg("Mac", "Mac cu got RadioControl stopDone\n");
         status = S_STOPPED;
-        signal Mgmt.stopDone(SUCCESS);
+        signal SplitControl.stopDone(SUCCESS);
       }
     }
   }

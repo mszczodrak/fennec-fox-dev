@@ -26,7 +26,7 @@
  */
 
 configuration nullRadioC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Receive as RadioReceive;
 
 uses interface nullRadioParams;
@@ -49,7 +49,7 @@ provides interface ReceiveIndicator as ByteIndicator;
 implementation {
 
 components nullRadioP;
-Mgmt = nullRadioP;
+SplitControl = nullRadioP;
 nullRadioParams = nullRadioP;
 RadioReceive = nullRadioP.RadioReceive;
 

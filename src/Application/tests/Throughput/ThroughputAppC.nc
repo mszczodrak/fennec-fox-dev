@@ -28,7 +28,7 @@
 #include "ThroughputApp.h"
 
 configuration ThroughputAppC {
-  provides interface Mgmt;
+  provides interface SplitControl;
   provides interface Module;
 
   uses interface ThroughputAppParams;
@@ -49,7 +49,7 @@ enum {
 };
  
 components ThroughputAppP;
-Mgmt = ThroughputAppP;
+SplitControl = ThroughputAppP;
 Module = ThroughputAppP;
 ThroughputAppParams = ThroughputAppP;
   

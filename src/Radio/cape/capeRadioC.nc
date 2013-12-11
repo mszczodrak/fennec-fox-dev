@@ -26,7 +26,7 @@
  */
 
 configuration capeRadioC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Receive as RadioReceive;
 
 uses interface capeRadioParams;
@@ -49,7 +49,7 @@ provides interface ReceiveIndicator as ByteIndicator;
 implementation {
 
 components capeRadioP;
-Mgmt = capeRadioP;
+SplitControl = capeRadioP;
 capeRadioParams = capeRadioP;
 RadioReceive = capeRadioP.RadioReceive;
 

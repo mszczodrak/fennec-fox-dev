@@ -33,7 +33,6 @@ uses interface Boot;
 
 uses interface Leds;
 uses interface SimpleStart as DbgSerial;
-uses interface SimpleStart as RandomStart;
 uses interface SimpleStart as Caches;
 uses interface SimpleStart as Registry;
 }
@@ -46,11 +45,6 @@ event void Boot.booted() {
 	call DbgSerial.start();
 }
 
-task void start_random() {
-	dbg("Fennec", "Fennec start_random()");
-	call RandomStart.start();
-}
-
 task void start_caches() {
 	dbg("Fennec", "Fennec start_caches()");
 	call Caches.start();
@@ -58,20 +52,11 @@ task void start_caches() {
 
 event void DbgSerial.startDone(error_t err) {
 	if (err == SUCCESS) {
-		post start_random();
+		post start_caches();
 	} else {
 		call DbgSerial.start();
 	}
 }
-
-event void RandomStart.startDone(error_t err) {
-	if (err == SUCCESS) {
-		post start_caches();
-	} else {
-		post start_random();
-	}
-}
-
 
 event void Caches.startDone(error_t err) {
 	if (err == SUCCESS) {

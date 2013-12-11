@@ -29,7 +29,7 @@
 #include "phidgetAdcApp.h"
 
 module phidgetAdcAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface phidgetAdcAppParams ;
 
@@ -90,7 +90,7 @@ bool busy_serial;
 /**
   * starting point for this module
   */
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
 	if ((TOS_NODE_ID == call phidgetAdcAppParams.get_destination()) || 
@@ -103,11 +103,11 @@ command error_t Mgmt.start() {
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
 	call Sensor_0_Ctrl.setRate(0);
 	call Sensor_1_Ctrl.setRate(0);
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -343,7 +343,7 @@ task void setup_app() {
 		clean_sensor_record(i);
 	}
 
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 }
 
 }

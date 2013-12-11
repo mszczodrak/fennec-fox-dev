@@ -28,7 +28,7 @@
 #include "nullMac.h"
 
 configuration nullMacC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -56,7 +56,7 @@ uses interface ReceiveIndicator as EnergyIndicator;
 implementation {
 
 components nullMacP;
-Mgmt = nullMacP;
+SplitControl = nullMacP;
 MacAMSend = nullMacP.MacAMSend;
 MacReceive = nullMacP.MacReceive;
 MacSnoop = nullMacP.MacSnoop;

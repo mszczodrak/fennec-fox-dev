@@ -65,3 +65,5 @@ MacAMPacket = cuNetP.MacAMPacket;
 MacPacket = cuNetP.MacPacket;
 MacPacketAcknowledgements = cuNetP.MacPacketAcknowledgements;
 }
+owledgements;
+}

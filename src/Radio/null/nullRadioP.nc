@@ -30,7 +30,7 @@
 #include "nullRadio.h"
 
 module nullRadioP @safe() {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Receive as RadioReceive;
 provides interface Resource as RadioResource;
 provides interface RadioConfig;
@@ -54,7 +54,7 @@ norace message_t *m;
 
 task void start_done() {
 	state = S_STARTED;
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 }
 
 task void finish_starting_radio() {
@@ -63,11 +63,11 @@ task void finish_starting_radio() {
 
 task void stop_done() {
 	state = S_STOPPED;
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 }
 
-command error_t Mgmt.start() {
-	dbg("Radio", "nullRadio Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Radio", "nullRadio SplitControl.start()");
 
 	if (state == S_STOPPED) {
 		state = S_STARTING;
@@ -84,8 +84,8 @@ command error_t Mgmt.start() {
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("Radio", "nullRadio Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("Radio", "nullRadio SplitControl.stop()");
 	if (state == S_STARTED) {
 		state = S_STOPPING;
 		post stop_done();

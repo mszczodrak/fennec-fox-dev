@@ -28,7 +28,7 @@
 #include "cuMac.h"
 
 configuration cuMacC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -58,7 +58,7 @@ implementation {
 
 components cuMacP;
 
-Mgmt = cuMacP;
+SplitControl = cuMacP;
 MacAMSend = cuMacP.MacAMSend;
 MacReceive = cuMacP.MacReceive;
 MacSnoop = cuMacP.MacSnoop;

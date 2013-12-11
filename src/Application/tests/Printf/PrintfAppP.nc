@@ -29,7 +29,7 @@
 #include "PrintfApp.h"
 
 module PrintfAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface PrintfAppParams;
 
@@ -45,14 +45,14 @@ uses interface Timer<TMilli> as Timer;
 
 implementation {
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	call Timer.startPeriodic(1000);
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	signal Mgmt.stopDone(SUCCESS);
+command error_t SplitControl.stop() {
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

@@ -37,9 +37,6 @@ components FennecP;
 components MainC;
 FennecP.Boot -> MainC;
 
-components RandomC;
-FennecP.RandomStart -> RandomC;
-
 components CachesC;
 FennecP.Caches -> CachesC;
 

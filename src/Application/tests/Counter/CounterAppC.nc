@@ -25,7 +25,7 @@
  * Last Modified: 1/5/2012
  */
 configuration CounterAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface CounterAppParams;
 
@@ -40,7 +40,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 implementation {
 
 components CounterAppP;
-Mgmt = CounterAppP;
+SplitControl = CounterAppP;
 
 CounterAppParams = CounterAppP;
 

@@ -29,7 +29,7 @@
 #include "nullApp.h"
 
 module nullAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface nullAppParams;
 
@@ -43,15 +43,15 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 
-command error_t Mgmt.start() {
-	dbg("Application", "nullApp Mgmt.start()");
-	signal Mgmt.startDone(SUCCESS);
+command error_t SplitControl.start() {
+	dbg("Application", "nullApp SplitControl.start()");
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("Application", "nullApp Mgmt.start()");
-	signal Mgmt.stopDone(SUCCESS);
+command error_t SplitControl.stop() {
+	dbg("Application", "nullApp SplitControl.start()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

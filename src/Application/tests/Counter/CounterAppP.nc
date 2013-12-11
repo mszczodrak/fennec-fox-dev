@@ -30,7 +30,7 @@
 #include "CounterApp.h"
 
 module CounterAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface CounterAppParams;
 
@@ -61,12 +61,12 @@ message_t packet;
 bool sendBusy = FALSE;
 uint16_t seqno;
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	uint32_t send_delay = call CounterAppParams.get_delay() * 
 		call CounterAppParams.get_delay_scale();
 	//call Leds.led0On();
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
-	dbg("Application", "CounterApp Mgmt.start()");
+	dbg("Application", "CounterApp SplitControl.start()");
 
 	dbg("Application", "CounterApp starting delay: %d", send_delay);
 	dbg("Application", "CounterApp starting src: %d  dest: %d",
@@ -80,15 +80,15 @@ command error_t Mgmt.start() {
 	}
 
 	sendBusy = FALSE;
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "CounterApp Mgmt.stop()");
+	dbg("Application", "CounterApp SplitControl.stop()");
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

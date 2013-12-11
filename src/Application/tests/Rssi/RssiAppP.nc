@@ -29,7 +29,7 @@
 #include "RssiApp.h"
 
 module RssiAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface RssiAppParams;
 
@@ -53,17 +53,17 @@ task void reset_led_timer() {
 	call LedTimer.startOneShot(2 * call RssiAppParams.get_delay());
 }
 
-command error_t Mgmt.start() {
-	dbg("Application", "RssiApp Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Application", "RssiApp SplitControl.start()");
 	call SendTimer.startPeriodic(call RssiAppParams.get_delay());
 	post reset_led_timer();
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("Application", "RssiApp Mgmt.start()");
-	signal Mgmt.stopDone(SUCCESS);
+command error_t SplitControl.stop() {
+	dbg("Application", "RssiApp SplitControl.start()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -87,9 +87,6 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	if (rssi > -40 ) {
 		call Leds.led2On();
 	}
-
-	printf("Rssi: %d\n",rssi);
-	printfflush();
 
 	return msg;
 }

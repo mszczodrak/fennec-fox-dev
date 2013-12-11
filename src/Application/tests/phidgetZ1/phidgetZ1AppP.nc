@@ -29,7 +29,7 @@
 #include "phidgetZ1App.h"
 
 module phidgetZ1AppP {
-  provides interface Mgmt;
+  provides interface SplitControl;
   provides interface Module;
 
   uses interface phidgetZ1AppParams ;
@@ -98,7 +98,7 @@ bool busy_serial;
 /**
   * starting point for this module
   */
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
 	if ((TOS_NODE_ID == call phidgetZ1AppParams.get_destination()) || 
@@ -111,11 +111,11 @@ command error_t Mgmt.start() {
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
 	call Sensor_1_Ctrl.setRate(0);
 	call Sensor_2_Ctrl.setRate(0);
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -368,7 +368,7 @@ task void setup_app() {
 		clean_sensor_record(i);
 	}
 
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 }
 
 }

@@ -28,7 +28,7 @@
 #include "phidgetZ1App.h"
 
 configuration phidgetZ1AppC {
-  provides interface Mgmt;
+  provides interface SplitControl;
   provides interface Module;
 
   uses interface phidgetZ1AppParams;
@@ -49,7 +49,7 @@ implementation {
   };
  
   components phidgetZ1AppP;
-  Mgmt = phidgetZ1AppP;
+  SplitControl = phidgetZ1AppP;
   Module = phidgetZ1AppP;
   phidgetZ1AppParams = phidgetZ1AppP;
   

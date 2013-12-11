@@ -307,3 +307,6 @@ default command void TrickleTimer.reset[uint16_t key]() { }
 default command void TrickleTimer.incrementCounter[uint16_t key]() { }
 
 }
+id TrickleTimer.incrementCounter[uint16_t key]() { }
+
+}

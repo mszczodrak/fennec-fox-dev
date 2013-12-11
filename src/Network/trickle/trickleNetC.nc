@@ -71,3 +71,6 @@ trickleNetP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_
 trickleNetParams = TrickleTimerMilliC;
 
 }
+TimerMilliC;
+
+}

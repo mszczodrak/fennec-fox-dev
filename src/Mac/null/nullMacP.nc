@@ -30,7 +30,7 @@
 #include "nullMac.h"
 
 module nullMacP @safe() {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -129,18 +129,18 @@ error_t SplitControl_stop() {
 
 /* Functions */
 
-command error_t Mgmt.start() {
-	dbg("Mac", "nullMac Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Mac", "nullMac SplitControl.start()");
 	post startDone_task();
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 
-command error_t Mgmt.stop() {
-	dbg("Mac", "nullMac Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("Mac", "nullMac SplitControl.stop()");
 	shutdown();
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

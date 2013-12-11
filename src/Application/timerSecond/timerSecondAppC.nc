@@ -26,7 +26,7 @@
  */
 
 configuration timerSecondAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Module;
 
 uses interface timerSecondAppParams;
@@ -44,7 +44,7 @@ provides interface Event;
 
 implementation {
 components timerSecondAppP;
-Mgmt = timerSecondAppP;
+SplitControl = timerSecondAppP;
 Module = timerSecondAppP;
 
 timerSecondAppParams = timerSecondAppP;

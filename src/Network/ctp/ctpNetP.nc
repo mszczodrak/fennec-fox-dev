@@ -165,3 +165,8 @@ async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 }
 
 }
+g) {
+	return call CtpPacketAcknowledgements.wasAcked(msg);
+}
+
+}

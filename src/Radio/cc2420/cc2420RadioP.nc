@@ -30,7 +30,7 @@
 #include "cc2420Radio.h"
 
 module cc2420RadioP @safe() {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface Leds;
 uses interface cc2420RadioParams;
@@ -50,7 +50,7 @@ task void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	}
-	signal Mgmt.startDone(err);
+	signal SplitControl.startDone(err);
 }
 
 task void finish_starting_radio() {
@@ -65,10 +65,10 @@ task void stop_done() {
 	if (err == SUCCESS) {
 		state = S_STOPPED;
 	}
-	signal Mgmt.stopDone(err);
+	signal SplitControl.stopDone(err);
 }
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	err = SUCCESS;
 
 	if (state == S_STARTED) {
@@ -82,7 +82,7 @@ command error_t Mgmt.start() {
 }
 
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	err = SUCCESS;
 
 	if (state == S_STOPPED) {

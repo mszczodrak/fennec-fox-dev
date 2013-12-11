@@ -28,7 +28,7 @@
 #include "BlinkApp.h"
 
 configuration BlinkAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface BlinkAppParams;
 
@@ -42,7 +42,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 components BlinkAppP;
-Mgmt = BlinkAppP;
+SplitControl = BlinkAppP;
 
 BlinkAppParams = BlinkAppP;
 

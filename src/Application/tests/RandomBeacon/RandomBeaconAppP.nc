@@ -30,7 +30,7 @@
 #include "RandomBeaconApp.h"
 
 module RandomBeaconAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface RandomBeaconAppParams;
 
@@ -66,23 +66,23 @@ task void set_timer() {
 }
 
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	//call Leds.led0On();
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
-	dbg("Application", "RandomBeaconApp Mgmt.start()");
+	dbg("Application", "RandomBeaconApp SplitControl.start()");
 
 	post set_timer();
 
 	sendBusy = FALSE;
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "RandomBeaconApp Mgmt.stop()");
+	dbg("Application", "RandomBeaconApp SplitControl.stop()");
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

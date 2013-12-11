@@ -28,7 +28,7 @@
 #include <Fennec.h>
 
 module BlinkAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface BlinkAppParams;
 
@@ -46,19 +46,19 @@ uses interface Timer<TMilli> as Timer;
 implementation {
 bool on;
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	on = 0;
 	call Timer.startPeriodic(call BlinkAppParams.get_delay());
-	dbg("Application", "BlinkAppP Mgmt.start()");
-	signal Mgmt.startDone(SUCCESS);
+	dbg("Application", "BlinkAppP SplitControl.start()");
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
 	call Leds.set(0);
-	dbg("Application", "BlinkAppP Mgmt.stop()");
-	signal Mgmt.stopDone(SUCCESS);
+	dbg("Application", "BlinkAppP SplitControl.stop()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

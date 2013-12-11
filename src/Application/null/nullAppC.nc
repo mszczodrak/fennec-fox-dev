@@ -26,7 +26,7 @@
  */
 
 configuration nullAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface nullAppParams;
 
@@ -40,7 +40,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 components nullAppP;
-Mgmt = nullAppP;
+SplitControl = nullAppP;
 
 nullAppParams = nullAppP;
 

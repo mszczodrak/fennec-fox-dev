@@ -28,7 +28,7 @@
 #include "UARTBridgeApp.h"
 
 configuration UARTBridgeAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface UARTBridgeAppParams;
 
@@ -42,7 +42,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 components UARTBridgeAppP;
-Mgmt = UARTBridgeAppP;
+SplitControl = UARTBridgeAppP;
 
 UARTBridgeAppParams = UARTBridgeAppP;
 

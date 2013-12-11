@@ -28,7 +28,7 @@
 #include "phidgetAdcApp.h"
 
 configuration phidgetAdcAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface phidgetAdcAppParams;
    
@@ -47,7 +47,7 @@ enum {
 };
  
 components phidgetAdcAppP;
-Mgmt = phidgetAdcAppP;
+SplitControl = phidgetAdcAppP;
 phidgetAdcAppParams = phidgetAdcAppP;
   
 components new TimerMilliC() as TimerImp;

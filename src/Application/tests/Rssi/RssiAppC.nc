@@ -26,7 +26,7 @@
  */
 
 configuration RssiAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface RssiAppParams;
 
@@ -40,7 +40,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 components RssiAppP;
-Mgmt = RssiAppP;
+SplitControl = RssiAppP;
 
 RssiAppParams = RssiAppP;
 

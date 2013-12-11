@@ -26,7 +26,7 @@
  */
 
 module ThroughputAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Module;
 
 uses interface ThroughputAppParams ;
@@ -84,14 +84,14 @@ bool init = 1;
 /**
   * starting point for this module
   */
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	init = 1;
 	seqno = 0;
 	busy_serial = FALSE;
 
 /*
 	if ((TOS_NODE_ID < MIN_ADDR) || (TOS_NODE_ID > MAX_ADDR)) {
-		signal Mgmt.startDone(SUCCESS);
+		signal SplitControl.startDone(SUCCESS);
 		return SUCCESS;
 	}
 */
@@ -106,13 +106,13 @@ command error_t Mgmt.start() {
 #endif
 
 	call Timer.startOneShot(1000);
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

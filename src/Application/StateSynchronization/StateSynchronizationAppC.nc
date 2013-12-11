@@ -29,7 +29,7 @@
 #include <Fennec.h>
 
 configuration StateSynchronizationAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface StateSynchronizationAppParams;
 uses interface AMSend as NetworkAMSend;
@@ -43,7 +43,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 implementation {
 
 components StateSynchronizationAppP;
-Mgmt = StateSynchronizationAppP;
+SplitControl = StateSynchronizationAppP;
 StateSynchronizationAppParams = StateSynchronizationAppP;
 
 NetworkAMSend = StateSynchronizationAppP;

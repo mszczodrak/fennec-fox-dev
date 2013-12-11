@@ -25,7 +25,7 @@
  * Last Modified: 1/5/2012
  */
 configuration RandomBeaconAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface RandomBeaconAppParams;
 
@@ -40,7 +40,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 implementation {
 
 components RandomBeaconAppP;
-Mgmt = RandomBeaconAppP;
+SplitControl = RandomBeaconAppP;
 
 RandomBeaconAppParams = RandomBeaconAppP;
 

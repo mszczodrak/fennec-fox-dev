@@ -26,14 +26,14 @@
 
 
 configuration ProtocolStackC {
-//provides interface Mgmt;
+//provides interface SplitControl;
 provides interface ProtocolStack;
 }
 
 implementation {
 
 components ProtocolStackP;
-//Mgmt = ProtocolStackP.Mgmt;
+//SplitControl = ProtocolStackP.SplitControl;
 ProtocolStack = ProtocolStackP;
 
 components FennecEngineC;

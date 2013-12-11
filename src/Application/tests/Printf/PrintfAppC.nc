@@ -26,7 +26,7 @@
  */
 
 configuration PrintfAppC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface PrintfAppParams;
 
@@ -41,7 +41,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 implementation {
 
 components PrintfAppP;
-Mgmt = PrintfAppP;
+SplitControl = PrintfAppP;
 
 PrintfAppParams = PrintfAppP;
 

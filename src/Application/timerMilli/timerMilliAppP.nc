@@ -29,7 +29,7 @@
 #include "timerMilliApp.h"
 
 module timerMilliAppP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface timerMilliAppParams;
 
@@ -52,8 +52,8 @@ implementation {
 */
 
 
-command error_t Mgmt.start() {
-	dbg("Application", "timerMilliApp Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Application", "timerMilliApp SplitControl.start()");
 	dbg("Application", "timerMilliApp src: %d", call timerMilliAppParams.get_src());
 	if ((call timerMilliAppParams.get_src() == BROADCAST) || 
 		(call timerMilliAppParams.get_src() == TOS_NODE_ID)) {
@@ -61,14 +61,14 @@ command error_t Mgmt.start() {
 		call Timer.startPeriodic(call timerMilliAppParams.get_delay());
 
 	}
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "timerMilliApp Mgmt.stop()");
-	signal Mgmt.stopDone(SUCCESS);
+	dbg("Application", "timerMilliApp SplitControl.stop()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 

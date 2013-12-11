@@ -26,7 +26,7 @@
  */
 
 configuration cc2420RadioC {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Receive as RadioReceive;
 
 uses interface cc2420RadioParams;
@@ -54,7 +54,7 @@ ByteIndicator = cc2420DriverC.ByteIndicator;
 cc2420RadioP.RadioPower -> cc2420ControlC.RadioPower;
 cc2420RadioP.RadioResource -> cc2420ControlC.RadioResource;
 
-Mgmt = cc2420RadioP;
+SplitControl = cc2420RadioP;
 cc2420RadioParams = cc2420RadioP;
 
 RadioResource = cc2420ControlC.RadioResource;

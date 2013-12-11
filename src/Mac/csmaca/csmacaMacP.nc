@@ -31,7 +31,7 @@
 
 
 module csmacaMacP @safe() {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
 provides interface Receive as MacSnoop;
@@ -66,11 +66,11 @@ message_t * ONE_NOK pending_message = NULL;
 
 uint8_t localSendId;
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	error_t e;
-	dbg("Mac", "csmaMac Mgmt.start()");
+	dbg("Mac", "csmaMac SplitControl.start()");
 	if (status == S_STARTED) {
-		signal Mgmt.startDone(SUCCESS);
+		signal SplitControl.startDone(SUCCESS);
 		return SUCCESS;
 	}
 
@@ -84,20 +84,20 @@ command error_t Mgmt.start() {
 	}
 
 	if (e == FAIL) {
-		signal Mgmt.startDone(FAIL);
+		signal SplitControl.startDone(FAIL);
 		return FAIL;
 	}
 
-	dbg("Mac", "csmaMac Mgmt.stop - STARTING");
+	dbg("Mac", "csmaMac SplitControl.stop - STARTING");
 	status = S_STARTING;
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
+command error_t SplitControl.stop() {
 	error_t e;
-	dbg("Mac", "csmaMac Mgmt.stop()");
+	dbg("Mac", "csmaMac SplitControl.stop()");
 	if (status == S_STOPPED) {
-		signal Mgmt.stopDone(SUCCESS);
+		signal SplitControl.stopDone(SUCCESS);
 		return SUCCESS;
 	}
 
@@ -109,11 +109,11 @@ command error_t Mgmt.stop() {
 	}
 
 	if (e == FAIL) {
-		signal Mgmt.stopDone(FAIL);
+		signal SplitControl.stopDone(FAIL);
 		return FAIL;
 	}
 
-	dbg("Mac", "csmaMac Mgmt.stop - STOPPING");
+	dbg("Mac", "csmaMac SplitControl.stop - STOPPING");
 
 	status = S_STOPPING;
 	return SUCCESS;
@@ -130,7 +130,7 @@ event void RadioControl.startDone(error_t err) {
 		call RadioControl.start();
 	} else {
 		status = S_STARTED;
-		signal Mgmt.startDone(SUCCESS);
+		signal SplitControl.startDone(SUCCESS);
 	}
 }
 
@@ -145,7 +145,7 @@ event void RadioControl.stopDone(error_t err) {
 		call RadioControl.stop();
 	} else {
 		status = S_STOPPED;
-		signal Mgmt.stopDone(SUCCESS);
+		signal SplitControl.stopDone(SUCCESS);
 	}
 }
 

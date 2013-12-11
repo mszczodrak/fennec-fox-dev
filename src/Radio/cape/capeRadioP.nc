@@ -31,7 +31,7 @@
 
 module capeRadioP @safe() {
 
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface Receive as RadioReceive;
 provides interface Resource as RadioResource;
 provides interface RadioConfig;
@@ -67,8 +67,8 @@ task void start_done() {
         if (err == SUCCESS) {
                 state = S_STARTED;
         }
-	dbg("Radio", "capeRadio signal Mgmt.startDone(%d)", err);
-	signal Mgmt.startDone(err);
+	dbg("Radio", "capeRadio signal SplitControl.startDone(%d)", err);
+	signal SplitControl.startDone(err);
 }
 
 task void finish_starting_radio() {
@@ -84,8 +84,8 @@ task void stop_done() {
         if (err == SUCCESS) {
                 state = S_STOPPED;
         }
-	dbg("Radio", "capeRadio signal Mgmt.stopDone(%d)", err);
-	signal Mgmt.stopDone(err);
+	dbg("Radio", "capeRadio signal SplitControl.stopDone(%d)", err);
+	signal SplitControl.stopDone(err);
 }
 
 task void load_done() {
@@ -120,9 +120,9 @@ task void cancel_msg() {
 }
 
 
-command error_t Mgmt.start() {
+command error_t SplitControl.start() {
 	auto_ack = TRUE;
-	dbg("Radio", "capeRadio Mgmt.start()");
+	dbg("Radio", "capeRadio SplitControl.start()");
 	call AMControl.start();
 
         err = SUCCESS;
@@ -146,8 +146,8 @@ event void AMControl.startDone(error_t error) {
 event void AMControl.stopDone(error_t error) {
 }
 
-command error_t Mgmt.stop() {
-	dbg("Radio", "capeRadio Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("Radio", "capeRadio SplitControl.stop()");
 	call AMControl.stop();
 
         err = SUCCESS;
