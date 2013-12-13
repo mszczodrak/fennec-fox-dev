@@ -29,7 +29,7 @@
 #include "ctpNet.h"
 
 module ctpNetP {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface ctpNetParams;
 uses interface Leds;
@@ -49,22 +49,22 @@ uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
 
 implementation {
 
-command error_t Mgmt.start() {
-	dbg("Network", "ctpNetP Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Network", "ctpNetP SplitControl.start()");
 	call RoutingControl.start();
-	dbg("Network", "ctpNetP Mgmt.start() - root: %d", call ctpNetParams.get_root());
+	dbg("Network", "ctpNetP SplitControl.start() - root: %d", call ctpNetParams.get_root());
 	if (TOS_NODE_ID == call ctpNetParams.get_root()) {
 		call RootControl.setRoot();
 	}
 
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("Network", "ctpNetP Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("Network", "ctpNetP SplitControl.stop()");
 	call RoutingControl.stop();
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -161,11 +161,6 @@ async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
 }
 
 async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
-	return call CtpPacketAcknowledgements.wasAcked(msg);
-}
-
-}
-g) {
 	return call CtpPacketAcknowledgements.wasAcked(msg);
 }
 

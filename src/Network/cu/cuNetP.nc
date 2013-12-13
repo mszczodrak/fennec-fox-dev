@@ -29,7 +29,7 @@
 #include "cuNet.h"
 
 module cuNetP {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
 provides interface Receive as NetworkSnoop;
@@ -49,15 +49,15 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 implementation {
 
-command error_t Mgmt.start() {
-	dbg("Network", "Network cuNet Mgmt.start()");
-	signal Mgmt.startDone(SUCCESS);
+command error_t SplitControl.start() {
+	dbg("Network", "Network cuNet SplitControl.start()");
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t Mgmt.stop() {
-	dbg("Network", "Network cuNet Mgmt.stop()");
-	signal Mgmt.stopDone(SUCCESS);
+command error_t SplitControl.stop() {
+	dbg("Network", "Network cuNet SplitControl.stop()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -163,10 +163,6 @@ async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
 
 async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 	return call MacPacketAcknowledgements.wasAcked(msg);
-}
-
-}
-turn call MacPacketAcknowledgements.wasAcked(msg);
 }
 
 }

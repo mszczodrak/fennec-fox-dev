@@ -28,7 +28,7 @@
 #include <Fennec.h>
 
 configuration ctpNetC {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface ctpNetParams;
 
@@ -57,7 +57,7 @@ enum {
 };
 
 components ctpNetP;
-Mgmt = ctpNetP;
+SplitControl = ctpNetP;
 ctpNetParams = ctpNetP;
 NetworkAMSend = ctpNetP;
 NetworkAMPacket = ctpNetP;
@@ -89,6 +89,4 @@ ctpNetP.CtpPacket -> CtpP.Packet;
 ctpNetP.CtpPacketAcknowledgements -> CtpActiveMessageC.PacketAcknowledgements;
 
 ctpNetP.CtpAMPacket -> CtpP.AMPacket;
-}
-tpP.AMPacket;
 }

@@ -29,7 +29,7 @@
 #include "trickleNet.h"
 
 module trickleNetP {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
 provides interface Receive as NetworkSnoop;
@@ -87,22 +87,22 @@ task void send_message() {
 }
 
 
-command error_t Mgmt.start() {
-	dbg("Network", "trickleNetP Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Network", "trickleNetP SplitControl.start()");
 	tx_busy = FALSE;
 	app_data = NULL;
 	data_len = 0;
 	seqno = DISSEMINATION_SEQNO_UNKNOWN;
 	call TrickleTimer.start[TRICKLE_ID]();
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 
-command error_t Mgmt.stop() {
-	dbg("Network", "trickleNetP Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("Network", "trickleNetP SplitControl.stop()");
 	call TrickleTimer.stop[TRICKLE_ID]();
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -305,8 +305,5 @@ default command error_t TrickleTimer.start[uint16_t key]() { return FAIL; }
 default command void TrickleTimer.stop[uint16_t key]() { }
 default command void TrickleTimer.reset[uint16_t key]() { }
 default command void TrickleTimer.incrementCounter[uint16_t key]() { }
-
-}
-id TrickleTimer.incrementCounter[uint16_t key]() { }
 
 }
