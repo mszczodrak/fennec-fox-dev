@@ -29,23 +29,19 @@
 
 configuration cc2420xRadioC {
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
 
 uses interface cc2420xRadioParams;
 
-provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
-
-provides interface RadioPacket;
-provides interface RadioBuffer;
 provides interface RadioSend;
-
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
-
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
+ 
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
 }
 
 implementation {
@@ -53,22 +49,35 @@ implementation {
 components cc2420xRadioP;
 SplitControl = cc2420xRadioP;
 cc2420xRadioParams = cc2420xRadioP;
-RadioReceive = cc2420xRadioP.RadioReceive;
-
-PacketIndicator = cc2420xRadioP.PacketIndicator;
-EnergyIndicator = cc2420xRadioP.EnergyIndicator;
-ByteIndicator = cc2420xRadioP.ByteIndicator;
-
-RadioResource = cc2420xRadioP.RadioResource;
-RadioConfig = cc2420xRadioP.RadioConfig;
-RadioPower = cc2420xRadioP.RadioPower;
-ReadRssi = cc2420xRadioP.ReadRssi;
-
-RadioBuffer = cc2420xRadioP.RadioBuffer;
-RadioPacket = cc2420xRadioP.RadioPacket;
-RadioSend = cc2420xRadioP.RadioSend;
 
 components CC2420XDriverLayerC;
 cc2420xRadioP.RadioState -> CC2420XDriverLayerC;
+
+RadioSend = CC2420XDriverLayerC;
+RadioReceive = CC2420XDriverLayerC;
+RadioCCA = CC2420XDriverLayerC;
+RadioPacket = CC2420XDriverLayerC;
+
+PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;
+PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
+PacketTimeSyncOffset = CC2420XDriverLayerC.PacketTimeSyncOffset;
+PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
+LinkPacketMetadata = CC2420XDriverLayerC;
+
+
+//RadioDriverLayerC.Config -> RadioP;
+//RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
+//PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
+//PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
+//PacketRSSI = RadioDriverLayerC.PacketRSSI;
+//LinkPacketMetadata = RadioDriverLayerC;
+//LocalTimeRadio = RadioDriverLayerC;
+
+//RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+//RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+//RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+//RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+
+
 
 }
