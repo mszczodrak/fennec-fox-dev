@@ -1,7 +1,7 @@
 #include "IEEE802154.h"
 //#include "message.h"
 //#include "CC2420.h"
-#include "CC2420TimeSyncMessage.h"
+//#include "CC2420TimeSyncMessage.h"
 
 module FennecPacketP @safe() {
 

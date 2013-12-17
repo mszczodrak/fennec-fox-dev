@@ -25,6 +25,8 @@
  * Last Modified: 1/5/2012
  */
 
+#include "CC2420.h"
+
 configuration cc2420xRadioC {
 provides interface SplitControl;
 provides interface Receive as RadioReceive;
