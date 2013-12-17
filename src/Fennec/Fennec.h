@@ -36,6 +36,8 @@
 #include "Dbgs.h"
 #include "AM.h"
 
+#include <Tasklet.h>
+
 #include "ff_structs.h"
 #include "ff_flags.h"
 #include "ff_states.h"
