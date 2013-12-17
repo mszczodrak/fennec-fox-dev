@@ -66,4 +66,7 @@ RadioBuffer = cc2420xRadioP.RadioBuffer;
 RadioPacket = cc2420xRadioP.RadioPacket;
 RadioSend = cc2420xRadioP.RadioSend;
 
+components CC2420XDriverLayerC;
+cc2420xRadioP.RadioState -> CC2420XDriverLayerC;
+
 }

@@ -27,6 +27,7 @@
 
 
 #include <Fennec.h>
+#include <Tasklet.h>
 #include "cc2420xRadio.h"
 
 module cc2420xRadioP @safe() {
@@ -44,6 +45,8 @@ provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface cc2420xRadioParams;
+
+uses interface RadioState;
 }
 
 implementation {
@@ -51,10 +54,12 @@ implementation {
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
+error_t m_error = FALSE;
+
 
 task void start_done() {
 	state = S_STARTED;
-	signal SplitControl.startDone(SUCCESS);
+	signal SplitControl.startDone(m_error);
 }
 
 task void finish_starting_radio() {
@@ -63,40 +68,47 @@ task void finish_starting_radio() {
 
 task void stop_done() {
 	state = S_STOPPED;
-	signal SplitControl.stopDone(SUCCESS);
+	signal SplitControl.stopDone(m_error);
 }
 
+task void stateDoneTask()
+{
+/*
+      uint8_t s;
+
+      s = state;
+
+      // change the state before so we can be reentered from the event
+      state = STATE_READY;
+
+      if( s == STATE_TURN_ON )
+               signal SplitControl.startDone(SUCCESS);
+      else if( s == STATE_TURN_OFF )
+               signal SplitControl.stopDone(SUCCESS);
+        else if( s == STATE_CHANNEL )
+               signal RadioChannel.setChannelDone();
+        else    // not our event, ignore it
+               state = s;
+*/
+}
+
+
+tasklet_async event void RadioState.done()
+{
+	post stateDoneTask();
+}
+
+
 command error_t SplitControl.start() {
-	dbg("Radio", "cc2420xRadio SplitControl.start()");
-
-	if (state == S_STOPPED) {
-		state = S_STARTING;
-		post start_done();
-		return SUCCESS;
-
-	} else if(state == S_STARTED) {
-		post start_done();
-		return EALREADY;
-
-	} else if(state == S_STARTING) {
-		return SUCCESS;
-	}
-	return SUCCESS;
+	m_error = call RadioState.turnOn();
+	post start_done();
+	return m_error;
 }
 
 command error_t SplitControl.stop() {
-	dbg("Radio", "cc2420xRadio SplitControl.stop()");
-	if (state == S_STARTED) {
-		state = S_STOPPING;
-		post stop_done();
-		return SUCCESS;
-	} else if(state == S_STOPPED) {
-		post stop_done();
-		return EALREADY;
-	} else if(state == S_STOPPING) {
-		return SUCCESS;
-	}
-	return SUCCESS;
+	m_error = call RadioState.turnOff();
+	post stop_done();
+	return m_error;
 }
 
 async command error_t RadioPower.startVReg() {
