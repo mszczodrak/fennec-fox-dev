@@ -1,7 +1,7 @@
 /*
  *  cc2420x radio module for Fennec Fox platform.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ *  Copyright (C) 2013 Marcin Szczodrak
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 /*
  * Network: cc2420x Radio Protocol
  * Author: Marcin Szczodrak
- * Date: 8/20/2010
- * Last Modified: 1/5/2012
+ * Date: 12/17/2013
+ * Last Modified: 12/17/2013
  */
 
 
