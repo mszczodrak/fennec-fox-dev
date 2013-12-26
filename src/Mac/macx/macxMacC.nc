@@ -67,14 +67,14 @@ provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 		interface RadioChannel;
 
-		interface PacketField<uint8_t> as PacketLinkQuality;
-		interface PacketField<uint8_t> as PacketTransmitPower;
-		interface PacketField<uint8_t> as PacketRSSI;
-		interface LinkPacketMetadata;
-
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+//		interface PacketField<uint8_t> as PacketLinkQuality;
+//		interface PacketField<uint8_t> as PacketTransmitPower;
+//		interface PacketField<uint8_t> as PacketRSSI;
+//		interface LinkPacketMetadata;
+//
+//		interface LocalTime<TRadio> as LocalTimeRadio;
+//		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+//		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 	}
 
 
@@ -256,15 +256,16 @@ implementation
 	CsmaLayerC.Config -> RadioP;
 	CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
 	CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
-	CsmaLayerC -> RadioDriverLayerC.RadioCCA;
+	RadioCCA = CsmaLayerC;
+	//CsmaLayerC -> RadioDriverLayerC.RadioCCA;
 
 // -------- TimeStamping
 
 	components new TimeStampingLayerC();
 	TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
 	TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
-	PacketTimeStampRadio = TimeStampingLayerC;
-	PacketTimeStampMilli = TimeStampingLayerC;
+	//PacketTimeStampRadio = TimeStampingLayerC;
+	//PacketTimeStampMilli = TimeStampingLayerC;
 	TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
 // -------- MetadataFlags
@@ -290,11 +291,10 @@ implementation
 	components CC2420XDriverLayerC as RadioDriverLayerC;
 	RadioDriverLayerC.Config -> RadioP;
 	RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
-	PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
-	PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
-	PacketRSSI = RadioDriverLayerC.PacketRSSI;
-	LinkPacketMetadata = RadioDriverLayerC;
-	LocalTimeRadio = RadioDriverLayerC;
+	//PacketTransmitPower = PacketTransmitPower;
+	//PacketLinkQuality = PacketLinkQuality;
+	//LinkPacketMetadata = RadioDriverLayerC;
+	//LocalTimeRadio = RadioDriverLayerC;
 
 	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];

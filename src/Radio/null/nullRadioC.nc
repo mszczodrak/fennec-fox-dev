@@ -27,22 +27,19 @@
 
 configuration nullRadioC {
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
 
 uses interface nullRadioParams;
 
-provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
-
-provides interface RadioPacket;
-provides interface RadioBuffer;
 provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
 
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
 
 }
 
@@ -51,19 +48,16 @@ implementation {
 components nullRadioP;
 SplitControl = nullRadioP;
 nullRadioParams = nullRadioP;
-RadioReceive = nullRadioP.RadioReceive;
 
-PacketIndicator = nullRadioP.PacketIndicator;
-EnergyIndicator = nullRadioP.EnergyIndicator;
-ByteIndicator = nullRadioP.ByteIndicator;
+RadioSend = nullRadioP;
+RadioReceive = nullRadioP;
+RadioCCA = nullRadioP;
+RadioPacket = nullRadioP;
 
-RadioResource = nullRadioP.RadioResource;
-RadioConfig = nullRadioP.RadioConfig;
-RadioPower = nullRadioP.RadioPower;
-ReadRssi = nullRadioP.ReadRssi;
-
-RadioBuffer = nullRadioP.RadioBuffer;
-RadioPacket = nullRadioP.RadioPacket;
-RadioSend = nullRadioP.RadioSend;
+PacketTransmitPower = nullRadioP.PacketTransmitPower;
+PacketRSSI = nullRadioP.PacketRSSI;
+PacketTimeSyncOffset = nullRadioP.PacketTimeSyncOffset;
+PacketLinkQuality = nullRadioP.PacketLinkQuality;
+LinkPacketMetadata = nullRadioP;
 
 }

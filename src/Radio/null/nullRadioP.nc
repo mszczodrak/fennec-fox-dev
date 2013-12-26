@@ -30,20 +30,23 @@
 #include "nullRadio.h"
 
 module nullRadioP @safe() {
+
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
-provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
-provides interface RadioBuffer;
-provides interface RadioPacket;
-provides interface RadioSend;
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface nullRadioParams;
+
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
+
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
+
+
 }
 
 implementation {
@@ -99,145 +102,141 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-async command error_t RadioPower.startVReg() {
-	return SUCCESS;
-}
 
-async command error_t RadioPower.stopVReg() {
-	return SUCCESS;
-}
+        tasklet_async command error_t RadioCCA.request()
+        {
+		signal RadioCCA.done(SUCCESS);
+                return SUCCESS;
+        }
 
-async command error_t RadioPower.startOscillator() {
-	return SUCCESS;
-}
+/*----------------- PacketTransmitPower -----------------*/
 
-async command error_t RadioPower.stopOscillator() {
-	return SUCCESS;
-}
+        async command bool PacketTransmitPower.isSet(message_t* msg)
+        {
+                return TRUE;
+        }
 
-async command error_t RadioPower.rxOn() {
-	return SUCCESS;
-}
+        async command uint8_t PacketTransmitPower.get(message_t* msg)
+        {
+                return 0;
+        }
 
-async command error_t RadioPower.rfOff() {
-	return SUCCESS;
-}
+        async command void PacketTransmitPower.clear(message_t* msg)
+        {
+                
+        }
 
-command uint8_t RadioConfig.getChannel() {
-	return channel;
-}
+        async command void PacketTransmitPower.set(message_t* msg, uint8_t value)
+        {
+        }
 
-command void RadioConfig.setChannel( uint8_t new_channel ) {
-	atomic channel = new_channel;
-}
 
-async command uint16_t RadioConfig.getShortAddr() {
-	return TOS_NODE_ID;
-}
+/*----------------- PacketRSSI -----------------*/
 
-command void RadioConfig.setShortAddr( uint16_t addr ) {
-}
+        async command bool PacketRSSI.isSet(message_t* msg)
+        {
+                return TRUE;
+        }
 
-async command uint16_t RadioConfig.getPanAddr() {
-	return TOS_NODE_ID;
-}
+        async command uint8_t PacketRSSI.get(message_t* msg)
+        {
+                return 0;
+        }
 
-command void RadioConfig.setPanAddr( uint16_t pan ) {
-}
+        async command void PacketRSSI.clear(message_t* msg)
+        {
+        }
 
-command error_t RadioConfig.sync() {
-	return SUCCESS;
-}
+        async command void PacketRSSI.set(message_t* msg, uint8_t value)
+        {
+        }
 
-command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
-}
+/*----------------- PacketTimeSyncOffset -----------------*/
 
-async command bool RadioConfig.isAddressRecognitionEnabled() {
-	return FALSE;
-}
+        async command bool PacketTimeSyncOffset.isSet(message_t* msg)
+        {
+                return TRUE;
+        }
 
-async command bool RadioConfig.isHwAddressRecognitionDefault() {
-	return FALSE;
-}
+        async command uint8_t PacketTimeSyncOffset.get(message_t* msg)
+        {
+                return 0;
+        }
 
-command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
-}
+        async command void PacketTimeSyncOffset.clear(message_t* msg)
+        {
+        }
 
-async command bool RadioConfig.isHwAutoAckDefault() {
-	return FALSE;
-}
+        async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value)
+        {
+        }
 
-async command bool RadioConfig.isAutoAckEnabled() {
-	return FALSE;
-}
 
-command error_t ReadRssi.read() {
-	return FAIL;
-}
+/*----------------- PacketLinkQuality -----------------*/
 
-async command bool ByteIndicator.isReceiving() {
-	return FALSE;
-}
+        async command bool PacketLinkQuality.isSet(message_t* msg)
+        {
+                return TRUE;
+        }
 
-async command bool EnergyIndicator.isReceiving() {
-	return FALSE;
-}
+        async command uint8_t PacketLinkQuality.get(message_t* msg)
+        {
+                return 0;
+        }
 
-async command bool PacketIndicator.isReceiving() {
-	return FALSE;
-}
+        async command void PacketLinkQuality.clear(message_t* msg)
+        {
+        }
 
-task void load_done() {
-	signal RadioBuffer.loadDone(m, SUCCESS);
-}
+        async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
+        {
+        }
 
-async command error_t RadioBuffer.load(message_t* msg) {
-	dbg("Radio", "nullRadio RadioBuffer.load(0x%1x)", msg);
-	m = msg;
-	post load_done();
-	return SUCCESS;
-}
+/*----------------- LinkPacketMetadata -----------------*/
 
-task void send_done() {
-	signal RadioSend.sendDone(m, SUCCESS);
-}
+        async command bool LinkPacketMetadata.highChannelQuality(message_t* msg)
+        {
+                return TRUE;
+        }
 
-async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "nullRadio RadioBuffer.send(0x%1x)", msg, useCca);
-	post send_done();
-	return SUCCESS;
-}
 
-async command error_t RadioSend.cancel(message_t *msg) {
-	dbg("Radio", "nullRadio RadioBuffer.cancel(0x%1x)", msg);
-	return SUCCESS;
-}
 
-async command uint8_t RadioPacket.maxPayloadLength() {
-	dbg("Radio", "nullRadio RadioBuffer.maxPayloadLength()");
-	return 128;
-}
+/*----------------- RadioPacket -----------------*/
 
-async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-	dbg("Radio", "nullRadio RadioBuffer.getPayload(0x%1x, %d)", msg, len);
-	return msg->data;
-}
+        async command uint8_t RadioPacket.headerLength(message_t* msg)
+        {
+                return 0;
+        }
 
-async command error_t RadioResource.immediateRequest() {
-	return SUCCESS;
-}
+        async command uint8_t RadioPacket.payloadLength(message_t* msg)
+        {
+                return 0;
+        }
 
-async command error_t RadioResource.request() {
-	return SUCCESS;
-}
+        async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length)
+        {
+        }
 
-async command bool RadioResource.isOwner() {
-	return SUCCESS;
-}
+        async command uint8_t RadioPacket.maxPayloadLength()
+        {
+                return 128;
+        }
 
-async command error_t RadioResource.release() {
-	return SUCCESS;
-}
+        async command uint8_t RadioPacket.metadataLength(message_t* msg)
+        {
+                return 0;
+        }
+
+        async command void RadioPacket.clear(message_t* msg)
+        {
+        }
+
+        tasklet_async command error_t RadioSend.send(message_t* msg)
+        {
+		return SUCCESS;
+	}
+
+
 
 }
 
