@@ -1,31 +1,33 @@
 /*
- * Copyright (c) 2010, Vanderbilt University
- * All rights reserved.
+ *  macx MAC module for Fennec Fox platform.
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- * 
- * IN NO EVENT SHALL THE VANDERBILT UNIVERSITY BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE VANDERBILT
- * UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * THE VANDERBILT UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE VANDERBILT UNIVERSITY HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *  Copyright (C) 2010-2012 Marcin Szczodrak
  *
- * Author: Janos Sallai, Miklos Maroti
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
-#include <RadioConfig.h>
+/*
+ * Module: macx MAC Protocol
+ * Author: Marcin Szczodrak
+ * Date: 2/18/2012
+ * Last Modified: 9/29/2012
+ */
 
-configuration macxMacC
-{
+#include "macxMac.h"
 
+configuration macxMacC {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
@@ -33,50 +35,6 @@ provides interface Receive as MacSnoop;
 provides interface AMPacket as MacAMPacket;
 provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-
-
-	provides 
-	{
-
-#ifndef IEEE154FRAMES_ENABLED
-		interface SendNotifier[am_id_t id];
-
-		// for TOSThreads
-		interface Receive as ReceiveDefault[am_id_t id];
-		interface Receive as SnoopDefault[am_id_t id];
-#endif
-
-#ifndef TFRAMES_ENABLED
-		interface Ieee154Send;
-		interface Receive as Ieee154Receive;
-		interface SendNotifier as Ieee154Notifier;
-
-		interface Resource as SendResource[uint8_t clint];
-
-		interface Ieee154Packet;
-		interface Packet as PacketForIeee154Message;
-#endif
-
-		interface PacketAcknowledgements;
-		interface LowPowerListening;
-		interface PacketLink;
-
-#ifdef TRAFFIC_MONITOR
-		interface TrafficMonitor;
-#endif
-
-		interface RadioChannel;
-
-//		interface PacketField<uint8_t> as PacketLinkQuality;
-//		interface PacketField<uint8_t> as PacketTransmitPower;
-//		interface PacketField<uint8_t> as PacketRSSI;
-//		interface LinkPacketMetadata;
-//
-//		interface LocalTime<TRadio> as LocalTimeRadio;
-//		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-//		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-	}
-
 
 uses interface macxMacParams;
 
@@ -92,212 +50,38 @@ uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
 uses interface LinkPacketMetadata;
 
+}
+
+implementation {
+
+components macxMacP;
+macxMacParams = macxMacP;
+
+
+components CC2420XActiveMessageC;
+SplitControl = CC2420XActiveMessageC;
+MacAMSend = CC2420XActiveMessageC.AMSend[100];
+MacReceive = CC2420XActiveMessageC.Receive[100];
+MacSnoop = CC2420XActiveMessageC.Snoop[100];
+MacPacket = CC2420XActiveMessageC.Packet;
+MacAMPacket = CC2420XActiveMessageC.AMPacket;
+MacPacketAcknowledgements = CC2420XActiveMessageC.PacketAcknowledgements;
+
+
+RadioControl = macxMacP.RadioControl;
+RadioSend = macxMacP.RadioSend;
+RadioReceive = macxMacP.RadioReceive;
+RadioCCA = macxMacP.RadioCCA;
+RadioPacket = macxMacP.RadioPacket;
+PacketTransmitPower = macxMacP.PacketTransmitPower;
+PacketRSSI = macxMacP.PacketRSSI;
+PacketTimeSyncOffset = macxMacP.PacketTimeSyncOffset;
+PacketLinkQuality = macxMacP.PacketLinkQuality;
+LinkPacketMetadata = macxMacP.LinkPacketMetadata;
+
+
+
+
 
 }
 
-implementation
-{
-	#define UQ_METADATA_FLAGS	"UQ_CC2420X_METADATA_FLAGS"
-	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
-
-// -------- RadioP
-
-	components CC2420XRadioP as RadioP;
-
-#ifdef RADIO_DEBUG
-	components AssertC;
-#endif
-
-	RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC;
-	RadioP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-	RadioP.PacketTimeStamp -> TimeStampingLayerC;
-	RadioP.CC2420XPacket -> RadioDriverLayerC;
-
-// -------- RadioAlarm
-
-	components new RadioAlarmC();
-	RadioAlarmC.Alarm -> RadioDriverLayerC;
-
-// -------- Active Message
-
-#ifndef IEEE154FRAMES_ENABLED
-	components new ActiveMessageLayerC();
-	ActiveMessageLayerC.Config -> RadioP;
-	ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
-	ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
-	ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
-
-	MacAMSend = ActiveMessageLayerC.AMSend[100];
-	MacReceive = ActiveMessageLayerC.Receive[100];
-	MacSnoop = ActiveMessageLayerC.Snoop[100];
-	SendNotifier = ActiveMessageLayerC;
-	MacAMPacket = ActiveMessageLayerC;
-	MacPacket = ActiveMessageLayerC;
-
-	ReceiveDefault = ActiveMessageLayerC.ReceiveDefault;
-	SnoopDefault = ActiveMessageLayerC.SnoopDefault;
-#endif
-
-// -------- Automatic RadioSend Resource
-
-#ifndef IEEE154FRAMES_ENABLED
-#ifndef TFRAMES_ENABLED
-	components new AutoResourceAcquireLayerC();
-	AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-#else
-	components new DummyLayerC() as AutoResourceAcquireLayerC;
-#endif
-	AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
-#endif
-
-// -------- RadioSend Resource
-
-#ifndef TFRAMES_ENABLED
-	components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
-	SendResource = SendResourceC;
-
-// -------- Ieee154 Message
-
-	components new Ieee154MessageLayerC();
-	Ieee154MessageLayerC.Ieee154PacketLayer -> Ieee154PacketLayerC;
-	Ieee154MessageLayerC.SubSend -> TinyosNetworkLayerC.Ieee154Send;
-	Ieee154MessageLayerC.SubReceive -> TinyosNetworkLayerC.Ieee154Receive;
-	Ieee154MessageLayerC.RadioPacket -> TinyosNetworkLayerC.Ieee154Packet;
-
-	Ieee154Send = Ieee154MessageLayerC;
-	Ieee154Receive = Ieee154MessageLayerC;
-	Ieee154Notifier = Ieee154MessageLayerC;
-	Ieee154Packet = Ieee154PacketLayerC;
-	PacketForIeee154Message = Ieee154MessageLayerC;
-#endif
-
-// -------- Tinyos Network
-
-	components new TinyosNetworkLayerC();
-
-	TinyosNetworkLayerC.SubSend -> UniqueLayerC;
-	TinyosNetworkLayerC.SubReceive -> PacketLinkLayerC;
-	TinyosNetworkLayerC.SubPacket -> Ieee154PacketLayerC;
-
-// -------- IEEE 802.15.4 Packet
-
-	components new Ieee154PacketLayerC();
-	Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
-
-// -------- UniqueLayer Send part (wired twice)
-
-	components new UniqueLayerC();
-	UniqueLayerC.Config -> RadioP;
-	UniqueLayerC.SubSend -> PacketLinkLayerC;
-
-// -------- Packet Link
-
-	components new PacketLinkLayerC();
-	PacketLink = PacketLinkLayerC;
-	PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-	PacketLinkLayerC -> LowPowerListeningLayerC.Send;
-	PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
-	PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
-
-// -------- Low Power Listening
-
-#ifdef LOW_POWER_LISTENING
-	#warning "*** USING LOW POWER LISTENING LAYER"
-	components new LowPowerListeningLayerC();
-	LowPowerListeningLayerC.Config -> RadioP;
-	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-#else	
-	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
-#endif
-	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
-	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
-	LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
-	LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
-	SplitControl = LowPowerListeningLayerC;
-	LowPowerListening = LowPowerListeningLayerC;
-
-// -------- MessageBuffer
-
-	components new MessageBufferLayerC();
-	MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
-	MessageBufferLayerC.RadioReceive -> UniqueLayerC;
-	MessageBufferLayerC.RadioState -> TrafficMonitorLayerC;
-	RadioChannel = MessageBufferLayerC;
-
-// -------- UniqueLayer receive part (wired twice)
-
-	UniqueLayerC.SubReceive -> CollisionAvoidanceLayerC;
-
-// -------- CollisionAvoidance
-
-#ifdef SLOTTED_MAC
-	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-#else
-	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
-#endif
-	CollisionAvoidanceLayerC.Config -> RadioP;
-	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
-	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
-	CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-
-// -------- SoftwareAcknowledgement
-
-	components new SoftwareAckLayerC();
-	SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-	PacketAcknowledgements = SoftwareAckLayerC;
-	SoftwareAckLayerC.Config -> RadioP;
-	SoftwareAckLayerC.SubSend -> CsmaLayerC;
-	SoftwareAckLayerC.SubReceive -> CsmaLayerC;
-
-// -------- Carrier Sense
-
-	components new DummyLayerC() as CsmaLayerC;
-	CsmaLayerC.Config -> RadioP;
-	CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
-	CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
-	RadioCCA = CsmaLayerC;
-	//CsmaLayerC -> RadioDriverLayerC.RadioCCA;
-
-// -------- TimeStamping
-
-	components new TimeStampingLayerC();
-	TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
-	TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
-	//PacketTimeStampRadio = TimeStampingLayerC;
-	//PacketTimeStampMilli = TimeStampingLayerC;
-	TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-
-// -------- MetadataFlags
-
-	components new MetadataFlagsLayerC();
-	MetadataFlagsLayerC.SubPacket -> RadioDriverLayerC;
-
-// -------- Traffic Monitor
-
-#ifdef TRAFFIC_MONITOR
-	components new TrafficMonitorLayerC();
-	TrafficMonitor = TrafficMonitorLayerC;
-#else
-	components new DummyLayerC() as TrafficMonitorLayerC;
-#endif
-	TrafficMonitorLayerC.Config -> RadioP;
-	TrafficMonitorLayerC -> RadioDriverLayerC.RadioSend;
-	TrafficMonitorLayerC -> RadioDriverLayerC.RadioReceive;
-	TrafficMonitorLayerC -> RadioDriverLayerC.RadioState;
-
-// -------- Driver
-
-	components CC2420XDriverLayerC as RadioDriverLayerC;
-	RadioDriverLayerC.Config -> RadioP;
-	RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
-	//PacketTransmitPower = PacketTransmitPower;
-	//PacketLinkQuality = PacketLinkQuality;
-	//LinkPacketMetadata = RadioDriverLayerC;
-	//LocalTimeRadio = RadioDriverLayerC;
-
-	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-}
