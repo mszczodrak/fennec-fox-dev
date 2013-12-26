@@ -37,20 +37,19 @@ provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 uses interface nullMacParams;
-uses interface Receive as RadioReceive;
-
-uses interface RadioConfig;
-uses interface RadioPower;
-uses interface Read<uint16_t> as ReadRssi;
-uses interface Resource as RadioResource;
 
 uses interface SplitControl as RadioControl;
-uses interface RadioPacket;
-uses interface RadioBuffer;
 uses interface RadioSend;
-uses interface ReceiveIndicator as PacketIndicator;
-uses interface ReceiveIndicator as ByteIndicator;
-uses interface ReceiveIndicator as EnergyIndicator;
+uses interface RadioReceive;
+uses interface RadioCCA;
+uses interface RadioPacket;
+
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
+uses interface LinkPacketMetadata;
+
 }
 
 implementation {
@@ -66,19 +65,17 @@ MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
 
 nullMacParams = nullMacP;
 
-RadioConfig = nullMacP.RadioConfig;
-RadioPower = nullMacP.RadioPower;
-ReadRssi = nullMacP.ReadRssi;
-RadioResource = nullMacP.RadioResource;
-RadioPacket = nullMacP.RadioPacket;
-RadioBuffer = nullMacP.RadioBuffer;
-RadioSend = nullMacP.RadioSend;
 RadioControl = nullMacP.RadioControl;
+RadioSend = nullMacP.RadioSend;
 RadioReceive = nullMacP.RadioReceive;
+RadioCCA = nullMacP.RadioCCA;
+RadioPacket = nullMacP.RadioPacket;
 
-EnergyIndicator = nullMacP.EnergyIndicator;
-ByteIndicator = nullMacP.ByteIndicator;
-PacketIndicator = nullMacP.PacketIndicator;
+PacketTransmitPower = nullMacP.PacketTransmitPower;
+PacketRSSI = nullMacP.PacketRSSI;
+PacketTimeSyncOffset = nullMacP.PacketTimeSyncOffset;
+PacketLinkQuality = nullMacP.PacketLinkQuality;
+LinkPacketMetadata = nullMacP.LinkPacketMetadata;
 
 components RandomC;
 nullMacP.Random -> RandomC;

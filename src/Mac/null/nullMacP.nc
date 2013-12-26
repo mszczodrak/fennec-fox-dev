@@ -40,24 +40,20 @@ provides interface AMPacket as MacAMPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 uses interface nullMacParams;
-uses interface RadioBuffer;
-uses interface RadioPacket;
-uses interface RadioSend;
 
 uses interface SplitControl as RadioControl;
+uses interface RadioSend;
+uses interface RadioReceive;
+uses interface RadioCCA;
+uses interface RadioPacket;
 
-uses interface RadioConfig;
-uses interface RadioPower;
-uses interface Read<uint16_t> as ReadRssi;
-uses interface Resource as RadioResource;
-
-uses interface Receive as RadioReceive;
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
+uses interface LinkPacketMetadata;
 
 uses interface Random;
-uses interface ReceiveIndicator as EnergyIndicator;
-uses interface ReceiveIndicator as ByteIndicator;
-uses interface ReceiveIndicator as PacketIndicator;
-
 uses interface State as SplitControlState;
 }
 
