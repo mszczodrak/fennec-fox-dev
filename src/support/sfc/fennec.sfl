@@ -95,6 +95,7 @@ use network dxp $(FENNEC_FOX_LIB)/Network/dxp (uint16_t root)
 
 # MAC
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/null ()
+use mac macxMac $(FENNEC_FOX_LIB)/Mac/macx ()
 
 
 use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (uint16_t sink_addr,
