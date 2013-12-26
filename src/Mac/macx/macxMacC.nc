@@ -26,6 +26,7 @@
  */
 
 #include "macxMac.h"
+#include "CC2420.h"
 
 configuration macxMacC {
 provides interface SplitControl;
