@@ -19,6 +19,7 @@ uses interface GpioInterrupt as InterruptFIFOP;
 uses interface Resource as SpiResource;
 uses interface CC2420Fifo as RXFIFO;
 uses interface CC2420Strobe as SACK;
+uses interface CC2420Strobe as SACKPEND;
 uses interface CC2420Strobe as SFLUSHRX;
 uses interface RadioConfig;
 uses interface RadioPacket;
@@ -36,6 +37,9 @@ uses interface Leds;
 }
 
 implementation {
+
+uint8_t fe = 0;
+
 
   enum {
     RXFIFO_SIZE = 128,
@@ -245,6 +249,26 @@ implementation {
 
     case S_RX_PAYLOAD:
 
+
+	if ((( header->fcf >> IEEE154_FCF_RESERVED ) & 0x01) == 1) {
+			call CSN.set();
+			call CSN.clr();
+			call SACK.strobe();
+			call CSN.set();
+			call CSN.clr();
+
+		if (fe == 0) {
+          		post receiveDone_task();
+			//return;
+		}
+		fe++;
+		if (fe > 4) {
+			fe = 0;
+		}
+		printf("fe %d\n", fe);
+		//printfflush();
+	}
+
       call CSN.set();
       if(!m_missed_packets) {
         // Release the SPI only if there are no more frames to download
@@ -272,6 +296,8 @@ implementation {
 
       // We may have received an ack that should be processed by Transmit
       // buf[rxFrameLength] >> 7 checks the CRC
+
+
       if ( ( buf[ rxFrameLength ] >> 7 ) && rx_buf ) {
         uint8_t type = ( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7;
         signal CC2420Receive.receive( type, m_p_rx_buf );
@@ -305,6 +331,9 @@ task void receiveDone_task() {
     cc2420_hdr_t* header = (cc2420_hdr_t*)call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_hdr_t));
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_hdr_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
+
+	printf("rec len %d\n", header->length);
+	//printfflush();
 
     metadata->crc = buf[ header->length ] >> 7;
     metadata->lqi = buf[ header->length ] & 0x7f;

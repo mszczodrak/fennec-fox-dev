@@ -181,9 +181,9 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
 	header->length = len + sizeof(fennec_header_t);
 
-	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
-		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
-	}
+//	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
+//		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
+//	}
 
 	atomic {
 		if (!call SplitControlState.isState(S_STARTED)) {
@@ -198,8 +198,20 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
 		(0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
 		(0x3 << IEEE154_FCF_DEST_ADDR_MODE));
-	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
-		( 1 << IEEE154_FCF_INTRAPAN ) );
+
+//        header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
+//                     ( 1 << IEEE154_FCF_INTRAPAN ) );
+
+        header->fcf |= ( ( IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE ) |
+                     ( 1 << IEEE154_FCF_INTRAPAN ) );
+
+
+	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
+
+	header->dsn = 20;
+
+	/* Fennec Fox bit */
+	header->fcf |= 1 << IEEE154_FCF_RESERVED;
 
 
 	metadata->ack = 1;
@@ -366,6 +378,18 @@ task void sendDone_task() {
 event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	metadata_t* metadata = (metadata_t*) msg->metadata;
 	uint8_t *ptr = (uint8_t*) payload;
+	fennec_header_t *header = (fennec_header_t*) payload;
+	uint8_t type = ( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7;
+
+/*
+	if ( type == IEEE154_TYPE_ACK ) {
+		printf("receive\n");
+		printfflush();
+	} else {
+		printf("receive ack\n");
+		printfflush();
+	}
+*/
 	
 	if(!(metadata)->crc) {
 		dbg("Mac", "cuMac MacAMSend.receive did not pass CRC");
