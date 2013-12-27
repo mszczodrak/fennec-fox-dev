@@ -4,47 +4,47 @@
 #include "csmacaMac.h"
 
 module CSMATransmitP @safe() {
-  provides interface CSMATransmit;
-  provides interface SplitControl;
-  provides interface Send;
+provides interface CSMATransmit;
+provides interface SplitControl;
+provides interface Send;
 
-  uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-  uses interface ReceiveIndicator as EnergyIndicator;
-  uses interface StdControl as RadioStdControl;
-  uses interface RadioBuffer;
-  uses interface RadioSend;
-  uses interface RadioPacket;
-  uses interface SplitControl as RadioControl;
-  uses interface csmacaMacParams;
-  uses interface Random;
-  uses interface State as SplitControlState;
-  uses interface RadioPower;
-  uses interface Resource as RadioResource;
+uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
+uses interface ReceiveIndicator as EnergyIndicator;
+uses interface StdControl as RadioStdControl;
+uses interface RadioBuffer;
+uses interface RadioSend;
+uses interface RadioPacket;
+uses interface SplitControl as RadioControl;
+uses interface csmacaMacParams;
+uses interface Random;
+uses interface State as SplitControlState;
+uses interface RadioPower;
+uses interface Resource as RadioResource;
 }
 
 implementation {
 
-  norace message_t * ONE_NOK m_msg;
-  norace bool m_cca;
-  norace uint8_t m_state = S_STOPPED;
-  norace uint16_t csmaca_backoff_period;
-  norace uint16_t csmaca_min_backoff;
-  norace uint16_t csmaca_delay_after_receive;
+norace message_t * ONE_NOK m_msg;
+norace bool m_cca;
+norace uint8_t m_state = S_STOPPED;
+norace uint16_t csmaca_backoff_period;
+norace uint16_t csmaca_min_backoff;
+norace uint16_t csmaca_delay_after_receive;
 
-  norace error_t sendDoneErr;
+norace error_t sendDoneErr;
 
-  enum {
+enum {
     S_STOPPED,
     S_STARTING,
     S_STARTED,
     S_STOPPING,
     S_TRANSMITTING,
-  };
+};
 
-  error_t sendErr = SUCCESS;
+error_t sendErr = SUCCESS;
 
-  /** TRUE if we are to use CCA when sending the current packet */
-  norace bool ccaOn;
+/** TRUE if we are to use CCA when sending the current packet */
+norace bool ccaOn;
 
 /****************** Prototypes ****************/
 task void startDone_task();
@@ -118,21 +118,21 @@ command error_t SplitControl.stop() {
 	return EBUSY;
 }
 
-  /***************** Send Commands ****************/
+/***************** Send Commands ****************/
 command error_t Send.cancel( message_t* p_msg ) {
 	dbg("Mac", "csmaMac CSMATransmitP Send.cancel(0x%1x)", p_msg);
-    switch( m_state ) {
-    case S_LOAD:
-    case S_SAMPLE_CCA:
-    case S_BEGIN_TRANSMIT:
-      m_state = S_CANCEL;
-      break;
+	switch( m_state ) {
+	case S_LOAD:
+	case S_SAMPLE_CCA:
+	case S_BEGIN_TRANSMIT:
+		m_state = S_CANCEL;
+		break;
 
-    default:
-      // cancel not allowed while radio is busy transmitting
-      return FAIL;
-    }
-  }
+	default:
+		// cancel not allowed while radio is busy transmitting
+		return FAIL;
+	}
+}
 
 command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	csmaca_header_t* header;
@@ -156,29 +156,29 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 		m_msg = p_msg;
 	}
 
-    // header->length = len + CC2420_SIZE;
+	// header->length = len + CC2420_SIZE;
 #ifdef CC2420_HW_SECURITY
-    header->fcf &= ((1 << IEEE154_FCF_ACK_REQ)|
+	header->fcf &= ((1 << IEEE154_FCF_ACK_REQ)|
                     (1 << IEEE154_FCF_SECURITY_ENABLED)|
                     (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
                     (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
 #else
-    header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
+	header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
                     (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
                     (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
 #endif
-    header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
+	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
                      ( 1 << IEEE154_FCF_INTRAPAN ) );
 
-    metadata->ack = !call csmacaMacParams.get_ack();
-    metadata->rssi = 0;
-    metadata->lqi = 0;
-    //metadata->timesync = FALSE;
-    metadata->timestamp = INVALID_TIMESTAMP;
+	metadata->ack = !call csmacaMacParams.get_ack();
+	metadata->rssi = 0;
+	metadata->lqi = 0;
+	//metadata->timesync = FALSE;
+	metadata->timestamp = INVALID_TIMESTAMP;
 
-    csmaca_backoff_period = call csmacaMacParams.get_backoff();
-    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
-    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+	csmaca_backoff_period = call csmacaMacParams.get_backoff();
+	csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+	csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
 
 	if (m_state == S_CANCEL) {
 		return ECANCEL;
@@ -207,51 +207,48 @@ command void* Send.getPayload(message_t* m, uint8_t len) {
 	return call RadioPacket.getPayload(m, len);
 }
 
-  command uint8_t Send.maxPayloadLength() {
-    return call RadioPacket.maxPayloadLength();
-  }
+command uint8_t Send.maxPayloadLength() {
+	return call RadioPacket.maxPayloadLength();
+}
 
-  async event void RadioPower.startVRegDone() {}
+async event void RadioPower.startVRegDone() {}
+event void RadioResource.granted() {}
 
-  event void RadioResource.granted() {}
+async event void RadioPower.startOscillatorDone() {}
 
-  async event void RadioPower.startOscillatorDone() {}
+/***************** Tasks ****************/
+task void sendDone_task() {
+	error_t packetErr;
+	atomic packetErr = sendErr;
+	if(call SplitControlState.isState(S_STOPPING)) {
+		shutdown();
+	} else {
+		call SplitControlState.forceState(S_STARTED);
+	}
 
-  /***************** Tasks ****************/
-  task void sendDone_task() {
-    error_t packetErr;
-    atomic packetErr = sendErr;
-    if(call SplitControlState.isState(S_STOPPING)) {
-      shutdown();
+	signal Send.sendDone( m_msg, packetErr );
+}
 
-    } else {
-      call SplitControlState.forceState(S_STARTED);
-    }
+task void startDone_task() {
+	csmaca_backoff_period = call csmacaMacParams.get_backoff();
+	csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
+	csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
 
-    signal Send.sendDone( m_msg, packetErr );
-  }
+	m_state = S_STARTED;
 
-  task void startDone_task() {
-    csmaca_backoff_period = call csmacaMacParams.get_backoff();
-    csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
-    csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+	call SplitControlState.forceState(S_STARTED);
+	signal SplitControl.startDone( SUCCESS );
+}
 
-    m_state = S_STARTED;
+task void stopDone_task() {
+	call SplitControlState.forceState(S_STOPPED);
+	signal SplitControl.stopDone( SUCCESS );
+}
 
-    call SplitControlState.forceState(S_STARTED);
-    signal SplitControl.startDone( SUCCESS );
-  }
-
-  task void stopDone_task() {
-    call SplitControlState.forceState(S_STOPPED);
-    signal SplitControl.stopDone( SUCCESS );
-  }
-
-
-  /***************** Functions ****************/
-  /**
-   * Shut down all sub-components and turn off the radio
-   */
+/***************** Functions ****************/
+/**
+ * Shut down all sub-components and turn off the radio
+ */
 void shutdown() {
 	m_state = S_STOPPED;
 	call BackoffTimer.stop();
@@ -270,20 +267,20 @@ void requestInitialBackoff(message_t *msg) {
 
 }
 
-  void congestionBackoff(message_t *msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-      myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
-    } else {
-      myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
-    }
+void congestionBackoff(message_t *msg) {
+	metadata_t* metadata = (metadata_t*) msg->metadata;
+	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
+		myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
+	} else {
+		myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
+	}
 
-    if (myCongestionBackoff) {
-      call BackoffTimer.start(myCongestionBackoff);
-    } else {
-      signal BackoffTimer.fired();
-    }
-  }
+	if (myCongestionBackoff) {
+		call BackoffTimer.start(myCongestionBackoff);
+	} else {
+		signal BackoffTimer.fired();
+	}
+}
 
   /**
    * Resend a packet that already exists in the outbound tx buffer on the

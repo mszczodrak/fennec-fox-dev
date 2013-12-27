@@ -22,7 +22,7 @@
  * Module: cu MAC Protocol
  * Author: Marcin Szczodrak
  * Date: 2/18/2012
- * Last Modified: 8/29/2012
+ * Last Modified: 9/29/2012
  */
 
 #include "cuMac.h"
@@ -37,7 +37,6 @@ provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 uses interface cuMacParams;
-
 uses interface Receive as RadioReceive;
 
 uses interface RadioConfig;
@@ -46,9 +45,9 @@ uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
 
 uses interface SplitControl as RadioControl;
+uses interface RadioPacket;
 uses interface RadioBuffer;
 uses interface RadioSend;
-uses interface RadioPacket;
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
@@ -57,7 +56,6 @@ uses interface ReceiveIndicator as EnergyIndicator;
 implementation {
 
 components cuMacP;
-
 SplitControl = cuMacP;
 MacAMSend = cuMacP.MacAMSend;
 MacReceive = cuMacP.MacReceive;
@@ -65,6 +63,7 @@ MacSnoop = cuMacP.MacSnoop;
 MacPacket = cuMacP.MacPacket;
 MacAMPacket = cuMacP.MacAMPacket;
 MacPacketAcknowledgements = cuMacP.MacPacketAcknowledgements;
+
 cuMacParams = cuMacP;
 
 RadioConfig = cuMacP.RadioConfig;
@@ -72,28 +71,18 @@ RadioPower = cuMacP.RadioPower;
 ReadRssi = cuMacP.ReadRssi;
 RadioResource = cuMacP.RadioResource;
 RadioPacket = cuMacP.RadioPacket;
+RadioBuffer = cuMacP.RadioBuffer;
+RadioSend = cuMacP.RadioSend;
+RadioControl = cuMacP.RadioControl;
+RadioReceive = cuMacP.RadioReceive;
 
-components cuTransmitC;
-RadioPower = cuTransmitC.RadioPower;
-RadioResource = cuTransmitC.RadioResource;
-
-cuMacP.RadioControl -> cuTransmitC;
-
-cuMacP.SubSend -> cuTransmitC;
-RadioReceive = cuMacP.SubReceive;
-
-PacketIndicator = cuMacP.PacketIndicator;
+EnergyIndicator = cuMacP.EnergyIndicator;
 ByteIndicator = cuMacP.ByteIndicator;
-
-cuMacParams = cuTransmitC.cuMacParams;
+PacketIndicator = cuMacP.PacketIndicator;
 
 components RandomC;
 cuMacP.Random -> RandomC;
-
-RadioBuffer = cuTransmitC.RadioBuffer;
-RadioSend = cuTransmitC.RadioSend;
-RadioPacket = cuTransmitC.RadioPacket;
-EnergyIndicator = cuTransmitC.EnergyIndicator;
-RadioControl = cuTransmitC.RadioControl;
+components new StateC();
+cuMacP.SplitControlState -> StateC;
 }
 

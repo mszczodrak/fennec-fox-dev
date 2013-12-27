@@ -222,8 +222,8 @@ implementation {
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
 
-//	printf("got ack %d\n", call RadioTimer.getAlarm());
-//	printfflush();
+	printf("got ack %d\n", call RadioTimer.getAlarm());
+	printfflush();
 
         call RadioTimer.stop();
 
@@ -425,6 +425,8 @@ implementation {
 
 
   async command error_t RadioBuffer.load(message_t* msg) {
+	printf("hehrhehe\n");
+	printfflush();
     if (radio_state != S_STARTED) {
       failed_load_counter++;
       if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {

@@ -99,8 +99,8 @@ task void send_state_sync_msg() {
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
 
-	//printf("sending %d %d\n", cu_msg->seq, cu_msg->conf_id);
-	//printfflush();
+	printf("sending %d %d\n", cu_msg->seq, cu_msg->conf_id);
+	printfflush();
 
 
 	if (call NetworkAMSend.send(BROADCAST, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
