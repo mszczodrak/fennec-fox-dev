@@ -194,128 +194,123 @@ event void RadioResource.granted() {
 
 
 
-  /***************** AMPacket Commands ****************/
-  command am_addr_t MacAMPacket.address() {
-    return TOS_NODE_ID;
-  }
+/***************** AMPacket Commands ****************/
+command am_addr_t MacAMPacket.address() {
+	return TOS_NODE_ID;
+}
 
-  command am_addr_t MacAMPacket.destination(message_t* amsg) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    return header->dest;
-  }
+command am_addr_t MacAMPacket.destination(message_t* amsg) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	return header->dest;
+}
 
-  command am_addr_t MacAMPacket.source(message_t* amsg) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    return header->src;
-  }
+command am_addr_t MacAMPacket.source(message_t* amsg) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	return header->src;
+}
 
-  command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    header->dest = addr;
-  }
+command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	header->dest = addr;
+}
 
-  command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    header->src = addr;
-  }
+command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	header->src = addr;
+}
 
-
-
-  command bool MacAMPacket.isForMe(message_t* amsg) {
-    return (call MacAMPacket.destination(amsg) == call MacAMPacket.address() ||
+command bool MacAMPacket.isForMe(message_t* amsg) {
+	return (call MacAMPacket.destination(amsg) == call MacAMPacket.address() ||
             call MacAMPacket.destination(amsg) == AM_BROADCAST_ADDR);
-  }
+}
 
-  command am_id_t MacAMPacket.type(message_t* amsg) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    return header->type;
-  }
+command am_id_t MacAMPacket.type(message_t* amsg) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	return header->type;
+}
 
-  command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    header->type = type;
-  }
+command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	header->type = type;
+}
 
-  command am_group_t MacAMPacket.group(message_t* amsg) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    return header->destpan;
-  }
+command am_group_t MacAMPacket.group(message_t* amsg) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	return header->destpan;
+}
 
-  command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-    // Overridden intentionally when we send()
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
-    header->destpan = grp;
-  }
+command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	// Overridden intentionally when we send()
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(amsg, sizeof(cu_header_t));
+	header->destpan = grp;
+}
 
-  command am_group_t MacAMPacket.localGroup() {
-    return 0;
+command am_group_t MacAMPacket.localGroup() {
+	return 0;
 //    return call CC2420Config.getPanAddr();
-  }
+}
+
+
+/***************** Packet Commands ****************/
+command void MacPacket.clear(message_t* msg) {
+	metadata_t* metadata = (metadata_t*) msg->metadata;
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
+	memset(header, 0x0, sizeof(cu_header_t));
+	memset(metadata, 0x0, sizeof(metadata_t));
+}
+
+command uint8_t MacPacket.payloadLength(message_t* msg) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
+	return header->length - sizeof(cu_header_t);
+}
+
+command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
+	cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
+	header->length  = len + sizeof(cu_header_t);
+}
+
+command uint8_t MacPacket.maxPayloadLength() {
+	return call SubSend.maxPayloadLength();
+}
+
+command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
+	if (len <= call SubSend.maxPayloadLength()) {
+		uint8_t *p = call SubSend.getPayload(msg, len);
+		return (p + sizeof(cu_header_t));
+	} else {
+		return NULL;
+	}
+
+	//return call SubSend.getPayload(msg, len);
+}
 
 
 
-
-  /***************** Packet Commands ****************/
-  command void MacPacket.clear(message_t* msg) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
-    memset(header, 0x0, sizeof(cu_header_t));
-    memset(metadata, 0x0, sizeof(metadata_t));
-  }
-
-  command uint8_t MacPacket.payloadLength(message_t* msg) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
-    return header->length - sizeof(cu_header_t);
-  }
-
-  command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-    cu_header_t* header = (cu_header_t*)call SubSend.getPayload(msg, sizeof(cu_header_t));
-    header->length  = len + sizeof(cu_header_t);
-  }
-
-  command uint8_t MacPacket.maxPayloadLength() {
-    return call SubSend.maxPayloadLength();
-  }
-
-  command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call SubSend.maxPayloadLength()) {
-      uint8_t *p = call SubSend.getPayload(msg, len);
-      return (p + sizeof(cu_header_t));
-    } else {
-      return NULL;
-    }
-
-    //return call SubSend.getPayload(msg, len);
-  }
+/***************** SubSend Events ****************/
+event void SubSend.sendDone(message_t* msg, error_t result) {
+	signal MacAMSend.sendDone(msg, result);
+}
 
 
 
-  /***************** SubSend Events ****************/
-  event void SubSend.sendDone(message_t* msg, error_t result) {
-    signal MacAMSend.sendDone(msg, result);
-  }
+/***************** SubReceive Events ****************/
+event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
+	metadata_t* metadata = (metadata_t*) msg->metadata;
 
+	if((call cuMacParams.get_crc()) && (!(metadata)->crc)) {
+		return msg;
+	}
 
+	msg->rssi = metadata->rssi;
+	msg->lqi = metadata->lqi;
+	msg->crc = metadata->crc;
 
-  /***************** SubReceive Events ****************/
-  event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    metadata_t* metadata = (metadata_t*) msg->metadata;
-
-    if((call cuMacParams.get_crc()) && (!(metadata)->crc)) {
-      return msg;
-    }
-
-    msg->rssi = metadata->rssi;
-    msg->lqi = metadata->lqi;
-    msg->crc = metadata->crc;
-
-    if (call MacAMPacket.isForMe(msg)) {
-      return signal MacReceive.receive(msg, payload, len);
-    }
-    else {
-      return signal MacSnoop.receive(msg, payload, len);
-    }
-  }
+	if (call MacAMPacket.isForMe(msg)) {
+		return signal MacReceive.receive(msg, payload, len);
+	} else {
+		return signal MacSnoop.receive(msg, payload, len);
+	}
+}
 
 
 }
