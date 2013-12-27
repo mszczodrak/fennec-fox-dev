@@ -27,7 +27,6 @@
 
 configuration timerSecondAppC {
 provides interface SplitControl;
-provides interface Module;
 
 uses interface timerSecondAppParams;
 
@@ -37,7 +36,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 
 provides interface Event;
 }
@@ -45,7 +43,6 @@ provides interface Event;
 implementation {
 components timerSecondAppP;
 SplitControl = timerSecondAppP;
-Module = timerSecondAppP;
 
 timerSecondAppParams = timerSecondAppP;
 

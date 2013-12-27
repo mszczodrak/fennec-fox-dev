@@ -98,6 +98,11 @@ task void send_state_sync_msg() {
 	cu_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*)&cu_msg->seq,
     				sizeof(nx_struct FFControl) - sizeof(cu_msg->crc));
 
+
+	printf("sending %d %d\n", cu_msg->seq, cu_msg->conf_id);
+	printfflush();
+
+
 	if (call NetworkAMSend.send(BROADCAST, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
 		post schedule_state_sync_msg();
 		dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg() - FAIL");
@@ -115,6 +120,10 @@ task void send_state_sync_msg() {
 async event void FennecWarnings.detectWrongConfiguration() {
 //	dbgs(F_CONTROL_UNIT, 0, DBGS_RECEIVE_WRONG_CONF_MSG, 0, 0);
 	dbg("StateSynchronization", "StateSynchronizationAppP FennecWarnings.detectWrongConfiguration()");
+	post reset_sync();
+}
+
+async event void FennecWarnings.settingStateAndSeq() {
 	post reset_sync();
 }
 

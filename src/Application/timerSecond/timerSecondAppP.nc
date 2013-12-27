@@ -30,7 +30,6 @@
 
 module timerSecondAppP {
 provides interface SplitControl;
-provides interface Module;
 
 uses interface timerSecondAppParams;
 
@@ -40,7 +39,6 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
 
 uses interface Timer<TMilli>;
 provides interface Event;

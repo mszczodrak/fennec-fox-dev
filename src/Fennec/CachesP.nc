@@ -24,7 +24,9 @@ task void check_event() {
 	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == call Fennec.getStateId()) && (policies[i].event_mask == event_mask)) {
+			signal FennecWarnings.settingStateAndSeq();
 			call Fennec.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
+			return;
 		}
 	}
 }
@@ -125,9 +127,6 @@ command struct state* Fennec.getStateRecord() {
 }
 
 command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
-	dbg("Caches", " ");
-	dbg("Caches", " ");
-	dbg("Caches", " ");
 	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", state_id, seq);
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
@@ -230,6 +229,9 @@ async command error_t Fennec.checkPacket(message_t *msg, uint8_t len) {
 
 default async event void FennecWarnings.detectWrongConfiguration() {}
 
+default async event void FennecWarnings.settingStateAndSeq() {}
 
 }
+
+
 

@@ -55,10 +55,11 @@ implementation {
 command error_t SplitControl.start() {
 	dbg("Application", "timerMilliApp SplitControl.start()");
 	dbg("Application", "timerMilliApp src: %d", call timerMilliAppParams.get_src());
+
 	if ((call timerMilliAppParams.get_src() == BROADCAST) || 
 		(call timerMilliAppParams.get_src() == TOS_NODE_ID)) {
 		dbg("Application", "timerMilliApp will fire in %d ms", call timerMilliAppParams.get_delay());
-		call Timer.startPeriodic(call timerMilliAppParams.get_delay());
+		call Timer.startOneShot(call timerMilliAppParams.get_delay());
 
 	}
 	signal SplitControl.startDone(SUCCESS);
