@@ -55,10 +55,14 @@ uses interface LinkPacketMetadata;
 
 implementation {
 
+        #define UQ_METADATA_FLAGS       "UQ_CC2420X_METADATA_FLAGS"
+        #define UQ_RADIO_ALARM          "UQ_CC2420X_RADIO_ALARM"
+
+
 components macxMacP;
 macxMacParams = macxMacP;
 
-
+/*
 components CC2420XActiveMessageC;
 SplitControl = CC2420XActiveMessageC;
 MacAMSend = CC2420XActiveMessageC.AMSend[100];
@@ -67,13 +71,158 @@ MacSnoop = CC2420XActiveMessageC.Snoop[100];
 MacPacket = CC2420XActiveMessageC.Packet;
 MacAMPacket = CC2420XActiveMessageC.AMPacket;
 MacPacketAcknowledgements = CC2420XActiveMessageC.PacketAcknowledgements;
+*/
+
+components new ActiveMessageLayerC();
+//ActiveMessageLayerC.Config -> RadioP;
+ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
+ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
+ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
+
+MacAMSend = ActiveMessageLayerC.AMSend[100];
+MacReceive = ActiveMessageLayerC.Receive[100];
+MacSnoop = ActiveMessageLayerC.Snoop[100];
+//MacSendNotifier = ActiveMessageLayerC;
+MacAMPacket = ActiveMessageLayerC;
+MacPacket = ActiveMessageLayerC;
+
+
+        components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
+
+// -------- Automatic RadioSend Resource
+
+        components new AutoResourceAcquireLayerC();
+        AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+        AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
+
+
+// -------- Ieee154 Message
+
+        components new Ieee154MessageLayerC();
+        Ieee154MessageLayerC.Ieee154PacketLayer -> Ieee154PacketLayerC;
+        Ieee154MessageLayerC.SubSend -> TinyosNetworkLayerC.Ieee154Send;
+        Ieee154MessageLayerC.SubReceive -> TinyosNetworkLayerC.Ieee154Receive;
+        Ieee154MessageLayerC.RadioPacket -> TinyosNetworkLayerC.Ieee154Packet;
+
+        //Ieee154Send = Ieee154MessageLayerC;
+        //Ieee154Receive = Ieee154MessageLayerC;
+        //Ieee154Notifier = Ieee154MessageLayerC;
+        //Ieee154Packet = Ieee154PacketLayerC;
+        //PacketForIeee154Message = Ieee154MessageLayerC;
+
+// -------- Tinyos Network
+
+        components new TinyosNetworkLayerC();
+
+        TinyosNetworkLayerC.SubSend -> UniqueLayerC;
+        TinyosNetworkLayerC.SubReceive -> PacketLinkLayerC;
+        TinyosNetworkLayerC.SubPacket -> Ieee154PacketLayerC;
+
+// -------- IEEE 802.15.4 Packet
+
+        components new Ieee154PacketLayerC();
+        Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
+
+// -------- UniqueLayer Send part (wired twice)
+
+        components new UniqueLayerC();
+        UniqueLayerC.Config -> RadioP;
+        UniqueLayerC.SubSend -> PacketLinkLayerC;
+
+// -------- Packet Link
+
+        components new PacketLinkLayerC();
+        //PacketLink = PacketLinkLayerC;
+        PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
+        PacketLinkLayerC -> LowPowerListeningLayerC.Send;
+        PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
+        PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
+
+// -------- Low Power Listening
+#ifdef LOW_POWER_LISTENING
+        #warning "*** USING LOW POWER LISTENING LAYER"
+        components new LowPowerListeningLayerC();
+        LowPowerListeningLayerC.Config -> RadioP;
+        LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
+#else
+        components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
+#endif
+        LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
+        LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
+        LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
+        LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
+        SplitControl = LowPowerListeningLayerC;
+        //LowPowerListening = LowPowerListeningLayerC;
+
+// -------- MessageBuffer
+
+        components new MessageBufferLayerC();
+        MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
+        MessageBufferLayerC.RadioReceive -> UniqueLayerC;
+        MessageBufferLayerC.RadioState = RadioState;
+        //RadioChannel = MessageBufferLayerC;
+
+// -------- UniqueLayer receive part (wired twice)
+
+        UniqueLayerC.SubReceive -> CollisionAvoidanceLayerC;
+
+// -------- CollisionAvoidance
+
+
+#ifdef SLOTTED_MAC
+        components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
+#else
+        components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
+#endif
+        CollisionAvoidanceLayerC.Config -> RadioP;
+        CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
+        CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
+        CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+
+// -------- SoftwareAcknowledgement
+
+        components new SoftwareAckLayerC();
+        SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+        SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+        PacketAcknowledgements = SoftwareAckLayerC;
+        SoftwareAckLayerC.Config -> RadioP;
+        SoftwareAckLayerC.SubSend -> CsmaLayerC;
+        SoftwareAckLayerC.SubReceive -> CsmaLayerC;
+
+// -------- Carrier Sense
+
+        components new DummyLayerC() as CsmaLayerC;
+        CsmaLayerC.Config -> RadioP;
+        CsmaLayerC = RadioSend;
+        CsmaLayerC = RadioReceive;
+        CsmaLayerC = RadioCCA;
+// -------- TimeStamping
+
+        components new TimeStampingLayerC();
+        TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
+        TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
+        PacketTimeStampRadio = TimeStampingLayerC;
+        PacketTimeStampMilli = TimeStampingLayerC;
+        TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+
+// -------- MetadataFlags
+
+        components new MetadataFlagsLayerC();
+        MetadataFlagsLayerC.SubPacket = RadioPacket;
+
+// -------- Driver
+
+
+
+
+
 
 
 RadioControl = macxMacP.RadioControl;
-RadioSend = macxMacP.RadioSend;
-RadioReceive = macxMacP.RadioReceive;
-RadioCCA = macxMacP.RadioCCA;
-RadioPacket = macxMacP.RadioPacket;
+//RadioSend = macxMacP.RadioSend;
+//RadioReceive = macxMacP.RadioReceive;
+//RadioCCA = macxMacP.RadioCCA;
+//RadioPacket = macxMacP.RadioPacket;
 PacketTransmitPower = macxMacP.PacketTransmitPower;
 PacketRSSI = macxMacP.PacketRSSI;
 PacketTimeSyncOffset = macxMacP.PacketTimeSyncOffset;
