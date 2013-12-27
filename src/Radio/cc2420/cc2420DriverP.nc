@@ -221,6 +221,10 @@ implementation {
       msg_header = (cc2420_hdr_t*) call RadioPacket.getPayload(radio_msg, sizeof(cc2420_hdr_t));
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
+
+//	printf("got ack %d\n", call RadioTimer.getAlarm());
+//	printfflush();
+
         call RadioTimer.stop();
 
         msg_metadata = (metadata_t*)getMetadata( radio_msg );

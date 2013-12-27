@@ -28,10 +28,8 @@
 #include <Fennec.h>
 #include "cuMac.h"
 
-#include <Ieee154.h> 
-#include "cuMac.h"
 
-module cuMacP @safe() {
+module cuMacP {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;

@@ -36,7 +36,7 @@
  * @version $Revision: 1.7 $ $Date: 2008/06/24 04:07:28 $
  */
 
-#include <Ieee154.h>
+//#include <Ieee154.h>
 #include "Timer.h"
 
 module cc2420ControlP @safe() {
