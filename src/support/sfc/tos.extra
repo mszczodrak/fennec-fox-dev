@@ -20,9 +20,9 @@ ifeq ($(TARGETS),telosb)
 endif
 
 ifeq ($(TARGETS),z1)
-  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
-  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
-  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x
+#  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
+#  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
+#  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x
   PFLAGS+=-I$(TOSDIR)/chips/cc2420x
   PFLAGS+=-I$(TOSDIR)/lib/rfxlink/layers
   PFLAGS+=-I$(TOSDIR)/lib/rfxlink/util

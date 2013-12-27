@@ -74,60 +74,10 @@ enum {
 error_t sendErr = SUCCESS;
 
 /****************** Prototypes ****************/
-task void startDone_task();
-task void stopDone_task();
-task void sendDone_task();
 
-task void startDone_task() {
-	m_state = S_STARTED;
-	call SplitControlState.forceState(S_STARTED);
-}
-
-task void stopDone_task() {
-	call SplitControlState.forceState(S_STOPPED);
-}
-
-void shutdown() {
-	m_state = S_STOPPED;
-	post stopDone_task();
-}
-
-error_t SplitControl_start() {
-
-	if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-		call RadioControl.start();
-		return SUCCESS;
-	} else if(call SplitControlState.isState(S_STARTED)) {
-		return EALREADY;
-	} else if(call SplitControlState.isState(S_STARTING)) {
-		return SUCCESS;
-	}
-	return EBUSY;
-}
-
-error_t SplitControl_stop() {
-	if (call SplitControlState.isState(S_STARTED)) {
-		call SplitControlState.forceState(S_STOPPING);
-		call RadioControl.stop();
-		return SUCCESS;	
-	} else if(call SplitControlState.isState(S_STOPPED)) {
-		return EALREADY;
-	} else if(call SplitControlState.isState(S_TRANSMITTING)) {
-		call SplitControlState.forceState(S_STOPPING);
-		// At sendDone, the radio will shut down
-		return SUCCESS;
-	} else if(call SplitControlState.isState(S_STOPPING)) {
-		return SUCCESS;
-	}
-	return EBUSY;
-}
-
-
-/* Functions */
 
 command error_t SplitControl.start() {
 	dbg("Mac", "nullMac SplitControl.start()");
-	post startDone_task();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -135,7 +85,6 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	dbg("Mac", "nullMac SplitControl.stop()");
-	shutdown();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -143,16 +92,15 @@ command error_t SplitControl.stop() {
 
 
 event void RadioControl.startDone(error_t err) {
-//	dbg("Mac", "nullMac RadioControl.startDone(%d)", err);
 }
 
 
 event void RadioControl.stopDone(error_t err) {
-//	dbg("Mac", "nullMac RadioControl.stopDone(%d)", err);
 } 
 
 
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+/*
 	fennec_header_t* header;
 	metadata_t* metadata;
 
@@ -160,7 +108,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	header = (fennec_header_t*)call RadioPacket.getPayload( msg, len);
 	metadata = (metadata_t*) msg->metadata;
-	call MacAMPacket.setGroup(msg, msg->conf);
+	//call MacAMPacket.setGroup(msg, msg->conf);
 
 	msg->crc = 0;
 	msg->rssi = 0;
@@ -180,6 +128,33 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	}
+
+*/
+
+
+
+
+                if( len > call MacPacket.maxPayloadLength() )
+                        return EINVAL;
+
+                //if( call Config.checkFrame(msg) != SUCCESS )
+                //        return FAIL;
+
+                call MacPacket.setPayloadLength(msg, len);
+                call MacAMPacket.setSource(msg, call MacAMPacket.address());
+                call MacAMPacket.setGroup(msg, call MacAMPacket.localGroup());
+                call MacAMPacket.setType(msg, id);
+                call MacAMPacket.setDestination(msg, addr);
+
+                //signal SendNotifier.aboutToSend[id](addr, msg);
+
+                return call SubSend.send(msg);
+
+
+
+
+/*
+
 
 	atomic {
 		if (!call SplitControlState.isState(S_STARTED)) {
@@ -213,6 +188,9 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	call RadioBuffer.load(m_msg);
 	return SUCCESS;
+
+*/
+
 }
 
 command error_t MacAMSend.cancel(message_t* msg) {
@@ -320,33 +298,30 @@ command am_group_t MacAMPacket.localGroup() {
 /***************** Packet Commands ****************/
 command void MacPacket.clear(message_t* msg) {
 	metadata_t* metadata = (metadata_t*) msg->metadata;
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-	memset(header, 0x0, sizeof(fennec_header_t));
+	call RadioPacket.clear(msg);
 	memset(metadata, 0x0, sizeof(metadata_t));
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-	return header->length - sizeof(fennec_header_t);
+	return call RadioPacket.payloadLength(msg);
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-	header->length  = len + sizeof(fennec_header_t);
+	call RadioPacket.setPayloadLength(msg, len);
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
-	return (call RadioPacket.maxPayloadLength() - sizeof(fennec_header_t));
+	return call RadioPacket.maxPayloadLength();
 }
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
-	if (len <= call MacPacket.maxPayloadLength()) {
-		uint8_t *p = call RadioPacket.getPayload(msg, len);
-		return (p + sizeof(fennec_header_t));
-	} else {
+	if( len > call RadioPacket.maxPayloadLength() )
 		return NULL;
-	}
+
+	return ((void*)msg) + call RadioPacket.headerLength(msg);
 }
+
+/* ----- */
 
 task void sendDone_task() {
 	error_t packetErr;
