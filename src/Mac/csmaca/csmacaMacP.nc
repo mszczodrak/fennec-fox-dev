@@ -51,6 +51,10 @@ uses interface RadioPower;
 uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
 
+uses interface RadioState;
+uses interface LinkPacketMetadata;
+
+
 uses interface Send as SubSend;
 uses interface Receive as SubReceive;
 
@@ -351,6 +355,9 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 		return signal MacSnoop.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
 	}
 }
+
+event void RadioState.done() {}
+
 
 }
 

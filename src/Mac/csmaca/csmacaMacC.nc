@@ -52,6 +52,9 @@ uses interface RadioPacket;
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
+
+uses interface RadioState;
+uses interface LinkPacketMetadata;
 }
 
 implementation {
@@ -72,6 +75,10 @@ RadioPower = csmacaMacP.RadioPower;
 ReadRssi = csmacaMacP.ReadRssi;
 RadioResource = csmacaMacP.RadioResource;
 RadioPacket = csmacaMacP.RadioPacket;
+
+
+RadioState = csmacaMacP.RadioState;
+LinkPacketMetadata = csmacaMacP.LinkPacketMetadata;
 
 components CSMATransmitC;
 RadioPower = CSMATransmitC.RadioPower;
