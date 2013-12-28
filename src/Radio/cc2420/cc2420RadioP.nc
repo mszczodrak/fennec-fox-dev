@@ -125,11 +125,12 @@ command error_t RadioState.turnOn() {
 }
 
 command error_t RadioState.setChannel(uint8_t channel) {
-
+	call RadioConfig.setChannel( channel );
+	return call RadioConfig.sync();
 }
 
 command uint8_t RadioState.getChannel() {
-
+	return call RadioConfig.getChannel();
 }
 
 
