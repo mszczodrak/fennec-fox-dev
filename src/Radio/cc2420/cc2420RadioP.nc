@@ -52,6 +52,7 @@ task void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	}
+	signal RadioState.done();
 	if (sc == TRUE) {
 		signal SplitControl.startDone(err);
 		sc = FALSE;
@@ -70,6 +71,7 @@ task void stop_done() {
 	if (err == SUCCESS) {
 		state = S_STOPPED;
 	}
+	signal RadioState.done();
 	if (sc == TRUE) {
 		signal SplitControl.stopDone(err);
 		sc = FALSE;
@@ -137,6 +139,7 @@ command uint8_t RadioState.getChannel() {
 
 /****************** RadioConfig Events ****************/
 event void RadioConfig.syncDone( error_t error ) {
+	signal RadioState.done();
 }
 
 task void resource_request() {
