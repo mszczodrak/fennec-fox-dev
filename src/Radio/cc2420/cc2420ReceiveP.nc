@@ -2,7 +2,6 @@
 #include "message.h"
 #include "AM.h"
 #include "Fennec.h"
-#include "radio_fennec.h"
 
 module cc2420ReceiveP @safe() {
 
@@ -19,10 +18,7 @@ uses interface GpioInterrupt as InterruptFIFOP;
 
 uses interface Resource as SpiResource;
 uses interface CC2420Fifo as RXFIFO;
-uses interface CC2420Fifo as TXFIFO;
 uses interface CC2420Strobe as SACK;
-uses interface CC2420Strobe as STXON;
-uses interface CC2420Strobe as SACKPEND;
 uses interface CC2420Strobe as SFLUSHRX;
 uses interface RadioConfig;
 uses interface RadioPacket;
@@ -36,81 +32,10 @@ uses interface CC2420Ram as RXNONCE;
 uses interface CC2420Ram as RXFIFO_RAM;
 uses interface CC2420Strobe as SNOP;
 
-
 uses interface Leds;
 }
 
 implementation {
-
-
-
-
-
-
-
-
-  /*********** TMP ======================= */
-
-message_t fennec_m;
-bool fennec = FALSE;
-cc2420_hdr_t* fennec_header;
-uint8_t fennec_len = 100;
-
-
-void init_fennec() {
-        fennec_header = (cc2420_hdr_t*) call RadioPacket.getPayload( &fennec_m, sizeof(cc2420_hdr_t));
-        fennec_header->dest = BROADCAST;
-        fennec_header->src = TOS_NODE_ID;
-        fennec_header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
-                ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
-                ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-        fennec_header->length = 100;
-
-
-        fennec_header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
-                (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
-                (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
-
-//        fennec_header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
-//                     ( 1 << IEEE154_FCF_INTRAPAN ) );
-
-//        fennec_header->fcf |= ( ( IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE ) |
-//                     ( 1 << IEEE154_FCF_INTRAPAN ) );
-
-
-        fennec_header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
-
-        fennec_header->dsn = 20;
-
-        /* Fennec Fox bit */
-        fennec_header->fcf |= 1 << IEEE154_FCF_RESERVED;
-
-        printf("init\n");
-}
-
-void start_fennec() {
-        uint8_t tmpLen __DEPUTY_UNUSED__ = fennec_header->length - 1;
-        call TXFIFO.write(TCAST(uint8_t * COUNT(tmpLen), fennec_header), fennec_header->length - 1);
-        fennec = TRUE;
-        printf("ST F\n");
-	printfflush();
-}
-
-
-void send_fennec() {
-          call CSN.set();
-          call CSN.clr();
-          call STXON.strobe();
-          call CSN.set();
-          //call CSN.clr();
-
-        printf("SEND F\n");
-                fennec = FALSE;
-}
-
-/********* TMP =================== */
-
-
 
   enum {
     RXFIFO_SIZE = 128,
@@ -140,8 +65,6 @@ void send_fennec() {
   message_t m_rx_buf;
   fennec_state_t m_state;
 
-
-
   /***************** Prototypes ****************/
   void reset_state();
   void beginReceive();
@@ -155,7 +78,6 @@ void send_fennec() {
   /***************** Init Commands ****************/
   command error_t Init.init() {
     m_p_rx_buf = &m_rx_buf;
-    init_fennec();
     return SUCCESS;
   }
 
@@ -290,11 +212,8 @@ void send_fennec() {
       break;
       
     case S_RX_FCF:
-	if ((( header->fcf >> IEEE154_FCF_RESERVED ) & 0x01) == 1) {
-		start_fennec();
-	}
-      
       m_state = S_RX_PAYLOAD;
+      
       /*
        * The destination address check here is not completely optimized. If you 
        * are seeing issues with dropped acknowledgements, try removing
@@ -322,16 +241,9 @@ void send_fennec() {
       // Didn't flip CSn, we're ok to continue reading.
       call RXFIFO.continueRead(buf + 1 + SACK_HEADER_LENGTH, 
 			       rxFrameLength - SACK_HEADER_LENGTH);
-	printf("keep r\n");
       break;
 
     case S_RX_PAYLOAD:
-	printf("SRXP\n");
-	printfflush();
-        if ((( header->fcf >> IEEE154_FCF_RESERVED ) & 0x01) == 1) {
-                send_fennec();
-        }
-
 
       call CSN.set();
       if(!m_missed_packets) {
@@ -360,8 +272,6 @@ void send_fennec() {
 
       // We may have received an ack that should be processed by Transmit
       // buf[rxFrameLength] >> 7 checks the CRC
-
-
       if ( ( buf[ rxFrameLength ] >> 7 ) && rx_buf ) {
         uint8_t type = ( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7;
         signal CC2420Receive.receive( type, m_p_rx_buf );
@@ -395,9 +305,6 @@ task void receiveDone_task() {
     cc2420_hdr_t* header = (cc2420_hdr_t*)call RadioPacket.getPayload( m_p_rx_buf, sizeof(cc2420_hdr_t));
     uint8_t tmpLen __DEPUTY_UNUSED__ = sizeof(message_t) - (offsetof(message_t, data) - sizeof(cc2420_hdr_t));
     uint8_t* COUNT(tmpLen) buf = TCAST(uint8_t* COUNT(tmpLen), header);
-
-	printf("rec len %d\n", header->length);
-	//printfflush();
 
     metadata->crc = buf[ header->length ] >> 7;
     metadata->lqi = buf[ header->length ] & 0x7f;
@@ -536,15 +443,6 @@ task void receiveDone_task() {
     }
   }
 
-
 async event void RXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {}
-
-
-async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-}
-
-async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-}
-
 
 }
