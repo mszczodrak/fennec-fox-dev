@@ -73,6 +73,8 @@ implementation {
   cc2420ReceiveP.InterruptFIFOP -> InterruptsC.InterruptFIFOP;
   cc2420ReceiveP.SpiResource -> Spi;
   cc2420ReceiveP.RXFIFO -> Spi.RXFIFO;
+  cc2420ReceiveP.TXFIFO -> Spi.TXFIFO;
+  cc2420ReceiveP.STXON -> Spi.STXON;
   cc2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
   cc2420ReceiveP.SACK -> Spi.SACK;
   RadioConfig = cc2420ReceiveP.RadioConfig;

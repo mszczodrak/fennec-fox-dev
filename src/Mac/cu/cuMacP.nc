@@ -181,9 +181,6 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
 	header->length = len + sizeof(fennec_header_t);
 
-//	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
-//		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
-//	}
 
 	atomic {
 		if (!call SplitControlState.isState(S_STARTED)) {
@@ -213,6 +210,9 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	/* Fennec Fox bit */
 	header->fcf |= 1 << IEEE154_FCF_RESERVED;
 
+	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
+		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
+	}
 
 	metadata->ack = 1;
 	metadata->rssi = 0;
