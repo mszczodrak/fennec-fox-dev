@@ -31,6 +31,7 @@
 
 module cc2420RadioP @safe() {
 provides interface SplitControl;
+provides interface RadioState;
 
 uses interface Leds;
 uses interface cc2420RadioParams;
@@ -45,12 +46,16 @@ implementation {
 
 norace uint8_t state = S_STOPPED;
 norace error_t err;
+bool sc = FALSE;
 
 task void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	}
-	signal SplitControl.startDone(err);
+	if (sc == TRUE) {
+		signal SplitControl.startDone(err);
+		sc = FALSE;
+	}
 }
 
 task void finish_starting_radio() {
@@ -65,24 +70,24 @@ task void stop_done() {
 	if (err == SUCCESS) {
 		state = S_STOPPED;
 	}
-	signal SplitControl.stopDone(err);
+	if (sc == TRUE) {
+		signal SplitControl.stopDone(err);
+		sc = FALSE;
+	}
 }
 
 command error_t SplitControl.start() {
-	err = SUCCESS;
-
-	if (state == S_STARTED) {
-		post start_done();
-		return SUCCESS;
-	}
-
-	if (call RadioPower.startVReg() != SUCCESS) return FAIL;
-	state = S_STARTING;
-	return SUCCESS;
+	sc = TRUE;
+	return call RadioState.turnOn();
 }
 
 
 command error_t SplitControl.stop() {
+	sc = TRUE;
+	return call RadioState.turnOff();
+}
+
+command error_t RadioState.turnOff() {
 	err = SUCCESS;
 
 	if (state == S_STOPPED) {
@@ -100,6 +105,33 @@ command error_t SplitControl.stop() {
 	post stop_done();
 	return SUCCESS;
 }
+
+command error_t RadioState.standby() {
+	return call RadioState.turnOff();
+}
+
+
+command error_t RadioState.turnOn() {
+	err = SUCCESS;
+
+	if (state == S_STARTED) {
+		post start_done();
+		return SUCCESS;
+	}
+
+	if (call RadioPower.startVReg() != SUCCESS) return FAIL;
+	state = S_STARTING;
+	return SUCCESS;
+}
+
+command error_t RadioState.setChannel(uint8_t channel) {
+
+}
+
+command uint8_t RadioState.getChannel() {
+
+}
+
 
 
 /****************** RadioConfig Events ****************/

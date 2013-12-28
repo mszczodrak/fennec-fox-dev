@@ -22,7 +22,7 @@
  * Network: cc2420 Radio Protocol
  * Author: Marcin Szczodrak
  * Date: 8/20/2010
- * Last Modified: 1/5/2012
+ * Last Modified: 12/26/2013
  */
 
 configuration cc2420RadioC {
@@ -40,6 +40,12 @@ provides interface RadioBuffer;
 provides interface ReceiveIndicator as PacketIndicator;
 provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
+
+
+provides interface RadioState;
+provides interface LinkPacketMetadata;
+
+
 }
 
 implementation {
@@ -81,6 +87,10 @@ cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
 
 components LedsC;
 cc2420RadioP.Leds -> LedsC;
+
+
+RadioState = cc2420RadioP.RadioState;
+LinkPacketMetadata = cc2420DriverC.LinkPacketMetadata;
   
 
 }

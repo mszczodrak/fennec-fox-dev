@@ -5,41 +5,43 @@
 
 module cc2420DriverP @safe() {
 
-  provides interface Init;
-  provides interface StdControl;
-  provides interface ReceiveIndicator as EnergyIndicator;
-  provides interface ReceiveIndicator as ByteIndicator;
+provides interface Init;
+provides interface StdControl;
+provides interface ReceiveIndicator as EnergyIndicator;
+provides interface ReceiveIndicator as ByteIndicator;
  
-  uses interface Leds; 
-  uses interface GpioCapture as CaptureSFD;
-  uses interface GeneralIO as CCA;
-  uses interface GeneralIO as CSN;
-  uses interface GeneralIO as SFD;
+uses interface Leds; 
+uses interface GpioCapture as CaptureSFD;
+uses interface GeneralIO as CCA;
+uses interface GeneralIO as CSN;
+uses interface GeneralIO as SFD;
 
-  uses interface Resource as SpiResource;
-  uses interface ChipSpiResource;
-  uses interface CC2420Fifo as TXFIFO;
-  uses interface CC2420Ram as TXFIFO_RAM;
-  uses interface CC2420Register as TXCTRL;
-  uses interface CC2420Strobe as SNOP;
-  uses interface CC2420Strobe as STXON;
-  uses interface CC2420Strobe as STXONCCA;
-  uses interface CC2420Strobe as SFLUSHTX;
-  uses interface CC2420Register as MDMCTRL1;
+uses interface Resource as SpiResource;
+uses interface ChipSpiResource;
+uses interface CC2420Fifo as TXFIFO;
+uses interface CC2420Ram as TXFIFO_RAM;
+uses interface CC2420Register as TXCTRL;
+uses interface CC2420Strobe as SNOP;
+uses interface CC2420Strobe as STXON;
+uses interface CC2420Strobe as STXONCCA;
+uses interface CC2420Strobe as SFLUSHTX;
+uses interface CC2420Register as MDMCTRL1;
 
-  uses interface CC2420Strobe as STXENC;
-  uses interface CC2420Register as SECCTRL0;
-  uses interface CC2420Register as SECCTRL1;
-  uses interface CC2420Ram as KEY0;
-  uses interface CC2420Ram as KEY1;
-  uses interface CC2420Ram as TXNONCE;
+uses interface CC2420Strobe as STXENC;
+uses interface CC2420Register as SECCTRL0;
+uses interface CC2420Register as SECCTRL1;
+uses interface CC2420Ram as KEY0;
+uses interface CC2420Ram as KEY1;
+uses interface CC2420Ram as TXNONCE;
 
-  uses interface CC2420Receive;
-  uses interface cc2420RadioParams;
-  provides interface RadioSend;
-  provides interface RadioBuffer;
-  provides interface RadioPacket;
-  uses interface Alarm<T32khz,uint32_t> as RadioTimer;
+uses interface CC2420Receive;
+uses interface cc2420RadioParams;
+provides interface RadioSend;
+provides interface RadioBuffer;
+provides interface RadioPacket;
+provides interface LinkPacketMetadata;
+
+uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 }
 
@@ -509,14 +511,19 @@ implementation {
    * The TXFIFO is used to load packets into the transmit buffer on the
    * chip
    */
-  async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-    call CSN.set();
-    releaseSpiResource();
-    signal RadioBuffer.loadDone(radio_msg, error);
-  }
+async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+	call CSN.set();
+	releaseSpiResource();
+	signal RadioBuffer.loadDone(radio_msg, error);
+}
 
-  async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-  }
+async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+}
+
+
+async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
+	//	return call PacketLinkQuality.get(msg) > 105;
+}
 
 }
 
