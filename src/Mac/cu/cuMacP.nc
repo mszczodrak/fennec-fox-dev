@@ -196,14 +196,14 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		(0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
 		(0x3 << IEEE154_FCF_DEST_ADDR_MODE));
 
-//        header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
-//                     ( 1 << IEEE154_FCF_INTRAPAN ) );
-
-        header->fcf |= ( ( IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE ) |
+        header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
                      ( 1 << IEEE154_FCF_INTRAPAN ) );
 
+//        header->fcf |= ( ( IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE ) |
+//                     ( 1 << IEEE154_FCF_INTRAPAN ) );
 
-	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
+
+//	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
 
 	header->dsn = 20;
 
