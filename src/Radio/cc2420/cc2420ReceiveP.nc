@@ -69,6 +69,56 @@ uint8_t fe = 0;
   message_t m_rx_buf;
   fennec_state_t m_state;
 
+  /*********** TMP ======================= */
+
+message_t fennec_m;
+
+void init_fennec() {
+	cc2420_hdr_t* header = (cc2420_hdr_t*) call RadioPacket.getPayload( &fennec_m, sizeof(cc2420_hdr_t));
+	uint8_t len = 100;
+	header->dest = BROADCAST;
+	header->src = TOS_NODE_ID; 
+        header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
+                ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
+                ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
+        header->length = len + sizeof(fennec_header_t);
+
+
+        header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
+                (0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
+                (0x3 << IEEE154_FCF_DEST_ADDR_MODE));
+
+//        header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
+//                     ( 1 << IEEE154_FCF_INTRAPAN ) );
+
+        header->fcf |= ( ( IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE ) |
+                     ( 1 << IEEE154_FCF_INTRAPAN ) );
+
+
+        header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
+
+        header->dsn = 20;
+
+        /* Fennec Fox bit */
+        header->fcf |= 1 << IEEE154_FCF_RESERVED;
+
+}
+
+void start_fennec() {
+
+
+
+}
+
+
+
+
+
+
+
+/********* TMP =================== */
+
+
   /***************** Prototypes ****************/
   void reset_state();
   void beginReceive();
@@ -81,6 +131,7 @@ uint8_t fe = 0;
 
   /***************** Init Commands ****************/
   command error_t Init.init() {
+    init_fennec();
     m_p_rx_buf = &m_rx_buf;
     return SUCCESS;
   }
@@ -217,6 +268,9 @@ uint8_t fe = 0;
       
     case S_RX_FCF:
       m_state = S_RX_PAYLOAD;
+	if ((( header->fcf >> IEEE154_FCF_RESERVED ) & 0x01) == 1) {
+		start_fennec();
+	}
       
       /*
        * The destination address check here is not completely optimized. If you 
@@ -248,26 +302,6 @@ uint8_t fe = 0;
       break;
 
     case S_RX_PAYLOAD:
-
-
-	if ((( header->fcf >> IEEE154_FCF_RESERVED ) & 0x01) == 1) {
-			call CSN.set();
-			call CSN.clr();
-			call SACK.strobe();
-			call CSN.set();
-			call CSN.clr();
-
-		if (fe == 0) {
-          		post receiveDone_task();
-			//return;
-		}
-		fe++;
-		if (fe > 4) {
-			fe = 0;
-		}
-		printf("fe %d\n", fe);
-		//printfflush();
-	}
 
       call CSN.set();
       if(!m_missed_packets) {

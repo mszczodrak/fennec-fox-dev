@@ -518,11 +518,13 @@ implementation {
    * The TXFIFO is used to load packets into the transmit buffer on the
    * chip
    */
-  async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-    call CSN.set();
-    releaseSpiResource();
-    signal RadioBuffer.loadDone(radio_msg, error);
-  }
+async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+	if (radio_state == S_LOAD) {
+		call CSN.set();
+    		releaseSpiResource();
+		signal RadioBuffer.loadDone(radio_msg, error);
+	}
+}
 
   async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
   }
