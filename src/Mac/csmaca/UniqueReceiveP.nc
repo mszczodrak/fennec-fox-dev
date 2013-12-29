@@ -63,6 +63,7 @@ enum {
 	INVALID_ELEMENT = 0xFF,
 };
 
+
 /***************** Init Commands *****************/
 command error_t Init.init() {
 	int i;
@@ -77,6 +78,7 @@ command error_t Init.init() {
 bool hasSeen(uint16_t msgSource, uint8_t msgDsn);
 void insert(uint16_t msgSource, uint8_t msgDsn);
 uint16_t getSourceKey(message_t ONE *msg);
+
   
 /***************** SubReceive Events *****************/
 async event message_t *SubReceive.receive(message_t* msg) {
