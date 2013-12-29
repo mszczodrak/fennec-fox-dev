@@ -291,10 +291,7 @@ command am_group_t MacAMPacket.localGroup() {
 
 /***************** Packet Commands ****************/
 command void MacPacket.clear(message_t* msg) {
-	metadata_t* metadata = (metadata_t*) msg->metadata;
-	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
-	memset(header, 0x0, sizeof(csmaca_header_t));
-	memset(metadata, 0x0, sizeof(metadata_t));
+	call RadioPacket.clear(msg);
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
