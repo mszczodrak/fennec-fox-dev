@@ -47,70 +47,70 @@ uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 implementation {
 
-  norace message_t * ONE_NOK radio_msg;
-  norace bool radio_cca;
-  norace uint8_t radio_state = S_STOPPED;
-  norace uint8_t failed_load_counter = 0;
-  norace error_t errorSendDone;
+norace message_t * ONE_NOK radio_msg;
+norace bool radio_cca;
+norace uint8_t radio_state = S_STOPPED;
+norace uint8_t failed_load_counter = 0;
+norace error_t errorSendDone;
 
 
-  /** Byte reception/transmission indicator */
-  bool sfdHigh;
+/** Byte reception/transmission indicator */
+bool sfdHigh;
 
-  norace bool m_receiving = FALSE;
+norace bool m_receiving = FALSE;
 
-  norace uint8_t m_tx_power;
-  uint16_t m_prev_time;
-  norace uint16_t param_tx_power;
+norace uint8_t m_tx_power;
+uint16_t m_prev_time;
+norace uint16_t param_tx_power;
 
-  /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
-  norace bool abortSpiRelease;
+/** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
+norace bool abortSpiRelease;
 
-  // This specifies how many jiffies the stack should wait after a
-  // TXACTIVE to receive an SFD interrupt before assuming something is
-  // wrong and aborting the send. There seems to be a condition
-  // on the micaZ where the SFD interrupt is never handled.
-  enum {
-    CC2420_ABORT_PERIOD = 320
-  };
+// This specifies how many jiffies the stack should wait after a
+// TXACTIVE to receive an SFD interrupt before assuming something is
+// wrong and aborting the send. There seems to be a condition
+// on the micaZ where the SFD interrupt is never handled.
+enum {
+	CC2420_ABORT_PERIOD = 320
+};
 
   
-  void low_level_init() {
-    call CCA.makeInput();
-    call CSN.makeOutput();
-    call SFD.makeInput();
-  }
+void low_level_init() {
+	call CCA.makeInput();
+	call CSN.makeOutput();
+	call SFD.makeInput();
+}
 
 
-  command error_t StdControl.start() {
-    radio_state = S_STARTED;
-    m_tx_power = 0;
-    m_receiving = FALSE;
-    failed_load_counter = 0;
-    param_tx_power = call cc2420RadioParams.get_power();
-    call CaptureSFD.captureRisingEdge();
-    abortSpiRelease = FALSE;
-    return SUCCESS;
-  }
+command error_t StdControl.start() {
+	radio_state = S_STARTED;
+	m_tx_power = 0;
+	m_receiving = FALSE;
+	failed_load_counter = 0;
+	param_tx_power = call cc2420RadioParams.get_power();
+	call CaptureSFD.captureRisingEdge();
+	abortSpiRelease = FALSE;
+	return SUCCESS;
+}
 
-  command error_t StdControl.stop() {
-    radio_state = S_STOPPED;
-    call RadioTimer.stop();
-    call CaptureSFD.disable();
-    call SpiResource.release();  // REMOVE
-    call CSN.set();
-    return SUCCESS;
-  }
+command error_t StdControl.stop() {
+	radio_state = S_STOPPED;
+	call RadioTimer.stop();
+	call CaptureSFD.disable();
+	call SpiResource.release();  // REMOVE
+	call CSN.set();
+	return SUCCESS;
+}
 
-  /***************** Init Commands *****************/
-  command error_t Init.init() {
-    low_level_init();
-    return SUCCESS;
-  }
+/***************** Init Commands *****************/
+command error_t Init.init() {
+	low_level_init();
+	return SUCCESS;
+}
 
-  async command bool EnergyIndicator.isReceiving() {
-    return !(call CCA.get());
-  }
+async command bool EnergyIndicator.isReceiving() {
+	return !(call CCA.get());
+}
   
 
   error_t releaseSpiResource() {
