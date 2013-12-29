@@ -91,10 +91,10 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 	uint8_t msgDsn = header->dsn;
 
 	if(hasSeen(msgSource, msgDsn)) {
-		return signal DuplicateReceive.receive(msg, payload, len);
+		return signal DuplicateReceive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	} else {
 		insert(msgSource, msgDsn);
-		return signal Receive.receive(msg, payload, len);
+		return signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	}
 }
   
