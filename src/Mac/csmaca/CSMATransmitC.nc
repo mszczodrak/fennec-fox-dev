@@ -15,6 +15,7 @@ uses interface SplitControl as RadioControl;
 uses interface csmacaMacParams;
 uses interface RadioPower;
 uses interface Resource as RadioResource;
+uses interface RadioCCA;
 }
 
 implementation {
@@ -22,6 +23,7 @@ implementation {
 components CSMATransmitP;
 CSMATransmit = CSMATransmitP;
 EnergyIndicator = CSMATransmitP.EnergyIndicator;
+RadioCCA = CSMATransmitP.RadioCCA;
 
 RadioStdControl = CSMATransmitP.RadioStdControl;
 RadioControl = CSMATransmitP.RadioControl;

@@ -61,6 +61,7 @@ uses interface Leds;
 uses interface ReceiveIndicator as EnergyIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as PacketIndicator;
+uses interface RadioCCA;
 uses interface csmacaMacParams;
 }
 
@@ -526,6 +527,11 @@ void initializeSend() {
   
 void startOffTimer() {
 	call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
+}
+
+
+async event void RadioCCA.done(error_t err) {
+
 }
 
 }

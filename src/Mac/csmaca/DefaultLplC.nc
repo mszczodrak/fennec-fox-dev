@@ -52,6 +52,7 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 uses interface csmacaMacParams;
 uses interface CSMATransmit;
+uses interface RadioCCA;
 
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
@@ -93,5 +94,6 @@ DefaultLplP.Leds -> LedsC;
 PacketIndicator = DefaultLplP.PacketIndicator;
 EnergyIndicator = DefaultLplP.EnergyIndicator;
 ByteIndicator = DefaultLplP.ByteIndicator;
+RadioCCA = DefaultLplP.RadioCCA;
 
 }

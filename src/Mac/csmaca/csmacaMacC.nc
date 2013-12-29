@@ -52,6 +52,7 @@ uses interface RadioPacket;
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
+uses interface RadioCCA;
 
 uses interface RadioState;
 uses interface LinkPacketMetadata;
@@ -109,6 +110,7 @@ UniqueReceiveC.SubReceive =  RadioReceive;
 PacketIndicator = LplC.PacketIndicator;
 EnergyIndicator = LplC.EnergyIndicator;
 ByteIndicator = LplC.ByteIndicator;
+RadioCCA = LplC.RadioCCA;
 
 csmacaMacParams = LplC.csmacaMacParams;
 csmacaMacParams = CSMATransmitC.csmacaMacParams;
@@ -123,6 +125,7 @@ RadioBuffer = CSMATransmitC.RadioBuffer;
 RadioSend = CSMATransmitC.RadioSend;
 RadioPacket = CSMATransmitC.RadioPacket;
 EnergyIndicator = CSMATransmitC.EnergyIndicator;
+RadioCCA = CSMATransmitC.RadioCCA;
 LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
 RadioControl = CSMATransmitC.RadioControl;
 }

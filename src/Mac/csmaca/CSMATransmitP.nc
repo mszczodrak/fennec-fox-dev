@@ -10,6 +10,7 @@ provides interface Send;
 
 uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
 uses interface ReceiveIndicator as EnergyIndicator;
+uses interface RadioCCA;
 uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
@@ -433,6 +434,10 @@ event void RadioControl.stopDone( error_t err) {
 	dbg("Mac", "csmaMac CSMATransmitP RadioControl.stopDone(%d) - shutdown()", err);
 		shutdown();
 	}
+}
+
+async event void RadioCCA.done(error_t err) {
+
 }
 
 }
