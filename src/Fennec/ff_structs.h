@@ -118,15 +118,15 @@ typedef nx_struct metadata_t {
 
 
 typedef nx_struct message_t {
-  nx_uint8_t header[sizeof(message_header_t)];
-  nx_uint8_t data[FENNEC_MSG_DATA_LEN];
-  nx_uint8_t metadata[sizeof(metadata_t)];
-  nx_uint16_t conf;
-  nx_uint8_t rssi;
-  nx_uint8_t lqi;
-  nx_uint8_t crc;
-  nx_uint8_t ack;
-  nx_uint16_t rxInterval;
+	nx_uint8_t header[sizeof(message_header_t)];
+	nx_uint8_t data[FENNEC_MSG_DATA_LEN];
+	nx_uint8_t metadata[sizeof(metadata_t)];
+	nx_uint16_t conf;
+	nx_uint8_t rssi;
+	nx_uint8_t lqi;
+	nx_uint8_t crc;
+	nx_uint8_t ack;
+	nx_uint16_t rxInterval;
 } message_t;
 
 
