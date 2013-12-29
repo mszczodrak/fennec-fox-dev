@@ -5,42 +5,43 @@
 
 module cc2420DriverP @safe() {
 
-  provides interface Init;
-  provides interface StdControl;
-  provides interface ReceiveIndicator as EnergyIndicator;
-  provides interface ReceiveIndicator as ByteIndicator;
+provides interface Init;
+provides interface StdControl;
+provides interface ReceiveIndicator as EnergyIndicator;
+provides interface ReceiveIndicator as ByteIndicator;
  
-  uses interface Leds; 
-  uses interface GpioCapture as CaptureSFD;
-  uses interface GeneralIO as CCA;
-  uses interface GeneralIO as CSN;
-  uses interface GeneralIO as SFD;
+uses interface Leds; 
+uses interface GpioCapture as CaptureSFD;
+uses interface GeneralIO as CCA;
+uses interface GeneralIO as CSN;
+uses interface GeneralIO as SFD;
 
-  uses interface Resource as SpiResource;
-  uses interface ChipSpiResource;
-  uses interface CC2420Fifo as TXFIFO;
-  uses interface CC2420Ram as TXFIFO_RAM;
-  uses interface CC2420Register as TXCTRL;
-  uses interface CC2420Strobe as SNOP;
-  uses interface CC2420Strobe as STXON;
-  uses interface CC2420Strobe as STXONCCA;
-  uses interface CC2420Strobe as SFLUSHTX;
-  uses interface CC2420Register as MDMCTRL1;
+uses interface Resource as SpiResource;
+uses interface ChipSpiResource;
+uses interface CC2420Fifo as TXFIFO;
+uses interface CC2420Ram as TXFIFO_RAM;
+uses interface CC2420Register as TXCTRL;
+uses interface CC2420Strobe as SNOP;
+uses interface CC2420Strobe as STXON;
+uses interface CC2420Strobe as STXONCCA;
+uses interface CC2420Strobe as SFLUSHTX;
+uses interface CC2420Register as MDMCTRL1;
 
-  uses interface CC2420Strobe as STXENC;
-  uses interface CC2420Register as SECCTRL0;
-  uses interface CC2420Register as SECCTRL1;
-  uses interface CC2420Ram as KEY0;
-  uses interface CC2420Ram as KEY1;
-  uses interface CC2420Ram as TXNONCE;
+uses interface CC2420Strobe as STXENC;
+uses interface CC2420Register as SECCTRL0;
+uses interface CC2420Register as SECCTRL1;
+uses interface CC2420Ram as KEY0;
+uses interface CC2420Ram as KEY1;
+uses interface CC2420Ram as TXNONCE;
 
-  uses interface CC2420Receive;
-  uses interface cc2420RadioParams;
-  provides interface RadioSend;
-  provides interface RadioBuffer;
-  provides interface RadioPacket;
-  provides interface LinkPacketMetadata;
-  uses interface Alarm<T32khz,uint32_t> as RadioTimer;
+uses interface CC2420Receive;
+uses interface cc2420RadioParams;
+provides interface RadioSend;
+provides interface RadioBuffer;
+provides interface RadioPacket;
+provides interface LinkPacketMetadata;
+provides interface RadioCCA;
+uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 }
 
@@ -420,103 +421,117 @@ implementation {
   }
 
 
-  async command error_t RadioBuffer.load(message_t* msg) {
-    if (radio_state != S_STARTED) {
-      failed_load_counter++;
-      if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
-        signalDone(FAIL);
-      }
-      return FAIL;
-    }
-    atomic {
-      radio_state = S_LOAD;
-      radio_msg = msg;
-    }
-    post updateTXPower();
-    if ( acquireSpiResource() == SUCCESS ) {
-      loadTXFIFO();
-    }
-    return SUCCESS;
-  }
+async command error_t RadioBuffer.load(message_t* msg) {
+	if (radio_state != S_STARTED) {
+		failed_load_counter++;
+		if (failed_load_counter > CC2420_MAX_FAILED_LOADS) {
+			signalDone(FAIL);
+		}
+		return FAIL;
+	}
+	atomic {
+		radio_state = S_LOAD;
+		radio_msg = msg;
+	}
+	post updateTXPower();
+	if ( acquireSpiResource() == SUCCESS ) {
+		loadTXFIFO();
+	}
+	return SUCCESS;
+}
 
 
-  async command error_t RadioSend.send(message_t* msg, bool useCca) {
-    if (msg != radio_msg)
-      return FAIL;
+async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	if (msg != radio_msg)
+		return FAIL;
+	if (radio_state != S_LOAD) {
+	}
 
-    if (radio_state != S_LOAD) {
-    }
+	radio_cca = useCca;
+	radio_state = S_BEGIN_TRANSMIT;
 
-    radio_cca = useCca;
-    radio_state = S_BEGIN_TRANSMIT;
+	if ( acquireSpiResource() == SUCCESS ) {
+		attemptSend();
+	}
+	return SUCCESS;
+}
 
-    if ( acquireSpiResource() == SUCCESS ) {
-      attemptSend();
-    }
-    return SUCCESS;
-  }
+async command error_t RadioSend.cancel(message_t *msg) {
+	call CSN.clr();
+	call SFLUSHTX.strobe();
+	call CSN.set();
+	releaseSpiResource();
+	radio_state = S_STARTED;
+	return SUCCESS;
+}
 
-  async command error_t RadioSend.cancel(message_t *msg) {
-    call CSN.clr();
-    call SFLUSHTX.strobe();
-    call CSN.set();
-    releaseSpiResource();
-    radio_state = S_STARTED;
-    return SUCCESS;
-  }
+async command uint8_t RadioPacket.maxPayloadLength() {
+	return TOSH_DATA_LENGTH;
+}
 
-  async command uint8_t RadioPacket.maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
-  }
-
-  async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-    if (len <= call RadioPacket.maxPayloadLength()) {
-      return (void*)msg->data;
-    }
-    else {
-      return NULL;
-    }
-  }
+async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
+	if (len <= call RadioPacket.maxPayloadLength()) {
+		return (void*)msg->data;
+	} else {
+		return NULL;
+	}
+}
 
 
-  /***************** SpiResource Events ****************/
-  event void SpiResource.granted() {
-    uint8_t cur_state;
+/***************** SpiResource Events ****************/
+event void SpiResource.granted() {
+	uint8_t cur_state;
 
-    cur_state = radio_state;
+	cur_state = radio_state;
 
-    switch( cur_state ) {
-    case S_LOAD:
-      loadTXFIFO();
-      break;
+	switch( cur_state ) {
+	case S_LOAD:
+		loadTXFIFO();
+		break;
 
-    case S_BEGIN_TRANSMIT:
-      attemptSend();
-      break;
+	case S_BEGIN_TRANSMIT:
+		attemptSend();
+		break;
 
-    default:
-      releaseSpiResource();
-      break;
-    }
-  }
+	default:
+		releaseSpiResource();
+		break;
+	}
+}
 
-  /***************** TXFIFO Events ****************/
-  /**
-   * The TXFIFO is used to load packets into the transmit buffer on the
-   * chip
-   */
-  async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-    call CSN.set();
-    releaseSpiResource();
-    signal RadioBuffer.loadDone(radio_msg, error);
-  }
+/***************** TXFIFO Events ****************/
+/**
+ * The TXFIFO is used to load packets into the transmit buffer on the
+ * chip
+ */
+async event void TXFIFO.writeDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+	call CSN.set();
+	releaseSpiResource();
+	signal RadioBuffer.loadDone(radio_msg, error);
+}
 
-  async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
-  }
+async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error ) {
+}
 
 
 async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
        //      return call PacketLinkQuality.get(msg) > 105;
+}
+
+async command error_t RadioCCA.request() {
+	switch (radio_state) {
+	case S_STOPPED:
+		signal RadioCCA.done(FAIL);
+		return FAIL;
+
+	default:
+		if (call CCA.get()) {
+			signal RadioCCA.done(SUCCESS);
+		} else {
+			signal RadioCCA.done(EBUSY);
+		}
+	}
+	return SUCCESS;
 }
 
 

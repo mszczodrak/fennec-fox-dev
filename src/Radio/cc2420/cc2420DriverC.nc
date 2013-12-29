@@ -8,6 +8,7 @@ provides interface ReceiveIndicator as ByteIndicator;
 provides interface RadioBuffer;
 provides interface RadioSend;
 provides interface RadioPacket;
+provides interface RadioCCA;
 
 provides interface LinkPacketMetadata;
 
@@ -20,6 +21,7 @@ components cc2420DriverP;
 StdControl = cc2420DriverP.StdControl;
 EnergyIndicator = cc2420DriverP.EnergyIndicator;
 ByteIndicator = cc2420DriverP.ByteIndicator;
+RadioCCA = cc2420DriverP.RadioCCA;
 cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
 
 RadioBuffer = cc2420DriverP;
