@@ -43,7 +43,7 @@ configuration UniqueReceiveC {
     interface Receive as DuplicateReceive;
   }
   
-  uses interface Receive as SubReceive;
+  uses interface RadioReceive as SubReceive;
   uses interface RadioPacket;
 }
 

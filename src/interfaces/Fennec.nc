@@ -9,5 +9,5 @@ interface Fennec {
 	async command conf_t getConfId(module_t module_id);
 	async command module_t getNextModuleId(module_t from_module_id, uint8_t to_layer_id);
 	async command struct stack_params getConfParams(module_t module_id);
-	async command error_t checkPacket(message_t *msg, uint8_t len);
+	async command error_t checkPacket(message_t *msg);
 }

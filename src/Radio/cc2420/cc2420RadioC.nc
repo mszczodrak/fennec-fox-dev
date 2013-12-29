@@ -27,7 +27,7 @@
 
 configuration cc2420RadioC {
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
+provides interface RadioReceive;
 
 uses interface cc2420RadioParams;
 provides interface Resource as RadioResource;
@@ -79,7 +79,7 @@ cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
 PacketIndicator = cc2420ReceiveC.PacketIndicator;
 cc2420RadioP.ReceiveControl -> cc2420ReceiveC.StdControl;
 
-RadioReceive = cc2420ReceiveC.Receive;
+RadioReceive = cc2420ReceiveC.RadioReceive;
 RadioBuffer = cc2420DriverC.RadioBuffer;
 RadioSend = cc2420DriverC.RadioSend;
 RadioPacket = cc2420DriverC.RadioPacket;

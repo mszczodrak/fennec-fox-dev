@@ -38,7 +38,7 @@ provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 uses interface csmacaMacParams;
 
-uses interface Receive as RadioReceive;
+uses interface RadioReceive;
 
 uses interface RadioConfig;
 uses interface RadioPower;
@@ -105,7 +105,7 @@ UniqueSendC.SubSend -> LplC.Send;
 LplC.SubSend -> CSMATransmitC;
 
 LplC.SubReceive -> UniqueReceiveC.Receive;
-UniqueReceiveC.SubReceive =  RadioReceive;
+UniqueReceiveC.SubReceive = RadioReceive;
 
 PacketIndicator = LplC.PacketIndicator;
 EnergyIndicator = LplC.EnergyIndicator;

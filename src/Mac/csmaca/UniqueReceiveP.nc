@@ -45,7 +45,7 @@ module UniqueReceiveP @safe() {
     interface Init;
   }
   
-  uses interface Receive as SubReceive;
+  uses interface RadioReceive as SubReceive;
   uses interface RadioPacket;
 }
 
@@ -81,7 +81,7 @@ implementation {
   uint16_t getSourceKey(message_t ONE *msg);
   
 /***************** SubReceive Events *****************/
-event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
+async event message_t *SubReceive.receive(message_t* msg) {
 
 	uint16_t msgSource = getSourceKey(msg);
 
@@ -98,6 +98,11 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 	}
 }
   
+async event bool SubReceive.header(message_t* msg) {
+	return TRUE;
+}
+
+
   /****************** Functions ****************/  
   /**
    * This function does two things:

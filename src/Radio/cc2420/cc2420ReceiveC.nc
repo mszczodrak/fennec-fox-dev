@@ -38,34 +38,34 @@
 
 configuration cc2420ReceiveC {
 
-  provides interface StdControl;
-  provides interface CC2420Receive;
-  provides interface Receive;
-  provides interface ReceiveIndicator as PacketIndicator;
+provides interface StdControl;
+provides interface CC2420Receive;
+provides interface RadioReceive;
+provides interface ReceiveIndicator as PacketIndicator;
 
-  uses interface RadioConfig;
-  uses interface RadioPacket;
+uses interface RadioConfig;
+uses interface RadioPacket;
 
 }
 
 implementation {
-  components MainC;
-  components cc2420ReceiveP;
-  components new CC2420SpiC() as Spi;
+components MainC;
+components cc2420ReceiveP;
+components new CC2420SpiC() as Spi;
   
-  components HplCC2420PinsC as Pins;
-  components HplCC2420InterruptsC as InterruptsC;
+components HplCC2420PinsC as Pins;
+components HplCC2420InterruptsC as InterruptsC;
 
-  components LedsC as Leds;
-  cc2420ReceiveP.Leds -> Leds;
+components LedsC as Leds;
+cc2420ReceiveP.Leds -> Leds;
 
-  StdControl = cc2420ReceiveP;
-  CC2420Receive = cc2420ReceiveP;
-  Receive = cc2420ReceiveP;
-  PacketIndicator = cc2420ReceiveP.PacketIndicator;
-  RadioPacket = cc2420ReceiveP.RadioPacket;
+StdControl = cc2420ReceiveP;
+CC2420Receive = cc2420ReceiveP;
+RadioReceive = cc2420ReceiveP;
+PacketIndicator = cc2420ReceiveP.PacketIndicator;
+RadioPacket = cc2420ReceiveP.RadioPacket;
 
-  MainC.SoftwareInit -> cc2420ReceiveP;
+MainC.SoftwareInit -> cc2420ReceiveP;
   
   cc2420ReceiveP.CSN -> Pins.CSN;
   cc2420ReceiveP.FIFO -> Pins.FIFO;

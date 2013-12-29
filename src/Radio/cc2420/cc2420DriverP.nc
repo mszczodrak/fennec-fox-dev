@@ -219,8 +219,8 @@ async command bool EnergyIndicator.isReceiving() {
     uint8_t length;
 
     if ( type == IEEE154_TYPE_ACK && radio_msg) {
-      ack_header = (cc2420_hdr_t*) call RadioPacket.getPayload(ack_msg, sizeof(cc2420_hdr_t));
-      msg_header = (cc2420_hdr_t*) call RadioPacket.getPayload(radio_msg, sizeof(cc2420_hdr_t));
+      ack_header = (cc2420_hdr_t*) (ack_msg->data);
+      msg_header = (cc2420_hdr_t*) (radio_msg->data);
 
       if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
         call RadioTimer.stop();
@@ -280,7 +280,7 @@ async command bool EnergyIndicator.isReceiving() {
   async event void CaptureSFD.captured( uint16_t rtime ) {
     uint32_t time32;
     uint8_t sfd_state = 0;
-    cc2420_hdr_t* header = (cc2420_hdr_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_hdr_t));
+    cc2420_hdr_t* header = (cc2420_hdr_t*) ( radio_msg->data );
 
     atomic {
       time32 = getTime32(rtime);
@@ -395,7 +395,7 @@ async command bool EnergyIndicator.isReceiving() {
    * the same CRC polynomial as the CC2420's AUTOCRC functionality.
    */
   void loadTXFIFO() {
-    cc2420_hdr_t* header = (cc2420_hdr_t*) call RadioPacket.getPayload( radio_msg, sizeof(cc2420_hdr_t) );
+    cc2420_hdr_t* header = (cc2420_hdr_t*) ( radio_msg->data );
     metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
     uint8_t tx_power = meta->tx_power;
 
@@ -470,11 +470,6 @@ async command error_t RadioSend.cancel(message_t *msg) {
 async command uint8_t RadioPacket.maxPayloadLength() {
 	return CC2420_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC;
 }
-
-async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-	return (void*)msg->data;
-}
-
 
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {

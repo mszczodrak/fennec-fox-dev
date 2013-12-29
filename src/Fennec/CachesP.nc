@@ -218,9 +218,9 @@ async command struct stack_params Fennec.getConfParams(module_t module_id) {
         return states[call Fennec.getStateId()].conf_params[get_conf_id_in_state(module_id)];
 }
 
-async command error_t Fennec.checkPacket(message_t *msg, uint8_t len) {
+async command error_t Fennec.checkPacket(message_t *msg) {
 	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
-		dbg("Caches", "CachesP Fennec.checPacket(0x%1x, %d) - FAIL", msg, len);
+		dbg("Caches", "CachesP Fennec.checPacket(0x%1x) - FAIL", msg);
 		signal FennecWarnings.detectWrongConfiguration();
 		return FAIL;
 	} 
