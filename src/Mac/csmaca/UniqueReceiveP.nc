@@ -80,21 +80,23 @@ implementation {
   void insert(uint16_t msgSource, uint8_t msgDsn);
   uint16_t getSourceKey(message_t ONE *msg);
   
-  /***************** SubReceive Events *****************/
-  event message_t *SubReceive.receive(message_t* msg, void* payload, 
-      uint8_t len) {
+/***************** SubReceive Events *****************/
+event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
 
-    uint16_t msgSource = getSourceKey(msg);
-    csmaca_header_t* header = (csmaca_header_t*)call RadioPacket.getPayload(msg, len);
-    uint8_t msgDsn = header->dsn;
+	uint16_t msgSource = getSourceKey(msg);
 
-    if(hasSeen(msgSource, msgDsn)) {
-      return signal DuplicateReceive.receive(msg, payload, len);
-    } else {
-      insert(msgSource, msgDsn);
-      return signal Receive.receive(msg, payload, len);
-    }
-  }
+	uint8_t *p = (uint8_t*)(msg->data);
+	csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg) - 1);
+
+	uint8_t msgDsn = header->dsn;
+
+	if(hasSeen(msgSource, msgDsn)) {
+		return signal DuplicateReceive.receive(msg, payload, len);
+	} else {
+		insert(msgSource, msgDsn);
+		return signal Receive.receive(msg, payload, len);
+	}
+}
   
   /****************** Functions ****************/  
   /**
@@ -154,42 +156,44 @@ implementation {
     }
   }
 
-  /**
-   * Derive a key to to store the source address with.
-   *
-   * For long (EUI64) addresses, use the sum of the word in the
-   * address as a key in the table to avoid manipulating the full
-   * address.
-   */
+/**
+ * Derive a key to to store the source address with.
+ *
+ * For long (EUI64) addresses, use the sum of the word in the
+ * address as a key in the table to avoid manipulating the full
+ * address.
+ */
   uint16_t getSourceKey(message_t * ONE msg) {
-    csmaca_header_t *hdr = (csmaca_header_t*)call RadioPacket.getPayload(msg, sizeof(csmaca_header_t));
-    int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
-    int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
-    int s_offset = 2, s_len = 2;
-    uint16_t key = 0;
-    uint8_t *current = (uint8_t *)&hdr->dest;
-    int i;
+	uint8_t *p = (uint8_t*)(msg->data);
+	csmaca_header_t* hdr = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg) - 1); 
 
-    if (s_mode == IEEE154_ADDR_EXT) {
-      s_len = 8;
-    }
-    if (d_mode == IEEE154_ADDR_EXT) {
-      s_offset = 8;
-    }
+	int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
+	int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
+	int s_offset = 2, s_len = 2;
+	uint16_t key = 0;
+	uint8_t *current = (uint8_t *)&hdr->dest;
+	int i;
 
-    current += s_offset;
+	if (s_mode == IEEE154_ADDR_EXT) {
+		s_len = 8;
+	}
+	if (d_mode == IEEE154_ADDR_EXT) {
+		s_offset = 8;
+	}
+
+	current += s_offset;
     
-    for (i = 0; i < s_len; i++) {
-        key += current[i];
-    }
-    return key;
-  }
+	for (i = 0; i < s_len; i++) {
+		key += current[i];
+	}
+	return key;
+}
 
 
   
-  /***************** Defaults ****************/
-  default event message_t *DuplicateReceive.receive(message_t *msg, void *payload, uint8_t len) {
-    return msg;
-  }
+/***************** Defaults ****************/
+default event message_t *DuplicateReceive.receive(message_t *msg, void *payload, uint8_t len) {
+	return msg;
+}
 }
 
