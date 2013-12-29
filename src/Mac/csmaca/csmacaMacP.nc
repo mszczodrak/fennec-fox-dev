@@ -175,7 +175,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
 
-	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t) - 2);
+	call MacPacket.setPayloadLength(msg, len);
 
 	return call SubSend.send( msg, len );
 }
@@ -302,8 +302,7 @@ command uint8_t MacPacket.payloadLength(message_t* msg) {
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
-	header->length  = len + sizeof(csmaca_header_t);
+	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t) - 2);
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
