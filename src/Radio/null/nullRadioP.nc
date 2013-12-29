@@ -44,6 +44,10 @@ provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface nullRadioParams;
+
+provides interface RadioState;
+provides interface LinkPacketMetadata;
+
 }
 
 implementation {
@@ -51,10 +55,15 @@ implementation {
 uint8_t channel;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
+bool sc = FALSE;
 
 task void start_done() {
 	state = S_STARTED;
-	signal SplitControl.startDone(SUCCESS);
+	signal RadioState.done();
+	if (sc == TRUE) {
+		signal SplitControl.startDone(SUCCESS);
+		sc = FALSE;
+	}
 }
 
 task void finish_starting_radio() {
@@ -63,10 +72,26 @@ task void finish_starting_radio() {
 
 task void stop_done() {
 	state = S_STOPPED;
-	signal SplitControl.stopDone(SUCCESS);
+	signal RadioState.done();
+	if (sc == TRUE) {
+		signal SplitControl.stopDone(SUCCESS);
+		sc = FALSE;
+	}
 }
 
 command error_t SplitControl.start() {
+	sc = TRUE;
+	return call RadioState.turnOn();
+}
+
+
+command error_t SplitControl.stop() {
+	sc = TRUE;
+	return call RadioState.turnOff();
+}
+
+
+command error_t RadioState.turnOn() {
 	dbg("Radio", "nullRadio SplitControl.start()");
 
 	if (state == S_STOPPED) {
@@ -84,7 +109,7 @@ command error_t SplitControl.start() {
 	return SUCCESS;
 }
 
-command error_t SplitControl.stop() {
+command error_t RadioState.turnOff() {
 	dbg("Radio", "nullRadio SplitControl.stop()");
 	if (state == S_STARTED) {
 		state = S_STOPPING;
@@ -98,6 +123,22 @@ command error_t SplitControl.stop() {
 	}
 	return SUCCESS;
 }
+
+command error_t RadioState.standby() {
+	return call RadioState.turnOff();
+}
+
+command error_t RadioState.setChannel(uint8_t ch) {
+        call RadioConfig.setChannel( ch );
+	signal RadioState.done();
+        return SUCCESS;
+}
+
+command uint8_t RadioState.getChannel() {
+        return call RadioConfig.getChannel();
+}
+
+
 
 async command error_t RadioPower.startVReg() {
 	return SUCCESS;
@@ -238,6 +279,11 @@ async command bool RadioResource.isOwner() {
 async command error_t RadioResource.release() {
 	return SUCCESS;
 }
+
+async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
+       //      return call PacketLinkQuality.get(msg) > 105;
+}
+
 
 }
 

@@ -44,6 +44,11 @@ provides interface ReceiveIndicator as PacketIndicator;
 provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
 
+provides interface RadioState;
+provides interface LinkPacketMetadata;
+
+
+
 }
 
 implementation {
@@ -65,5 +70,9 @@ ReadRssi = nullRadioP.ReadRssi;
 RadioBuffer = nullRadioP.RadioBuffer;
 RadioPacket = nullRadioP.RadioPacket;
 RadioSend = nullRadioP.RadioSend;
+
+RadioState = nullRadioP.RadioState;
+LinkPacketMetadata = nullRadioP.LinkPacketMetadata;
+
 
 }

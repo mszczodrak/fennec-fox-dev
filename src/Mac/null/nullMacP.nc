@@ -59,6 +59,10 @@ uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as PacketIndicator;
 
 uses interface State as SplitControlState;
+
+uses interface RadioState;
+uses interface LinkPacketMetadata;
+
 }
 
 implementation {
@@ -409,6 +413,9 @@ async event void RadioSend.sendDone(message_t *msg, error_t error) {
 	atomic sendErr = error;
 	post sendDone_task();
 }
+
+event void RadioState.done() {}
+
 
 }
 

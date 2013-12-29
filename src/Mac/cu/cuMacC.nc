@@ -51,6 +51,10 @@ uses interface RadioSend;
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
+
+uses interface RadioState;
+uses interface LinkPacketMetadata;
+
 }
 
 implementation {
@@ -79,6 +83,10 @@ RadioReceive = cuMacP.RadioReceive;
 EnergyIndicator = cuMacP.EnergyIndicator;
 ByteIndicator = cuMacP.ByteIndicator;
 PacketIndicator = cuMacP.PacketIndicator;
+
+RadioState = cuMacP.RadioState;
+LinkPacketMetadata = cuMacP.LinkPacketMetadata;
+
 
 components RandomC;
 cuMacP.Random -> RandomC;

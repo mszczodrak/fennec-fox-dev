@@ -51,6 +51,10 @@ uses interface RadioSend;
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
+
+uses interface RadioState;
+uses interface LinkPacketMetadata;
+
 }
 
 implementation {
@@ -75,6 +79,10 @@ RadioBuffer = nullMacP.RadioBuffer;
 RadioSend = nullMacP.RadioSend;
 RadioControl = nullMacP.RadioControl;
 RadioReceive = nullMacP.RadioReceive;
+
+RadioState = nullMacP.RadioState;
+LinkPacketMetadata = nullMacP.LinkPacketMetadata;
+
 
 EnergyIndicator = nullMacP.EnergyIndicator;
 ByteIndicator = nullMacP.ByteIndicator;
