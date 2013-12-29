@@ -106,6 +106,7 @@ typedef nx_struct metadata_t {
   nx_int8_t strength;
   nx_uint16_t time;
 #else
+  nx_uint8_t flags;
   nx_bool crc;
   nx_bool ack;
   nx_bool timesync;

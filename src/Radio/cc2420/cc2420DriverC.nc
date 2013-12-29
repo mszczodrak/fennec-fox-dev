@@ -10,6 +10,11 @@ provides interface RadioSend;
 provides interface RadioPacket;
 provides interface RadioCCA;
 
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+
 provides interface LinkPacketMetadata;
 
 uses interface cc2420RadioParams;
@@ -27,6 +32,11 @@ cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
 RadioBuffer = cc2420DriverP;
 RadioSend = cc2420DriverP.RadioSend;
 RadioPacket = cc2420DriverP.RadioPacket;
+
+PacketTransmitPower = cc2420DriverP.PacketTransmitPower;
+PacketRSSI = cc2420DriverP.PacketRSSI;
+PacketTimeSyncOffset = cc2420DriverP.PacketTimeSyncOffset;
+PacketLinkQuality = cc2420DriverP.PacketLinkQuality;
 
 LinkPacketMetadata = cc2420DriverP.LinkPacketMetadata;
 
@@ -67,6 +77,7 @@ cc2420DriverP.KEY1 -> Spi.KEY1;
 
 components cc2420ReceiveC;
 cc2420DriverP.CC2420Receive -> cc2420ReceiveC;
+
 
   
 }

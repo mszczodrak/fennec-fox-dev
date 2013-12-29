@@ -41,6 +41,10 @@ provides interface ReceiveIndicator as PacketIndicator;
 provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
 
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
 provides interface LinkPacketMetadata;
@@ -94,5 +98,9 @@ cc2420RadioP.Leds -> LedsC;
 RadioState = cc2420RadioP.RadioState;
 LinkPacketMetadata = cc2420DriverC.LinkPacketMetadata;
   
+PacketTransmitPower = cc2420DriverC.PacketTransmitPower;
+PacketRSSI = cc2420DriverC.PacketRSSI;
+PacketTimeSyncOffset = cc2420DriverC.PacketTimeSyncOffset;
+PacketLinkQuality = cc2420DriverC.PacketLinkQuality;
 
 }

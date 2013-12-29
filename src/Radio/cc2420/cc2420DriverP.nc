@@ -9,6 +9,11 @@ provides interface Init;
 provides interface StdControl;
 provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
+
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
  
 uses interface Leds; 
 uses interface GpioCapture as CaptureSFD;
@@ -533,7 +538,7 @@ async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error
 
 
 async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
-       //      return call PacketLinkQuality.get(msg) > 105;
+	return call PacketLinkQuality.get(msg) > 105;
 }
 
 async command error_t RadioCCA.request() {
@@ -551,6 +556,85 @@ async command error_t RadioCCA.request() {
 	}
 	return SUCCESS;
 }
+
+
+
+
+
+async command bool PacketTransmitPower.isSet(message_t* msg) {
+	return getMetadata(msg)->flags & (1<<1);
+}
+
+async command uint8_t PacketTransmitPower.get(message_t* msg) {
+	return getMetadata(msg)->tx_power;
+}
+
+async command void PacketTransmitPower.clear(message_t* msg) {
+	getMetadata(msg)->flags &= ~(1<<1);
+}
+
+async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
+	getMetadata(msg)->flags |= (1<<1);
+	getMetadata(msg)->tx_power = value;
+}
+
+
+async command bool PacketRSSI.isSet(message_t* msg) {
+	return getMetadata(msg)->flags & (1<<2);
+}
+
+async command uint8_t PacketRSSI.get(message_t* msg) {
+	return getMetadata(msg)->rssi;
+}
+
+async command void PacketRSSI.clear(message_t* msg) {
+	getMetadata(msg)->flags &= ~(1<<2);
+}
+
+async command void PacketRSSI.set(message_t* msg, uint8_t value) {
+	call PacketTransmitPower.clear(msg);
+	getMetadata(msg)->flags |= (1<<2);
+	getMetadata(msg)->rssi = value;
+}
+
+
+async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+	return getMetadata(msg)->flags & (1<<3);
+}
+
+async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+	// TODO: 
+	//return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
+	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+}
+
+async command void PacketTimeSyncOffset.clear(message_t* msg) {
+	getMetadata(msg)->flags &= ~(1<<3);
+}
+
+async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+	getMetadata(msg)->flags |= (1<<3);
+	// we do not store the value, the time sync field is always the last 4 bytes
+}
+
+async command bool PacketLinkQuality.isSet(message_t* msg) {
+	return TRUE;
+}
+
+async command uint8_t PacketLinkQuality.get(message_t* msg) {
+	return getMetadata(msg)->lqi;
+}
+
+async command void PacketLinkQuality.clear(message_t* msg){
+}
+
+async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
+	getMetadata(msg)->lqi = value;
+}
+
+
+
+
 
 
 }
