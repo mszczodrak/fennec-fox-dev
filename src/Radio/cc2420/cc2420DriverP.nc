@@ -482,12 +482,12 @@ async command uint8_t RadioPacket.headerLength(message_t* msg) {
 }
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
-	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*) msg->data; 
+	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*)(msg->data); 
 	return hdr->length - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC;
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*) msg->data; 
+	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*)(msg->data); 
 	hdr->length = length + sizeof(nx_struct cc2420_radio_header_t) + CC2420_SIZEOF_CRC;
 }
 

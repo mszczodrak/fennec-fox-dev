@@ -65,7 +65,6 @@ uses interface Leds;
 implementation {
 
 uint8_t status = S_STOPPED;
-uint16_t pending_length;
 message_t * ONE_NOK pending_message = NULL;
 
 uint8_t localSendId;
@@ -175,7 +174,8 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-	header->length = len + sizeof(csmaca_header_t);
+
+	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t) - 2);
 
 	return call SubSend.send( msg, len );
 }
