@@ -205,7 +205,8 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 }
 
 command void* Send.getPayload(message_t* m, uint8_t len) {
-	return call RadioPacket.getPayload(m, len);
+	uint8_t *p = (uint8_t*)(m->data);
+	return (p + call RadioPacket.headerLength(m) - 1);
 }
 
 command uint8_t Send.maxPayloadLength() {
