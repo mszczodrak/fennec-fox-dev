@@ -465,17 +465,40 @@ async command error_t RadioSend.cancel(message_t *msg) {
 	return SUCCESS;
 }
 
+/* Radio Packet */
+
 async command uint8_t RadioPacket.maxPayloadLength() {
-	return TOSH_DATA_LENGTH;
+	return CC2420_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC;
 }
 
 async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-	if (len <= call RadioPacket.maxPayloadLength()) {
-		return (void*)msg->data;
-	} else {
-		return NULL;
-	}
+	return (void*)msg->data;
 }
+
+
+
+async command uint8_t RadioPacket.headerLength(message_t* msg) {
+	return sizeof(nx_struct cc2420_radio_header_t);
+}
+
+async command uint8_t RadioPacket.payloadLength(message_t* msg) {
+	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*) msg->data; 
+	return hdr->length - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC;
+}
+
+async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
+	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*) msg->data; 
+	hdr->length = length + sizeof(nx_struct cc2420_radio_header_t) + CC2420_SIZEOF_CRC;
+}
+
+async command uint8_t RadioPacket.metadataLength(message_t* msg) {
+	return sizeof(metadata_t);
+}
+
+async command void RadioPacket.clear(message_t* msg) {
+        memset(msg, 0x0, sizeof(message_t));
+}
+
 
 
 /***************** SpiResource Events ****************/
