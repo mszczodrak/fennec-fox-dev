@@ -29,7 +29,6 @@
 #ifndef __H_cc2420_RADIO__
 #define __H_cc2420_RADIO___
 
-
 nx_struct cc2420_radio_header_t {
 	nxle_uint8_t length;
 };
