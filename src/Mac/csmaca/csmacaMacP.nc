@@ -297,15 +297,15 @@ command void MacPacket.clear(message_t* msg) {
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
-	return call RadioPacket.payloadLength(msg) - sizeof(csmaca_header_t) + 1;
+	return call RadioPacket.payloadLength(msg) - sizeof(csmaca_header_t);
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t) - 1);
+	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t));
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
-	return call SubSend.maxPayloadLength();
+	return call RadioPacket.maxPayloadLength() - sizeof(csmaca_header_t);
 }
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
