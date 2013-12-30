@@ -36,10 +36,7 @@
 #define RECEIVE_HISTORY_SIZE 4
 #endif
 
-#define CSMACA_FOOTER 2
-
 typedef nx_struct csmaca_header_t {
-	nxle_uint8_t length;
 	nxle_uint16_t fcf;
 	nxle_uint8_t dsn;
 	nxle_uint16_t destpan;

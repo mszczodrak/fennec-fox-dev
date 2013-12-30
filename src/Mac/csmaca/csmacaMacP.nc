@@ -198,14 +198,14 @@ command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
 /***************** PacketAcknowledgement Commands ****************/
 async command error_t MacPacketAcknowledgements.requestAck( message_t* m ) {
         uint8_t *p = (uint8_t*)(m->data);
-        csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(m) - 1);
+        csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(m));
 	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
 	return SUCCESS;
 }
 
 async command error_t MacPacketAcknowledgements.noAck( message_t* m ) {
         uint8_t *p = (uint8_t*)(m->data);
-        csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(m) - 1);
+        csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(m));
 	header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	return SUCCESS;
 }
@@ -297,12 +297,11 @@ command void MacPacket.clear(message_t* msg) {
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
-	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
-	return header->length - sizeof(csmaca_header_t);
+	return call RadioPacket.payloadLength(msg) - sizeof(csmaca_header_t) + 1;
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t) - 2);
+	call RadioPacket.setPayloadLength(msg, len + sizeof(csmaca_header_t) - 1);
 }
 
 command uint8_t MacPacket.maxPayloadLength() {

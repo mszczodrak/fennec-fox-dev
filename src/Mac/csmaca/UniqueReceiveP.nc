@@ -86,7 +86,7 @@ async event message_t *SubReceive.receive(message_t* msg) {
 	uint16_t msgSource = getSourceKey(msg);
 
 	uint8_t *p = (uint8_t*)(msg->data);
-	csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg) - 1);
+	csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 
 	uint8_t msgDsn = header->dsn;
 
@@ -170,7 +170,7 @@ void insert(uint16_t msgSource, uint8_t msgDsn) {
  */
 uint16_t getSourceKey(message_t * ONE msg) {
 	uint8_t *p = (uint8_t*)(msg->data);
-	csmaca_header_t* hdr = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg) - 1); 
+	csmaca_header_t* hdr = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg)); 
 
 	int s_mode = (hdr->fcf >> IEEE154_FCF_SRC_ADDR_MODE) & 0x3;
 	int d_mode = (hdr->fcf >> IEEE154_FCF_DEST_ADDR_MODE) & 0x3;
