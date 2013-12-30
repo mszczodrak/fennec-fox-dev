@@ -11,28 +11,31 @@ provides interface CC2420Receive;
 provides interface RadioReceive;
 provides interface ReceiveIndicator as PacketIndicator;
 
-  uses interface GeneralIO as CSN;
-  uses interface GeneralIO as FIFO;
-  uses interface GeneralIO as FIFOP;
-  uses interface GpioInterrupt as InterruptFIFOP;
+uses interface GeneralIO as CSN;
+uses interface GeneralIO as FIFO;
+uses interface GeneralIO as FIFOP;
+uses interface GpioInterrupt as InterruptFIFOP;
 
-  uses interface Resource as SpiResource;
-  uses interface CC2420Fifo as RXFIFO;
-  uses interface CC2420Strobe as SACK;
-  uses interface CC2420Strobe as SFLUSHRX;
-  uses interface RadioConfig;
-  uses interface RadioPacket;
+uses interface Resource as SpiResource;
+uses interface CC2420Fifo as RXFIFO;
+uses interface CC2420Strobe as SACK;
+uses interface CC2420Strobe as SFLUSHRX;
+uses interface RadioConfig;
+uses interface RadioPacket;
 
-  uses interface CC2420Strobe as SRXDEC;
-  uses interface CC2420Register as SECCTRL0;
-  uses interface CC2420Register as SECCTRL1;
-  uses interface CC2420Ram as KEY0;
-  uses interface CC2420Ram as KEY1;
-  uses interface CC2420Ram as RXNONCE;
-  uses interface CC2420Ram as RXFIFO_RAM;
-  uses interface CC2420Strobe as SNOP;
+uses interface CC2420Strobe as SRXDEC;
+uses interface CC2420Register as SECCTRL0;
+uses interface CC2420Register as SECCTRL1;
+uses interface CC2420Ram as KEY0;
+uses interface CC2420Ram as KEY1;
+uses interface CC2420Ram as RXNONCE;
+uses interface CC2420Ram as RXFIFO_RAM;
+uses interface CC2420Strobe as SNOP;
 
-  uses interface Leds;
+uses interface Leds;
+
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+
 }
 
 implementation {

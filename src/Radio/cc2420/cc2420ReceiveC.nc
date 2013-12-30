@@ -45,6 +45,7 @@ provides interface ReceiveIndicator as PacketIndicator;
 
 uses interface RadioConfig;
 uses interface RadioPacket;
+uses interface PacketField<uint8_t> as PacketTransmitPower;
 
 }
 
@@ -64,6 +65,7 @@ CC2420Receive = cc2420ReceiveP;
 RadioReceive = cc2420ReceiveP;
 PacketIndicator = cc2420ReceiveP.PacketIndicator;
 RadioPacket = cc2420ReceiveP.RadioPacket;
+PacketTransmitPower = cc2420ReceiveP.PacketTransmitPower;
 
 MainC.SoftwareInit -> cc2420ReceiveP;
   

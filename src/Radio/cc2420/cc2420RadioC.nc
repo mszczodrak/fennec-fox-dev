@@ -103,4 +103,6 @@ PacketRSSI = cc2420DriverC.PacketRSSI;
 PacketTimeSyncOffset = cc2420DriverC.PacketTimeSyncOffset;
 PacketLinkQuality = cc2420DriverC.PacketLinkQuality;
 
+cc2420ReceiveC.PacketTransmitPower -> cc2420DriverC.PacketTransmitPower;
+
 }
