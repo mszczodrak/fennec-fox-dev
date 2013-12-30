@@ -36,23 +36,25 @@
 #define RECEIVE_HISTORY_SIZE 4
 #endif
 
+#define CSMACA_FOOTER 2
+
 typedef nx_struct csmaca_header_t {
-  nxle_uint8_t length;
-  nxle_uint16_t fcf;
-  nxle_uint8_t dsn;
-  nxle_uint16_t destpan;
-  nxle_uint16_t dest;
-  nxle_uint16_t src;
-  /** CC2420 802.15.4 header ends here */
-  /** I-Frame 6LowPAN interoperability byte */
-  nxle_uint8_t network;
-  nxle_uint8_t type;
+	nxle_uint8_t length;
+	nxle_uint16_t fcf;
+	nxle_uint8_t dsn;
+	nxle_uint16_t destpan;
+	nxle_uint16_t dest;
+	nxle_uint16_t src;
+	/** CC2420 802.15.4 header ends here */
+	/** I-Frame 6LowPAN interoperability byte */
+	nxle_uint8_t network;
+	nxle_uint8_t type;
 } csmaca_header_t;
 
 enum
 {
-  INVALID_TIMESTAMP  = 0x80000000L,
-  TIME_ACK_TURNAROUND = 7, // jiffies
+	INVALID_TIMESTAMP  = 0x80000000L,
+	TIME_ACK_TURNAROUND = 7, // jiffies
 };
 
 
