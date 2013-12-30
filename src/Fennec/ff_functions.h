@@ -32,7 +32,11 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-metadata_t* getMetadata( message_t* msg );
+metadata_t* getMetadata( message_t* msg ) @C() {
+        return (metadata_t*)msg->metadata;
+}
+
+
 void PacketTimeStampclear(message_t* msg);
 void PacketTimeStampset(message_t* msg, uint32_t value);
 bool PacketTimeSyncOffsetisSet(message_t* msg);
