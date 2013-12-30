@@ -29,7 +29,7 @@
 #ifndef __Counter_APP_H_
 #define __Counter_APP_H_
 
-#define COUNTER_DATA_LENGTH 100
+#define COUNTER_DATA_LENGTH 80
 
 #include <AM.h>
 
