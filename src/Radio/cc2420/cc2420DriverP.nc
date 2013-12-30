@@ -53,7 +53,7 @@ uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 implementation {
 
 norace message_t * ONE_NOK radio_msg;
-norace bool radio_cca;
+norace bool radio_cca = FALSE;
 norace uint8_t radio_state = S_STOPPED;
 norace uint8_t failed_load_counter = 0;
 norace error_t errorSendDone;
@@ -118,312 +118,310 @@ async command bool EnergyIndicator.isReceiving() {
 }
   
 
-  error_t releaseSpiResource() {
-    call SpiResource.release();
-    return SUCCESS;
-  }
+error_t releaseSpiResource() {
+	call SpiResource.release();
+	return SUCCESS;
+}
 
-  error_t acquireSpiResource() {
-    error_t error = call SpiResource.immediateRequest();
-    if ( error != SUCCESS ) {
-      call SpiResource.request();
-    }
-    return error;
-  }
+error_t acquireSpiResource() {
+	error_t error = call SpiResource.immediateRequest();
+	if ( error != SUCCESS ) {
+		call SpiResource.request();
+	}
+	return error;
+}
 
-  /***************** ChipSpiResource Events ****************/
-  async event void ChipSpiResource.releasing() {
-    if(abortSpiRelease) {
-      call ChipSpiResource.abortRelease();
-    }
-  }
+/***************** ChipSpiResource Events ****************/
+async event void ChipSpiResource.releasing() {
+	if(abortSpiRelease) {
+		call ChipSpiResource.abortRelease();
+	}
+}
 
-  task void updateTXPower() {
-    param_tx_power = call cc2420RadioParams.get_power();
-  } 
+task void updateTXPower() {
+	param_tx_power = call cc2420RadioParams.get_power();
+} 
 
-  task void radioSendDone() {
-    signal RadioSend.sendDone(radio_msg, errorSendDone);
-  }
+task void radioSendDone() {
+	signal RadioSend.sendDone(radio_msg, errorSendDone);
+}
 
-  void signalDone( error_t err ) {
-    errorSendDone = err;
-    post radioSendDone();
-    atomic {
-      radio_state = S_STARTED;
-      abortSpiRelease = FALSE;
-      failed_load_counter = 0;
-      call ChipSpiResource.attemptRelease();
-    }
-  }
-
-
-  // this method converts a 16-bit timestamp into a 32-bit one
-  inline uint32_t getTime32(uint16_t captured_time)
-  {
-    uint32_t now = call RadioTimer.getNow();
-
-    // the captured_time is always in the past
-    return now - (uint16_t)(now - captured_time);
-  }
+void signalDone( error_t err ) {
+	errorSendDone = err;
+	post radioSendDone();
+	atomic {
+		radio_state = S_STARTED;
+		abortSpiRelease = FALSE;
+		failed_load_counter = 0;
+		call ChipSpiResource.attemptRelease();
+	}
+}
 
 
+// this method converts a 16-bit timestamp into a 32-bit one
+inline uint32_t getTime32(uint16_t captured_time) {
+	uint32_t now = call RadioTimer.getNow();
 
-  /**
-   * Attempt to send the packet we have loaded into the tx buffer on
-   * the radio chip.  The STXONCCA will send the packet immediately if
-   * the channel is clear.  If we're not concerned about whether or not
-   * the channel is clear (i.e. radio_cca == FALSE), then STXON will send the
-   * packet without checking for a clear channel.
-   *
-   * If the packet didn't get sent, then congestion == TRUE.  In that case,
-   * we reset the backoff timer and try again in a moment.
-   *
-   * If the packet got sent, we should expect an SFD interrupt to take
-   * over, signifying the packet is getting sent.
-   *
-   * If security is enabled, STXONCCA or STXON will perform inline security
-   * options before transmitting the packet.
-   */
-  void attemptSend() {
-    uint8_t status;
-    bool congestion = TRUE;
-
-      call CSN.clr();
-      status = radio_cca ? call STXONCCA.strobe() : call STXON.strobe();
-      if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
-        status = call SNOP.strobe();
-        if ( status & CC2420_STATUS_TX_ACTIVE ) {
-          congestion = FALSE;
-        }
-      }
-
-      call CSN.set();
-
-    if ( congestion ) {
-      signal RadioSend.sendDone(radio_msg, EBUSY);
-      releaseSpiResource();
-    } else {
-      radio_state = S_SFD;
-      call RadioTimer.start(CC2420_ABORT_PERIOD);
-    }
-  }
+	// the captured_time is always in the past
+	return now - (uint16_t)(now - captured_time);
+}
 
 
-  async command bool ByteIndicator.isReceiving() {
-    bool high;
-    high = sfdHigh;
-    return high;
-  }
+/**
+ * Attempt to send the packet we have loaded into the tx buffer on
+ * the radio chip.  The STXONCCA will send the packet immediately if
+ * the channel is clear.  If we're not concerned about whether or not
+ * the channel is clear (i.e. radio_cca == FALSE), then STXON will send the
+ * packet without checking for a clear channel.
+ *
+ * If the packet didn't get sent, then congestion == TRUE.  In that case,
+ * we reset the backoff timer and try again in a moment.
+ *
+ * If the packet got sent, we should expect an SFD interrupt to take
+ * over, signifying the packet is getting sent.
+ *
+ * If security is enabled, STXONCCA or STXON will perform inline security
+ * options before transmitting the packet.
+ */
+void attemptSend() {
+	uint8_t status;
+	bool congestion = TRUE;
 
-  async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
-    cc2420_hdr_t* ack_header;
-    cc2420_hdr_t* msg_header;
-    metadata_t* msg_metadata;
-    uint8_t* ack_buf;
-    uint8_t length;
+	call CSN.clr();
+	status = radio_cca ? call STXONCCA.strobe() : call STXON.strobe();
+	if ( !( status & CC2420_STATUS_TX_ACTIVE ) ) {
+		status = call SNOP.strobe();
+		if ( status & CC2420_STATUS_TX_ACTIVE ) {
+			congestion = FALSE;
+		}
+	}
 
-    if ( type == IEEE154_TYPE_ACK && radio_msg) {
-      ack_header = (cc2420_hdr_t*) (ack_msg->data);
-      msg_header = (cc2420_hdr_t*) (radio_msg->data);
+	call CSN.set();
 
-      if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
-        call RadioTimer.stop();
-
-        msg_metadata = (metadata_t*)getMetadata( radio_msg );
-        ack_buf = (uint8_t *) ack_header;
-        length = ack_header->length;
-
-        msg_metadata->ack = TRUE;
-        msg_metadata->rssi = ack_buf[ length - 1 ];
-        msg_metadata->lqi = ack_buf[ length ] & 0x7f;
-        signalDone(SUCCESS);
-      }
-    }
-  }
-
-  void low_level_something_wrong() {
-    call SFLUSHTX.strobe();
-    call CaptureSFD.captureRisingEdge();
-    releaseSpiResource();
-  }
-
-  async event void RadioTimer.fired() {
-      switch( radio_state ) {
-
-      case S_ACK_WAIT:
-        signalDone( SUCCESS );
-        break;
-
-      case S_SFD:
-        // We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
-        // jiffies. Assume something is wrong.
-        low_level_something_wrong();
-        signalDone( ERETRY );
-        break;
-
-      default:
-        break;
-      }
-  }
+	if ( congestion ) {
+		signal RadioSend.sendDone(radio_msg, EBUSY);
+		releaseSpiResource();
+	} else {
+		radio_state = S_SFD;
+		call RadioTimer.start(CC2420_ABORT_PERIOD);
+	}
+}
 
 
+async command bool ByteIndicator.isReceiving() {
+	bool high;
+	high = sfdHigh;
+	return high;
+}
 
-  /**
-   * The CaptureSFD event is actually an interrupt from the capture pin
-   * which is connected to timing circuitry and timer modules.  This
-   * type of interrupt allows us to see what time (being some relative value)
-   * the event occurred, and lets us accurately timestamp our packets.  This
-   * allows higher levels in our system to synchronize with other nodes.
-   *
-   * Because the SFD events can occur so quickly, and the interrupts go
-   * in both directions, we set up the interrupt but check the SFD pin to
-   * determine if that interrupt condition has already been met - meaning,
-   * we should fall through and continue executing code where that interrupt
-   * would have picked up and executed had our microcontroller been fast enough.
-   */
-  async event void CaptureSFD.captured( uint16_t rtime ) {
-    uint32_t time32;
-    uint8_t sfd_state = 0;
-    cc2420_hdr_t* header = (cc2420_hdr_t*) ( radio_msg->data );
+async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
+	cc2420_hdr_t* ack_header;
+	cc2420_hdr_t* msg_header;
+	metadata_t* msg_metadata;
+	uint8_t* ack_buf;
+	uint8_t length;
 
-    atomic {
-      time32 = getTime32(rtime);
-      switch( radio_state ) {
+	if ( type == IEEE154_TYPE_ACK && radio_msg) {
+		ack_header = (cc2420_hdr_t*) (ack_msg->data);
+		msg_header = (cc2420_hdr_t*) (radio_msg->data);
 
-      case S_SFD:
-        radio_state = S_EFD;
-        sfdHigh = TRUE;
-        // in case we got stuck in the receive SFD interrupts, we can reset
-        // the state here since we know that we are not receiving anymore
-        m_receiving = FALSE;
-        call CaptureSFD.captureFallingEdge();
-        PacketTimeStampset(radio_msg, time32);
-        if (PacketTimeSyncOffsetisSet(radio_msg)) {
-           //uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t)+ PacketTimeSyncOffsetget(radio_msg);
-           uint8_t absOffset = PacketTimeSyncOffsetget(radio_msg);
-           timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
-           // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
-           *timesync  -= time32;
-           call CSN.clr();
-           call TXFIFO_RAM.write( absOffset, (uint8_t*)timesync, sizeof(timesync_radio_t) );
-           call CSN.set();
-           //restoring the event time to the original value
-           *timesync  += time32;
-        }
+		if ( radio_state == S_ACK_WAIT && msg_header->dsn == ack_header->dsn ) {
+			call RadioTimer.stop();
 
-        if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-          // This is an ack packet, don't release the chip's SPI bus lock.
-          abortSpiRelease = TRUE;
-        }
-        releaseSpiResource();
-        call RadioTimer.stop();
+			msg_metadata = (metadata_t*)getMetadata( radio_msg );
+			ack_buf = (uint8_t *) ack_header;
+			length = ack_header->length;
 
-        if ( call SFD.get() ) {
-          break;
-        }
-        /** Fall Through because the next interrupt was already received */
+			msg_metadata->ack = TRUE;
+			msg_metadata->rssi = ack_buf[ length - 1 ];
+			msg_metadata->lqi = ack_buf[ length ] & 0x7f;
+			signalDone(SUCCESS);
+		}
+	}
+}
 
-      case S_EFD:
-        sfdHigh = FALSE;
-        call CaptureSFD.captureRisingEdge();
+void low_level_something_wrong() {
+	call SFLUSHTX.strobe();
+	call CaptureSFD.captureRisingEdge();
+	releaseSpiResource();
+}
 
-        if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-          radio_state = S_ACK_WAIT;
-          call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
-        } else {
-          signalDone(SUCCESS);
-        }
+async event void RadioTimer.fired() {
+	switch( radio_state ) {
 
-        if ( !call SFD.get() ) {
-          break;
-        }
-        /** Fall Through because the next interrupt was already received */
+	case S_ACK_WAIT:
+		signalDone( SUCCESS );
+		break;
 
-      default:
-        /* this is the SFD for received messages */
-        if ( !m_receiving && sfdHigh == FALSE ) {
-          sfdHigh = TRUE;
-          call CaptureSFD.captureFallingEdge();
-          // safe the SFD pin status for later use
-          sfd_state = call SFD.get();
-          call CC2420Receive.sfd( time32 );
-          m_receiving = TRUE;
-          m_prev_time = rtime;
-          if ( call SFD.get() ) {
-            // wait for the next interrupt before moving on
-            return;
-          }
-          // if SFD.get() = 0, then an other interrupt happened since we
-          // reconfigured CaptureSFD! Fall through
-        }
+	case S_SFD:
+		// We didn't receive an SFD interrupt within CC2420_ABORT_PERIOD
+		// jiffies. Assume something is wrong.
+		low_level_something_wrong();
+		signalDone( ERETRY );
+		break;
 
-        if ( sfdHigh == TRUE ) {
-          sfdHigh = FALSE;
-          call CaptureSFD.captureRisingEdge();
-          m_receiving = FALSE;
-          /* if sfd_state is 1, then we fell through, but at the time of
-           * saving the time stamp the SFD was still high. Thus, the timestamp
-           * is valid.
-           * if the sfd_state is 0, then either we fell through and SFD
-           * was low while we safed the time stamp, or we didn't fall through.
-           * Thus, we check for the time between the two interrupts.
-           * FIXME: Why 10 tics? Seams like some magic number...
-           */
-          if ((sfd_state == 0) && (rtime - m_prev_time < 10) ) {
-            call CC2420Receive.sfd_dropped();
-            if (radio_msg)
-              PacketTimeStampclear(radio_msg);
-          }
-          break;
-        }
-      }
-    }
-  }
+	default:
+		break;
+	}
+}
+
+
+/**
+ * The CaptureSFD event is actually an interrupt from the capture pin
+ * which is connected to timing circuitry and timer modules.  This
+ * type of interrupt allows us to see what time (being some relative value)
+ * the event occurred, and lets us accurately timestamp our packets.  This
+ * allows higher levels in our system to synchronize with other nodes.
+ *
+ * Because the SFD events can occur so quickly, and the interrupts go
+ * in both directions, we set up the interrupt but check the SFD pin to
+ * determine if that interrupt condition has already been met - meaning,
+ * we should fall through and continue executing code where that interrupt
+ * would have picked up and executed had our microcontroller been fast enough.
+ */
+async event void CaptureSFD.captured( uint16_t rtime ) {
+	uint32_t time32;
+	uint8_t sfd_state = 0;
+	cc2420_hdr_t* header = (cc2420_hdr_t*) ( radio_msg->data );
+
+	atomic {
+		time32 = getTime32(rtime);
+		switch( radio_state ) {
+
+		case S_SFD:
+			radio_state = S_EFD;
+			sfdHigh = TRUE;
+			// in case we got stuck in the receive SFD interrupts, we can reset
+			// the state here since we know that we are not receiving anymore
+			m_receiving = FALSE;
+			call CaptureSFD.captureFallingEdge();
+			PacketTimeStampset(radio_msg, time32);
+			if (PacketTimeSyncOffsetisSet(radio_msg)) {
+			//uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t)+ PacketTimeSyncOffsetget(radio_msg);
+				uint8_t absOffset = PacketTimeSyncOffsetget(radio_msg);
+				timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
+				// set timesync event time as the offset between the 
+				// event time and the SFD interrupt time (TEP  133)
+				*timesync  -= time32;
+				call CSN.clr();
+				call TXFIFO_RAM.write( absOffset, (uint8_t*)timesync, sizeof(timesync_radio_t) );
+				call CSN.set();
+				//restoring the event time to the original value
+				*timesync  += time32;
+			}
+
+			if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+				// This is an ack packet, dont release the chips SPI bus lock.
+				abortSpiRelease = TRUE;
+			}
+			releaseSpiResource();
+			call RadioTimer.stop();
+
+			if ( call SFD.get() ) {
+				break;
+			}
+			/** Fall Through because the next interrupt was already received */
+
+		case S_EFD:
+			sfdHigh = FALSE;
+			call CaptureSFD.captureRisingEdge();
+
+			if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
+				radio_state = S_ACK_WAIT;
+				call RadioTimer.start( CC2420_ACK_WAIT_DELAY );
+			} else {
+				signalDone(SUCCESS);
+			}
+
+			if ( !call SFD.get() ) {
+				break;
+			}
+			/** Fall Through because the next interrupt was already received */
+
+		default:
+			/* this is the SFD for received messages */
+			if ( !m_receiving && sfdHigh == FALSE ) {
+				sfdHigh = TRUE;
+				call CaptureSFD.captureFallingEdge();
+				// safe the SFD pin status for later use
+				sfd_state = call SFD.get();
+				call CC2420Receive.sfd( time32 );
+				m_receiving = TRUE;
+				m_prev_time = rtime;
+				if ( call SFD.get() ) {
+					// wait for the next interrupt before moving on
+					return;
+				}
+				// if SFD.get() = 0, then an other interrupt happened since we
+				// reconfigured CaptureSFD! Fall through
+			}
+
+			if ( sfdHigh == TRUE ) {
+				sfdHigh = FALSE;
+				call CaptureSFD.captureRisingEdge();
+				m_receiving = FALSE;
+				/* if sfd_state is 1, then we fell through, but at the time of
+				 * saving the time stamp the SFD was still high. Thus, the timestamp
+				 * is valid.
+				 * if the sfd_state is 0, then either we fell through and SFD
+				 * was low while we safed the time stamp, or we didn't fall through.
+				 * Thus, we check for the time between the two interrupts.
+				 * FIXME: Why 10 tics? Seams like some magic number...
+				 */
+				if ((sfd_state == 0) && (rtime - m_prev_time < 10) ) {
+					call CC2420Receive.sfd_dropped();
+					if (radio_msg)
+						PacketTimeStampclear(radio_msg);
+				}
+				break;
+			}
+		}
+	}
+}
 
 
 
-  /**
-   * Setup the packet transmission power and load the tx fifo buffer on
-   * the chip with our outbound packet.
-   *
-   * Warning: the tx_power metadata might not be initialized and
-   * could be a value other than 0 on boot.  Verification is needed here
-   * to make sure the value won't overstep its bounds in the TXCTRL register
-   * and is transmitting at max power by default.
-   *
-   * It should be possible to manually calculate the packet's CRC here and
-   * tack it onto the end of the header + payload when loading into the TXFIFO,
-   * so the continuous modulation low power listening strategy will continually
-   * deliver valid packets.  This would increase receive reliability for
-   * mobile nodes and lossy connections.  The crcByte() function should use
-   * the same CRC polynomial as the CC2420's AUTOCRC functionality.
-   */
-  void loadTXFIFO() {
-    cc2420_hdr_t* header = (cc2420_hdr_t*) ( radio_msg->data );
-    metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
-    uint8_t tx_power = meta->tx_power;
+/**
+ * Setup the packet transmission power and load the tx fifo buffer on
+ * the chip with our outbound packet.
+ *
+ * Warning: the tx_power metadata might not be initialized and
+ * could be a value other than 0 on boot.  Verification is needed here
+ * to make sure the value won't overstep its bounds in the TXCTRL register
+ * and is transmitting at max power by default.
+ *
+ * It should be possible to manually calculate the packet's CRC here and
+ * tack it onto the end of the header + payload when loading into the TXFIFO,
+ * so the continuous modulation low power listening strategy will continually
+ * deliver valid packets.  This would increase receive reliability for
+ * mobile nodes and lossy connections.  The crcByte() function should use
+ * the same CRC polynomial as the CC2420's AUTOCRC functionality.
+ */
+void loadTXFIFO() {
+	cc2420_hdr_t* header = (cc2420_hdr_t*) ( radio_msg->data );
+	metadata_t* meta = (metadata_t*) getMetadata( radio_msg );
+	uint8_t tx_power = meta->tx_power;
 
-    if ( !tx_power ) {
-      tx_power = param_tx_power;
-    }
+	if ( !tx_power ) {
+		tx_power = param_tx_power;
+	}
 
-    call CSN.clr();
+	call CSN.clr();
 
-    if ( m_tx_power != tx_power ) {
-      call TXCTRL.write( ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
-                         ( 3 << CC2420_TXCTRL_PA_CURRENT ) |
-                         ( 1 << CC2420_TXCTRL_RESERVED ) |
-                         ( (tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
-    }
+	if ( m_tx_power != tx_power ) {
+		call TXCTRL.write( ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
+			( 3 << CC2420_TXCTRL_PA_CURRENT ) |
+			( 1 << CC2420_TXCTRL_RESERVED ) |
+			( (tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
+	}
 
-    m_tx_power = tx_power;
+	m_tx_power = tx_power;
 
-    {
-      uint8_t tmpLen __DEPUTY_UNUSED__ = header->length - 1;
-      call TXFIFO.write(TCAST(uint8_t * COUNT(tmpLen), header), header->length - 1);
-    }
-  }
+	{
+		uint8_t tmpLen __DEPUTY_UNUSED__ = header->length - 1;
+		call TXFIFO.write(TCAST(uint8_t * COUNT(tmpLen), header), header->length - 1);
+	}
+}
 
 
 async command error_t RadioBuffer.load(message_t* msg) {
