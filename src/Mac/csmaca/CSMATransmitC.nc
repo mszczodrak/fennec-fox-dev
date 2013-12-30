@@ -16,6 +16,12 @@ uses interface csmacaMacParams;
 uses interface RadioPower;
 uses interface Resource as RadioResource;
 uses interface RadioCCA;
+
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
+
 }
 
 implementation {
@@ -47,4 +53,10 @@ RadioResource = CSMATransmitP.RadioResource;
 
 components new StateC();
 CSMATransmitP.SplitControlState -> StateC;
+
+PacketTransmitPower = CSMATransmitP.PacketTransmitPower;
+PacketRSSI = CSMATransmitP.PacketRSSI;
+PacketTimeSyncOffset = CSMATransmitP.PacketTimeSyncOffset;
+PacketLinkQuality = CSMATransmitP.PacketLinkQuality;
+
 }

@@ -52,6 +52,12 @@ uses interface RadioPacket;
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
+
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
+
 uses interface RadioCCA;
 
 uses interface RadioState;
@@ -112,6 +118,12 @@ EnergyIndicator = LplC.EnergyIndicator;
 ByteIndicator = LplC.ByteIndicator;
 RadioCCA = LplC.RadioCCA;
 
+PacketTransmitPower = LplC.PacketTransmitPower;
+PacketRSSI = LplC.PacketRSSI;
+PacketTimeSyncOffset = LplC.PacketTimeSyncOffset;
+PacketLinkQuality = LplC.PacketLinkQuality;
+
+
 csmacaMacParams = LplC.csmacaMacParams;
 csmacaMacParams = CSMATransmitC.csmacaMacParams;
 
@@ -126,6 +138,11 @@ RadioSend = CSMATransmitC.RadioSend;
 RadioPacket = CSMATransmitC.RadioPacket;
 EnergyIndicator = CSMATransmitC.EnergyIndicator;
 RadioCCA = CSMATransmitC.RadioCCA;
+PacketTransmitPower = CSMATransmitC.PacketTransmitPower;
+PacketRSSI = CSMATransmitC.PacketRSSI;
+PacketTimeSyncOffset = CSMATransmitC.PacketTimeSyncOffset;
+PacketLinkQuality = CSMATransmitC.PacketLinkQuality;
+
 LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
 RadioControl = CSMATransmitC.RadioControl;
 }

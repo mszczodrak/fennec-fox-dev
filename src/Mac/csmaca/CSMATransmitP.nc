@@ -21,6 +21,12 @@ uses interface Random;
 uses interface State as SplitControlState;
 uses interface RadioPower;
 uses interface Resource as RadioResource;
+
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
+
 }
 
 implementation {
