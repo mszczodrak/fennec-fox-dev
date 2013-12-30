@@ -290,43 +290,43 @@ void congestionBackoff(message_t *msg) {
 	}
 }
 
-  /**
-   * Resend a packet that already exists in the outbound tx buffer on the
-   * chip
-   * @param cca TRUE if this transmit should use clear channel assessment
-   */
-  command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
-    if (m_msg != msg) {
-      return FAIL;
-    }
+/**
+ * Resend a packet that already exists in the outbound tx buffer on the
+ * chip
+ * @param cca TRUE if this transmit should use clear channel assessment
+ */
+command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
+	if (m_msg != msg) {
+		return FAIL;
+	}
 
-    if (m_state == S_CANCEL) {
-      return ECANCEL;
-    }
+	if (m_state == S_CANCEL) {
+		return ECANCEL;
+	}
 
-    if ( m_state != S_STARTED ) {
-      return FAIL;
-    }
+	if ( m_state != S_STARTED ) {
+		return FAIL;
+	}
 
-    m_cca = useCca;
-    m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
-    totalCcaChecks = 0;
+	m_cca = useCca;
+	m_state = useCca ? S_SAMPLE_CCA : S_BEGIN_TRANSMIT;
+	totalCcaChecks = 0;
 
-    if(m_cca) {
-      requestInitialBackoff(m_msg);
-      if (myInitialBackoff) {
-        call BackoffTimer.start( myInitialBackoff );
-      } else {
-        signal BackoffTimer.fired();
-      }
-    } else {
-      if (call RadioSend.send(m_msg, useCca) != SUCCESS) {
-        signal RadioSend.sendDone(m_msg, FAIL);
-        return FAIL;
-      }
-    }
-    return SUCCESS;
-  }
+	if(m_cca) {
+		requestInitialBackoff(m_msg);
+		if (myInitialBackoff) {
+			call BackoffTimer.start( myInitialBackoff );
+		} else {
+			signal BackoffTimer.fired();
+		}
+	} else {
+		if (call RadioSend.send(m_msg, useCca) != SUCCESS) {
+			signal RadioSend.sendDone(m_msg, FAIL);
+			return FAIL;
+		}
+	}
+	return SUCCESS;
+}
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d)", msg, error);
@@ -341,7 +341,6 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	}
 
 	if ( m_state == S_CANCEL ) {
-		call RadioSend.cancel(msg);
 		sendDoneErr = ECANCEL;
 		post signalSendDone();
 	} else if ( !m_cca ) {
@@ -378,54 +377,57 @@ async event void BackoffTimer.fired() {
 		return;
 	}
 
-    switch( m_state ) {
+	switch( m_state ) {
         
-    case S_SAMPLE_CCA : 
-      // sample CCA and wait a little longer if free, just in case we
-      // sampled during the ack turn-around window
-      if ( !call EnergyIndicator.isReceiving() ) {
-        m_state = S_BEGIN_TRANSMIT;
-        call BackoffTimer.start( TIME_ACK_TURNAROUND );    
-      } else {
-        congestionBackoff(m_msg);
-      }
-      break;
+	case S_SAMPLE_CCA : 
+		// sample CCA and wait a little longer if free, just in case we
+		// sampled during the ack turn-around window
+		if ( !call EnergyIndicator.isReceiving() ) {
+			m_state = S_BEGIN_TRANSMIT;
+			call BackoffTimer.start( TIME_ACK_TURNAROUND );    
+		} else {
+			congestionBackoff(m_msg);
+		}
+		break;
         
-    case S_BEGIN_TRANSMIT:
-      if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
-        signal RadioSend.sendDone(m_msg, FAIL);
-      }
-      break;
+	case S_BEGIN_TRANSMIT:
+		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
+			signal RadioSend.sendDone(m_msg, FAIL);
+		}
+		break;
 
-    case S_CANCEL:
-      call RadioSend.cancel(m_msg);
-      m_state = S_STARTED;
-      sendDoneErr = ECANCEL;
-      post signalSendDone();
-      break;
+	case S_CANCEL:
+		m_state = S_STARTED;
+		sendDoneErr = ECANCEL;
+		post signalSendDone();
+		break;
         
-    default:
-      break;
-    }
-  }
+	default:
+		break;
+	}
+}
       
 async event void RadioSend.sendDone(message_t *msg, error_t error) {
 	dbg("Mac", "csmaMac CSMATransmitP RadioSend.sendDone(0x%1x, %d)", msg, error);
-    if (m_state == S_CANCEL){
-      sendDoneErr = ECANCEL;
-      post signalSendDone();
-    } else {
-      if (error == EBUSY) {
-        m_state = S_SAMPLE_CCA;
-        totalCcaChecks = 0;
-        congestionBackoff(m_msg);
-      } else {
-        call BackoffTimer.stop();
-        sendDoneErr = error;
-        post signalSendDone();
-      }
-    }
-  }
+	if (m_state == S_CANCEL){
+		sendDoneErr = ECANCEL;
+		post signalSendDone();
+	} else {
+		if (error == EBUSY) {
+			m_state = S_SAMPLE_CCA;
+			totalCcaChecks = 0;
+			congestionBackoff(m_msg);
+		} else {
+			call BackoffTimer.stop();
+			sendDoneErr = error;
+			post signalSendDone();
+		}
+	}
+}
+
+async event void RadioSend.ready() {
+
+}
 
 event void RadioControl.startDone( error_t err) {
 	dbg("Mac", "csmaMac CSMATransmitP RadioControl.startDone(%d)", err);

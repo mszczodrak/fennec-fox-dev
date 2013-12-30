@@ -459,6 +459,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	return SUCCESS;
 }
 
+/*
 async command error_t RadioSend.cancel(message_t *msg) {
 	call CSN.clr();
 	call SFLUSHTX.strobe();
@@ -467,6 +468,7 @@ async command error_t RadioSend.cancel(message_t *msg) {
 	radio_state = S_STARTED;
 	return SUCCESS;
 }
+*/
 
 /* Radio Packet */
 
