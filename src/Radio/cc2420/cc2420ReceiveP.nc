@@ -34,7 +34,7 @@ uses interface CC2420Strobe as SNOP;
 
 uses interface Leds;
 
-uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 }
 

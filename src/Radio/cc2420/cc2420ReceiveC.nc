@@ -45,7 +45,7 @@ provides interface ReceiveIndicator as PacketIndicator;
 
 uses interface RadioConfig;
 uses interface RadioPacket;
-uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 }
 
@@ -65,27 +65,27 @@ CC2420Receive = cc2420ReceiveP;
 RadioReceive = cc2420ReceiveP;
 PacketIndicator = cc2420ReceiveP.PacketIndicator;
 RadioPacket = cc2420ReceiveP.RadioPacket;
-PacketTransmitPower = cc2420ReceiveP.PacketTransmitPower;
+PacketTimeSyncOffset = cc2420ReceiveP.PacketTimeSyncOffset;
 
 MainC.SoftwareInit -> cc2420ReceiveP;
   
-  cc2420ReceiveP.CSN -> Pins.CSN;
-  cc2420ReceiveP.FIFO -> Pins.FIFO;
-  cc2420ReceiveP.FIFOP -> Pins.FIFOP;
-  cc2420ReceiveP.InterruptFIFOP -> InterruptsC.InterruptFIFOP;
-  cc2420ReceiveP.SpiResource -> Spi;
-  cc2420ReceiveP.RXFIFO -> Spi.RXFIFO;
-  cc2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
-  cc2420ReceiveP.SACK -> Spi.SACK;
-  RadioConfig = cc2420ReceiveP.RadioConfig;
+cc2420ReceiveP.CSN -> Pins.CSN;
+cc2420ReceiveP.FIFO -> Pins.FIFO;
+cc2420ReceiveP.FIFOP -> Pins.FIFOP;
+cc2420ReceiveP.InterruptFIFOP -> InterruptsC.InterruptFIFOP;
+cc2420ReceiveP.SpiResource -> Spi;
+cc2420ReceiveP.RXFIFO -> Spi.RXFIFO;
+cc2420ReceiveP.SFLUSHRX -> Spi.SFLUSHRX;
+cc2420ReceiveP.SACK -> Spi.SACK;
+RadioConfig = cc2420ReceiveP.RadioConfig;
 
-  cc2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
-  cc2420ReceiveP.SECCTRL1 -> Spi.SECCTRL1;
-  cc2420ReceiveP.SRXDEC -> Spi.SRXDEC;
-  cc2420ReceiveP.RXNONCE -> Spi.RXNONCE;
-  cc2420ReceiveP.KEY0 -> Spi.KEY0;
-  cc2420ReceiveP.KEY1 -> Spi.KEY1;
-  cc2420ReceiveP.RXFIFO_RAM -> Spi.RXFIFO_RAM;
-  cc2420ReceiveP.SNOP -> Spi.SNOP;
+cc2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
+cc2420ReceiveP.SECCTRL1 -> Spi.SECCTRL1;
+cc2420ReceiveP.SRXDEC -> Spi.SRXDEC;
+cc2420ReceiveP.RXNONCE -> Spi.RXNONCE;
+cc2420ReceiveP.KEY0 -> Spi.KEY0;
+cc2420ReceiveP.KEY1 -> Spi.KEY1;
+cc2420ReceiveP.RXFIFO_RAM -> Spi.RXFIFO_RAM;
+cc2420ReceiveP.SNOP -> Spi.SNOP;
 
 }
