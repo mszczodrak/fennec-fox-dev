@@ -121,17 +121,15 @@ bool hasSeen(uint16_t msgSource, uint8_t msgDsn) {
 
 	atomic {
 		for(i = 0; i < RECEIVE_HISTORY_SIZE; i++) {
-        if(receivedMessages[i].source == msgSource) {
-          if(receivedMessages[i].dsn == msgDsn) {
-            // Only exit this loop if we found a duplicate packet
-            return TRUE;
-          }
-          
-          recycleSourceElement = i;
-        }
-      }
-    }
-      
+			if(receivedMessages[i].source == msgSource) {
+				if(receivedMessages[i].dsn == msgDsn) {
+					// Only exit this loop if we found a duplicate packet
+					return TRUE;
+				}
+				recycleSourceElement = i;
+			}
+		}
+	}
 	return FALSE;
 }
   
@@ -142,23 +140,22 @@ bool hasSeen(uint16_t msgSource, uint8_t msgDsn) {
  * insert it into the "writeIndex" location.
  */
 void insert(uint16_t msgSource, uint8_t msgDsn) {
-    uint8_t element = recycleSourceElement;
-    bool increment = FALSE;
+	uint8_t element = recycleSourceElement;
+	bool increment = FALSE;
    
-    atomic {
-      if(element == INVALID_ELEMENT || writeIndex == element) {
-        // Use the writeIndex element to insert this new message into
-        element = writeIndex;
-        increment = TRUE;
-      }
-
-      receivedMessages[element].source = msgSource;
-      receivedMessages[element].dsn = msgDsn;
-      if(increment) {
-        writeIndex++;
-        writeIndex %= RECEIVE_HISTORY_SIZE;
-      }
-    }
+	atomic {
+		if(element == INVALID_ELEMENT || writeIndex == element) {
+			// Use the writeIndex element to insert this new message into
+			element = writeIndex;
+			increment = TRUE;
+		}
+		receivedMessages[element].source = msgSource;
+		receivedMessages[element].dsn = msgDsn;
+		if(increment) {
+			writeIndex++;
+			writeIndex %= RECEIVE_HISTORY_SIZE;
+		}
+	}
 }
 
 /**
