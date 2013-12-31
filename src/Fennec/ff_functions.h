@@ -37,12 +37,6 @@ metadata_t* getMetadata( message_t* msg ) @C() {
 }
 
 
-void PacketTimeStampclear(message_t* msg);
-void PacketTimeStampset(message_t* msg, uint32_t value);
-bool PacketTimeSyncOffsetisSet(message_t* msg);
-
-uint8_t PacketTimeSyncOffsetget(message_t* msg);
-
 uint32_t gcdr (uint32_t a, uint32_t b )@C() {
         if ( a==0 ) return b;
         return gcdr ( b%a, a );

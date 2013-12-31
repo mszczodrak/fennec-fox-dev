@@ -79,7 +79,23 @@ enum {
 	CC2420_ABORT_PERIOD = 320
 };
 
-  
+
+
+enum {
+        MAC_HEADER_SIZE = sizeof( fennec_header_t ) - 1,
+        MAC_FOOTER_SIZE = sizeof( uint16_t )
+
+};
+
+
+uint8_t PacketTimeSyncOffsetget(message_t* msg) {
+    fennec_header_t *header = (fennec_header_t*) msg->data;
+    return header->length
+            + (sizeof(fennec_header_t) - MAC_HEADER_SIZE)
+            - MAC_FOOTER_SIZE
+            - sizeof(timesync_radio_t);
+}
+
 void low_level_init() {
 	call CCA.makeInput();
 	call CSN.makeOutput();

@@ -46,8 +46,6 @@ FennecP.Leds -> LedsC;
 components RegistryC;
 FennecP.Registry -> RegistryC;
 
-components FennecPacketC;
-
 //#ifdef __DBGS__
 components FennecSerialDbgC;
 FennecP.DbgSerial -> FennecSerialDbgC;
