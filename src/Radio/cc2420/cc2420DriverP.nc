@@ -80,22 +80,6 @@ enum {
 };
 
 
-
-enum {
-        MAC_HEADER_SIZE = sizeof( fennec_header_t ) - 1,
-        MAC_FOOTER_SIZE = sizeof( uint16_t )
-
-};
-
-
-uint8_t PacketTimeSyncOffsetget(message_t* msg) {
-    fennec_header_t *header = (fennec_header_t*) msg->data;
-    return header->length
-            + (sizeof(fennec_header_t) - MAC_HEADER_SIZE)
-            - MAC_FOOTER_SIZE
-            - sizeof(timesync_radio_t);
-}
-
 void low_level_init() {
 	call CCA.makeInput();
 	call CSN.makeOutput();
@@ -313,8 +297,8 @@ async event void CaptureSFD.captured( uint16_t rtime ) {
 			call CaptureSFD.captureFallingEdge();
 			call PacketTimeSyncOffset.set(radio_msg, time32);
 			if (call PacketTimeSyncOffset.isSet(radio_msg)) {
-			//uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t)+ PacketTimeSyncOffsetget(radio_msg);
-				uint8_t absOffset = PacketTimeSyncOffsetget(radio_msg);
+			//uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t) + call PacketTimeSyncOffset.get(radio_msg);
+				uint8_t absOffset = call PacketTimeSyncOffset.get(radio_msg);
 				timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
 				// set timesync event time as the offset between the 
 				// event time and the SFD interrupt time (TEP  133)
@@ -489,7 +473,7 @@ async command error_t RadioSend.cancel(message_t *msg) {
 /* Radio Packet */
 
 async command uint8_t RadioPacket.maxPayloadLength() {
-	return CC2420_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC;
+	return CC2420_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 
@@ -499,12 +483,12 @@ async command uint8_t RadioPacket.headerLength(message_t* msg) {
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*)(msg->data); 
-	return hdr->length - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC;
+	return hdr->length - sizeof(nx_struct cc2420_radio_header_t) - CC2420_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
 	nx_struct cc2420_radio_header_t *hdr = (nx_struct cc2420_radio_header_t*)(msg->data); 
-	hdr->length = length + sizeof(nx_struct cc2420_radio_header_t) + CC2420_SIZEOF_CRC;
+	hdr->length = length + sizeof(nx_struct cc2420_radio_header_t) + CC2420_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.metadataLength(message_t* msg) {
