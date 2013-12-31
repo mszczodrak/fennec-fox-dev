@@ -558,9 +558,6 @@ async command error_t RadioCCA.request() {
 }
 
 
-
-
-
 async command bool PacketTransmitPower.isSet(message_t* msg) {
 	return getMetadata(msg)->flags & (1<<1);
 }
