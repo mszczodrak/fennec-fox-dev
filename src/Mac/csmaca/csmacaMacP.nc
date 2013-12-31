@@ -317,14 +317,11 @@ command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 	}
 }
 
-
 /***************** SubSend Events ****************/
 event void SubSend.sendDone(message_t* msg, error_t result) {
 	dbg("Mac", "csmaMac SubSend.sendDone(0x%1x, %d)", msg, result);
 	signal MacAMSend.sendDone(msg, result);
 }
-
-
 
 /***************** SubReceive Events ****************/
 event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
