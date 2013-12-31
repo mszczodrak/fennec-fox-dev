@@ -63,7 +63,12 @@ uses interface State as SplitControlState;
 
 uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
+uses interface RadioCCA;
 
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
 }
 
 implementation {
@@ -99,6 +104,11 @@ task void stopDone_task() {
 void shutdown() {
 	m_state = S_STOPPED;
 	post stopDone_task();
+}
+
+fennec_header_t* getHeader(message_t *m) {
+	uint8_t *p = (uint8_t*)(m->data);
+	return (fennec_header_t*)(p + call RadioPacket.headerLength(m));
 }
 
 error_t SplitControl_start() {
@@ -167,7 +177,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	dbg("Mac", "nullMac MacAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
-	header = (fennec_header_t*)call RadioPacket.getPayload( msg, len);
+	header = getHeader(msg);
 	metadata = (metadata_t*) msg->metadata;
 	call MacAMPacket.setGroup(msg, msg->conf);
 
@@ -226,7 +236,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 command error_t MacAMSend.cancel(message_t* msg) {
 	dbg("Mac", "nullMac MacAMSend.cancel(0x%1x)", msg);
-	return call RadioSend.cancel(msg);
+	m_state = S_STARTED;
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
@@ -241,13 +251,13 @@ command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
 
 /***************** PacketAcknowledgement Commands ****************/
 async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(p_msg, sizeof(fennec_header_t));
+	fennec_header_t* header = getHeader(p_msg);
 	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
 	return SUCCESS;
 }
 
 async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(p_msg, sizeof(fennec_header_t));
+	fennec_header_t* header = getHeader(p_msg);
 	header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	return SUCCESS;
 }
@@ -278,23 +288,19 @@ command am_addr_t MacAMPacket.address() {
 }
 
 command am_addr_t MacAMPacket.destination(message_t* amsg) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
-	return header->dest;
+	return getHeader(amsg)->dest;
 }
 
 command am_addr_t MacAMPacket.source(message_t* amsg) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
-	return header->src;
+	return getHeader(amsg)->src;
 }
 
 command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
-	header->dest = addr;
+	getHeader(amsg)->dest = addr;
 }
 
 command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
-	header->src = addr;
+	getHeader(amsg)->src = addr;
 }
 
 command bool MacAMPacket.isForMe(message_t* amsg) {
@@ -310,14 +316,12 @@ command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
 }
 
 command am_group_t MacAMPacket.group(message_t* amsg) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
-	return header->destpan;
+	return getHeader(amsg)->destpan;
 }
 
 command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	getHeader(amsg)->destpan = grp;
 	// Overridden intentionally when we send()
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(amsg, sizeof(fennec_header_t));
-	header->destpan = grp;
 }
 
 command am_group_t MacAMPacket.localGroup() {
@@ -328,29 +332,24 @@ command am_group_t MacAMPacket.localGroup() {
 
 /***************** Packet Commands ****************/
 command void MacPacket.clear(message_t* msg) {
-	metadata_t* metadata = (metadata_t*) msg->metadata;
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-	memset(header, 0x0, sizeof(fennec_header_t));
-	memset(metadata, 0x0, sizeof(metadata_t));
+	call RadioPacket.clear(msg);
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-	return header->length - sizeof(fennec_header_t);
+	return call RadioPacket.payloadLength(msg) - sizeof(fennec_header_t);
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	fennec_header_t* header = (fennec_header_t*)call RadioPacket.getPayload(msg, sizeof(fennec_header_t));
-	header->length  = len + sizeof(fennec_header_t);
+	call RadioPacket.setPayloadLength(msg, len + sizeof(fennec_header_t));
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
-	return (call RadioPacket.maxPayloadLength() - sizeof(fennec_header_t));
+	return call RadioPacket.maxPayloadLength() - sizeof(fennec_header_t);
 }
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 	if (len <= call MacPacket.maxPayloadLength()) {
-		uint8_t *p = call RadioPacket.getPayload(msg, len);
+		uint8_t *p = (uint8_t*) getHeader(msg);
 		return (p + sizeof(fennec_header_t));
 	} else {
 		return NULL;
@@ -368,7 +367,9 @@ task void sendDone_task() {
 	signal MacAMSend.sendDone( m_msg, packetErr );
 }
 
-event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len) {
+async event message_t* RadioReceive.receive(message_t* msg) {
+	uint8_t len = call RadioPacket.payloadLength(msg);
+	void* payload = (void*) getHeader(msg);
 	metadata_t* metadata = (metadata_t*) msg->metadata;
 	uint8_t *ptr = (uint8_t*) payload;
 	
@@ -420,6 +421,18 @@ event void RadioState.done() {}
 
 async command bool MacLinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return call RadioLinkPacketMetadata.highChannelQuality(msg);
+}
+
+async event void RadioSend.ready() {
+
+}
+
+async event void RadioCCA.done(error_t err) {
+
+}
+
+async event bool RadioReceive.header(message_t* msg) {
+        return TRUE;
 }
 
 

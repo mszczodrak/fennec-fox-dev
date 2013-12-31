@@ -90,7 +90,7 @@ RadioReceive = nullMacP.RadioReceive;
 
 RadioState = nullMacP.RadioState;
 RadioLinkPacketMetadata = nullMacP.RadioLinkPacketMetadata;
-
+RadioCCA = nullMacP.RadioCCA;
 
 EnergyIndicator = nullMacP.EnergyIndicator;
 ByteIndicator = nullMacP.ByteIndicator;
@@ -100,5 +100,11 @@ components RandomC;
 nullMacP.Random -> RandomC;
 components new StateC();
 nullMacP.SplitControlState -> StateC;
+
+PacketTransmitPower = nullMacP.PacketTransmitPower;
+PacketRSSI = nullMacP.PacketRSSI;
+PacketTimeSyncOffset = nullMacP.PacketTimeSyncOffset;
+PacketLinkQuality = nullMacP.PacketLinkQuality;
+
 }
 
