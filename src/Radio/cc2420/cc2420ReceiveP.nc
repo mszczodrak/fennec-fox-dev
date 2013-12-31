@@ -258,16 +258,16 @@ implementation {
       if ( ( m_missed_packets && call FIFO.get() ) || !call FIFOP.get()
             || !m_timestamp_size
             || rxFrameLength <= 10) {
-        PacketTimeStampclear(m_p_rx_buf);
+        call PacketTimeSyncOffset.clear(m_p_rx_buf);
       }
       else {
           if (m_timestamp_size==1)
-            PacketTimeStampset(m_p_rx_buf, m_timestamp_queue[ m_timestamp_head ]);
+            call PacketTimeSyncOffset.set(m_p_rx_buf, m_timestamp_queue[ m_timestamp_head ]);
           m_timestamp_head = ( m_timestamp_head + 1 ) % TIMESTAMP_QUEUE_SIZE;
           m_timestamp_size--;
 
           if (m_timestamp_size>0) {
-            PacketTimeStampclear(m_p_rx_buf);
+            call PacketTimeSyncOffset.clear(m_p_rx_buf);
             m_timestamp_head = 0;
             m_timestamp_size = 0;
           }

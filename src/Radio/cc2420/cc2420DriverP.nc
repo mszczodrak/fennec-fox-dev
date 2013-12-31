@@ -295,8 +295,8 @@ async event void CaptureSFD.captured( uint16_t rtime ) {
 			// the state here since we know that we are not receiving anymore
 			m_receiving = FALSE;
 			call CaptureSFD.captureFallingEdge();
-			PacketTimeStampset(radio_msg, time32);
-			if (PacketTimeSyncOffsetisSet(radio_msg)) {
+			call PacketTimeSyncOffset.set(radio_msg, time32);
+			if (call PacketTimeSyncOffset.isSet(radio_msg)) {
 			//uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t)+ PacketTimeSyncOffsetget(radio_msg);
 				uint8_t absOffset = PacketTimeSyncOffsetget(radio_msg);
 				timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
@@ -371,7 +371,7 @@ async event void CaptureSFD.captured( uint16_t rtime ) {
 				if ((sfd_state == 0) && (rtime - m_prev_time < 10) ) {
 					call CC2420Receive.sfd_dropped();
 					if (radio_msg)
-						PacketTimeStampclear(radio_msg);
+						call PacketTimeSyncOffset.clear(radio_msg);
 				}
 				break;
 			}
