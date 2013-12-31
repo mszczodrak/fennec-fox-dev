@@ -49,7 +49,7 @@ enum {
         CC2420_MAX_MESSAGE_SIZE        	= 128,
 	CC2420_MAX_FAILED_LOADS		= 3,
 	CC2420_FOOTER			= 2,
-	CC2420_SIZEOF_CRC		= 1,
+	CC2420_SIZEOF_CRC		= 2,
 };
 
 #endif
