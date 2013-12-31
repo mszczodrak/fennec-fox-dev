@@ -15,7 +15,7 @@ provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
-provides interface LinkPacketMetadata;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 uses interface cc2420RadioParams;
 }
@@ -38,7 +38,7 @@ PacketRSSI = cc2420DriverP.PacketRSSI;
 PacketTimeSyncOffset = cc2420DriverP.PacketTimeSyncOffset;
 PacketLinkQuality = cc2420DriverP.PacketLinkQuality;
 
-LinkPacketMetadata = cc2420DriverP.LinkPacketMetadata;
+RadioLinkPacketMetadata = cc2420DriverP.RadioLinkPacketMetadata;
 
 components MainC;
 MainC.SoftwareInit -> cc2420DriverP;

@@ -44,7 +44,7 @@ uses interface cc2420RadioParams;
 provides interface RadioSend;
 provides interface RadioBuffer;
 provides interface RadioPacket;
-provides interface LinkPacketMetadata;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
 uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
@@ -537,7 +537,7 @@ async event void TXFIFO.readDone( uint8_t* tx_buf, uint8_t tx_len, error_t error
 }
 
 
-async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
+async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return call PacketLinkQuality.get(msg) > 105;
 }
 

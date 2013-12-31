@@ -27,7 +27,7 @@
 
 configuration nullRadioC {
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
+provides interface RadioReceive;
 
 uses interface nullRadioParams;
 
@@ -44,11 +44,14 @@ provides interface ReceiveIndicator as PacketIndicator;
 provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
 
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+
 provides interface RadioState;
-provides interface LinkPacketMetadata;
-
-
-
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
 }
 
 implementation {
@@ -72,7 +75,14 @@ RadioPacket = nullRadioP.RadioPacket;
 RadioSend = nullRadioP.RadioSend;
 
 RadioState = nullRadioP.RadioState;
-LinkPacketMetadata = nullRadioP.LinkPacketMetadata;
+RadioLinkPacketMetadata = nullRadioP.RadioLinkPacketMetadata;
+RadioCCA = nullRadioP.RadioCCA;
+
+PacketTransmitPower = nullRadioP.PacketTransmitPower;
+PacketRSSI = nullRadioP.PacketRSSI;
+PacketTimeSyncOffset = nullRadioP.PacketTimeSyncOffset;
+PacketLinkQuality = nullRadioP.PacketLinkQuality;
+
 
 
 }

@@ -35,6 +35,7 @@ provides interface Receive as MacSnoop;
 provides interface AMPacket as MacAMPacket;
 provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface csmacaMacParams;
 
@@ -61,7 +62,7 @@ uses interface PacketField<uint8_t> as PacketLinkQuality;
 uses interface RadioCCA;
 
 uses interface RadioState;
-uses interface LinkPacketMetadata;
+uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 }
 
 implementation {
@@ -75,6 +76,7 @@ MacSnoop = csmacaMacP.MacSnoop;
 MacPacket = csmacaMacP.MacPacket;
 MacAMPacket = csmacaMacP.MacAMPacket;
 MacPacketAcknowledgements = csmacaMacP.MacPacketAcknowledgements;
+MacLinkPacketMetadata = csmacaMacP.MacLinkPacketMetadata;
 csmacaMacParams = csmacaMacP;
 
 RadioConfig = csmacaMacP.RadioConfig;
@@ -85,7 +87,7 @@ RadioPacket = csmacaMacP.RadioPacket;
 
 
 RadioState = csmacaMacP.RadioState;
-LinkPacketMetadata = csmacaMacP.LinkPacketMetadata;
+RadioLinkPacketMetadata = csmacaMacP.RadioLinkPacketMetadata;
 
 components CSMATransmitC;
 RadioPower = CSMATransmitC.RadioPower;

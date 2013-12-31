@@ -35,9 +35,10 @@ provides interface Receive as MacSnoop;
 provides interface AMPacket as MacAMPacket;
 provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface LinkPacketMetadata;
 
 uses interface nullMacParams;
-uses interface Receive as RadioReceive;
+uses interface RadioReceive;
 
 uses interface RadioConfig;
 uses interface RadioPower;
@@ -52,8 +53,14 @@ uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
 
+uses interface PacketField<uint8_t> as PacketTransmitPower;
+uses interface PacketField<uint8_t> as PacketRSSI;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketLinkQuality;
+
+uses interface RadioCCA;
 uses interface RadioState;
-uses interface LinkPacketMetadata;
+uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 }
 
@@ -67,6 +74,7 @@ MacSnoop = nullMacP.MacSnoop;
 MacPacket = nullMacP.MacPacket;
 MacAMPacket = nullMacP.MacAMPacket;
 MacPacketAcknowledgements = nullMacP.MacPacketAcknowledgements;
+MacLinkPacketMetadata = nullMacP.MacLinkPacketMetadata;
 
 nullMacParams = nullMacP;
 
@@ -81,7 +89,7 @@ RadioControl = nullMacP.RadioControl;
 RadioReceive = nullMacP.RadioReceive;
 
 RadioState = nullMacP.RadioState;
-LinkPacketMetadata = nullMacP.LinkPacketMetadata;
+RadioLinkPacketMetadata = nullMacP.RadioLinkPacketMetadata;
 
 
 EnergyIndicator = nullMacP.EnergyIndicator;

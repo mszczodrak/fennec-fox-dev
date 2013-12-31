@@ -40,6 +40,7 @@ provides interface Packet as MacPacket;
 provides interface AMPacket as MacAMPacket;
 
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface csmacaMacParams;
 
@@ -52,7 +53,7 @@ uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
 
 uses interface RadioState;
-uses interface LinkPacketMetadata;
+uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 
 uses interface Send as SubSend;
@@ -351,6 +352,11 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 }
 
 event void RadioState.done() {}
+
+async command bool MacLinkPacketMetadata.highChannelQuality(message_t* msg) {
+	return call RadioLinkPacketMetadata.highChannelQuality(msg);
+}
+
 
 
 }

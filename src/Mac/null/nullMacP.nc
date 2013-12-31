@@ -38,6 +38,7 @@ provides interface Receive as MacSnoop;
 provides interface Packet as MacPacket;
 provides interface AMPacket as MacAMPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface nullMacParams;
 uses interface RadioBuffer;
@@ -51,7 +52,7 @@ uses interface RadioPower;
 uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
 
-uses interface Receive as RadioReceive;
+uses interface RadioReceive;
 
 uses interface Random;
 uses interface ReceiveIndicator as EnergyIndicator;
@@ -61,7 +62,7 @@ uses interface ReceiveIndicator as PacketIndicator;
 uses interface State as SplitControlState;
 
 uses interface RadioState;
-uses interface LinkPacketMetadata;
+uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 }
 
@@ -415,6 +416,11 @@ async event void RadioSend.sendDone(message_t *msg, error_t error) {
 }
 
 event void RadioState.done() {}
+
+
+async command bool MacLinkPacketMetadata.highChannelQuality(message_t* msg) {
+	return call RadioLinkPacketMetadata.highChannelQuality(msg);
+}
 
 
 }

@@ -31,7 +31,7 @@
 
 module nullRadioP @safe() {
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
+provides interface RadioReceive;
 provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
@@ -45,8 +45,14 @@ provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface nullRadioParams;
 
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+
 provides interface RadioState;
-provides interface LinkPacketMetadata;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
 
 }
 
@@ -280,7 +286,7 @@ async command error_t RadioResource.release() {
 	return SUCCESS;
 }
 
-async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
+async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
        //      return call PacketLinkQuality.get(msg) > 105;
 }
 
