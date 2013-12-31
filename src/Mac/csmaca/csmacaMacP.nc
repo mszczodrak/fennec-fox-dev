@@ -357,7 +357,5 @@ async command bool MacLinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return call RadioLinkPacketMetadata.highChannelQuality(msg);
 }
 
-
-
 }
 

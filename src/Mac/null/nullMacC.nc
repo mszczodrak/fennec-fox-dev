@@ -35,7 +35,7 @@ provides interface Receive as MacSnoop;
 provides interface AMPacket as MacAMPacket;
 provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-provides interface LinkPacketMetadata;
+provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface nullMacParams;
 uses interface RadioReceive;
