@@ -65,7 +65,7 @@ enum {
 
         enum
         {
-                RECEIVE_QUEUE_SIZE = 3,
+                RECEIVE_QUEUE_SIZE = 10,
         };
 
         message_t receiveQueueData[RECEIVE_QUEUE_SIZE];
@@ -98,7 +98,6 @@ uint16_t getSourceKey(message_t ONE *msg);
 
 task void deliverTask() {
 	// get rid of as many messages as possible without interveining tasks
-	for(;;) {
 		message_t* msg;
 		uint16_t msgSource;
 		uint8_t *p;
@@ -117,8 +116,8 @@ task void deliverTask() {
 		}
 
 		if(hasSeen(msgSource, msgDsn)) {
-			msg = signal DuplicateReceive.receive(msg, (void*)header, 
-				call RadioPacket.payloadLength(msg));
+//			msg = signal DuplicateReceive.receive(msg, (void*)header, 
+//				call RadioPacket.payloadLength(msg));
 		} else {
 			insert(msgSource, msgDsn);
 			msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
@@ -132,7 +131,8 @@ task void deliverTask() {
 
                                 --receiveQueueSize;
 		}
-	}
+
+	post deliverTask();
 }
 
   
