@@ -49,7 +49,6 @@ uses interface SplitControl as RadioControl;
 uses interface RadioPacket;
 uses interface Resource as RadioResource;
 
-uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 
@@ -336,7 +335,6 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 	}
 }
 
-event void RadioState.done() {}
 
 async command bool MacLinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return call RadioLinkPacketMetadata.highChannelQuality(msg);

@@ -43,7 +43,6 @@ uses interface RadioReceive;
 
 uses interface Resource as RadioResource;
 
-uses interface SplitControl as RadioControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
@@ -79,11 +78,11 @@ RadioResource = csmacaMacP.RadioResource;
 RadioPacket = csmacaMacP.RadioPacket;
 
 
-RadioState = csmacaMacP.RadioState;
 RadioLinkPacketMetadata = csmacaMacP.RadioLinkPacketMetadata;
 
 components CSMATransmitC;
 RadioResource = CSMATransmitC.RadioResource;
+RadioState = CSMATransmitC.RadioState;
 
 components DefaultLplC as LplC;
 csmacaMacP.RadioControl -> LplC.SplitControl;
@@ -137,6 +136,5 @@ PacketTimeSyncOffset = CSMATransmitC.PacketTimeSyncOffset;
 PacketLinkQuality = CSMATransmitC.PacketLinkQuality;
 
 LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;
-RadioControl = CSMATransmitC.RadioControl;
 }
 

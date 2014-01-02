@@ -11,7 +11,6 @@ uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
-uses interface SplitControl as RadioControl;
 uses interface csmacaMacParams;
 uses interface Resource as RadioResource;
 uses interface RadioCCA;
@@ -21,6 +20,8 @@ uses interface PacketField<uint8_t> as PacketRSSI;
 uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
 
+uses interface RadioState;
+
 }
 
 implementation {
@@ -29,9 +30,9 @@ components CSMATransmitP;
 CSMATransmit = CSMATransmitP;
 EnergyIndicator = CSMATransmitP.EnergyIndicator;
 RadioCCA = CSMATransmitP.RadioCCA;
+RadioState = CSMATransmitP.RadioState;
 
 RadioStdControl = CSMATransmitP.RadioStdControl;
-RadioControl = CSMATransmitP.RadioControl;
 
 components new MuxAlarm32khz32C() as Alarm;
 CSMATransmitP.BackoffTimer -> Alarm;
