@@ -45,6 +45,7 @@ uses interface Receive as MacSnoop;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
 
 implementation {
@@ -89,4 +90,5 @@ ctpNetP.CtpPacket -> CtpP.Packet;
 ctpNetP.CtpPacketAcknowledgements -> CtpActiveMessageC.PacketAcknowledgements;
 
 ctpNetP.CtpAMPacket -> CtpP.AMPacket;
+MacLinkPacketMetadata = CtpP.MacLinkPacketMetadata;
 }

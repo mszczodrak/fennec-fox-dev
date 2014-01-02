@@ -42,4 +42,5 @@ configuration LinkEstimatorC {
     provides {
         interface LinkEstimator;
     }
+
 }

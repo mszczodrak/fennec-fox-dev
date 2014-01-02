@@ -57,6 +57,8 @@ module LinkEstimatorP {
     interface LinkPacketMetadata;
     interface Random;
   }
+
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
 
 implementation {

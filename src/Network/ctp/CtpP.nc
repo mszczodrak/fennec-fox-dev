@@ -97,6 +97,7 @@ configuration CtpP {
     interface CollectionId[uint8_t client];
     interface CollectionDebug;
   }
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
 
 implementation {
@@ -193,6 +194,8 @@ implementation {
 
   Estimator.SubPacket -> CtpActiveMessageC;
   Estimator.SubAMPacket -> CtpActiveMessageC;
+
+MacLinkPacketMetadata = Estimator.MacLinkPacketMetadata;
 
   //Estimator.LinkPacketMetadata -> CtpActiveMessageC;
 }
