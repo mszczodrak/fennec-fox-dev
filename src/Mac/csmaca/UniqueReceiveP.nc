@@ -63,6 +63,18 @@ enum {
 	INVALID_ELEMENT = 0xFF,
 };
 
+        enum
+        {
+                RECEIVE_QUEUE_SIZE = 3,
+        };
+
+        message_t receiveQueueData[RECEIVE_QUEUE_SIZE];
+        message_t* receiveQueue[RECEIVE_QUEUE_SIZE];
+
+        uint8_t receiveQueueHead;
+        uint8_t receiveQueueSize;
+
+
 
 /***************** Init Commands *****************/
 command error_t Init.init() {
@@ -71,6 +83,11 @@ command error_t Init.init() {
 		receivedMessages[i].source = (am_addr_t) 0xFFFF;
 		receivedMessages[i].dsn = 0;
 	}
+
+	for(i = 0; i < RECEIVE_QUEUE_SIZE; ++i) {
+		receiveQueue[i] = receiveQueueData + i;
+	}
+
 	return SUCCESS;
 }
   
@@ -79,23 +96,68 @@ bool hasSeen(uint16_t msgSource, uint8_t msgDsn);
 void insert(uint16_t msgSource, uint8_t msgDsn);
 uint16_t getSourceKey(message_t ONE *msg);
 
+task void deliverTask() {
+	// get rid of as many messages as possible without interveining tasks
+	for(;;) {
+		message_t* msg;
+		uint16_t msgSource;
+		uint8_t *p;
+		csmaca_header_t* header;
+		uint8_t msgDsn;
+
+		atomic {
+                	if( receiveQueueSize == 0 )
+                        	return;
+
+			msg = receiveQueue[receiveQueueHead];
+			msgSource = getSourceKey(msg);
+			p = (uint8_t*)(msg->data);
+			header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
+			msgDsn = header->dsn;
+		}
+
+		if(hasSeen(msgSource, msgDsn)) {
+			msg = signal DuplicateReceive.receive(msg, (void*)header, 
+				call RadioPacket.payloadLength(msg));
+		} else {
+			insert(msgSource, msgDsn);
+			msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
+		}
+                        
+		atomic {
+                                receiveQueue[receiveQueueHead] = msg;
+
+                                if( ++receiveQueueHead >= RECEIVE_QUEUE_SIZE )
+                                        receiveQueueHead = 0;
+
+                                --receiveQueueSize;
+		}
+	}
+}
+
   
 /***************** SubReceive Events *****************/
 async event message_t *SubReceive.receive(message_t* msg) {
+                message_t *m;
+                atomic
+                {
+                        if( receiveQueueSize >= RECEIVE_QUEUE_SIZE )
+                                m = msg;
+                        else
+                        {
+                                uint8_t idx = receiveQueueHead + receiveQueueSize;
+                                if( idx >= RECEIVE_QUEUE_SIZE )
+                                        idx -= RECEIVE_QUEUE_SIZE;
 
-	uint16_t msgSource = getSourceKey(msg);
+                                m = receiveQueue[idx];
+                                receiveQueue[idx] = msg;
 
-	uint8_t *p = (uint8_t*)(msg->data);
-	csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
+                                ++receiveQueueSize;
+                                post deliverTask();
+                        }
+                }
 
-	uint8_t msgDsn = header->dsn;
-
-	if(hasSeen(msgSource, msgDsn)) {
-		return signal DuplicateReceive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
-	} else {
-		insert(msgSource, msgDsn);
-		return signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
-	}
+	return m;
 }
   
 async event bool SubReceive.header(message_t* msg) {
