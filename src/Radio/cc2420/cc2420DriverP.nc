@@ -7,7 +7,6 @@ module cc2420DriverP @safe() {
 
 provides interface Init;
 provides interface StdControl;
-provides interface ReceiveIndicator as EnergyIndicator;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -47,6 +46,7 @@ provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
 uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
+uses interface ReceiveIndicator as PacketIndicator;
 }
 
 implementation {
@@ -111,11 +111,6 @@ command error_t Init.init() {
 	low_level_init();
 	return SUCCESS;
 }
-
-async command bool EnergyIndicator.isReceiving() {
-	return !(call CCA.get());
-}
-  
 
 error_t releaseSpiResource() {
 	call SpiResource.release();
@@ -535,19 +530,23 @@ async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
 }
 
 async command error_t RadioCCA.request() {
-	switch (radio_state) {
-	case S_STOPPED:
+	if (radio_state == S_STOPPED) {
 		signal RadioCCA.done(FAIL);
 		return FAIL;
-
-	default:
-		if (call CCA.get()) {
-			signal RadioCCA.done(SUCCESS);
-		} else {
-			signal RadioCCA.done(EBUSY);
-		}
 	}
-	return SUCCESS;
+
+	if (call PacketIndicator.isReceiving()) {
+		signal RadioCCA.done(EBUSY);
+		return EBUSY;
+	}
+
+	if (call CCA.get()) {
+		signal RadioCCA.done(SUCCESS);
+		return SUCCESS;
+	}
+
+	signal RadioCCA.done(EBUSY);
+	return EBUSY;
 }
 
 

@@ -2,7 +2,6 @@
 
 configuration cc2420DriverC {
 provides interface StdControl;
-provides interface ReceiveIndicator as EnergyIndicator;
 
 provides interface RadioBuffer;
 provides interface RadioSend;
@@ -23,7 +22,6 @@ implementation {
 
 components cc2420DriverP;
 StdControl = cc2420DriverP.StdControl;
-EnergyIndicator = cc2420DriverP.EnergyIndicator;
 RadioCCA = cc2420DriverP.RadioCCA;
 cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
 
@@ -75,7 +73,6 @@ cc2420DriverP.KEY1 -> Spi.KEY1;
 
 components cc2420ReceiveC;
 cc2420DriverP.CC2420Receive -> cc2420ReceiveC;
-
-
-  
+cc2420DriverP.PacketIndicator -> cc2420ReceiveC.PacketIndicator;
 }
+

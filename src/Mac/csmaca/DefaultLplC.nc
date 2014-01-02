@@ -54,9 +54,6 @@ uses interface csmacaMacParams;
 uses interface CSMATransmit;
 uses interface RadioCCA;
 
-uses interface ReceiveIndicator as PacketIndicator;
-uses interface ReceiveIndicator as EnergyIndicator;
-
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
 uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
@@ -95,8 +92,6 @@ DefaultLplP.SendDoneTimer -> SendDoneTimerC;
 DefaultLplP.Random -> RandomC;
 DefaultLplP.Leds -> LedsC;
 
-PacketIndicator = DefaultLplP.PacketIndicator;
-EnergyIndicator = DefaultLplP.EnergyIndicator;
 RadioCCA = DefaultLplP.RadioCCA;
 
 PacketTransmitPower = DefaultLplP.PacketTransmitPower;

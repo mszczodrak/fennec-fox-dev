@@ -58,8 +58,6 @@ uses interface Timer<TMilli> as OnTimer;
 uses interface Timer<TMilli> as SendDoneTimer;
 uses interface Random;
 uses interface Leds;
-uses interface ReceiveIndicator as EnergyIndicator;
-uses interface ReceiveIndicator as PacketIndicator;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
@@ -92,18 +90,11 @@ task void resend();
 task void startRadio();
 task void stopRadio();
 
-task void detected();
-  
 void initializeSend();
 void startOffTimer();
-task void getCca();
-
 
 /** The current period of the duty cycle, equivalent of wakeup interval */
 uint16_t sleepInterval = LPL_DEF_LOCAL_WAKEUP;
-
-/** The number of times the CCA has been sampled in this wakeup period */
-uint16_t ccaChecks;
 
 bool finishSplitControlRequests();
 bool isDutyCycling();
@@ -160,14 +151,12 @@ event void OnTimer.fired() {
 			// Someone else turned on the radio, try again in awhile
 			call OnTimer.startOneShot(sleepInterval);
 		} else {
-			ccaChecks = 0;
 
 			/*
         		 * Turn on the radio only after the uC is fully awake.  ATmega128's
 	        	 * have this issue when running on an external crystal.
 	        	 */
-			post getCca();
-
+			post startRadio();
 		}
 	}
 }
@@ -175,8 +164,7 @@ event void OnTimer.fired() {
 
 /***************** Tasks ****************/
 task void stopRadio() {
-	error_t error = call SubControl.stop();
-	if(error != SUCCESS) {
+	if (call SubControl.stop() != SUCCESS) {
 		finishSplitControlRequests();
 		call OnTimer.startOneShot(sleepInterval);
 	}
@@ -188,42 +176,6 @@ task void startRadio() {
 	if ((startResult != SUCCESS && startResult != EALREADY)) {
                 post startRadio();
         }
-}
-
-
-task void getCca() {
-	uint8_t detects = 0;
-	if(isDutyCycling()) {
-
-		ccaChecks++;
-		if(ccaChecks == 1) {
-			// Microcontroller is ready, turn on the radio and sample a few times
-			post startRadio();
-			return;
-		}
-
-		atomic {
-			for( ; ccaChecks < MAX_LPL_CCA_CHECKS && call SendState.isIdle(); ccaChecks++) {
-				if(call PacketIndicator.isReceiving()) {
-					post detected();
-					return;
-				}
-	
-				if(call EnergyIndicator.isReceiving()) {
-					detects++;
-					if(detects > MIN_SAMPLES_BEFORE_DETECT) {
-						post detected();
-						return;
-					}
-					// Leave the radio on for upper layers to perform some transaction
-				}
-			}
-		}
-
-		if(call SendState.isIdle()) {
-			post stopRadio();
-		}
-	}
 }
 
 
@@ -364,22 +316,24 @@ command uint8_t Send.maxPayloadLength() {
 command void *Send.getPayload(message_t* msg, uint8_t len) {
 	return call SubSend.getPayload(msg, len);
 }
-  
-  
-/***************** DutyCycle Events ***************/
-/**
-  * A transmitter was detected.  You must now take action to
-  * turn the radio off when the transaction is complete.
-  */
-task void detected() {
-	// At this point, the duty cycling has been disabled temporary
-	// and it will be this component's job to turn the radio back off
-	// Wait long enough to see if we actually receive a packet, which is
-	// just a little longer in case there is more than one lpl transmitter on
-	// the channel.
-	startOffTimer();
+ 
+
+task void check() {
+
+	uint16_t i = 0;
+
+	for( ; i < MAX_LPL_CCA_CHECKS && call SendState.isIdle(); i++) {
+		if(call RadioCCA.request() == EBUSY) {
+			startOffTimer();
+			return;
+		}
+	}
+	
+	if(call SendState.isIdle()) {
+		post stopRadio();
+	}
 }
-  
+ 
   
 /***************** SubControl Events ***************/
 event void SubControl.startDone(error_t error) {
@@ -390,9 +344,8 @@ event void SubControl.startDone(error_t error) {
 		if(finishSplitControlRequests()) {
 
 		} else if(isDutyCycling()) {
-			post getCca();
+			post check();
 		}
-
     
 		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
 			|| call SendState.getState() == S_LPL_SENDING) {
@@ -497,7 +450,6 @@ event void SendDoneTimer.fired() {
 		call SendState.forceState(S_LPL_CLEAN_UP);
 	}
 }
-  
   
 /***************** Tasks ***************/
 task void send() {

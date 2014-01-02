@@ -6,7 +6,6 @@ provides interface CSMATransmit;
 provides interface SplitControl;
 provides interface Send;
 
-uses interface ReceiveIndicator as EnergyIndicator;
 uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
@@ -28,7 +27,6 @@ implementation {
 
 components CSMATransmitP;
 CSMATransmit = CSMATransmitP;
-EnergyIndicator = CSMATransmitP.EnergyIndicator;
 RadioCCA = CSMATransmitP.RadioCCA;
 RadioState = CSMATransmitP.RadioState;
 

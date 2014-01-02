@@ -46,8 +46,6 @@ uses interface Resource as RadioResource;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
-uses interface ReceiveIndicator as PacketIndicator;
-uses interface ReceiveIndicator as EnergyIndicator;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
@@ -106,8 +104,6 @@ LplC.SubSend -> CSMATransmitC;
 LplC.SubReceive -> UniqueReceiveC.Receive;
 UniqueReceiveC.SubReceive = RadioReceive;
 
-PacketIndicator = LplC.PacketIndicator;
-EnergyIndicator = LplC.EnergyIndicator;
 RadioCCA = LplC.RadioCCA;
 
 PacketTransmitPower = LplC.PacketTransmitPower;
@@ -128,7 +124,6 @@ csmacaMacP.Leds -> LedsC;
 RadioBuffer = CSMATransmitC.RadioBuffer;
 RadioSend = CSMATransmitC.RadioSend;
 RadioPacket = CSMATransmitC.RadioPacket;
-EnergyIndicator = CSMATransmitC.EnergyIndicator;
 RadioCCA = CSMATransmitC.RadioCCA;
 PacketTransmitPower = CSMATransmitC.PacketTransmitPower;
 PacketRSSI = CSMATransmitC.PacketRSSI;

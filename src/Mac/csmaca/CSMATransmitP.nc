@@ -9,7 +9,6 @@ provides interface SplitControl;
 provides interface Send;
 
 uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
-uses interface ReceiveIndicator as EnergyIndicator;
 uses interface RadioCCA;
 uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
@@ -368,7 +367,7 @@ async event void BackoffTimer.fired() {
 	case S_SAMPLE_CCA : 
 		// sample CCA and wait a little longer if free, just in case we
 		// sampled during the ack turn-around window
-		if ( !call EnergyIndicator.isReceiving() ) {
+		if ( call RadioCCA.request() == SUCCESS ) {
 			m_state = S_BEGIN_TRANSMIT;
 			call BackoffTimer.start( TIME_ACK_TURNAROUND );    
 		} else {
