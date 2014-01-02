@@ -39,7 +39,6 @@
  
 configuration UniqueReceiveC {
 provides interface Receive;
-provides interface Receive as DuplicateReceive;
 uses interface RadioReceive as SubReceive;
 uses interface RadioPacket;
 }
@@ -48,7 +47,6 @@ implementation {
 components UniqueReceiveP, MainC;
   
 Receive = UniqueReceiveP.Receive;
-DuplicateReceive = UniqueReceiveP.DuplicateReceive;
 SubReceive = UniqueReceiveP.SubReceive;
 RadioPacket = UniqueReceiveP.RadioPacket;
 MainC.SoftwareInit -> UniqueReceiveP;
