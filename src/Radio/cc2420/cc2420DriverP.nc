@@ -8,7 +8,6 @@ module cc2420DriverP @safe() {
 provides interface Init;
 provides interface StdControl;
 provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -207,12 +206,6 @@ void attemptSend() {
 	}
 }
 
-
-async command bool ByteIndicator.isReceiving() {
-	bool high;
-	high = sfdHigh;
-	return high;
-}
 
 async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
 	cc2420_hdr_t* ack_header;

@@ -13,7 +13,6 @@ uses interface RadioSend;
 uses interface RadioPacket;
 uses interface SplitControl as RadioControl;
 uses interface csmacaMacParams;
-uses interface RadioPower;
 uses interface Resource as RadioResource;
 uses interface RadioCCA;
 
@@ -48,7 +47,6 @@ CSMATransmitP.Random -> RandomC;
 
 SplitControl = CSMATransmitP;
 Send = CSMATransmitP;
-RadioPower = CSMATransmitP.RadioPower;
 RadioResource = CSMATransmitP.RadioResource;
 
 components new StateC();

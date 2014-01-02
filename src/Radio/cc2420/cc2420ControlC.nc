@@ -43,7 +43,6 @@ configuration cc2420ControlC {
   provides interface Resource as RadioResource;
   provides interface RadioConfig;
   provides interface RadioPower;
-  provides interface Read<uint16_t> as ReadRssi;
 
   uses interface cc2420RadioParams;
   
@@ -55,7 +54,6 @@ implementation {
   RadioResource = cc2420ControlP.RadioResource;
   RadioConfig = cc2420ControlP.RadioConfig;
   RadioPower = cc2420ControlP.RadioPower;
-  ReadRssi = cc2420ControlP.ReadRssi;
 
   cc2420RadioParams = cc2420ControlP;
 
@@ -93,9 +91,6 @@ implementation {
   components new CC2420SpiC() as SyncSpiC;
   cc2420ControlP.SyncResource -> SyncSpiC;
 
-  components new CC2420SpiC() as RssiResource;
-  cc2420ControlP.RssiResource -> RssiResource;
-  
   components ActiveMessageAddressC;
   cc2420ControlP.ActiveMessageAddress -> ActiveMessageAddressC;
 

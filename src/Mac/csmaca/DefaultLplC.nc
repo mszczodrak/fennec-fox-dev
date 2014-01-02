@@ -56,7 +56,6 @@ uses interface RadioCCA;
 
 uses interface ReceiveIndicator as PacketIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
-uses interface ReceiveIndicator as ByteIndicator;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
@@ -98,7 +97,6 @@ DefaultLplP.Leds -> LedsC;
 
 PacketIndicator = DefaultLplP.PacketIndicator;
 EnergyIndicator = DefaultLplP.EnergyIndicator;
-ByteIndicator = DefaultLplP.ByteIndicator;
 RadioCCA = DefaultLplP.RadioCCA;
 
 PacketTransmitPower = DefaultLplP.PacketTransmitPower;

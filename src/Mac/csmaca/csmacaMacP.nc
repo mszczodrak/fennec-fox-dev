@@ -47,9 +47,6 @@ uses interface csmacaMacParams;
 uses interface SplitControl as RadioControl;
 
 uses interface RadioPacket;
-uses interface RadioConfig;
-uses interface RadioPower;
-uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
 
 uses interface RadioState;
@@ -216,18 +213,6 @@ async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
 	return metadata->ack;
 }
 
-
-event void RadioConfig.syncDone(error_t error) {
-}
-
-async event void RadioPower.startVRegDone() {
-}
-
-async event void RadioPower.startOscillatorDone() {
-}
-
-event void ReadRssi.readDone(error_t error, uint16_t rssi) {
-}
 
 event void RadioResource.granted() {
 

@@ -31,15 +31,11 @@ provides interface RadioReceive;
 
 uses interface cc2420RadioParams;
 provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
 provides interface RadioSend;
 provides interface RadioPacket;
 provides interface RadioBuffer;
 provides interface ReceiveIndicator as PacketIndicator;
 provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -60,7 +56,6 @@ components cc2420ControlC;
 components cc2420DriverC;
 EnergyIndicator = cc2420DriverC.EnergyIndicator;
 cc2420RadioParams = cc2420DriverC.cc2420RadioParams;
-ByteIndicator = cc2420DriverC.ByteIndicator;
 RadioCCA = cc2420DriverC.RadioCCA;
 
 cc2420RadioP.RadioPower -> cc2420ControlC.RadioPower;
@@ -70,9 +65,6 @@ SplitControl = cc2420RadioP;
 cc2420RadioParams = cc2420RadioP;
 
 RadioResource = cc2420ControlC.RadioResource;
-RadioConfig = cc2420ControlC.RadioConfig;
-RadioPower = cc2420ControlC.RadioPower;
-ReadRssi = cc2420ControlC.ReadRssi;
 
 cc2420RadioParams = cc2420ControlC;
 

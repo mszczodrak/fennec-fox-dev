@@ -59,7 +59,6 @@ uses interface Timer<TMilli> as SendDoneTimer;
 uses interface Random;
 uses interface Leds;
 uses interface ReceiveIndicator as EnergyIndicator;
-uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as PacketIndicator;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;

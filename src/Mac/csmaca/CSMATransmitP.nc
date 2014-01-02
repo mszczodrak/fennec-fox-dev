@@ -19,7 +19,6 @@ uses interface SplitControl as RadioControl;
 uses interface csmacaMacParams;
 uses interface Random;
 uses interface State as SplitControlState;
-uses interface RadioPower;
 uses interface Resource as RadioResource;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
@@ -219,10 +218,7 @@ command uint8_t Send.maxPayloadLength() {
 	return call RadioPacket.maxPayloadLength();
 }
 
-async event void RadioPower.startVRegDone() {}
 event void RadioResource.granted() {}
-
-async event void RadioPower.startOscillatorDone() {}
 
 /***************** Tasks ****************/
 task void sendDone_task() {

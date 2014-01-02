@@ -41,9 +41,6 @@ uses interface csmacaMacParams;
 
 uses interface RadioReceive;
 
-uses interface RadioConfig;
-uses interface RadioPower;
-uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
 
 uses interface SplitControl as RadioControl;
@@ -51,7 +48,6 @@ uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
 uses interface ReceiveIndicator as PacketIndicator;
-uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as EnergyIndicator;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
@@ -79,9 +75,6 @@ MacPacketAcknowledgements = csmacaMacP.MacPacketAcknowledgements;
 MacLinkPacketMetadata = csmacaMacP.MacLinkPacketMetadata;
 csmacaMacParams = csmacaMacP;
 
-RadioConfig = csmacaMacP.RadioConfig;
-RadioPower = csmacaMacP.RadioPower;
-ReadRssi = csmacaMacP.ReadRssi;
 RadioResource = csmacaMacP.RadioResource;
 RadioPacket = csmacaMacP.RadioPacket;
 
@@ -90,7 +83,6 @@ RadioState = csmacaMacP.RadioState;
 RadioLinkPacketMetadata = csmacaMacP.RadioLinkPacketMetadata;
 
 components CSMATransmitC;
-RadioPower = CSMATransmitC.RadioPower;
 RadioResource = CSMATransmitC.RadioResource;
 
 components DefaultLplC as LplC;
@@ -117,7 +109,6 @@ UniqueReceiveC.SubReceive = RadioReceive;
 
 PacketIndicator = LplC.PacketIndicator;
 EnergyIndicator = LplC.EnergyIndicator;
-ByteIndicator = LplC.ByteIndicator;
 RadioCCA = LplC.RadioCCA;
 
 PacketTransmitPower = LplC.PacketTransmitPower;

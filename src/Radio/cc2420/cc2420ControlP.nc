@@ -45,7 +45,6 @@ module cc2420ControlP @safe() {
   provides interface Resource as RadioResource;
   provides interface RadioConfig;
   provides interface RadioPower;
-  provides interface Read<uint16_t> as ReadRssi;
 
   uses interface LocalIeeeEui64;
 
@@ -72,7 +71,6 @@ module cc2420ControlP @safe() {
   uses interface CC2420Strobe as SXOSCON;
   
   uses interface Resource as SpiResource;
-  uses interface Resource as RssiResource;
   uses interface Resource as SyncResource;
 
   uses interface Leds;
@@ -424,10 +422,6 @@ task void report_stop() {
     atomic return autoAckEnabled;
   }
   
-  /***************** ReadRssi Commands ****************/
-  command error_t ReadRssi.read() { 
-    return call RssiResource.request();
-  }
   
   /***************** Spi Resources Events ****************/
   event void SyncResource.granted() {
@@ -449,17 +443,6 @@ task void report_stop() {
     signal RadioResource.granted();
   }
 
-  event void RssiResource.granted() { 
-    uint16_t data = 0;
-    call CSN.clr();
-    call RSSI.read(&data);
-    call CSN.set();
-    
-    call RssiResource.release();
-    data += 0x7f;
-    data &= 0x00ff;
-    signal ReadRssi.readDone(SUCCESS, data); 
-  }
   
   /***************** StartupTimer Events ****************/
   async event void StartupTimer.fired() {
@@ -576,8 +559,6 @@ task void report_stop() {
   default event void RadioConfig.syncDone( error_t error ) {
   }
 
-  default event void ReadRssi.readDone(error_t error, uint16_t data) {
-  }
 
   
 }
