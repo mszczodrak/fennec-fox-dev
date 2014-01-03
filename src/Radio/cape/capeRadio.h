@@ -29,9 +29,30 @@
 #ifndef __H_cape_RADIO__
 #define __H_cape_RADIO___
 
-enum {
-        cape_MIN_MESSAGE_SIZE        	= 5,
-        cape_MAX_MESSAGE_SIZE        	= 127,
+
+nx_struct cape_radio_header_t {
+        nxle_uint8_t length;
 };
+
+typedef nx_struct cape_hdr_t {
+        nxle_uint8_t length;
+        nxle_uint16_t fcf;
+        nxle_uint8_t dsn;
+        nxle_uint16_t destpan;
+        nxle_uint16_t dest;
+        nxle_uint16_t src;
+} cape_hdr_t;
+
+
+
+enum {
+        CAPE_MIN_MESSAGE_SIZE         = 10,
+        CAPE_MAX_MESSAGE_SIZE         = 128,
+        CAPE_MAX_FAILED_LOADS         = 3,
+        CAPE_FOOTER                   = 2,
+        CAPE_SIZEOF_CRC               = 2,
+};
+
+typedef uint32_t timesync_radio_t;
 
 #endif

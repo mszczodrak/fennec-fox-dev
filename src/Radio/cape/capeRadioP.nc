@@ -47,10 +47,8 @@ provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
-provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
-
 
 uses interface SplitControl as AMControl;
 
@@ -60,7 +58,7 @@ uses interface TossimPacketModel as Model;
 implementation {
 
 uint8_t channel;
-norace uint8_t state = S_STOPPED;
+norace uint8_t cape_radio_state = S_STOPPED;
 
 norace message_t *out_msg;
 norace error_t err;
@@ -72,7 +70,7 @@ uint8_t sc = FALSE;
 
 task void start_done() {
         if (err == SUCCESS) {
-                state = S_STARTED;
+                cape_radio_state = S_STARTED;
         }
 	signal RadioState.done();
 	if (sc == TRUE) {
@@ -83,17 +81,14 @@ task void start_done() {
 }
 
 task void finish_starting_radio() {
-        if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
         if (call RadioResource.release() != SUCCESS) err = FAIL;
-        //if (call ReceiveControl.start() != SUCCESS) err = FAIL;
-        //if (call TransmitControl.start() != SUCCESS) err = FAIL;
 	dbg("Radio", "capeRadio finish_starting_radio()");
         post start_done();
 }
 
 task void stop_done() {
         if (err == SUCCESS) {
-                state = S_STOPPED;
+                cape_radio_state = S_STOPPED;
         }
 	signal RadioState.done();
 	if (sc == TRUE) {
@@ -114,14 +109,7 @@ task void send_done() {
 }
 
 task void send_msg() {
-	fennec_header_t *header;
-	metadata_t* metadata;
-
-	header = (fennec_header_t*)call RadioPacket.getPayload(out_msg,
-						sizeof(fennec_header_t));
-	metadata = getMetadata(out_msg);
-
-	metadata->ack = ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) );
+	cape_hdr_t* header = (cape_hdr_t*) out_msg->data;
 
 	err = call Model.send(BROADCAST, out_msg, header->length);
 	//dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
@@ -146,16 +134,13 @@ command error_t RadioState.turnOn() {
 
         err = SUCCESS;
 
-        if (state == S_STARTED) {
+        if (cape_radio_state == S_STARTED) {
                 post start_done();
                 return SUCCESS;
         }
 
-        if (call RadioPower.startVReg() != SUCCESS) {
-		dbg("Radio", "capeRadio RadioPower.startVReg() - FAILED");
-		return FAIL;
-	}
-        state = S_STARTING;
+        cape_radio_state = S_STARTING;
+        post finish_starting_radio();
         return SUCCESS;
 }
 
@@ -171,18 +156,17 @@ command error_t RadioState.turnOff() {
 
         err = SUCCESS;
 
-        if (state == S_STOPPED) {
+        if (cape_radio_state == S_STOPPED) {
                 post stop_done();
                 return SUCCESS;
         }
 
         //if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
         //if (call TransmitControl.stop() != SUCCESS) err = FAIL;
-        if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
 
         if (err != SUCCESS) return FAIL;
 
-        state = S_STOPPING;
+        cape_radio_state = S_STOPPING;
         post stop_done();
         return SUCCESS;
 }
@@ -200,88 +184,14 @@ command error_t SplitControl.stop() {
 
 
 
-task void start_v_reg_done() {
-	call RadioPower.startOscillator();
-}
-
-async command error_t RadioPower.startVReg() {
-	dbg("Radio", "capeRadio RadioPower.startVReg()");
-	post start_v_reg_done();
-	return SUCCESS;
-}
-
-async command error_t RadioPower.stopVReg() {
-	return SUCCESS;
-}
-
-task void start_oscillator_done() {
-        post finish_starting_radio();
-}
-
-async command error_t RadioPower.startOscillator() {
-	dbg("Radio", "capeRadio RadioPower.startOscillator()");
-	post start_oscillator_done();
-	return SUCCESS;
-}
-
-async command error_t RadioPower.stopOscillator() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.rxOn() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.rfOff() {
-	return SUCCESS;
-}
-
-command uint8_t RadioConfig.getChannel() {
+command uint8_t RadioState.getChannel() {
 	return channel;
 }
 
-command void RadioConfig.setChannel( uint8_t new_channel ) {
+command error_t RadioState.setChannel(uint8_t new_channel) {
 	atomic channel = new_channel;
-}
-
-async command uint16_t RadioConfig.getShortAddr() {
-	return TOS_NODE_ID;
-}
-
-command void RadioConfig.setShortAddr( uint16_t addr ) {
-}
-
-async command uint16_t RadioConfig.getPanAddr() {
-	return TOS_NODE_ID;
-}
-
-command void RadioConfig.setPanAddr( uint16_t pan ) {
-}
-
-command error_t RadioConfig.sync() {
+	signal RadioState.done();
 	return SUCCESS;
-}
-
-command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
-}
-
-async command bool RadioConfig.isAddressRecognitionEnabled() {
-	return FALSE;
-}
-
-async command bool RadioConfig.isHwAddressRecognitionDefault() {
-	return FALSE;
-}
-
-command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
-}
-
-async command bool RadioConfig.isHwAutoAckDefault() {
-	return FALSE;
-}
-
-async command bool RadioConfig.isAutoAckEnabled() {
-	return FALSE;
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
@@ -303,29 +213,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	}
 }
 
-async command error_t RadioSend.cancel(message_t *msg) {
-	if (out_msg == msg) {
-		post cancel_msg();
-		return SUCCESS;
-	}
-	return FAIL;
-}
-
-async command uint8_t RadioPacket.maxPayloadLength() {
-	//dbg("Radio", "capeRadioP RadioPacket.maxPayloadLength()");
-	return 128;
-}
-
-async command void* RadioPacket.getPayload(message_t* msg, uint8_t len) {
-	//dbg("Radio", "capeRadio RadioSend.getPayload( 0x%1x, %d )", msg, len);
-	if (len <= call RadioPacket.maxPayloadLength()) {
-		return (void*)msg->data;
-	} else {
-		return NULL;
-	}
-}
-
-
 async command error_t RadioResource.immediateRequest() {
 	return SUCCESS;
 }
@@ -344,11 +231,6 @@ async command error_t RadioResource.release() {
 
 
 event void Model.sendDone(message_t* msg, error_t result) {
-	fennec_header_t * header = (fennec_header_t*) msg->data;
-	if ( header->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
-		dbg("Radio", "capeRadio wait for ACCCCCCCCCCCCCKKKKKKKKKKKKKKKKKKKKKK");
-	}
-
 
 	if (msg != out_msg) {
 		dbg("Radio", "capeRadio Model.sendDone returned incorred msg pointer");
@@ -360,10 +242,8 @@ event void Model.sendDone(message_t* msg, error_t result) {
 }
 
 event void Model.receive(message_t* msg) {
-	uint8_t len;
-	void* payload;
 	metadata_t* metadata;
-	fennec_header_t *header; 
+	cape_hdr_t* header = (cape_hdr_t*) msg->data;
 
 	memcpy(bufferPointer, msg, sizeof(message_t));
 
@@ -372,23 +252,14 @@ event void Model.receive(message_t* msg) {
 	metadata->lqi = 0;
 	metadata->rssi = metadata->strength;
 
-	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
-						sizeof(fennec_header_t));
-
-	len = header->length;
-	payload = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
-                                                sizeof(len));
-
 	if ((( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == 	IEEE154_TYPE_DATA) {	
-		dbg("Radio", "capeRadio RadioReceive.receive(0x%1x, 0x%1x, %d )", msg, payload, len);
-		bufferPointer = signal RadioReceive.receive(bufferPointer, payload, len);
+		dbg("Radio", "capeRadio RadioReceive.receive(0x%1x)", msg);
+		bufferPointer = signal RadioReceive.receive(bufferPointer);
 	}
 }
 
 event bool Model.shouldAck(message_t* msg) {
-	fennec_header_t *header;
-	header = (fennec_header_t*)call RadioPacket.getPayload(bufferPointer,
-						sizeof(fennec_header_t));
+	cape_hdr_t* header = (cape_hdr_t*) msg->data;
 
 	if ( (header->dest == TOS_NODE_ID) && (header->fcf & (1 << IEEE154_FCF_ACK_REQ)) ) {  	
 		dbg("Radio", "capeRadio Model.shouldAck(0x%1x) - TRUE", msg);
@@ -426,6 +297,33 @@ void active_message_deliver(int node, message_t* msg, sim_time_t t) @C() @sponta
 
 
 
+/* Radio Packet */
+
+async command uint8_t RadioPacket.maxPayloadLength() {
+        return CAPE_MAX_MESSAGE_SIZE - sizeof(nx_struct cape_radio_header_t) - CAPE_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
+
+async command uint8_t RadioPacket.headerLength(message_t* msg) {
+        return sizeof(nx_struct cape_radio_header_t);
+}
+
+async command uint8_t RadioPacket.payloadLength(message_t* msg) {
+        nx_struct cape_radio_header_t *hdr = (nx_struct cape_radio_header_t*)(msg->data);
+        return hdr->length - sizeof(nx_struct cape_radio_header_t) - CAPE_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
+
+async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
+        nx_struct cape_radio_header_t *hdr = (nx_struct cape_radio_header_t*)(msg->data);
+        hdr->length = length + sizeof(nx_struct cape_radio_header_t) + CAPE_SIZEOF_CRC + sizeof(timesync_radio_t);
+}
+
+async command uint8_t RadioPacket.metadataLength(message_t* msg) {
+        return sizeof(metadata_t);
+}
+
+async command void RadioPacket.clear(message_t* msg) {
+        memset(msg, 0x0, sizeof(message_t));
+}
 
 
 

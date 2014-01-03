@@ -57,6 +57,12 @@ capeRadioParams = capeRadioP;
 RadioReceive = capeRadioP.RadioReceive;
 RadioCCA = capeRadioP.RadioCCA;
 
+PacketTransmitPower = capeRadioP.PacketTransmitPower;
+PacketRSSI = capeRadioP.PacketRSSI;
+PacketTimeSyncOffset = capeRadioP.PacketTimeSyncOffset;
+PacketLinkQuality = capeRadioP.PacketLinkQuality;
+RadioLinkPacketMetadata = capeRadioP.RadioLinkPacketMetadata;
+
 RadioResource = capeRadioP.RadioResource;
 
 RadioBuffer = capeRadioP.RadioBuffer;
