@@ -67,7 +67,9 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+
+}
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	metadata_t *meta = (metadata_t*)getMetadata(msg);
@@ -97,7 +99,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void SendTimer.fired() {
 	memset(&packet, 0, sizeof(message_t));
-	call NetworkAMSend.send(BROADCAST, &packet, sizeof(100));
+	call NetworkAMSend.send(BROADCAST, &packet, sizeof(80));
 }
 
 event void LedTimer.fired() {

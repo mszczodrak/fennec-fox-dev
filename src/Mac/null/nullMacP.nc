@@ -220,7 +220,6 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	metadata->ack = 1;
 	metadata->rssi = 0;
 	metadata->lqi = 0;
-	metadata->timestamp = NULL_INVALID_TIMESTAMP;
 
 	if ( m_state != S_STARTED ) {
 		return FAIL;
