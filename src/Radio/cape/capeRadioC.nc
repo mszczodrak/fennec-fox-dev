@@ -27,22 +27,24 @@
 
 configuration capeRadioC {
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
+provides interface RadioReceive;
 
 uses interface capeRadioParams;
 
 provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
 
 provides interface RadioPacket;
 provides interface RadioBuffer;
 provides interface RadioSend;
 
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+
+provides interface RadioState;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
 
 }
 
@@ -50,17 +52,12 @@ implementation {
 
 components capeRadioP;
 SplitControl = capeRadioP;
+RadioState = capeRadioP;
 capeRadioParams = capeRadioP;
 RadioReceive = capeRadioP.RadioReceive;
-
-PacketIndicator = capeRadioP.PacketIndicator;
-EnergyIndicator = capeRadioP.EnergyIndicator;
-ByteIndicator = capeRadioP.ByteIndicator;
+RadioCCA = capeRadioP.RadioCCA;
 
 RadioResource = capeRadioP.RadioResource;
-RadioConfig = capeRadioP.RadioConfig;
-RadioPower = capeRadioP.RadioPower;
-ReadRssi = capeRadioP.ReadRssi;
 
 RadioBuffer = capeRadioP.RadioBuffer;
 RadioPacket = capeRadioP.RadioPacket;

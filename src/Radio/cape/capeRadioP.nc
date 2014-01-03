@@ -32,19 +32,25 @@
 module capeRadioP @safe() {
 
 provides interface SplitControl;
-provides interface Receive as RadioReceive;
+provides interface RadioState;
+
+provides interface RadioReceive;
 provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
 provides interface RadioBuffer;
 provides interface RadioPacket;
 provides interface RadioSend;
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface capeRadioParams;
+
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+
+provides interface RadioState;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
+
 
 uses interface SplitControl as AMControl;
 
@@ -62,13 +68,18 @@ norace error_t err;
 message_t buffer;
 message_t* bufferPointer = &buffer;
 uint8_t auto_ack;
+uint8_t sc = FALSE;
 
 task void start_done() {
         if (err == SUCCESS) {
                 state = S_STARTED;
         }
-	dbg("Radio", "capeRadio signal SplitControl.startDone(%d)", err);
-	signal SplitControl.startDone(err);
+	signal RadioState.done();
+	if (sc == TRUE) {
+		dbg("Radio", "capeRadio signal SplitControl.startDone(%d)", err);
+		signal SplitControl.startDone(err);
+		sc = FALSE;
+	}
 }
 
 task void finish_starting_radio() {
@@ -84,8 +95,12 @@ task void stop_done() {
         if (err == SUCCESS) {
                 state = S_STOPPED;
         }
-	dbg("Radio", "capeRadio signal SplitControl.stopDone(%d)", err);
-	signal SplitControl.stopDone(err);
+	signal RadioState.done();
+	if (sc == TRUE) {
+		dbg("Radio", "capeRadio signal SplitControl.stopDone(%d)", err);
+		signal SplitControl.stopDone(err);
+		sc = FALSE;
+	}
 }
 
 task void load_done() {
@@ -119,8 +134,12 @@ task void cancel_msg() {
 	call Model.cancel(out_msg);
 }
 
+command error_t RadioState.standby() {
+        return call RadioState.turnOff();
+}
 
-command error_t SplitControl.start() {
+
+command error_t RadioState.turnOn() {
 	auto_ack = TRUE;
 	dbg("Radio", "capeRadio SplitControl.start()");
 	call AMControl.start();
@@ -146,7 +165,7 @@ event void AMControl.startDone(error_t error) {
 event void AMControl.stopDone(error_t error) {
 }
 
-command error_t SplitControl.stop() {
+command error_t RadioState.turnOff() {
 	dbg("Radio", "capeRadio SplitControl.stop()");
 	call AMControl.stop();
 
@@ -167,6 +186,18 @@ command error_t SplitControl.stop() {
         post stop_done();
         return SUCCESS;
 }
+
+command error_t SplitControl.start() {
+	sc = TRUE;
+	return call RadioState.turnOn();
+}
+
+
+command error_t SplitControl.stop() {
+	sc = TRUE;
+	return call RadioState.turnOff();
+}
+
 
 
 task void start_v_reg_done() {
@@ -250,22 +281,6 @@ async command bool RadioConfig.isHwAutoAckDefault() {
 }
 
 async command bool RadioConfig.isAutoAckEnabled() {
-	return FALSE;
-}
-
-command error_t ReadRssi.read() {
-	return FAIL;
-}
-
-async command bool ByteIndicator.isReceiving() {
-	return FALSE;
-}
-
-async command bool EnergyIndicator.isReceiving() {
-	return FALSE;
-}
-
-async command bool PacketIndicator.isReceiving() {
 	return FALSE;
 }
 
@@ -404,6 +419,113 @@ void active_message_deliver(int node, message_t* msg, sim_time_t t) @C() @sponta
 	sim_event_t* evt = allocate_deliver_event(node, msg, t);
 	sim_queue_insert(evt);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
+        return call PacketLinkQuality.get(msg) > 105;
+}
+
+async command error_t RadioCCA.request() {
+        //if (call PacketIndicator.isReceiving()) {
+//                signal RadioCCA.done(EBUSY);
+//                return EBUSY;
+        //}
+
+        //if (call CCA.get()) {
+                signal RadioCCA.done(SUCCESS);
+                return SUCCESS;
+        //}
+}
+
+
+async command bool PacketTransmitPower.isSet(message_t* msg) {
+        return getMetadata(msg)->flags & (1<<1);
+}
+
+async command uint8_t PacketTransmitPower.get(message_t* msg) {
+        return getMetadata(msg)->tx_power;
+}
+
+async command void PacketTransmitPower.clear(message_t* msg) {
+        getMetadata(msg)->flags &= ~(1<<1);
+}
+
+async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
+        getMetadata(msg)->flags |= (1<<1);
+        getMetadata(msg)->tx_power = value;
+}
+
+
+async command bool PacketRSSI.isSet(message_t* msg) {
+        return getMetadata(msg)->flags & (1<<2);
+}
+
+async command uint8_t PacketRSSI.get(message_t* msg) {
+        return getMetadata(msg)->rssi;
+}
+
+async command void PacketRSSI.clear(message_t* msg) {
+        getMetadata(msg)->flags &= ~(1<<2);
+}
+
+async command void PacketRSSI.set(message_t* msg, uint8_t value) {
+        call PacketTransmitPower.clear(msg);
+        getMetadata(msg)->flags |= (1<<2);
+        getMetadata(msg)->rssi = value;
+}
+
+async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+        return getMetadata(msg)->flags & (1<<3);
+}
+
+async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+        // TODO:
+        //return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
+        return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+}
+
+async command void PacketTimeSyncOffset.clear(message_t* msg) {
+        getMetadata(msg)->flags &= ~(1<<3);
+}
+
+async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+        getMetadata(msg)->flags |= (1<<3);
+        // we do not store the value, the time sync field is always the last 4 bytes
+}
+
+async command bool PacketLinkQuality.isSet(message_t* msg) {
+        return TRUE;
+}
+
+async command uint8_t PacketLinkQuality.get(message_t* msg) {
+        return getMetadata(msg)->lqi;
+}
+
+async command void PacketLinkQuality.clear(message_t* msg){
+}
+
+async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
+        getMetadata(msg)->lqi = value;
+}
+
 
 
 }

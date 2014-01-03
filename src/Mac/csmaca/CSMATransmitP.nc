@@ -448,13 +448,13 @@ async event void RadioCCA.done(error_t err) {
 
 event void RadioState.done() {
 	if (call SplitControlState.isState(S_STARTING)) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioState.startDone(%d) - post startDone_task", err);
+		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - post startDone_task");
 		post startDone_task();
 	}
 
 
 	if (call SplitControlState.isState(S_STOPPING)) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioState.stopDone(%d) - shutdown()", err);
+		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - shutdown()");
 		shutdown();
 	}
 }

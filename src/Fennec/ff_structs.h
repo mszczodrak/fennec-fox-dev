@@ -102,8 +102,9 @@ typedef nx_struct metadata_t {
 #ifdef TOSSIM
 	nx_uint8_t crc;
 	nx_uint8_t ack;
-	nx_int8_t strength;
+	nx_uint8_t strength;
 	nx_uint16_t time;
+	nx_uint8_t flags;
 #else
 	nx_uint8_t flags;
 	nx_bool crc;
