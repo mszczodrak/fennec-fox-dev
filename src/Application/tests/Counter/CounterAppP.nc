@@ -149,6 +149,12 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, (uint16_t)msg, (uint16_t)payload);
 		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->seqno, cm->source);
 	}
+
+	if (cm->seqno + 10 > seqno) {
+		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, call NetworkAMPacket.source(msg), 
+				call NetworkAMPacket.destination(msg));
+	}
+
 	return msg;
 }
 
