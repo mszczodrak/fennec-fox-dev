@@ -131,7 +131,7 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 					msg, error);
 	sendBusy = FALSE;
 	if (error != SUCCESS) {
-		dbgs(F_APPLICATION, S_CANCEL, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
+		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
 	}
 }
 
