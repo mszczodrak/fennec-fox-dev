@@ -167,5 +167,16 @@ def get_action(action):
         if (action == DBGS_SEND_CONTROL_MSG_FAILED):
                 return "Send Ctrl Msg Fail"
 
+
+        if (action == DBGS_ERROR):
+                return "Error"
+
+        if (action == DBGS_ERROR_SEND_DONE):
+                return "Error Send Done"
+
+        if (action == DBGS_ERROR_RECEIVE):
+                return "Error Receive"
+
+
 	return "UNKNOWN"
 

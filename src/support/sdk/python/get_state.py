@@ -104,6 +104,23 @@ def get_state(state):
         if (state == S_COMPLETED):
 		return "Completed"
 
+        if (state == S_BUSY:
+		return "Busy"
+
+        if (state == S_SERIAL):
+		return "Serial"
+
+        if (state == S_NEW_STATE):
+		return "New State"
+
+        if (state == S_RESET):
+		return "Reset"
+
+        if (state == S_ERROR):
+		return "Error"
+
+
+
         if (state == S_SFD):
 		return "SFD"
 

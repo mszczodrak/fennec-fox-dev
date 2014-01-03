@@ -72,6 +72,11 @@ S_LOAD			= 29
 S_RECONFIGURING         = 30
 S_RECONF_ENABLED        = 31
 S_COMPLETED             = 32
+S_BUSY			= 33
+S_SERIAL		= 34
+S_NEW_STATE		= 35
+S_RESET			= 36
+S_ERROR			= 37
 
 
 #                /* tx */
