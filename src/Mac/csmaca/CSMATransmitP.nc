@@ -250,23 +250,22 @@ void shutdown() {
 
 
 void requestInitialBackoff(message_t *msg) {
-	metadata_t* metadata = (metadata_t*) msg->metadata;
-	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-		myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
-	} else {
+//	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
+//		myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
+//	} else {
 		myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
-	}
+//	}
 	dbg("Mac", "csmaMac CSMATransmitP requestInitialBackoff(0x%1x) myInitialBackoff = %d", msg, myInitialBackoff);
 
 }
 
 void congestionBackoff(message_t *msg) {
-	metadata_t* metadata = (metadata_t*) msg->metadata;
-	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-		myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
-	} else {
+//	metadata_t* metadata = (metadata_t*) msg->metadata;
+//	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
+//		myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
+//	} else {
 		myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
-	}
+//	}
 
 	if (myCongestionBackoff) {
 		call BackoffTimer.start(myCongestionBackoff);

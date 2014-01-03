@@ -39,7 +39,6 @@
 //#warning "*** USING DEFAULT LOW POWER COMMUNICATIONS ***"
 
 configuration DefaultLplC {
-provides interface LowPowerListening;
 provides interface Send;
 provides interface Receive;
 provides interface SplitControl;
@@ -70,7 +69,6 @@ components DefaultLplP,
       new TimerMilliC() as SendDoneTimerC,
       LedsC;
   
-LowPowerListening = DefaultLplP;
 Send = DefaultLplP;
 Receive = DefaultLplP;
 SplitControl = DefaultLplP;

@@ -42,7 +42,6 @@
 #include "AM.h"
 
 module DefaultLplP {
-provides interface LowPowerListening;
 provides interface Send;
 provides interface Receive;
 provides interface SplitControl;
@@ -90,7 +89,6 @@ task void resend();
 task void startRadio();
 task void stopRadio();
 
-void initializeSend();
 void startOffTimer();
 
 /** The current period of the duty cycle, equivalent of wakeup interval */
@@ -207,62 +205,6 @@ bool finishSplitControlRequests() {
 }
 
 
-/***************** LowPowerListening Commands ***************/
-/**
- * Set this this node's radio wakeup interval, in milliseconds.
- * Once every interval, the node will sleep and perform an Rx check 
- * on the radio.  Setting the wakeup interval to 0 will keep the radio
- * always on.
- *
- * @param intervalMs the length of this node's wakeup interval, in [ms]
- */
-command void LowPowerListening.setLocalWakeupInterval(uint16_t sleepIntervalMs) {
-
-	if (!sleepInterval && sleepIntervalMs) {
-		// We were always on, now lets duty cycle
-		post stopRadio();  // Might want to delay turning off the radio
-	}
-
-	sleepInterval = sleepIntervalMs;
-
-	if(sleepInterval == 0 && (state == S_STARTED)) {
-		/*
-		* Leave the radio on permanently if sleepInterval == 0 and the radio is
-		* supposed to be enabled
-		*/
-		if(!radioPowerState) {
-			call SubControl.start();
-		}
-	}
-}
-  
-/**
- * @return the local node's wakeup interval, in [ms]
- */
-command uint16_t LowPowerListening.getLocalWakeupInterval() {
-	return sleepInterval;
-}
-  
-/**
- * Configure this outgoing message so it can be transmitted to a neighbor mote
- * with the specified wakeup interval.
- * @param msg Pointer to the message that will be sent
- * @param intervalMs The receiving node's wakeup interval, in [ms]
- */
-command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, 
-	uint16_t intervalMs) {
-	metadata_t *metadata = (metadata_t*) msg->metadata;
-	metadata->rxInterval = intervalMs;
-}
-  
-/**
-  * @return the destination node's wakeup interval configured in this message
-  */
-command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
-	metadata_t *metadata = (metadata_t*) msg->metadata;
-	return metadata->rxInterval;
-}
-  
 /***************** Send Commands ***************/
 /**
  * Each call to this send command gives the message a single
@@ -288,7 +230,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 		call SendDoneTimer.stop();
       
 		if(radioPowerState) {
-			initializeSend();
+			post send();
 			return SUCCESS;
 		} else {
 			post startRadio();
@@ -349,7 +291,7 @@ event void SubControl.startDone(error_t error) {
     
 		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
 			|| call SendState.getState() == S_LPL_SENDING) {
-			initializeSend();
+			post send();
 		}
 	}
 }
@@ -464,22 +406,6 @@ task void resend() {
 	}
 }
   
-/***************** Functions ***************/
-void initializeSend() {
-	if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) > 0) {
-		csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(currentSendMsg, sizeof(csmaca_header_t)); 
-		if(header->dest == IEEE154_BROADCAST_ADDR) {
-			call PacketAcknowledgements.noAck(currentSendMsg);
-		} else {
-			// Send it repetitively within our transmit window
-			call PacketAcknowledgements.requestAck(currentSendMsg);
-		}
-
-		call SendDoneTimer.startOneShot(
-		call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) + 20);
-	}
-	post send();
-}
   
   
 void startOffTimer() {

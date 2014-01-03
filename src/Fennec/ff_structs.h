@@ -112,7 +112,7 @@ typedef nx_struct metadata_t {
   nx_bool timesync;
 #endif
   nx_uint32_t timestamp;
-  nx_uint16_t rxInterval;
+//  nx_uint16_t rxInterval;
   nx_uint16_t maxRetries;
   nx_uint16_t retryDelay;
 } metadata_t;
