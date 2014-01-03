@@ -224,12 +224,6 @@ event void SpiResource.granted() {
 	receive();
 }
  
-bool quick_dest_check(message_t *msg) {
-	cc2420_hdr_t* header = (cc2420_hdr_t*) ( msg->data );
-	return ((header->dest == call RadioConfig.getShortAddr()) || (header->dest == AM_BROADCAST_ADDR));
-}
-
- 
 /***************** RXFIFO Events ****************/
 /**
  * We received some bytes from the SPI bus.  Process them in the context
@@ -291,7 +285,7 @@ async event void RXFIFO.readDone( uint8_t* rx_buf, uint8_t rx_len, error_t error
 		*/
 		if(call RadioConfig.isAutoAckEnabled() && !call RadioConfig.isHwAutoAckDefault()) {
 			if (((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1)
-				&& (quick_dest_check( m_p_rx_buf ))
+				&& (signal RadioReceive.header( m_p_rx_buf ))
 				&& ((( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == IEEE154_TYPE_DATA)) {
 				// CSn flippage cuts off our FIFO; SACK and begin reading again
 				call CSN.set();

@@ -188,7 +188,14 @@ async event message_t *SubReceive.receive(message_t* msg) {
 }
   
 async event bool SubReceive.header(message_t* msg) {
-	return TRUE;
+	if (receiveQueueSize < RECEIVE_QUEUE_SIZE) {
+		uint8_t *p = (uint8_t*)(msg->data);
+		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
+	        return ((header->dest == TOS_NODE_ID) || (header->dest == AM_BROADCAST_ADDR));
+	} else {
+		return FALSE;
+	}
+	//return TRUE;
 }
 
 
