@@ -96,25 +96,19 @@ struct state {
 
 
 typedef nx_struct metadata_t {
-  nx_uint8_t rssi;
-  nx_uint8_t lqi;
-  nx_uint8_t tx_power;
+	nx_uint8_t rssi;
+	nx_uint8_t lqi;
+	nx_uint8_t tx_power;
 #ifdef TOSSIM
-  nx_uint8_t crc;
-  nx_uint8_t ack;
-  nx_uint8_t timesync;
-  nx_int8_t strength;
-  nx_uint16_t time;
+	nx_uint8_t crc;
+	nx_uint8_t ack;
+	nx_int8_t strength;
+	nx_uint16_t time;
 #else
-  nx_uint8_t flags;
-  nx_bool crc;
-  nx_bool ack;
-  nx_bool timesync;
+	nx_uint8_t flags;
+	nx_bool crc;
+	nx_bool ack;
 #endif
-  nx_uint32_t timestamp;
-//  nx_uint16_t rxInterval;
-  nx_uint16_t maxRetries;
-  nx_uint16_t retryDelay;
 } metadata_t;
 
 

@@ -168,8 +168,6 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	metadata->ack = !call csmacaMacParams.get_ack();
 	metadata->rssi = 0;
 	metadata->lqi = 0;
-	//metadata->timesync = FALSE;
-	metadata->timestamp = INVALID_TIMESTAMP;
 
 	csmaca_backoff_period = call csmacaMacParams.get_backoff();
 	csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
@@ -249,23 +247,19 @@ void shutdown() {
 }
 
 
-void requestInitialBackoff(message_t *msg) {
-//	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-//		myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
-//	} else {
+void requestInitialBackoff(message_t *msg, bool resend) {
+	if ((csmaca_delay_after_receive > 0) && (resend)) {
+		myInitialBackoff = ( call Random.rand16() % (0x4 * csmaca_backoff_period) + csmaca_min_backoff);
+	} else {
 		myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
-//	}
+	}
 	dbg("Mac", "csmaMac CSMATransmitP requestInitialBackoff(0x%1x) myInitialBackoff = %d", msg, myInitialBackoff);
-
 }
 
+
 void congestionBackoff(message_t *msg) {
-//	metadata_t* metadata = (metadata_t*) msg->metadata;
-//	if ((csmaca_delay_after_receive > 0) && (metadata->rxInterval > 0)) {
-//		myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
-//	} else {
-		myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
-//	}
+//	myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
+	myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
 
 	if (myCongestionBackoff) {
 		call BackoffTimer.start(myCongestionBackoff);
@@ -297,7 +291,7 @@ command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
 	totalCcaChecks = 0;
 
 	if(m_cca) {
-		requestInitialBackoff(m_msg);
+		requestInitialBackoff(m_msg, TRUE);
 		if (myInitialBackoff) {
 			call BackoffTimer.start( myInitialBackoff );
 		} else {
@@ -337,7 +331,7 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	} else {
 		m_state = S_SAMPLE_CCA;
 
-		requestInitialBackoff(msg);
+		requestInitialBackoff(msg, FALSE);
 		if (myInitialBackoff) {
 			call BackoffTimer.start(myInitialBackoff);
 		} else {
