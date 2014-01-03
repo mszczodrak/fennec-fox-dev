@@ -104,7 +104,7 @@ def get_state(state):
         if (state == S_COMPLETED):
 		return "Completed"
 
-        if (state == S_BUSY:
+        if (state == S_BUSY):
 		return "Busy"
 
         if (state == S_SERIAL):
