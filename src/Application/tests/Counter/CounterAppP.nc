@@ -125,9 +125,14 @@ event void Timer.fired() {
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+	CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
+							sizeof(CounterMsg));
 	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
+	if (error != SUCCESS) {
+		dbgs(F_APPLICATION, S_CANCEL, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
+	}
 }
 
 
@@ -136,8 +141,14 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 	dbg("Application", "CounterApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
 	dbg("Application", "CounterApp receive seqno: %d source: %d", cm->seqno, cm->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
-	call Leds.set(cm->seqno);
+
+	if (len == sizeof(CounterMsg)) {
+		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+		call Leds.set(cm->seqno);
+	} else {
+		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, (uint16_t)msg, (uint16_t)payload);
+		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->seqno, cm->source);
+	}
 	return msg;
 }
 

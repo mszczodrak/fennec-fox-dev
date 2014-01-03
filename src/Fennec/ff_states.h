@@ -66,6 +66,7 @@ typedef enum {
 	S_SERIAL		= 34,
 	S_NEW_STATE		= 35,
 	S_RESET			= 36,
+	S_ERROR			= 37,
 
 
                 /* tx */
