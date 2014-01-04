@@ -40,16 +40,10 @@
 module cc2420xRadioP @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
-provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
+//provides interface Resource as RadioResource;
 provides interface RadioBuffer;
 provides interface RadioPacket;
 provides interface RadioSend;
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
 
 uses interface cc2420xRadioParams;
 
@@ -143,107 +137,19 @@ command error_t RadioState.standby() {
 }
 
 command error_t RadioState.setChannel(uint8_t ch) {
-        call RadioConfig.setChannel( ch );
+	channel = ch;
 	signal RadioState.done();
         return SUCCESS;
 }
 
 command uint8_t RadioState.getChannel() {
-        return call RadioConfig.getChannel();
+        return channel;
 }
 
 
-
-async command error_t RadioPower.startVReg() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.stopVReg() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.startOscillator() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.stopOscillator() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.rxOn() {
-	return SUCCESS;
-}
-
-async command error_t RadioPower.rfOff() {
-	return SUCCESS;
-}
-
-command uint8_t RadioConfig.getChannel() {
-	return channel;
-}
-
-command void RadioConfig.setChannel( uint8_t new_channel ) {
-	atomic channel = new_channel;
-}
-
-async command uint16_t RadioConfig.getShortAddr() {
-	return TOS_NODE_ID;
-}
-
-command void RadioConfig.setShortAddr( uint16_t addr ) {
-}
-
-async command uint16_t RadioConfig.getPanAddr() {
-	return TOS_NODE_ID;
-}
-
-command void RadioConfig.setPanAddr( uint16_t pan ) {
-}
-
-command error_t RadioConfig.sync() {
-	return SUCCESS;
-}
-
-command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
-}
-
-async command bool RadioConfig.isAddressRecognitionEnabled() {
-	return FALSE;
-}
-
-async command bool RadioConfig.isHwAddressRecognitionDefault() {
-	return FALSE;
-}
-
-command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
-}
-
-async command bool RadioConfig.isHwAutoAckDefault() {
-	return FALSE;
-}
-
-async command bool RadioConfig.isAutoAckEnabled() {
-	return FALSE;
-}
-
-command error_t ReadRssi.read() {
-	return FAIL;
-}
 
 async command error_t RadioCCA.request() {
 	return SUCCESS;
-}
-
-async command bool ByteIndicator.isReceiving() {
-	return FALSE;
-}
-
-async command bool EnergyIndicator.isReceiving() {
-	return FALSE;
-}
-
-async command bool PacketIndicator.isReceiving() {
-	return FALSE;
 }
 
 task void load_done() {
@@ -295,22 +201,6 @@ async command void RadioPacket.clear(message_t* msg) {
 }
 
 
-
-async command error_t RadioResource.immediateRequest() {
-	return SUCCESS;
-}
-
-async command error_t RadioResource.request() {
-	return SUCCESS;
-}
-
-async command bool RadioResource.isOwner() {
-	return SUCCESS;
-}
-
-async command error_t RadioResource.release() {
-	return SUCCESS;
-}
 
 async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
        //      return call PacketLinkQuality.get(msg) > 105;

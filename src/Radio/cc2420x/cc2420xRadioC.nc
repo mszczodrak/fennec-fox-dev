@@ -40,17 +40,10 @@ provides interface RadioReceive;
 uses interface cc2420xRadioParams;
 
 provides interface Resource as RadioResource;
-provides interface RadioConfig;
-provides interface RadioPower;
-provides interface Read<uint16_t> as ReadRssi;
 
 provides interface RadioPacket;
 provides interface RadioBuffer;
 provides interface RadioSend;
-
-provides interface ReceiveIndicator as PacketIndicator;
-provides interface ReceiveIndicator as EnergyIndicator;
-provides interface ReceiveIndicator as ByteIndicator;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -69,15 +62,6 @@ SplitControl = cc2420xRadioP;
 cc2420xRadioParams = cc2420xRadioP;
 RadioReceive = cc2420xRadioP.RadioReceive;
 
-PacketIndicator = cc2420xRadioP.PacketIndicator;
-EnergyIndicator = cc2420xRadioP.EnergyIndicator;
-ByteIndicator = cc2420xRadioP.ByteIndicator;
-
-RadioResource = cc2420xRadioP.RadioResource;
-RadioConfig = cc2420xRadioP.RadioConfig;
-RadioPower = cc2420xRadioP.RadioPower;
-ReadRssi = cc2420xRadioP.ReadRssi;
-
 RadioBuffer = cc2420xRadioP.RadioBuffer;
 RadioPacket = cc2420xRadioP.RadioPacket;
 RadioSend = cc2420xRadioP.RadioSend;
@@ -90,6 +74,14 @@ PacketTransmitPower = cc2420xRadioP.PacketTransmitPower;
 PacketRSSI = cc2420xRadioP.PacketRSSI;
 PacketTimeSyncOffset = cc2420xRadioP.PacketTimeSyncOffset;
 PacketLinkQuality = cc2420xRadioP.PacketLinkQuality;
+
+components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
+RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+
+//components CC2420XDriverLayerC as RadioDriverLayerC;
+
+
+
 
 
 
