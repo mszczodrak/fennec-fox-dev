@@ -26,6 +26,7 @@
 #include <TimeSyncMessageLayer.h>
 #include <CC2420XRadioConfig.h>
 #include "CC2420.h"
+#include "Ieee154.h"
 module CC2420XDriverLayerP
 {
 	provides
@@ -82,9 +83,34 @@ module CC2420XDriverLayerP
 
 implementation
 {
-	cc2420x_header_t* getHeader(message_t* msg)
+
+typedef nx_uint32_t timesync_radio_t;
+
+        enum
+        {
+                IEEE154_DATA_FRAME_MASK = (IEEE154_TYPE_MASK << IEEE154_FCF_FRAME_TYPE)
+                        | (1 << IEEE154_FCF_INTRAPAN)
+                        | (IEEE154_ADDR_MASK << IEEE154_FCF_DEST_ADDR_MODE)
+                        | (IEEE154_ADDR_MASK << IEEE154_FCF_SRC_ADDR_MODE),
+
+                IEEE154_DATA_FRAME_VALUE = (IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE)
+                        | (1 << IEEE154_FCF_INTRAPAN)
+                        | (IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE)
+                        | (IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE),
+
+                IEEE154_DATA_FRAME_PRESERVE = (1 << IEEE154_FCF_ACK_REQ)
+                        | (1 << IEEE154_FCF_FRAME_PENDING),
+
+                IEEE154_ACK_FRAME_LENGTH = 3,   // includes the FCF, DSN
+                IEEE154_ACK_FRAME_MASK = (IEEE154_TYPE_MASK << IEEE154_FCF_FRAME_TYPE),
+                IEEE154_ACK_FRAME_VALUE = (IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE),
+        };
+
+
+
+	cc2420x_hdr_t* getHeader(message_t* msg)
 	{
-		return ((void*)msg) + call Config.headerLength(msg);
+		return (cc2420x_hdr_t*)msg->data;
 	}
 
 	void* getPayload(message_t* msg)
@@ -682,15 +708,17 @@ implementation
 			writeRegister(CC2420X_TXCTRL, txctrl.value);
 		}
 
-		if( call Config.requiresRssiCca(msg) && !call CCA.get() )
+		if( ((getHeader(msg)->fcf & IEEE154_DATA_FRAME_MASK) == IEEE154_DATA_FRAME_VALUE) 
+			&& !call CCA.get() ) {
 			return EBUSY;
+		}
 			
 		data = getPayload(msg);
 		length = getHeader(msg)->length;
 		
 		// length | data[0] ... data[length-3] | automatically generated FCS
 
-		header = call Config.headerPreloadLength();
+		header = 7;
 		if( header > length )
 			header = length;
 
@@ -1011,18 +1039,6 @@ implementation
 
 			call PacketTimeStamp.set(rxMsg, time32);
 			
-#ifdef RADIO_DEBUG_MESSAGES
-			if( call DiagMsg.record() )
-			{
-				call DiagMsg.str("r");
-				call DiagMsg.uint16(call RadioAlarm.getNow() - (uint16_t)call PacketTimeStamp.timestamp(rxMsg) );
-				call DiagMsg.uint16(call RadioAlarm.getNow());
-				call DiagMsg.uint16(call PacketTimeStamp.isValid(rxMsg) ? call PacketTimeStamp.timestamp(rxMsg) : 0);
-				call DiagMsg.int8(length);
-				call DiagMsg.hex8s(getPayload(rxMsg), length);				
-				call DiagMsg.send();
-			}
-#endif			
 			rxMsg = signal RadioReceive.receive(rxMsg);
 
 		}
@@ -1242,41 +1258,32 @@ implementation
 
 /*----------------- RadioPacket -----------------*/
 	
-	async command uint8_t RadioPacket.headerLength(message_t* msg)
-	{
-		return call Config.headerLength(msg) + sizeof(cc2420x_header_t);
-	}
+async command uint8_t RadioPacket.headerLength(message_t* msg) {
+	return sizeof(nx_struct cc2420x_radio_header_t);
+}
 
-	async command uint8_t RadioPacket.payloadLength(message_t* msg)
-	{
-		return getHeader(msg)->length - 2;
-	}
+async command uint8_t RadioPacket.payloadLength(message_t* msg) {
+	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
+        return hdr->length - sizeof(nx_struct cc2420x_radio_header_t) - CC2420X_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length)
-	{
-		RADIO_ASSERT( 1 <= length && length <= 125 );
-		RADIO_ASSERT( call RadioPacket.headerLength(msg) + length + call RadioPacket.metadataLength(msg) <= sizeof(message_t) );
+async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
+        nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
+        hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + CC2420X_SIZEOF_CRC + sizeof(timesync_radio_t);
+}
+	
 
-		// we add the length of the CRC, which is automatically generated
-		getHeader(msg)->length = length + 2;
-	}
+async command uint8_t RadioPacket.maxPayloadLength() {
+	return CC2420X_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420x_radio_header_t) - CC2420X_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command uint8_t RadioPacket.maxPayloadLength()
-	{
-		RADIO_ASSERT( call Config.maxPayloadLength() - sizeof(cc2420x_header_t) <= 125 );
+async command uint8_t RadioPacket.metadataLength(message_t* msg) {
+	return sizeof(metadata_t);
+}
 
-		return call Config.maxPayloadLength() - sizeof(cc2420x_header_t);
-	}
-
-	async command uint8_t RadioPacket.metadataLength(message_t* msg)
-	{
-		return call Config.metadataLength(msg) + sizeof(cc2420x_metadata_t);
-	}
-
-	async command void RadioPacket.clear(message_t* msg)
-	{
-		// all flags are automatically cleared
-	}
+async command void RadioPacket.clear(message_t* msg) {
+	memset(msg, 0x0, sizeof(message_t));
+}
 
 /*----------------- PacketTransmitPower -----------------*/
 

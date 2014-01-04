@@ -36,22 +36,26 @@
 #ifndef __H_cc2420x_RADIO__
 #define __H_cc2420x_RADIO___
 
-enum {
-        cc2420x_MIN_MESSAGE_SIZE        	= 5,
-        cc2420x_MAX_MESSAGE_SIZE        	= 127,
-};
-
 nx_struct cc2420x_radio_header_t {
         nxle_uint8_t length;
 };
 
 enum {
-        NULL_MIN_MESSAGE_SIZE         = 10,
-        NULL_MAX_MESSAGE_SIZE         = 128,
-        NULL_MAX_FAILED_LOADS         = 3,
-        NULL_FOOTER                   = 2,
-        NULL_SIZEOF_CRC               = 2,
+        CC2420X_MIN_MESSAGE_SIZE         = 5,
+        CC2420X_MAX_MESSAGE_SIZE         = 128,
+        CC2420X_MAX_FAILED_LOADS         = 3,
+        CC2420X_FOOTER                   = 2,
+        CC2420X_SIZEOF_CRC               = 2,
 };
+
+typedef nx_struct cc2420x_hdr_t {
+        nxle_uint8_t length;
+        nxle_uint16_t fcf;
+        nxle_uint8_t dsn;
+        nxle_uint16_t destpan;
+        nxle_uint16_t dest;
+        nxle_uint16_t src;
+} cc2420x_hdr_t;
 
 
 

@@ -46,7 +46,6 @@ configuration CC2420XDriverLayerC
 
 	uses
 	{
-		interface CC2420XDriverConfig as Config;
 		interface PacketTimeStamp<TRadio, uint32_t>;
 
 		interface PacketFlag as TransmitPowerFlag;
@@ -73,7 +72,6 @@ implementation
 	RadioPacket = DriverLayerP;
 
 	LocalTimeRadio = HplC;
-	Config = DriverLayerP;
 
 	DriverLayerP.VREN -> HplC.VREN;
 	DriverLayerP.CSN -> HplC.CSN;
