@@ -104,7 +104,7 @@ void sendMessage() {
 	msg->seqno = seqno;
 
 	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
-//	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
+	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
 
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
@@ -131,7 +131,7 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 					msg, error);
 	sendBusy = FALSE;
 	if (error == SUCCESS) {
-		dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
+		//dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
 	} else {
 		//dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
 	}
