@@ -21,7 +21,7 @@ interface RadioSend {
   *                  if the stack is in a state that cannot accept requests
   *                  (e.g., it's off).
   */ 
-async command error_t send(message_t* msg, uint8_t len);
+async command error_t send(message_t* msg, bool useCca);
 
 /** 
   * Signaled in response to an accepted send request. <tt>msg</tt>

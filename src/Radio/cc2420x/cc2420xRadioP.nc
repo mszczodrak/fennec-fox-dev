@@ -35,20 +35,17 @@
 
 #include <Fennec.h>
 #include "cc2420xRadio.h"
-#include "CC2420TimeSyncMessage.h"
 
 module cc2420xRadioP @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface RadioBuffer;
-provides interface RadioPacket;
 provides interface RadioSend;
 
 uses interface cc2420xRadioParams;
 
 uses interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
 
 }
 
@@ -98,10 +95,6 @@ event void RadioState.done() {
 
 
 
-async command error_t RadioCCA.request() {
-	return SUCCESS;
-}
-
 task void load_done() {
 	signal RadioBuffer.loadDone(m, SUCCESS);
 }
@@ -122,35 +115,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	post send_done();
 	return SUCCESS;
 }
-
-async command uint8_t RadioPacket.maxPayloadLength() {
-	dbg("Radio", "cc2420xRadio RadioBuffer.maxPayloadLength()");
-	return NULL_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420x_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
-}
-
-async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	return sizeof(nx_struct cc2420x_radio_header_t);
-}
-
-async command uint8_t RadioPacket.payloadLength(message_t* msg) {
-	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct cc2420x_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
-}
-
-async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
-	hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + NULL_SIZEOF_CRC + sizeof(timesync_radio_t);
-}
-
-async command uint8_t RadioPacket.metadataLength(message_t* msg) {
-        return sizeof(metadata_t);
-}
-
-async command void RadioPacket.clear(message_t* msg) {
-        memset(msg, 0x0, sizeof(message_t));
-}
-
-
 
 async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
        //      return call PacketLinkQuality.get(msg) > 105;

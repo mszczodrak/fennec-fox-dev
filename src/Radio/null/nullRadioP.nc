@@ -34,7 +34,7 @@
 
 #include <Fennec.h>
 #include "nullRadio.h"
-#include "CC2420TimeSyncMessage.h"
+//#include "CC2420TimeSyncMessage.h"
 
 module nullRadioP @safe() {
 provides interface SplitControl;

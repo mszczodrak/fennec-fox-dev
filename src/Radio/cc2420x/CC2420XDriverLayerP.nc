@@ -25,6 +25,7 @@
 #include <RadioAssert.h>
 #include <TimeSyncMessageLayer.h>
 #include <CC2420XRadioConfig.h>
+#include "CC2420.h"
 module CC2420XDriverLayerP
 {
 	provides
@@ -141,9 +142,7 @@ implementation
 	norace uint8_t channel;
 
 	norace message_t* rxMsg;
-#ifdef RADIO_DEBUG_MESSAGES	
 	norace message_t* txMsg;
-#endif	
 	message_t rxMsgBuffer;
 
 	norace uint16_t capturedTime;	// time when the last SFD rising edge was captured
@@ -486,12 +485,12 @@ implementation
 
 /*----------------- CHANNEL -----------------*/
 
-	async command uint8_t RadioState.getChannel()
+	command uint8_t RadioState.getChannel()
 	{
 		return channel;
 	}
 
-	async command error_t RadioState.setChannel(uint8_t c)
+	command error_t RadioState.setChannel(uint8_t c)
 	{
 		c &= CC2420X_CHANNEL_MASK;
 
@@ -584,7 +583,7 @@ implementation
 			cmd = CMD_SIGNAL_DONE;
 	}
 
-	async command error_t RadioState.turnOff()
+	command error_t RadioState.turnOff()
 	{
 		if( cmd != CMD_NONE )
 			return EBUSY;
@@ -606,8 +605,8 @@ implementation
 		return SUCCESS;
 	}
 	
-	async command error_t RadioState.standby()
-	{
+	command error_t RadioState.standby()
+	{	
 		if( cmd != CMD_NONE || (state == STATE_PD && ! call RadioAlarm.isFree()) )
 			return EBUSY;
 		else if( state == STATE_IDLE )
@@ -629,7 +628,7 @@ implementation
 	}
 
 
-	async command error_t RadioState.turnOn()
+	command error_t RadioState.turnOn()
 	{
 		if( cmd != CMD_NONE || (state == STATE_PD && ! call RadioAlarm.isFree()) )
 			return EBUSY;
@@ -651,11 +650,11 @@ implementation
 		return SUCCESS;
 	}
 
-	default async event void RadioState.done() { }
+	default event void RadioState.done() { }
 
 /*----------------- TRANSMIT -----------------*/
 
-	async command error_t RadioSend.send(message_t* msg)
+	async command error_t RadioSend.send(message_t* msg, bool useCca)
 	{
 		uint16_t time;
 		uint8_t p;
@@ -670,6 +669,7 @@ implementation
 #ifdef RADIO_DEBUG
 		uint8_t sfd1, sfd2, sfd3, sfd4;
 #endif
+		txMsg = msg;
 		if( cmd != CMD_NONE || (state != STATE_IDLE && state != STATE_RX_ON) || ! isSpiAcquired() || rxSfd || txEnd )
 			return EBUSY;
 
@@ -801,7 +801,7 @@ implementation
 		return SUCCESS;
 	}
 
-	default async event void RadioSend.sendDone(error_t error) { }
+	default async event void RadioSend.sendDone(message_t *msg, error_t error) { }
 	default async event void RadioSend.ready() { }
 
 /*----------------- CCA -----------------*/
@@ -1170,9 +1170,9 @@ implementation
 					RADIO_ASSERT(FALSE);
 					// flush tx fifo
 					strobe(CC2420X_SFLUSHTX);
-					signal RadioSend.sendDone(FAIL);
+					signal RadioSend.sendDone(txMsg, FAIL);
 				} else {
-					signal RadioSend.sendDone(SUCCESS);
+					signal RadioSend.sendDone(txMsg, SUCCESS);
 				}						
 			}
 			else

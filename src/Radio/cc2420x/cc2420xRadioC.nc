@@ -63,11 +63,9 @@ cc2420xRadioParams = cc2420xRadioP;
 RadioReceive = cc2420xRadioP.RadioReceive;
 
 RadioBuffer = cc2420xRadioP.RadioBuffer;
-RadioPacket = cc2420xRadioP.RadioPacket;
 RadioSend = cc2420xRadioP.RadioSend;
 
 RadioLinkPacketMetadata = cc2420xRadioP.RadioLinkPacketMetadata;
-RadioCCA = cc2420xRadioP.RadioCCA;
 
 
 components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
@@ -79,6 +77,8 @@ PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;
 PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
 PacketTimeSyncOffset = CC2420XDriverLayerC.PacketTimeSyncOffset;
 PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
+RadioPacket = CC2420XDriverLayerC.RadioPacket;
+RadioCCA = CC2420XDriverLayerC.RadioCCA;
 
 components new RadioAlarmC();
 RadioAlarmC.Alarm -> CC2420XDriverLayerC;
