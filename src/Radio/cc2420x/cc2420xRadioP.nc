@@ -46,7 +46,7 @@ provides interface RadioSend;
 
 uses interface cc2420xRadioParams;
 
-provides interface RadioState;
+uses interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
 
@@ -80,7 +80,7 @@ command error_t SplitControl.stop() {
 }
 
 
-command void RadioState.done() {
+event void RadioState.done() {
 	switch(state) {
 	case S_STARTING:
 		post start_done();		
@@ -88,9 +88,10 @@ command void RadioState.done() {
 
 	case S_STOPPING:
 		post stop_done();
-		break
+		break;
 
 	default:
+		break;
 
 	}
 }
@@ -108,7 +109,7 @@ task void load_done() {
 async command error_t RadioBuffer.load(message_t* msg) {
 	dbg("Radio", "cc2420xRadio RadioBuffer.load(0x%1x)", msg);
 	m = msg;
-	post load_done();
+	signal RadioBuffer.loadDone(msg, SUCCESS);
 	return SUCCESS;
 }
 
