@@ -140,7 +140,6 @@ task void deliverTask() {
 
 	atomic {
                	if( receiveQueueSize == 0 ) {
-			dbgs(F_MAC, S_RECEIVING, DBGS_ERROR, 0, 0);
                        	return;
 		}
 
