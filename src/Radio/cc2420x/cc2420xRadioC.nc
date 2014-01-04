@@ -80,6 +80,9 @@ PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
 PacketTimeSyncOffset = CC2420XDriverLayerC.PacketTimeSyncOffset;
 PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
 
+components new RadioAlarmC();
+RadioAlarmC.Alarm -> CC2420XDriverLayerC;
+
 RadioState = CC2420XDriverLayerC.RadioState;
 
 cc2420xRadioP.RadioState -> CC2420XDriverLayerC.RadioState;

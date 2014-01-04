@@ -130,32 +130,19 @@ implementation
 		CMD_SIGNAL_DONE = 8,	// signal the end of the state transition
 		CMD_DOWNLOAD = 9,		// download the received message
 	};
-	tasklet_norace uint8_t cmd = CMD_NONE;
-
-//for apps/PPPSniffer
-#ifdef PPPSNIFFER
-	enum {
-	    PPP_QUEUE_LEN = 10,
-	};
-
-	message_t  pppQueueBufs[PPP_QUEUE_LEN];
-	message_t  *pppQueue[PPP_QUEUE_LEN];
-	uint8_t    pppIn, pppOut;
-	bool       pppBusy, pppFull;
-
-#endif
+	norace uint8_t cmd = CMD_NONE;
 
 	// flag: RX SFD was captured, but not yet processed
 	norace bool rxSfd = 0;
 	// flag: end of TX event (falling SFD edge) was captured, but not yet processed	
 	norace bool txEnd = 0;
 
-	tasklet_norace uint8_t txPower;
-	tasklet_norace uint8_t channel;
+	norace uint8_t txPower;
+	norace uint8_t channel;
 
-	tasklet_norace message_t* rxMsg;
+	norace message_t* rxMsg;
 #ifdef RADIO_DEBUG_MESSAGES	
-	tasklet_norace message_t* txMsg;
+	norace message_t* txMsg;
 #endif	
 	message_t rxMsgBuffer;
 
@@ -170,7 +157,7 @@ implementation
 
 
 /*----------------- ALARM -----------------*/
-	tasklet_async event void RadioAlarm.fired()
+	async event void RadioAlarm.fired()
 	{		
 		if( state == STATE_PD_2_IDLE ) {
 			state = STATE_IDLE;
@@ -664,11 +651,11 @@ implementation
 		return SUCCESS;
 	}
 
-	default tasklet_async event void RadioState.done() { }
+	default async event void RadioState.done() { }
 
 /*----------------- TRANSMIT -----------------*/
 
-	tasklet_async command error_t RadioSend.send(message_t* msg)
+	async command error_t RadioSend.send(message_t* msg)
 	{
 		uint16_t time;
 		uint8_t p;
@@ -814,12 +801,12 @@ implementation
 		return SUCCESS;
 	}
 
-	default tasklet_async event void RadioSend.sendDone(error_t error) { }
-	default tasklet_async event void RadioSend.ready() { }
+	default async event void RadioSend.sendDone(error_t error) { }
+	default async event void RadioSend.ready() { }
 
 /*----------------- CCA -----------------*/
 
-	tasklet_async command error_t RadioCCA.request()
+	async command error_t RadioCCA.request()
 	{
 		if( cmd != CMD_NONE || state != STATE_RX_ON )
 			return EBUSY;
@@ -834,7 +821,7 @@ implementation
 		return SUCCESS;
 	}
 
-	default tasklet_async event void RadioCCA.done(error_t error) { }
+	default async event void RadioCCA.done(error_t error) { }
 
 /*----------------- RECEIVE -----------------*/
 
@@ -1100,12 +1087,12 @@ implementation
 	}
 
 
-	default tasklet_async event bool RadioReceive.header(message_t* msg)
+	default async event bool RadioReceive.header(message_t* msg)
 	{
 		return TRUE;
 	}
 
-	default tasklet_async event message_t* RadioReceive.receive(message_t* msg)
+	default async event message_t* RadioReceive.receive(message_t* msg)
 	{
 		return msg;
 	}
