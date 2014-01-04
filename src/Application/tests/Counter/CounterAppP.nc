@@ -145,9 +145,13 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 	call Leds.set(cm->seqno);
 	if (cm->seqno > (seqno + 20)) {
-		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR, cm->seqno, (uint16_t)msg);
+		if (call NetworkAMPacket.source(msg) == cm->source) {
+			dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR, cm->seqno, cm->source);
+		} else {
+			dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->seqno, cm->source);
+		}
 	} else {
-		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, (uint16_t)msg);
+		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	}
 
 	return msg;
