@@ -139,8 +139,10 @@ task void deliverTask() {
 	uint8_t msgDsn;
 
 	atomic {
-               	if( receiveQueueSize == 0 )
+               	if( receiveQueueSize == 0 ) {
+			dbgs(F_MAC, S_RECEIVING, DBGS_ERROR, 0, 0);
                        	return;
+		}
 
 		msg = receiveQueue[receiveQueueHead];
 		msgSource = getSourceKey(msg);
@@ -151,6 +153,7 @@ task void deliverTask() {
 
 	if(!hasSeen(msgSource, msgDsn)) {
 		insert(msgSource, msgDsn);
+		dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, header->src, (uint16_t)msg);
 		msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	}
                         
@@ -193,6 +196,7 @@ async event bool SubReceive.header(message_t* msg) {
 		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 	        return ((header->dest == TOS_NODE_ID) || (header->dest == AM_BROADCAST_ADDR));
 	} else {
+		dbgs(F_MAC, S_RECEIVING, DBGS_ERROR, 1, 1);
 		return FALSE;
 	}
 	//return TRUE;

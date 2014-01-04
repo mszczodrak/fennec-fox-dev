@@ -103,8 +103,11 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
+	if (call CounterAppParams.get_dest() != TOS_NODE_ID) {
+		dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
+	}
+
 	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
 
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
@@ -130,33 +133,22 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
-	if (error == SUCCESS) {
-		//dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
-	} else {
-		//dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
-	}
 }
 
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg, sizeof(CounterMsg));
-	//CounterMsg* cm = (CounterMsg*)payload;
-	uint8_t *p = (uint8_t*)(msg->data);
-	uint16_t src;
-	uint16_t seq;
-	p += 21;
-	src = *((nx_uint16_t*)p);
-	p += 2;
-	seq = *((nx_uint16_t*)p);
+	CounterMsg* cm = (CounterMsg*)payload;
 	
-	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, seq, src);
-	//dbgs(F_APPLICATION, S_ERROR, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	
 	dbg("Application", "CounterApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
 	dbg("Application", "CounterApp receive seqno: %d source: %d", cm->seqno, cm->source); 
 
 	call Leds.set(cm->seqno);
-	//dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR, (uint16_t)(((uint16_t*)cm) - ((uint16_t*)msg->data)), cm->seqno );
+	if (cm->seqno > (seqno + 20)) {
+		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR, cm->seqno, (uint16_t)msg);
+	} else {
+		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, (uint16_t)msg);
+	}
 
 	return msg;
 }
