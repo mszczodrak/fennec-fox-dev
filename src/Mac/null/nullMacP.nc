@@ -209,7 +209,8 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-	header->length = len + sizeof(null_mac_header_t);
+
+	call MacPacket.setPayloadLength(msg, len);
 
 	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
