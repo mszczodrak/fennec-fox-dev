@@ -26,17 +26,18 @@
  */
 
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox cc2420x radio driver adaptation
   *
   * @author: Marcin K Szczodrak
+  * @updated: 01/05/2014
   */
 
 
-configuration nullRadioC {
+configuration cc2420xRadioC {
 provides interface SplitControl;
 provides interface RadioReceive;
 
-uses interface nullRadioParams;
+uses interface cc2420xRadioParams;
 
 provides interface Resource as RadioResource;
 provides interface RadioConfig;
@@ -63,32 +64,32 @@ provides interface RadioCCA;
 
 implementation {
 
-components nullRadioP;
-SplitControl = nullRadioP;
-nullRadioParams = nullRadioP;
-RadioReceive = nullRadioP.RadioReceive;
+components cc2420xRadioP;
+SplitControl = cc2420xRadioP;
+cc2420xRadioParams = cc2420xRadioP;
+RadioReceive = cc2420xRadioP.RadioReceive;
 
-PacketIndicator = nullRadioP.PacketIndicator;
-EnergyIndicator = nullRadioP.EnergyIndicator;
-ByteIndicator = nullRadioP.ByteIndicator;
+PacketIndicator = cc2420xRadioP.PacketIndicator;
+EnergyIndicator = cc2420xRadioP.EnergyIndicator;
+ByteIndicator = cc2420xRadioP.ByteIndicator;
 
-RadioResource = nullRadioP.RadioResource;
-RadioConfig = nullRadioP.RadioConfig;
-RadioPower = nullRadioP.RadioPower;
-ReadRssi = nullRadioP.ReadRssi;
+RadioResource = cc2420xRadioP.RadioResource;
+RadioConfig = cc2420xRadioP.RadioConfig;
+RadioPower = cc2420xRadioP.RadioPower;
+ReadRssi = cc2420xRadioP.ReadRssi;
 
-RadioBuffer = nullRadioP.RadioBuffer;
-RadioPacket = nullRadioP.RadioPacket;
-RadioSend = nullRadioP.RadioSend;
+RadioBuffer = cc2420xRadioP.RadioBuffer;
+RadioPacket = cc2420xRadioP.RadioPacket;
+RadioSend = cc2420xRadioP.RadioSend;
 
-RadioState = nullRadioP.RadioState;
-RadioLinkPacketMetadata = nullRadioP.RadioLinkPacketMetadata;
-RadioCCA = nullRadioP.RadioCCA;
+RadioState = cc2420xRadioP.RadioState;
+RadioLinkPacketMetadata = cc2420xRadioP.RadioLinkPacketMetadata;
+RadioCCA = cc2420xRadioP.RadioCCA;
 
-PacketTransmitPower = nullRadioP.PacketTransmitPower;
-PacketRSSI = nullRadioP.PacketRSSI;
-PacketTimeSyncOffset = nullRadioP.PacketTimeSyncOffset;
-PacketLinkQuality = nullRadioP.PacketLinkQuality;
+PacketTransmitPower = cc2420xRadioP.PacketTransmitPower;
+PacketRSSI = cc2420xRadioP.PacketRSSI;
+PacketTimeSyncOffset = cc2420xRadioP.PacketTimeSyncOffset;
+PacketLinkQuality = cc2420xRadioP.PacketLinkQuality;
 
 
 

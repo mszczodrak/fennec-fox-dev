@@ -26,17 +26,18 @@
  */
 
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox cc2420x radio driver adaptation
   *
   * @author: Marcin K Szczodrak
+  * @updated: 01/05/2014
   */
 
 
 #include <Fennec.h>
-#include "nullRadio.h"
+#include "cc2420xRadio.h"
 #include "CC2420TimeSyncMessage.h"
 
-module nullRadioP @safe() {
+module cc2420xRadioP @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface Resource as RadioResource;
@@ -50,7 +51,7 @@ provides interface ReceiveIndicator as PacketIndicator;
 provides interface ReceiveIndicator as EnergyIndicator;
 provides interface ReceiveIndicator as ByteIndicator;
 
-uses interface nullRadioParams;
+uses interface cc2420xRadioParams;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -105,7 +106,7 @@ command error_t SplitControl.stop() {
 
 
 command error_t RadioState.turnOn() {
-	dbg("Radio", "nullRadio SplitControl.start()");
+	dbg("Radio", "cc2420xRadio SplitControl.start()");
 
 	if (state == S_STOPPED) {
 		state = S_STARTING;
@@ -123,7 +124,7 @@ command error_t RadioState.turnOn() {
 }
 
 command error_t RadioState.turnOff() {
-	dbg("Radio", "nullRadio SplitControl.stop()");
+	dbg("Radio", "cc2420xRadio SplitControl.stop()");
 	if (state == S_STARTED) {
 		state = S_STOPPING;
 		post stop_done();
@@ -250,7 +251,7 @@ task void load_done() {
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
-	dbg("Radio", "nullRadio RadioBuffer.load(0x%1x)", msg);
+	dbg("Radio", "cc2420xRadio RadioBuffer.load(0x%1x)", msg);
 	m = msg;
 	post load_done();
 	return SUCCESS;
@@ -261,28 +262,28 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "nullRadio RadioBuffer.send(0x%1x)", msg, useCca);
+	dbg("Radio", "cc2420xRadio RadioBuffer.send(0x%1x)", msg, useCca);
 	post send_done();
 	return SUCCESS;
 }
 
 async command uint8_t RadioPacket.maxPayloadLength() {
-	dbg("Radio", "nullRadio RadioBuffer.maxPayloadLength()");
-	return NULL_MAX_MESSAGE_SIZE - sizeof(nx_struct null_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
+	dbg("Radio", "cc2420xRadio RadioBuffer.maxPayloadLength()");
+	return NULL_MAX_MESSAGE_SIZE - sizeof(nx_struct cc2420x_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	return sizeof(nx_struct null_radio_header_t);
+	return sizeof(nx_struct cc2420x_radio_header_t);
 }
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
-	nx_struct null_radio_header_t *hdr = (nx_struct null_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct null_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
+	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct cc2420x_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-	nx_struct null_radio_header_t *hdr = (nx_struct null_radio_header_t*)(msg->data);
-	hdr->length = length + sizeof(nx_struct null_radio_header_t) + NULL_SIZEOF_CRC + sizeof(timesync_radio_t);
+	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
+	hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + NULL_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.metadataLength(message_t* msg) {
