@@ -1,32 +1,37 @@
 /*
- *  null MAC module for Fennec Fox platform.
+ * Copyright (c) 2009, Columbia University.
+ * All rights reserved.
  *
- *  Copyright (C) 2010-2012 Marcin Szczodrak
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of the <organization> nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Module: null MAC Protocol
- * Author: Marcin Szczodrak
- * Date: 8/20/2010
- * Last Modified: 1/5/2012
- */
+/**
+  * Fennec Fox empty MAC layer.
+  *
+  * @author: Marcin K Szczodrak
+  */
 
 #include <Fennec.h>
-//#include <Ieee154.h> 
 #include "nullMac.h"
 
 module nullMacP @safe() {
@@ -75,6 +80,8 @@ implementation {
 
 uint8_t status = S_STOPPED;
 norace message_t * ONE_NOK m_msg;
+norace message_t * ONE_NOK r_msg;
+norace message_t * ONE_NOK r_msg_ptr;
 norace uint8_t m_state = S_STOPPED;
 
 enum {
@@ -91,6 +98,7 @@ error_t sendErr = SUCCESS;
 task void startDone_task();
 task void stopDone_task();
 task void sendDone_task();
+task void proc_receive();
 
 task void startDone_task() {
 	m_state = S_STARTED;
@@ -106,10 +114,17 @@ void shutdown() {
 	post stopDone_task();
 }
 
-fennec_header_t* getHeader(message_t *m) {
+null_mac_header_t* getHeader(message_t *m) {
 	uint8_t *p = (uint8_t*)(m->data);
-	return (fennec_header_t*)(p + call RadioPacket.headerLength(m));
+	return (null_mac_header_t*)(p + call RadioPacket.headerLength(m));
 }
+
+task void proc_receive() {
+
+
+}
+
+
 
 error_t SplitControl_start() {
 
@@ -172,7 +187,7 @@ event void RadioControl.stopDone(error_t err) {
 
 
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	fennec_header_t* header;
+	null_mac_header_t* header;
 	metadata_t* metadata;
 
 	dbg("Mac", "nullMac MacAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
@@ -194,7 +209,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
 		( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
-	header->length = len + sizeof(fennec_header_t);
+	header->length = len + sizeof(null_mac_header_t);
 
 	if (header->fcf & 1 << IEEE154_FCF_ACK_REQ) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
@@ -250,13 +265,13 @@ command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
 
 /***************** PacketAcknowledgement Commands ****************/
 async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-	fennec_header_t* header = getHeader(p_msg);
+	null_mac_header_t* header = getHeader(p_msg);
 	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
 	return SUCCESS;
 }
 
 async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-	fennec_header_t* header = getHeader(p_msg);
+	null_mac_header_t* header = getHeader(p_msg);
 	header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	return SUCCESS;
 }
@@ -335,21 +350,21 @@ command void MacPacket.clear(message_t* msg) {
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
-	return call RadioPacket.payloadLength(msg) - sizeof(fennec_header_t);
+	return call RadioPacket.payloadLength(msg) - sizeof(null_mac_header_t);
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	call RadioPacket.setPayloadLength(msg, len + sizeof(fennec_header_t));
+	call RadioPacket.setPayloadLength(msg, len + sizeof(null_mac_header_t));
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
-	return call RadioPacket.maxPayloadLength() - sizeof(fennec_header_t);
+	return call RadioPacket.maxPayloadLength() - sizeof(null_mac_header_t);
 }
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 	if (len <= call MacPacket.maxPayloadLength()) {
 		uint8_t *p = (uint8_t*) getHeader(msg);
-		return (p + sizeof(fennec_header_t));
+		return (p + sizeof(null_mac_header_t));
 	} else {
 		return NULL;
 	}
@@ -386,18 +401,18 @@ async event message_t* RadioReceive.receive(message_t* msg) {
 
 	if (call MacAMPacket.isForMe(msg)) {
 	        dbg("Mac", "nullMac MacReceive.receive(0x%1x, 0x%1x, %d )", msg,
-                        ptr + sizeof(fennec_header_t),
-                        len - sizeof(fennec_header_t));
+                        ptr + sizeof(null_mac_header_t),
+                        len - sizeof(null_mac_header_t));
         	return signal MacReceive.receive(msg,
-                        ptr + sizeof(fennec_header_t),
-                        len - sizeof(fennec_header_t));
+                        ptr + sizeof(null_mac_header_t),
+                        len - sizeof(null_mac_header_t));
 	} else {
 		dbg("Mac", "nullMac MacSnoop.receive(0x%1x, 0x%1x, %d )", msg,
-			ptr + sizeof(fennec_header_t),
-			len - sizeof(fennec_header_t));
+			ptr + sizeof(null_mac_header_t),
+			len - sizeof(null_mac_header_t));
 		return signal MacSnoop.receive(msg,
-			ptr + sizeof(fennec_header_t),
-			len - sizeof(fennec_header_t));
+			ptr + sizeof(null_mac_header_t),
+			len - sizeof(null_mac_header_t));
 	}
 }
 
