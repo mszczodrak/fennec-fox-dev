@@ -303,7 +303,7 @@ command uint8_t MacPacket.maxPayloadLength() {
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 	if (len <= call SubSend.maxPayloadLength()) {
-		uint8_t *p = call SubSend.getPayload(msg, len);
+		uint8_t *p = (uint8_t*) call SubSend.getPayload(msg, len);
 		return (p + sizeof(csmaca_header_t));
 	} else {
 		return NULL;
@@ -318,23 +318,29 @@ event void SubSend.sendDone(message_t* msg, error_t result) {
 
 /***************** SubReceive Events ****************/
 event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	metadata_t* metadata = (metadata_t*) msg->metadata;
-	uint8_t *ptr = (uint8_t*) payload;
+	metadata_t* metadata;
+	uint8_t *ptr;
+	atomic {
+		metadata = (metadata_t*) msg->metadata;
+		ptr = (uint8_t*) payload;
+		ptr += sizeof(csmaca_header_t);
+		len -= sizeof(csmaca_header_t);
 
-	dbg("Mac", "csmaMac SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
+		dbg("Mac", "csmaMac SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
 
-	if((call csmacaMacParams.get_crc()) && (!(metadata)->crc)) {
-		return msg;
+		if((call csmacaMacParams.get_crc()) && (!(metadata)->crc)) {
+			return msg;
+		}
+
+		msg->rssi = metadata->rssi;
+		msg->lqi = metadata->lqi;
+		msg->crc = metadata->crc;
 	}
 
-	msg->rssi = metadata->rssi;
-	msg->lqi = metadata->lqi;
-	msg->crc = metadata->crc;
-
 	if (call MacAMPacket.isForMe(msg)) {
-		return signal MacReceive.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
+		return signal MacReceive.receive(msg, ptr, len);
 	} else {
-		return signal MacSnoop.receive(msg, ptr + sizeof(csmaca_header_t), len - sizeof(csmaca_header_t));
+		return signal MacSnoop.receive(msg, ptr, len);
 	}
 }
 

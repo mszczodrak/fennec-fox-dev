@@ -99,7 +99,7 @@ enum {
 
         enum
         {
-                RECEIVE_QUEUE_SIZE = 10,
+                RECEIVE_QUEUE_SIZE = 5,
         };
 
         message_t receiveQueueData[RECEIVE_QUEUE_SIZE];

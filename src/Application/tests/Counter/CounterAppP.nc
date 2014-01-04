@@ -104,7 +104,7 @@ void sendMessage() {
 	msg->seqno = seqno;
 
 	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
+	//dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
 
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
@@ -125,35 +125,31 @@ event void Timer.fired() {
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
-							sizeof(CounterMsg));
+	//CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
+	//						sizeof(CounterMsg));
 	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
 	if (error != SUCCESS) {
-		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
+		//dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_SEND_DONE, cm->seqno, cm->source);
 	}
 }
 
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	CounterMsg* cm = (CounterMsg*)payload;
-
+	CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg, sizeof(CounterMsg));
+	//CounterMsg* cm = (CounterMsg*)payload;
+	if (payload == cm) {
+		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+	} else {
+		dbgs(F_APPLICATION, S_ERROR, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+	}
+	
 	dbg("Application", "CounterApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
 	dbg("Application", "CounterApp receive seqno: %d source: %d", cm->seqno, cm->source); 
 
-	if (len == sizeof(CounterMsg)) {
-		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
-		call Leds.set(cm->seqno);
-	} else {
-		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, (uint16_t)msg, (uint16_t)payload);
-		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->seqno, cm->source);
-	}
-
-	if (cm->seqno + 10 > seqno) {
-		dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, call NetworkAMPacket.source(msg), 
-				call NetworkAMPacket.destination(msg));
-	}
+	call Leds.set(cm->seqno);
+	//dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR, (uint16_t)(((uint16_t*)cm) - ((uint16_t*)msg->data)), cm->seqno );
 
 	return msg;
 }
