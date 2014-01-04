@@ -148,7 +148,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 		if (call NetworkAMPacket.source(msg) == cm->source) {
 			dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR, cm->seqno, cm->source);
 		} else {
-			dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->seqno, cm->source);
+			dbgs(F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->source, call NetworkAMPacket.source(msg));
 		}
 	} else {
 		dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);

@@ -45,13 +45,11 @@ provides interface RadioSend;
 uses interface cc2420xRadioParams;
 
 uses interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 }
 
 implementation {
 
-uint8_t channel;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
 
@@ -114,10 +112,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "cc2420xRadio RadioBuffer.send(0x%1x)", msg, useCca);
 	post send_done();
 	return SUCCESS;
-}
-
-async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
-       //      return call PacketLinkQuality.get(msg) > 105;
 }
 
 

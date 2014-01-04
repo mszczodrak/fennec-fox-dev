@@ -57,6 +57,11 @@ provides interface RadioCCA;
 
 implementation {
 
+#define UQ_METADATA_FLAGS       "UQ_CC2420X_METADATA_FLAGS"
+#define UQ_RADIO_ALARM          "UQ_CC2420X_RADIO_ALARM"
+
+
+
 components cc2420xRadioP;
 SplitControl = cc2420xRadioP;
 cc2420xRadioParams = cc2420xRadioP;
@@ -65,7 +70,6 @@ RadioReceive = cc2420xRadioP.RadioReceive;
 RadioBuffer = cc2420xRadioP.RadioBuffer;
 RadioSend = cc2420xRadioP.RadioSend;
 
-RadioLinkPacketMetadata = cc2420xRadioP.RadioLinkPacketMetadata;
 
 
 components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
@@ -82,9 +86,19 @@ RadioCCA = CC2420XDriverLayerC.RadioCCA;
 
 components new RadioAlarmC();
 RadioAlarmC.Alarm -> CC2420XDriverLayerC;
+CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
 RadioState = CC2420XDriverLayerC.RadioState;
+RadioLinkPacketMetadata = CC2420XDriverLayerC.LinkPacketMetadata;
 
 cc2420xRadioP.RadioState -> CC2420XDriverLayerC.RadioState;
+
+components new MetadataFlagsLayerC();
+MetadataFlagsLayerC.SubPacket -> CC2420XDriverLayerC;
+
+CC2420XDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+CC2420XDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+CC2420XDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+
 
 }

@@ -43,6 +43,9 @@ module CC2420XDriverLayerP
 		interface PacketField<uint8_t> as PacketTimeSyncOffset;
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface LinkPacketMetadata;
+
+
+//		interface CC2420XDriverConfig as Config;
 	}
 
 	uses
@@ -50,7 +53,6 @@ module CC2420XDriverLayerP
 		interface Resource as SpiResource;
 		interface BusyWait<TMicro, uint16_t>;
 		interface LocalTime<TRadio>;
-		interface CC2420XDriverConfig as Config;
 
 		interface FastSpiByte;
 		interface GeneralIO as CSN;
@@ -73,12 +75,6 @@ module CC2420XDriverLayerP
 
 #ifdef RADIO_DEBUG
 		interface DiagMsg;
-#endif
-//for apps/PPPSniffer:
-#ifdef PPPSNIFFER
-		interface SplitControl as PppSplitControl;
-		interface LcpAutomaton as Ipv6LcpAutomaton;
-		interface PppIpv6;
 #endif
 		interface Leds;
 	}
