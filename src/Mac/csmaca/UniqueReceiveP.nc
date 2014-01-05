@@ -204,7 +204,6 @@ async event bool SubReceive.header(message_t* msg) {
 		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 	        return ((header->dest == TOS_NODE_ID) || (header->dest == AM_BROADCAST_ADDR));
 	} else {
-		dbgs(F_MAC, S_RECEIVING, DBGS_ERROR, 1, 1);
 		return FALSE;
 	}
 	//return TRUE;
