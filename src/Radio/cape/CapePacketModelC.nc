@@ -149,6 +149,8 @@ event void GainRadioModel.acked(message_t* msg) {
 		if (msg != sending) {
 			error = 1;
 			dbg("TossimPacketModelC", "Requested ack for 0x%x, but outgoing packet is 0x%x.\n", msg, sending);
+		} else {
+			dbg("TossimPacketModelC", "Received ack for 0x%x\n", msg);
 		}
 	}
 }
