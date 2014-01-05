@@ -151,8 +151,17 @@ task void deliverTask() {
 	}
 
 	if(!hasSeen(msgSource, msgDsn)) {
+		uint8_t *d = (uint8_t*)msg->data;
+		nx_uint16_t seq;
+		nx_uint16_t src;
 		insert(msgSource, msgDsn);
+		d+=21;
+		seq = *((nx_uint16_t*)d);
+		d += 2;
+		src = *((nx_uint16_t*)d);
+
 		dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, header->src, header->dest);
+		dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, seq, src);
 		msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	}
                         
