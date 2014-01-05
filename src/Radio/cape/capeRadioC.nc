@@ -55,7 +55,6 @@ SplitControl = capeRadioP;
 RadioState = capeRadioP;
 capeRadioParams = capeRadioP;
 RadioReceive = capeRadioP.RadioReceive;
-RadioCCA = capeRadioP.RadioCCA;
 
 PacketTransmitPower = capeRadioP.PacketTransmitPower;
 PacketRSSI = capeRadioP.PacketRSSI;
@@ -76,4 +75,5 @@ capeRadioP.AMControl -> CapePacketModelC;
 capeRadioP.Model -> CapePacketModelC.Packet;
 
 CapePacketModelC.GainRadioModel -> CpmModelC;
+RadioCCA = CapePacketModelC.RadioCCA;
 }

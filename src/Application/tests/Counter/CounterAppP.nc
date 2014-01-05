@@ -76,7 +76,6 @@ command error_t SplitControl.start() {
 
 	if ((call CounterAppParams.get_src() == BROADCAST) || 
 	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
-		dbg("Application", "CounterApp - sending");
 		call Leds.led1On();
 		call Timer.startPeriodic(send_delay);
 	}

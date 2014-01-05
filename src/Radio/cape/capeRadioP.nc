@@ -48,7 +48,6 @@ provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
 
 uses interface SplitControl as AMControl;
 
@@ -110,6 +109,11 @@ task void send_done() {
 
 task void send_msg() {
 	cape_hdr_t* header = (cape_hdr_t*) out_msg->data;
+	metadata_t* metadata = getMetadata(out_msg);
+
+	if ((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1) {
+		metadata->ack = 1;
+	}
 
 	err = call Model.send(BROADCAST, out_msg, header->length);
 	dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
@@ -196,6 +200,7 @@ command error_t RadioState.setChannel(uint8_t new_channel) {
 
 async command error_t RadioBuffer.load(message_t* msg) {
 	dbg("Radio", "capeRadio RadioSend.load( 0x%1x )", msg);
+
 	out_msg = msg;
 	err = SUCCESS;
 	post load_done();
@@ -333,21 +338,6 @@ async command void RadioPacket.clear(message_t* msg) {
 async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
         return call PacketLinkQuality.get(msg) > 105;
 }
-
-async command error_t RadioCCA.request() {
-	return SUCCESS;
-//	return call Model.clearChannel();
-        //if (call PacketIndicator.isReceiving()) {
-//                signal RadioCCA.done(EBUSY);
-//                return EBUSY;
-        //}
-
-        //if (call CCA.get()) {
-                signal RadioCCA.done(SUCCESS);
-                return SUCCESS;
-        //}
-}
-
 
 async command bool PacketTransmitPower.isSet(message_t* msg) {
         return getMetadata(msg)->flags & (1<<1);

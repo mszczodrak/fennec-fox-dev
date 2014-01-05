@@ -4,6 +4,8 @@
 
 module CapePacketModelC { 
 
+provides interface RadioCCA;
+
 provides interface SplitControl as Control;
 provides interface TossimPacketModel as Packet;
 uses interface GainRadioModel;
@@ -158,5 +160,19 @@ event bool GainRadioModel.shouldAck(message_t* msg) {
 		return FALSE;
 	}
 }
+
+async command error_t RadioCCA.request() {
+        //if (call PacketIndicator.isReceiving()) {
+//                signal RadioCCA.done(EBUSY);
+//                return EBUSY;
+        //}
+
+	if (call GainRadioModel.clearChannel()) {
+		signal RadioCCA.done(SUCCESS);
+		return SUCCESS;
+	}
+	return EBUSY;
+}
+
  
 }
