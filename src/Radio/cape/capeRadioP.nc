@@ -112,7 +112,7 @@ task void send_msg() {
 	cape_hdr_t* header = (cape_hdr_t*) out_msg->data;
 
 	err = call Model.send(BROADCAST, out_msg, header->length);
-	//dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
+	dbg("Radio", "capeRadio Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
 	if (err != SUCCESS) {
 		post send_done();
 	}
@@ -242,18 +242,19 @@ event void Model.sendDone(message_t* msg, error_t result) {
 }
 
 event void Model.receive(message_t* msg) {
-	metadata_t* metadata;
-	cape_hdr_t* header = (cape_hdr_t*) msg->data;
+	dbg("Radio", "capeRadio ModelReceive.receive(0x%1x)", msg);
+	if (signal RadioReceive.header(msg)) {
+		metadata_t* metadata;
+		//cape_hdr_t* header = (cape_hdr_t*) msg->data;
 
-	memcpy(bufferPointer, msg, sizeof(message_t));
+		memcpy(bufferPointer, msg, sizeof(message_t));
 
-	metadata = (metadata_t*)getMetadata( bufferPointer );
-	metadata->crc = 1; /* always PASS crc */
-	metadata->lqi = 0;
-	metadata->rssi = metadata->strength;
+		metadata = (metadata_t*)getMetadata( bufferPointer );
+		metadata->crc = 1; /* always PASS crc */
+		metadata->lqi = 0;
+		metadata->rssi = metadata->strength;
 
-	if ((( header->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == 	IEEE154_TYPE_DATA) {	
-		dbg("Radio", "capeRadio RadioReceive.receive(0x%1x)", msg);
+		dbg("Radio", "capeRadio RadioReceive.receive(0x%1x)", bufferPointer);
 		bufferPointer = signal RadioReceive.receive(bufferPointer);
 	}
 }
@@ -329,19 +330,13 @@ async command void RadioPacket.clear(message_t* msg) {
 
 
 
-
-
-
-
-
-
-
-
 async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
         return call PacketLinkQuality.get(msg) > 105;
 }
 
 async command error_t RadioCCA.request() {
+	return SUCCESS;
+//	return call Model.clearChannel();
         //if (call PacketIndicator.isReceiving()) {
 //                signal RadioCCA.done(EBUSY);
 //                return EBUSY;

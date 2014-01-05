@@ -72,14 +72,15 @@ command error_t SplitControl.start() {
 	dbg("Application", "CounterApp starting src: %d  dest: %d",
 		call CounterAppParams.get_src(), call CounterAppParams.get_dest());
 	seqno = 0;
+	sendBusy = FALSE;
 
 	if ((call CounterAppParams.get_src() == BROADCAST) || 
 	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
+		dbg("Application", "CounterApp - sending");
 		call Leds.led1On();
 		call Timer.startPeriodic(send_delay);
 	}
 
-	sendBusy = FALSE;
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -120,6 +121,7 @@ void sendMessage() {
 
 event void Timer.fired() {
 	if (!sendBusy) {
+		dbg("Application", "CounterApp Timer.fired()");
 		sendMessage();
 	}
 	seqno++;

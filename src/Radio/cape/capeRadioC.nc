@@ -69,11 +69,11 @@ RadioBuffer = capeRadioP.RadioBuffer;
 RadioPacket = capeRadioP.RadioPacket;
 RadioSend = capeRadioP.RadioSend;
 
-components CapePacketModelC as Network;
-components CpmModelC as Model;
+components CapePacketModelC as CapePacketModelC;
+components CpmModelC;
 
-capeRadioP.AMControl -> Network;
-capeRadioP.Model -> Network.Packet;
+capeRadioP.AMControl -> CapePacketModelC;
+capeRadioP.Model -> CapePacketModelC.Packet;
 
-Network.GainRadioModel -> Model;
+CapePacketModelC.GainRadioModel -> CpmModelC;
 }
