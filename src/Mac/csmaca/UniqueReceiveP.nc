@@ -160,7 +160,7 @@ task void deliverTask() {
 		d += 2;
 		src = *((nx_uint16_t*)d);
 
-		dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, header->src, header->dest);
+		//dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, header->src, header->dest);
 		dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, seq, src);
 		msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	}
