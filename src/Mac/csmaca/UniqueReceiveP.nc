@@ -86,7 +86,7 @@ uses interface Random;
 
 implementation {
  
-uint8_t localSendId;
+uint8_t localSendId = 0;
  
 struct {
 	uint16_t source;
@@ -100,18 +100,15 @@ uint8_t recycleSourceElement;
   
 enum {
 	INVALID_ELEMENT = 0xFF,
+	RECEIVE_QUEUE_SIZE = 5,
 };
 
-        enum
-        {
-                RECEIVE_QUEUE_SIZE = 5,
-        };
 
-        message_t receiveQueueData[RECEIVE_QUEUE_SIZE];
-        message_t* receiveQueue[RECEIVE_QUEUE_SIZE];
+message_t receiveQueueData[RECEIVE_QUEUE_SIZE];
+message_t* receiveQueue[RECEIVE_QUEUE_SIZE];
 
-        uint8_t receiveQueueHead;
-        uint8_t receiveQueueSize;
+uint8_t receiveQueueHead;
+uint8_t receiveQueueSize;
 
 
 
@@ -179,7 +176,7 @@ task void deliverTask() {
 command error_t Send.send(message_t *msg, uint8_t len) {
 	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, len);
 	header->dsn = localSendId;
-	localSendId = (++localSendId) % INVALID_ELEMENT;
+	localSendId = (localSendId + 1) % INVALID_ELEMENT;
 	return call SubSend.send(msg, len);
 }
 

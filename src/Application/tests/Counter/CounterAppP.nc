@@ -103,17 +103,19 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
-	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno, call CounterAppParams.get_dest());
-
-	dbg("Application", "CounterApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
-
 	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
+		dbgs(F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
+					call CounterAppParams.get_dest());
+		dbg("Application", "CounterApp sendMessage() seqno: %d source: %d - FAILED", 
+					msg->seqno, msg->source); 
 	} else {
+		sendBusy = TRUE;
+		dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
+					call CounterAppParams.get_dest());
 		dbg("Application", "CounterApp call NetworkAMSend.send(%d, 0x%1x, %d)",
 					call CounterAppParams.get_dest(), &packet,
 					sizeof(CounterMsg));
-		sendBusy = TRUE;
 		call Leds.set(seqno);
 	}
 }
