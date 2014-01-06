@@ -156,6 +156,9 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	uint8_t *p = (uint8_t*)(msg->data);
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
+	printf("RS.send to %d\n", (nxle_uint16_t)header->dest);
 	dbg("Radio", "cc2420xRadio RadioBuffer.send(0x%1x)", msg, useCca);
 	return call SubRadioSend.send(msg, useCca);
 }
@@ -165,7 +168,9 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	printf("RS.sendDone( , %d)\n", error);
+	uint8_t *p = (uint8_t*)(msg->data);
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
+	printf("RS.sendDone( , %d  to %d)\n", error, header->dest);
 	printfflush();
 	signal RadioSend.sendDone(msg, error);
 }

@@ -176,6 +176,7 @@ task void deliverTask() {
 command error_t Send.send(message_t *msg, uint8_t len) {
 	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, len);
 	header->dsn = localSendId++;
+	printf("Sending to %d\n", (nxle_uint16_t)header->dest);
 	return call SubSend.send(msg, len);
 }
 
@@ -225,6 +226,7 @@ async event bool SubReceive.header(message_t* msg) {
 	if (receiveQueueSize < RECEIVE_QUEUE_SIZE) {
 		uint8_t *p = (uint8_t*)(msg->data);
 		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
+		printf("header dest %d\n", header->dest);
 	        return ((header->dest == TOS_NODE_ID) || (header->dest == AM_BROADCAST_ADDR));
 	} else {
 		return FALSE;

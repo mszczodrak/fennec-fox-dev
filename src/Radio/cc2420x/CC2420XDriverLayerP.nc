@@ -661,6 +661,8 @@ typedef nx_uint32_t timesync_radio_t;
 			&& !call CCA.get() ) {
 			return EBUSY;
 		}
+
+		printf("TX to %d\n", (nx_uint16_t)getHeader(msg)->dest);
 			
 		data = getPayload(msg);
 		length = getHeader(msg)->length;
