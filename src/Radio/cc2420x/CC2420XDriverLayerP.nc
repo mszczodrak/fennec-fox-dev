@@ -118,10 +118,6 @@ typedef nx_uint32_t timesync_radio_t;
 		return ((void*)msg);
 	}
 
-	cc2420x_metadata_t* getMeta(message_t* msg)
-	{
-		return ((void*)msg) + sizeof(message_t) - call RadioPacket.metadataLength(msg);
-	}
 
 /*----------------- STATE -----------------*/
 
@@ -389,10 +385,6 @@ typedef nx_uint32_t timesync_radio_t;
 
 	command error_t SoftwareInit.init()
 	{
-//for apps/PPPSniffer
-#ifdef PPPSNIFFER
-	    uint8_t i;
-#endif
 		// set pin directions
     	call CSN.makeOutput();
     	call VREN.makeOutput(); 		
@@ -419,19 +411,6 @@ typedef nx_uint32_t timesync_radio_t;
 		rxMsg = &rxMsgBuffer;
 
 		state = STATE_VR_ON;
-
-//for apps/PPPSniffer
-#ifdef PPPSNIFFER
-		call Ipv6LcpAutomaton.open();
-		call PppSplitControl.start();
-
-		for (i = 0; i < PPP_QUEUE_LEN; i++)
-		    pppQueue[i] = &pppQueueBufs[i];
-
-		pppIn = pppOut = 0;
-		pppBusy = FALSE;
-		pppFull = FALSE;
-#endif
 
 		// request SPI, rest of the initialization will be done from
 		// the granted event
@@ -888,44 +867,6 @@ typedef nx_uint32_t timesync_radio_t;
 	}
 
 
-//for apps/PPPSniffer
-#ifdef PPPSNIFFER
-	task void ppptransmit()
-	{
-	    uint8_t len;
-	    message_t* msg;
-
-	    atomic {
-		if (pppIn == pppOut && !pppFull) {
-		    pppBusy = FALSE;
-		    return;
-		}
-
-		msg = pppQueue[pppOut];
-		len = getHeader(msg)->length; // separate FCS/CRC
-	    }
-
-	    call Leds.led1Toggle();
-	    //if (call UartSend.send(uartQueue[uartOut], len) == SUCCESS) {
-	    if (call PppIpv6.transmit(getPayload(msg)+1,
-				      len) == SUCCESS) {
-		//call Leds.led2Toggle();
-		atomic {
-		    if (msg == pppQueue[pppOut]) {
-			if (++pppOut >= PPP_QUEUE_LEN)
-			    pppOut = 0;
-			if (pppFull)
-			    pppFull = FALSE;
-		    }
-		}
-		post ppptransmit();
-	    } else {
-		post ppptransmit();
-	    }
-	}
-
-#endif
-
 	inline void downloadMessage()
 	{
 		uint8_t length;
@@ -997,33 +938,6 @@ typedef nx_uint32_t timesync_radio_t;
 		call PacketLinkQuality.set(rxMsg, crc_ok_lqi & 0x7f);
 		crc = (crc_ok_lqi > 0x7f) ? 0 : 1;
 		
-
-//for apps/PPPSniffer
-#ifdef PPPSNIFFER
-		call Leds.led0Toggle();
-		atomic {
-		    if (!pppFull) {
-			//ret = pppQueue[pppIn];
-			pppQueue[pppIn] = rxMsg;
-
-			pppIn = (pppIn + 1) % PPP_QUEUE_LEN;
-
-			if (pppIn == pppOut)
-			    pppFull = TRUE;
-
-			if (!pppBusy) {
-			    post ppptransmit();
-			    pppBusy = TRUE;
-			}
-		    }
-		}
-		//call PppIpv6.transmit(getPayload(rxMsg)+1,
-		//		      length+4);
-		//length-1+ sizeof(ieee154_header_t));
-		//		      length-1+ sizeof(cc2420xpacket_header_t));
-		//call PppIpv6.transmit(rxMsg+1,
-		//		      length -1 + sizeof(cc2420xpacket_header_t));
-#endif
 
 		// signal reception only if it has passed the CRC check
 		if( crc == 0 ) {
@@ -1294,7 +1208,7 @@ async command void RadioPacket.clear(message_t* msg) {
 
 	async command uint8_t PacketTransmitPower.get(message_t* msg)
 	{
-		return getMeta(msg)->power;
+		return getMetadata(msg)->tx_power;
 	}
 
 	async command void PacketTransmitPower.clear(message_t* msg)
@@ -1305,7 +1219,7 @@ async command void RadioPacket.clear(message_t* msg) {
 	async command void PacketTransmitPower.set(message_t* msg, uint8_t value)
 	{
 		call TransmitPowerFlag.set(msg);
-		getMeta(msg)->power = value;
+		getMetadata(msg)->tx_power = value;
 	}
 
 /*----------------- PacketRSSI -----------------*/
@@ -1317,7 +1231,7 @@ async command void RadioPacket.clear(message_t* msg) {
 
 	async command uint8_t PacketRSSI.get(message_t* msg)
 	{
-		return getMeta(msg)->rssi;
+		return getMetadata(msg)->rssi;
 	}
 
 	async command void PacketRSSI.clear(message_t* msg)
@@ -1331,7 +1245,7 @@ async command void RadioPacket.clear(message_t* msg) {
 		call TransmitPowerFlag.clear(msg);
 
 		call RSSIFlag.set(msg);
-		getMeta(msg)->rssi = value;
+		getMetadata(msg)->rssi = value;
 	}
 
 /*----------------- PacketTimeSyncOffset -----------------*/
@@ -1368,7 +1282,7 @@ async command void RadioPacket.clear(message_t* msg) {
 
 	async command uint8_t PacketLinkQuality.get(message_t* msg)
 	{
-		return getMeta(msg)->lqi;
+		return getMetadata(msg)->lqi;
 	}
 
 	async command void PacketLinkQuality.clear(message_t* msg)
@@ -1377,7 +1291,7 @@ async command void RadioPacket.clear(message_t* msg) {
 
 	async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
 	{
-		getMeta(msg)->lqi = value;
+		getMetadata(msg)->lqi = value;
 	}
 
 /*----------------- LinkPacketMetadata -----------------*/
@@ -1387,20 +1301,4 @@ async command void RadioPacket.clear(message_t* msg) {
 		return call PacketLinkQuality.get(msg) > 105;
 	}
 
-//for apps/PPPSniffer
-#ifdef PPPSNIFFER
-	event void Ipv6LcpAutomaton.transitionCompleted (LcpAutomatonState_e lcpstate) { }
-	event void Ipv6LcpAutomaton.thisLayerUp () { }
-	event void Ipv6LcpAutomaton.thisLayerDown () { }
-	event void Ipv6LcpAutomaton.thisLayerStarted () { }
-	event void Ipv6LcpAutomaton.thisLayerFinished () { }
-	event void PppIpv6.linkUp () {}
-	event void PppIpv6.linkDown () {}
-	event error_t PppIpv6.receive (const uint8_t* message, unsigned int len) {
-		return SUCCESS;
-	}
-
-	event void PppSplitControl.startDone (error_t error) { }
-	event void PppSplitControl.stopDone (error_t error) { }
-#endif
 }

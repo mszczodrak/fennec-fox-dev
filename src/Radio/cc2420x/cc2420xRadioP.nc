@@ -113,7 +113,6 @@ command uint8_t RadioState.getChannel() {
         return call SubRadioState.getChannel();
 }
 
-
 event void SubRadioState.done() {
 	switch(state) {
 	case S_STARTING:
