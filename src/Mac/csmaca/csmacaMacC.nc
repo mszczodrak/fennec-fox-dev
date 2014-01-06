@@ -92,11 +92,11 @@ RadioState = CSMATransmitC.RadioState;
 components DefaultLplC as LplC;
 csmacaMacP.RadioControl -> LplC.SplitControl;
 
-components UniqueReceiveC;
+components UniqueC;
 
-RadioPacket = UniqueReceiveC.RadioPacket;
+RadioPacket = UniqueC.RadioPacket;
 
-csmacaMacP.SubSend -> UniqueReceiveC;
+csmacaMacP.SubSend -> UniqueC;
 csmacaMacP.SubReceive -> LplC;
 
 // SplitControl Layers
@@ -104,11 +104,11 @@ csmacaMacP.SubReceive -> LplC;
 LplC.MacPacketAcknowledgements -> csmacaMacP.MacPacketAcknowledgements;
 LplC.SubControl -> CSMATransmitC;
 
-UniqueReceiveC.SubSend -> LplC.Send;
+UniqueC.SubSend -> LplC.Send;
 LplC.SubSend -> CSMATransmitC;
 
-LplC.SubReceive -> UniqueReceiveC.Receive;
-UniqueReceiveC.SubReceive = RadioReceive;
+LplC.SubReceive -> UniqueC.Receive;
+UniqueC.SubReceive = RadioReceive;
 
 RadioCCA = LplC.RadioCCA;
 

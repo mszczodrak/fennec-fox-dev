@@ -72,7 +72,7 @@
   */
 
  
-configuration UniqueReceiveC {
+configuration UniqueC {
 provides interface Send;
 provides interface Receive;
 uses interface RadioReceive as SubReceive;
@@ -81,16 +81,16 @@ uses interface Send as SubSend;
 }
 
 implementation {
-components UniqueReceiveP, RandomC, MainC;
+components UniqueP, RandomC, MainC;
   
-Receive = UniqueReceiveP.Receive;
-SubReceive = UniqueReceiveP.SubReceive;
-Send = UniqueReceiveP.Send;
-SubSend = UniqueReceiveP.SubSend;
-RadioPacket = UniqueReceiveP.RadioPacket;
-MainC.SoftwareInit -> UniqueReceiveP;
+Receive = UniqueP.Receive;
+SubReceive = UniqueP.SubReceive;
+Send = UniqueP.Send;
+SubSend = UniqueP.SubSend;
+RadioPacket = UniqueP.RadioPacket;
+MainC.SoftwareInit -> UniqueP;
 
-UniqueReceiveP.Random -> RandomC;
+UniqueP.Random -> RandomC;
 
 }
 

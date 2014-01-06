@@ -73,7 +73,7 @@
  
 #include "csmacaMac.h"
 
-module UniqueReceiveP @safe() {
+module UniqueP @safe() {
 provides interface Send;
 provides interface Receive;
 provides interface Init;
@@ -175,8 +175,7 @@ task void deliverTask() {
 
 command error_t Send.send(message_t *msg, uint8_t len) {
 	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, len);
-	header->dsn = localSendId;
-	localSendId = (localSendId + 1) % INVALID_ELEMENT;
+	header->dsn = localSendId++;
 	return call SubSend.send(msg, len);
 }
 
@@ -201,9 +200,6 @@ event void SubSend.sendDone(message_t *msg, error_t error) {
 }
 
 
-
-
-  
 /***************** SubReceive Events *****************/
 async event message_t *SubReceive.receive(message_t* msg) {
 	message_t *m;
