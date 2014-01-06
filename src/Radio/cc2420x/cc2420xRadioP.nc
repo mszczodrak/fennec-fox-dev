@@ -41,10 +41,14 @@ provides interface SplitControl;
 provides interface RadioReceive;
 provides interface RadioBuffer;
 provides interface RadioSend;
+provides interface RadioState;
 
 uses interface cc2420xRadioParams;
 
-uses interface RadioState;
+uses interface RadioState as SubRadioState;
+uses interface RadioReceive as SubRadioReceive;
+uses interface RadioSend as SubRadioSend;
+uses interface RadioPacket;
 
 }
 
@@ -52,30 +56,65 @@ implementation {
 
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
+bool sc = FALSE;
+norace error_t err;
 
 task void start_done() {
-	state = S_STARTED;
-	signal SplitControl.startDone(SUCCESS);
+	if (err == SUCCESS) {
+        	state = S_STARTED;
+	}
+	signal RadioState.done();
+	if (sc == TRUE) {
+                signal SplitControl.startDone(err);
+                sc = FALSE;
+        }
 }
 
 task void stop_done() {
-	state = S_STOPPED;
-	signal SplitControl.stopDone(SUCCESS);
+	if (err == SUCCESS) {
+		state = S_STOPPED;
+	}
+	signal RadioState.done();
+	if (sc == TRUE) {
+		signal SplitControl.stopDone(err);
+		sc = FALSE;
+	}
 }
 
 command error_t SplitControl.start() {
-	state = S_STARTING;
-	return call RadioState.turnOn();
+        sc = TRUE;
+        return call RadioState.turnOn();
 }
-
 
 command error_t SplitControl.stop() {
+        sc = TRUE;
+        return call RadioState.turnOff();
+}
+
+command error_t RadioState.turnOn() {
+	state = S_STARTING;
+	return call SubRadioState.turnOn();
+}
+
+command error_t RadioState.turnOff() {
 	state = S_STOPPING;
-	return call RadioState.turnOff();
+	return call SubRadioState.turnOff();
+}
+
+command error_t RadioState.standby() {
+        return call RadioState.turnOff();
+}
+
+command error_t RadioState.setChannel(uint8_t channel) {
+        return call SubRadioState.setChannel( channel );
+}
+
+command uint8_t RadioState.getChannel() {
+        return call SubRadioState.getChannel();
 }
 
 
-event void RadioState.done() {
+event void SubRadioState.done() {
 	switch(state) {
 	case S_STARTING:
 		post start_done();		
@@ -92,13 +131,15 @@ event void RadioState.done() {
 }
 
 
-
 task void load_done() {
 	signal RadioBuffer.loadDone(m, SUCCESS);
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
+	uint8_t *p = (uint8_t*)(msg->data);
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
 	dbg("Radio", "cc2420xRadio RadioBuffer.load(0x%1x)", msg);
+	header->destpan = msg->conf;
 	m = msg;
 	signal RadioBuffer.loadDone(msg, SUCCESS);
 	return SUCCESS;
@@ -110,9 +151,34 @@ task void send_done() {
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "cc2420xRadio RadioBuffer.send(0x%1x)", msg, useCca);
-	post send_done();
-	return SUCCESS;
+	return call SubRadioSend.send(msg, useCca);
 }
+
+async event void SubRadioSend.ready() {
+	signal RadioSend.ready();
+}
+
+async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	signal RadioSend.sendDone(msg, error);
+}
+
+
+async event bool SubRadioReceive.header(message_t* msg) {
+	uint8_t *p = (uint8_t*)(msg->data);
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
+	msg->conf = header->destpan;
+	return signal RadioReceive.header(msg);
+}
+
+
+async event message_t *SubRadioReceive.receive(message_t* msg) {
+	uint8_t *p = (uint8_t*)(msg->data);
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
+	msg->conf = header->destpan;
+	return signal RadioReceive.receive(msg);
+}
+
+
 
 
 

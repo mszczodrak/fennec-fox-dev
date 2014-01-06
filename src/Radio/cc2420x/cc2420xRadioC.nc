@@ -69,8 +69,7 @@ RadioReceive = cc2420xRadioP.RadioReceive;
 
 RadioBuffer = cc2420xRadioP.RadioBuffer;
 RadioSend = cc2420xRadioP.RadioSend;
-
-
+RadioState = cc2420xRadioP.RadioState;
 
 components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
 RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
@@ -88,10 +87,7 @@ components new RadioAlarmC();
 RadioAlarmC.Alarm -> CC2420XDriverLayerC;
 CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
-RadioState = CC2420XDriverLayerC.RadioState;
 RadioLinkPacketMetadata = CC2420XDriverLayerC.LinkPacketMetadata;
-
-cc2420xRadioP.RadioState -> CC2420XDriverLayerC.RadioState;
 
 components new MetadataFlagsLayerC();
 MetadataFlagsLayerC.SubPacket -> CC2420XDriverLayerC;
@@ -107,5 +103,10 @@ TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_MET
 
 CC2420XDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
 
+
+cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
+cc2420xRadioP.SubRadioSend -> CC2420XDriverLayerC.RadioSend;
+cc2420xRadioP.SubRadioReceive -> CC2420XDriverLayerC.RadioReceive;
+cc2420xRadioP.RadioPacket -> CC2420XDriverLayerC.RadioPacket;
 
 }
