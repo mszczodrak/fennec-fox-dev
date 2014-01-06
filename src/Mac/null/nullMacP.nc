@@ -193,6 +193,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	dbg("Mac", "nullMac MacAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
 	header = getHeader(msg);
+	printf("MacAMSend.send get length %d\n", len);
 	metadata = (metadata_t*) msg->metadata;
 	call MacAMPacket.setGroup(msg, msg->conf);
 
@@ -393,8 +394,8 @@ async event message_t* RadioReceive.receive(message_t* msg) {
 		return msg;
 	}
 
-//    msg->conf = call MacAMPacket.group(msg);
-//    msg->conf = call MacAMPacket.group(msg);
+	printf("mac null rec len %d\n", len);
+	printfflush();
 
 	msg->rssi = metadata->rssi;
 	msg->lqi = metadata->lqi;

@@ -65,6 +65,9 @@ command error_t SplitControl.stop() {
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	dbg("Network", "nullNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
+	printf("NetworkAMSend.send get len %d\n", len);
+	printfflush();
+
 	if ((addr == TOS_NODE_ID) || (addr == NODE)) {
 		dbg("Network", "nullNet NetworkAMSend.sendDone(0x%1x, %d )", msg, SUCCESS);
 		signal NetworkAMSend.sendDone(msg, SUCCESS);
@@ -105,6 +108,7 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
+	printf("Null rec len %d\n", len);
 	dbg("Network", "nullNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct null_net_header), 
 			len - sizeof(nx_struct null_net_header));

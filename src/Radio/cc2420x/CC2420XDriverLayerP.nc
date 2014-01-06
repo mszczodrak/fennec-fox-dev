@@ -664,7 +664,10 @@ typedef nx_uint32_t timesync_radio_t;
 			
 		data = getPayload(msg);
 		length = getHeader(msg)->length;
-		
+	
+
+		printf("RadioSend.send length %d\n", length);
+	
 		// length | data[0] ... data[length-3] | automatically generated FCS
 
 		header = 7;
@@ -815,6 +818,8 @@ typedef nx_uint32_t timesync_radio_t;
 		// read the length byte
 		readLengthFromRxFifo(&length);
 
+		printf("readLength %d\n", length);
+
 		if (length < 3 || length > call RadioPacket.maxPayloadLength() + 2 ) {
 			// bad length: bail out
 			state = STATE_RX_ON;
@@ -826,7 +831,7 @@ typedef nx_uint32_t timesync_radio_t;
 		// if we're here, length must be correct
 		RADIO_ASSERT(length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2);
 
-		getHeader(rxMsg)->length = length;
+		//getHeader(rxMsg)->length = length;
 
 		// we'll read the FCS/CRC separately
 		length -= 2;		
@@ -1027,6 +1032,7 @@ async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
         nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
         hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + CC2420X_SIZEOF_CRC + sizeof(timesync_radio_t);
+	printf("RadioPacket sets length %d\n", length);
 }
 	
 

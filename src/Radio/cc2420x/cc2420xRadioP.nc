@@ -93,12 +93,18 @@ command error_t SplitControl.stop() {
 
 command error_t RadioState.turnOn() {
 	state = S_STARTING;
-	return call SubRadioState.turnOn();
+	if (call SubRadioState.turnOn() != SUCCESS) {
+		signal SubRadioState.done();
+	}
+	return SUCCESS;
 }
 
 command error_t RadioState.turnOff() {
 	state = S_STOPPING;
-	return call SubRadioState.turnOff();
+	if (call SubRadioState.turnOff() != SUCCESS) {
+		signal SubRadioState.done();
+	}
+	return SUCCESS;
 }
 
 command error_t RadioState.standby() {
@@ -138,6 +144,9 @@ async command error_t RadioBuffer.load(message_t* msg) {
 	uint8_t *p = (uint8_t*)(msg->data);
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
 	dbg("Radio", "cc2420xRadio RadioBuffer.load(0x%1x)", msg);
+
+	printf("RadioBuffer.load  len %d\n", header->length);
+
 	header->destpan = msg->conf;
 	m = msg;
 	signal RadioBuffer.loadDone(msg, SUCCESS);
