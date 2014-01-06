@@ -107,9 +107,8 @@ enum {
 message_t receiveQueueData[RECEIVE_QUEUE_SIZE];
 message_t* receiveQueue[RECEIVE_QUEUE_SIZE];
 
-uint8_t receiveQueueHead;
-uint8_t receiveQueueSize;
-
+norace uint8_t receiveQueueHead;
+norace uint8_t receiveQueueSize;
 
 
 /***************** Init Commands *****************/

@@ -639,7 +639,6 @@ typedef nx_uint32_t timesync_radio_t;
 		void* timesync;
 		timesync_relative_t timesync_relative;
 		uint32_t sfdTime;
-		cc2420X_status_t status;
 		txMsg = msg;
 		if( cmd != CMD_NONE || (state != STATE_IDLE && state != STATE_RX_ON) || ! isSpiAcquired() || rxSfd || txEnd )
 			return EBUSY;
@@ -686,7 +685,7 @@ typedef nx_uint32_t timesync_radio_t;
 		        return EBUSY;
 	        }
 			// start transmission
-			status = strobe(CC2420X_STXON);
+			strobe(CC2420X_STXON);
 			// get a timestamp right after strobe returns
 			time = call RadioAlarm.getNow();
 
@@ -826,7 +825,7 @@ typedef nx_uint32_t timesync_radio_t;
 		// if we're here, length must be correct
 		RADIO_ASSERT(length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2);
 
-		//getHeader(rxMsg)->length = length;
+		getHeader(rxMsg)->length = length;
 
 		// we'll read the FCS/CRC separately
 		length -= 2;		
