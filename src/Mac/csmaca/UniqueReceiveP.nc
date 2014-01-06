@@ -151,6 +151,7 @@ task void deliverTask() {
 	}
 
 	if(!hasSeen(msgSource, msgDsn)) {
+		insert(msgSource, msgDsn);
 		//dbgs(F_MAC, S_RECEIVING, DBGS_RECEIVE_DATA, header->src, header->dest);
 		msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	}

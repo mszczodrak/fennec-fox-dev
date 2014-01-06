@@ -41,7 +41,7 @@
  * RF neighbors your node will have
  */
 #ifndef RECEIVE_HISTORY_SIZE
-#define RECEIVE_HISTORY_SIZE 20
+#define RECEIVE_HISTORY_SIZE 10
 #endif
 
 typedef nx_struct csmaca_header_t {
