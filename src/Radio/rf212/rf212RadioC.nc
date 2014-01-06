@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2014, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,20 +26,24 @@
  */
 
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox rf212 radio driver adaptation
   *
   * @author: Marcin K Szczodrak
+  * @updated: 01/06/2014
   */
 
 
 configuration rf212RadioC {
 provides interface SplitControl;
+provides interface RadioReceive;
+
+uses interface rf212RadioParams;
+
 provides interface Resource as RadioResource;
 
 provides interface RadioPacket;
 provides interface RadioBuffer;
 provides interface RadioSend;
-provides interface RadioReceive;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -49,32 +53,60 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
-
-uses interface rf212RadioParams;
 }
 
 implementation {
+
+#define UQ_METADATA_FLAGS       "UQ_RF212_METADATA_FLAGS"
+#define UQ_RADIO_ALARM          "UQ_RF212_RADIO_ALARM"
+
+
 
 components rf212RadioP;
 SplitControl = rf212RadioP;
 rf212RadioParams = rf212RadioP;
 RadioReceive = rf212RadioP.RadioReceive;
 
-RadioResource = rf212RadioP.RadioResource;
-
 RadioBuffer = rf212RadioP.RadioBuffer;
-RadioPacket = rf212RadioP.RadioPacket;
 RadioSend = rf212RadioP.RadioSend;
-
 RadioState = rf212RadioP.RadioState;
-RadioLinkPacketMetadata = rf212RadioP.RadioLinkPacketMetadata;
-RadioCCA = rf212RadioP.RadioCCA;
 
-PacketTransmitPower = rf212RadioP.PacketTransmitPower;
-PacketRSSI = rf212RadioP.PacketRSSI;
-PacketTimeSyncOffset = rf212RadioP.PacketTimeSyncOffset;
-PacketLinkQuality = rf212RadioP.PacketLinkQuality;
+components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
+RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+
+components RF212DriverLayerC;
+
+PacketTransmitPower = RF212DriverLayerC.PacketTransmitPower;
+PacketRSSI = RF212DriverLayerC.PacketRSSI;
+PacketTimeSyncOffset = RF212DriverLayerC.PacketTimeSyncOffset;
+PacketLinkQuality = RF212DriverLayerC.PacketLinkQuality;
+RadioPacket = RF212DriverLayerC.RadioPacket;
+RadioCCA = RF212DriverLayerC.RadioCCA;
+
+components new RadioAlarmC();
+RadioAlarmC.Alarm -> RF212DriverLayerC;
+RF212DriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+
+RadioLinkPacketMetadata = RF212DriverLayerC.LinkPacketMetadata;
+
+components new MetadataFlagsLayerC();
+MetadataFlagsLayerC.SubPacket -> RF212DriverLayerC;
+
+RF212DriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+RF212DriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+RF212DriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+
+components new TimeStampingLayerC();
+TimeStampingLayerC.LocalTimeRadio -> RF212DriverLayerC;
+TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
+TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+
+RF212DriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
 
 
+rf212RadioP.SubRadioState -> RF212DriverLayerC.RadioState;
+rf212RadioP.SubRadioSend -> RF212DriverLayerC.RadioSend;
+rf212RadioP.SubRadioReceive -> RF212DriverLayerC.RadioReceive;
+rf212RadioP.RadioPacket -> RF212DriverLayerC.RadioPacket;
 
 }
