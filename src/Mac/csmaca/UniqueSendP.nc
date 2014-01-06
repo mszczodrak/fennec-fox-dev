@@ -132,8 +132,8 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
   
 /***************** SubSend Events ****************/
 event void SubSend.sendDone(message_t *msg, error_t error) {
-	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
-	dbgs(F_MAC, S_NONE, DBGS_SEND_DATA, header->src, header->dest);
+	//csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
+	//dbgs(F_MAC, S_NONE, DBGS_SEND_DATA, header->src, header->dest);
 	call State.toIdle();
 	signal Send.sendDone(msg, error);
 }
