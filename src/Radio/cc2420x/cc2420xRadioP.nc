@@ -158,6 +158,8 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	printf("RS.sendDone( , %d)\n", error);
+	printfflush();
 	signal RadioSend.sendDone(msg, error);
 }
 
@@ -165,6 +167,8 @@ async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
 async event bool SubRadioReceive.header(message_t* msg) {
 	uint8_t *p = (uint8_t*)(msg->data);
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
+//	printf("rec\n");
+//	printfflush();
 	msg->conf = header->destpan;
 	return signal RadioReceive.header(msg);
 }
@@ -173,6 +177,8 @@ async event bool SubRadioReceive.header(message_t* msg) {
 async event message_t *SubRadioReceive.receive(message_t* msg) {
 	uint8_t *p = (uint8_t*)(msg->data);
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
+	printf("rece\n");
+	printfflush();
 	msg->conf = header->destpan;
 	return signal RadioReceive.receive(msg);
 }

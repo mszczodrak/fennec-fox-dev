@@ -115,7 +115,7 @@ typedef nx_uint32_t timesync_radio_t;
 
 	void* getPayload(message_t* msg)
 	{
-		return ((void*)msg);
+		return ((void*)msg->data);
 	}
 
 
@@ -591,15 +591,6 @@ typedef nx_uint32_t timesync_radio_t;
 		else if( state == STATE_PD )
 			return EALREADY;
 
-#ifdef RADIO_DEBUG_STATE
-		if( call DiagMsg.record() )
-		{
-			call DiagMsg.str("turnOff");
-			call DiagMsg.uint16(call RadioAlarm.getNow());			
-			call DiagMsg.send();
-		}
-#endif
-
 		cmd = CMD_TURNOFF;
 		post task_run();
 
@@ -612,15 +603,6 @@ typedef nx_uint32_t timesync_radio_t;
 			return EBUSY;
 		else if( state == STATE_IDLE )
 			return EALREADY;
-
-#ifdef RADIO_DEBUG_STATE
-		if( call DiagMsg.record() )
-		{
-			call DiagMsg.str("standBy");
-			call DiagMsg.uint16(call RadioAlarm.getNow());
-			call DiagMsg.send();
-		}
-#endif
 
 		cmd = CMD_STANDBY;
 		post task_run();
@@ -635,15 +617,6 @@ typedef nx_uint32_t timesync_radio_t;
 			return EBUSY;
 		else if( state == STATE_RX_ON )
 			return EALREADY;
-
-#ifdef RADIO_DEBUG_STATE
-		if( call DiagMsg.record() )
-		{
-			call DiagMsg.str("turnOn");
-			call DiagMsg.uint16(call RadioAlarm.getNow());
-			call DiagMsg.send();
-		}
-#endif
 
 		cmd = CMD_TURNON;
 		post task_run();
@@ -667,9 +640,6 @@ typedef nx_uint32_t timesync_radio_t;
 		timesync_relative_t timesync_relative;
 		uint32_t sfdTime;
 		cc2420X_status_t status;
-#ifdef RADIO_DEBUG
-		uint8_t sfd1, sfd2, sfd3, sfd4;
-#endif
 		txMsg = msg;
 		if( cmd != CMD_NONE || (state != STATE_IDLE && state != STATE_RX_ON) || ! isSpiAcquired() || rxSfd || txEnd )
 			return EBUSY;
@@ -715,26 +685,14 @@ typedef nx_uint32_t timesync_radio_t;
 		        // and bail out
 		        return EBUSY;
 	        }
-#ifdef RADIO_DEBUG
-	        sfd1 = call SFD.get();
-#endif
 			// start transmission
 			status = strobe(CC2420X_STXON);
-#ifdef RADIO_DEBUG
-	        sfd2 = call SFD.get();
-#endif
 			// get a timestamp right after strobe returns
 			time = call RadioAlarm.getNow();
 
 			cmd = CMD_TRANSMIT;			
 			state = STATE_TX_ON;
-#ifdef RADIO_DEBUG
-	        sfd3 = call SFD.get();
-#endif
 			call SfdCapture.captureFallingEdge();
-#ifdef RADIO_DEBUG
-	        sfd4 = call SFD.get();
-#endif	        
 		}
 
 		//RADIO_ASSERT(sfd1 == 0);
@@ -784,21 +742,6 @@ typedef nx_uint32_t timesync_radio_t;
 			state = STATE_BUSY_TX_2_RX_ON;
 		}
 
-#ifdef RADIO_DEBUG_MESSAGES
-		txMsg = msg;
-		
-		if( call DiagMsg.record() )
-		{
-			length = getHeader(msg)->length;
-
-			call DiagMsg.chr('t');
-			call DiagMsg.uint16(call RadioAlarm.getNow());
-			call DiagMsg.uint32(call PacketTimeStamp.isValid(msg) ? call PacketTimeStamp.timestamp(msg) : 0);
-			call DiagMsg.int8(length);
-			call DiagMsg.hex8s(getPayload(msg), length);
-			call DiagMsg.send();
-		}
-#endif
 		// SFD capture interrupt will be triggered: we'll reenable interrupts from there
 		// and clear the rx fifo -- should something have arrived in the meantime
 		return SUCCESS;
@@ -830,27 +773,13 @@ typedef nx_uint32_t timesync_radio_t;
 
 	inline cc2420X_status_t enableReceiveSfd() {
 		cc2420X_status_t status;
-#ifdef RADIO_DEBUG
-		uint8_t sfd1, sfd2, sfd3, fifo, fifop;
-#endif		
 		atomic {
 			// turn off the radio first
 			strobe(CC2420_SRFOFF);
-#ifdef RADIO_DEBUG	
-			sfd1 = call SFD.get();
-#endif		
 			// flush rx fifo		
 			flushRxFifo();
-#ifdef RADIO_DEBUG
-			sfd2 = call SFD.get();
-#endif		
 			// ready to receive new message: enable receive SFD capture
 			call SfdCapture.captureRisingEdge();
-#ifdef RADIO_DEBUG
-			sfd3 = call SFD.get();
-			fifo = call FIFO.get();
-			fifop = call FIFOP.get();
-#endif		
 			// turn the radio back on
 			status = strobe(CC2420_SRXON);
 		}
@@ -982,26 +911,6 @@ typedef nx_uint32_t timesync_radio_t;
 			RADIO_ASSERT(FALSE); 
 		}
 
-#ifdef RADIO_DEBUG_IRQ
-		if( call DiagMsg.record() )
-		{
-			if(rxSfd)
-				call DiagMsg.str("rxSfd");
-			if(txEnd)
-				call DiagMsg.str("txEnd");
-			call DiagMsg.uint16(call RadioAlarm.getNow());
-			call DiagMsg.str("s=");
-			call DiagMsg.uint8(state);
-			if(call FIFO.get())
-				call DiagMsg.str("FIFO");
-			if(call FIFOP.get())
-				call DiagMsg.str("FIFOP");
-			if(call SFD.get())
-				call DiagMsg.str("SFD");					
-			call DiagMsg.send();
-		}
-#endif
-
 		// do the rest of the processing
 		post task_run();
 	}
@@ -1032,30 +941,6 @@ typedef nx_uint32_t timesync_radio_t;
 
 	task void task_run()
 	{
-#ifdef RADIO_DEBUG_TASKLET
-		if( call DiagMsg.record() )
-		{
-			call DiagMsg.str("tsk_str");
-			call DiagMsg.uint16(call RadioAlarm.getNow());	
-			call DiagMsg.str("s=");
-			call DiagMsg.uint8(state);
-			call DiagMsg.str("c=");
-			call DiagMsg.uint8(cmd);
-			if(rxSfd)
-				call DiagMsg.str("rxSfd");
-			if(txEnd)
-				call DiagMsg.str("txEnd");				
-			if(call FIFO.get())
-				call DiagMsg.str("FIFO");
-			if(call FIFOP.get())
-				call DiagMsg.str("FIFOP");
-			if(call SFD.get())
-				call DiagMsg.str("SFD");
-					
-			call DiagMsg.send();
-		}
-#endif
-
 		if( txEnd ) {
 			// end of transmission
 			if( isSpiAcquired() )
@@ -1072,24 +957,6 @@ typedef nx_uint32_t timesync_radio_t;
 
 				// a packet might have been received since the end of the transmission
 				status = enableReceiveSfd();
-
-#if defined(RADIO_DEBUG_IRQ) && defined(RADIO_DEBUG_MESSAGES)
-    			if( call DiagMsg.record() )
-    			{
-    				call DiagMsg.str("txdone");
-    				call DiagMsg.uint16(call RadioAlarm.getNow());
-    				// TODO: captured time is not set for tx end
-    				//call DiagMsg.uint16(capturedTime - (uint16_t)call PacketTimeStamp.timestamp(txMsg));
-    				if(call FIFO.get())
-    					call DiagMsg.str("FIFO");
-    				if(call FIFOP.get())
-    					call DiagMsg.str("FIFOP");
-    				if(call SFD.get())
-    					call DiagMsg.str("SFD");
-   						
-    				call DiagMsg.send();
-    			}
-#endif
 
 				// check for tx underflow
 				if ( status.tx_underflow == 1) {
@@ -1144,30 +1011,6 @@ typedef nx_uint32_t timesync_radio_t;
 
 		if( cmd == CMD_NONE )
 			post releaseSpi();
-			
-#ifdef RADIO_DEBUG_TASKLET
-		if( call DiagMsg.record() )
-		{
-			call DiagMsg.uint16(call RadioAlarm.getNow());	
-			call DiagMsg.str("tsk_end");
-			call DiagMsg.str("s=");
-			call DiagMsg.uint8(state);
-			call DiagMsg.str("c=");
-			call DiagMsg.uint8(cmd);
-			if(rxSfd)
-				call DiagMsg.str("rxSfd");
-			if(txEnd)
-				call DiagMsg.str("txEnd");
-			if(call FIFO.get())
-				call DiagMsg.str("FIFO");
-			if(call FIFOP.get())
-				call DiagMsg.str("FIFOP");
-			if(call SFD.get())
-				call DiagMsg.str("SFD");
-					
-			call DiagMsg.send();
-		}
-#endif
 	}
 
 /*----------------- RadioPacket -----------------*/
