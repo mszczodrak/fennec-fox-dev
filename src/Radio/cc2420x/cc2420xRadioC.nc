@@ -100,5 +100,12 @@ CC2420XDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(U
 CC2420XDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 CC2420XDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
+components new TimeStampingLayerC();
+TimeStampingLayerC.LocalTimeRadio -> CC2420XDriverLayerC;
+TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
+TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+
+CC2420XDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
+
 
 }

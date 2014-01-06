@@ -47,24 +47,16 @@ provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 uses interface nullMacParams;
 uses interface RadioReceive;
 
-uses interface RadioConfig;
-uses interface RadioPower;
-uses interface Read<uint16_t> as ReadRssi;
 uses interface Resource as RadioResource;
-
 uses interface SplitControl as RadioControl;
 uses interface RadioPacket;
 uses interface RadioBuffer;
 uses interface RadioSend;
-uses interface ReceiveIndicator as PacketIndicator;
-uses interface ReceiveIndicator as ByteIndicator;
-uses interface ReceiveIndicator as EnergyIndicator;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
 uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
-
 uses interface RadioCCA;
 uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
@@ -85,9 +77,6 @@ MacLinkPacketMetadata = nullMacP.MacLinkPacketMetadata;
 
 nullMacParams = nullMacP;
 
-RadioConfig = nullMacP.RadioConfig;
-RadioPower = nullMacP.RadioPower;
-ReadRssi = nullMacP.ReadRssi;
 RadioResource = nullMacP.RadioResource;
 RadioPacket = nullMacP.RadioPacket;
 RadioBuffer = nullMacP.RadioBuffer;
@@ -98,10 +87,6 @@ RadioReceive = nullMacP.RadioReceive;
 RadioState = nullMacP.RadioState;
 RadioLinkPacketMetadata = nullMacP.RadioLinkPacketMetadata;
 RadioCCA = nullMacP.RadioCCA;
-
-EnergyIndicator = nullMacP.EnergyIndicator;
-ByteIndicator = nullMacP.ByteIndicator;
-PacketIndicator = nullMacP.PacketIndicator;
 
 components RandomC;
 nullMacP.Random -> RandomC;

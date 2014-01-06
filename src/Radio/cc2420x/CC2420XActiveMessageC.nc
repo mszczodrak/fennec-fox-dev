@@ -21,7 +21,7 @@
  * Author: Janos Sallai, Miklos Maroti
  */
  
-#include <RadioConfig.h>
+#include "CC2420XRadioConfig.h"
 
 #ifdef IEEE154FRAMES_ENABLED
 #error "You cannot use CC2420XActiveMessageC with IEEE154FRAMES_ENABLED defined"
