@@ -111,7 +111,7 @@ implementation
 
 /*----------------- STATE -----------------*/
 
-	tasklet_norace uint8_t state;
+	norace uint8_t state;
 	enum
 	{
 		STATE_P_ON = 0,
@@ -123,7 +123,7 @@ implementation
 		STATE_BUSY_TX_2_RX_ON = 6,
 	};
 
-	tasklet_norace uint8_t cmd;
+	norace uint8_t cmd;
 	enum
 	{
 		CMD_NONE = 0,			// the state machine has stopped
@@ -146,16 +146,16 @@ implementation
 
 	norace bool radioIrq;
 
-	tasklet_norace uint8_t txPower;
-	tasklet_norace uint8_t channel;
+	norace uint8_t txPower;
+	norace uint8_t channel;
 
-	tasklet_norace message_t* rxMsg;
+	norace message_t* rxMsg;
 	message_t rxMsgBuffer;
 
 	uint16_t capturedTime;	// the current time when the last interrupt has occured
 
-	tasklet_norace uint8_t rssiClear;
-	tasklet_norace uint8_t rssiBusy;
+	norace uint8_t rssiClear;
+	norace uint8_t rssiBusy;
 
 /*----------------- REGISTER -----------------*/
 
@@ -192,7 +192,7 @@ implementation
 		RX_SFD_DELAY = (uint16_t)(8 * RADIO_ALARM_MICROSEC),
 	};
 
-	tasklet_async event void RadioAlarm.fired()
+	async event void RadioAlarm.fired()
 	{
 	}
 
@@ -322,13 +322,12 @@ implementation
 
 /*----------------- CHANNEL -----------------*/
 
-	tasklet_async command uint8_t RadioState.getChannel()
-	{
-		return channel;
-	}
+command uint8_t RadioState.getChannel() {
+	return channel;
+}
 
-	tasklet_async command error_t RadioState.setChannel(uint8_t c)
-	{
+command error_t RadioState.setChannel(uint8_t c) {
+
 		c &= RF212_CHANNEL_MASK;
 
 		if( cmd != CMD_NONE )
@@ -399,111 +398,102 @@ implementation
 			cmd = CMD_SIGNAL_DONE;
 	}
 
-	tasklet_async command error_t RadioState.turnOff()
-	{
-		if( cmd != CMD_NONE )
-			return EBUSY;
-		else if( state == STATE_SLEEP )
-			return EALREADY;
+command error_t RadioState.turnOff() {
+	if( cmd != CMD_NONE )
+		return EBUSY;
+	else if( state == STATE_SLEEP )
+		return EALREADY;
 
-		cmd = CMD_TURNOFF;
-		call Tasklet.schedule();
+	cmd = CMD_TURNOFF;
+	call Tasklet.schedule();
 
-		return SUCCESS;
-	}
+	return SUCCESS;
+}
 
-	tasklet_async command error_t RadioState.standby()
-	{
-		if( cmd != CMD_NONE )
-			return EBUSY;
-		else if( state == STATE_TRX_OFF )
-			return EALREADY;
+command error_t RadioState.standby() {
+	if( cmd != CMD_NONE )
+		return EBUSY;
+	else if( state == STATE_TRX_OFF )
+		return EALREADY;
 
-		cmd = CMD_STANDBY;
-		call Tasklet.schedule();
+	cmd = CMD_STANDBY;
+	call Tasklet.schedule();
 
-		return SUCCESS;
-	}
+	return SUCCESS;
+}
 
-	tasklet_async command error_t RadioState.turnOn()
-	{
-		if( cmd != CMD_NONE )
-			return EBUSY;
-		else if( state == STATE_RX_ON )
-			return EALREADY;
+command error_t RadioState.turnOn() {
+	if( cmd != CMD_NONE )
+		return EBUSY;
+	else if( state == STATE_RX_ON )
+		return EALREADY;
 
-		cmd = CMD_TURNON;
-		call Tasklet.schedule();
+	cmd = CMD_TURNON;
+	call Tasklet.schedule();
 
-		return SUCCESS;
-	}
+	return SUCCESS;
+}
 
-	default tasklet_async event void RadioState.done() { }
 
 /*----------------- TRANSMIT -----------------*/
 
-	tasklet_async command error_t RadioSend.send(message_t* msg)
+async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	uint16_t time;
+	uint32_t time32;
+	uint8_t* data;
+	uint8_t length;
+	uint8_t upload1;
+	uint8_t upload2;
+
+	if( cmd != CMD_NONE || state != STATE_RX_ON || radioIrq || ! isSpiAcquired() )
+		return EBUSY;
+
+	length = call PacketTransmitPower.isSet(msg) ?
+		call PacketTransmitPower.get(msg) : RF212_DEF_RFPOWER;
+
+	if( length != txPower )
 	{
-		uint16_t time;
-		uint32_t time32;
-		uint8_t* data;
-		uint8_t length;
-		uint8_t upload1;
-		uint8_t upload2;
+		txPower = length;
+		writeRegister(RF212_PHY_TX_PWR, txPower);
+	}
 
-		if( cmd != CMD_NONE || state != STATE_RX_ON || radioIrq || ! isSpiAcquired() )
-			return EBUSY;
+	if( call Config.requiresRssiCca(msg)
+		&& (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) )
+	{
+		call SpiResource.release();
+		return EBUSY;
+	}
 
-		length = call PacketTransmitPower.isSet(msg) ?
-			call PacketTransmitPower.get(msg) : RF212_DEF_RFPOWER;
+	writeRegister(RF212_TRX_STATE, RF212_PLL_ON);
 
-		if( length != txPower )
-		{
-			txPower = length;
-			writeRegister(RF212_PHY_TX_PWR, txPower);
-		}
+	// do something useful, just to wait a little
+	time32 = call LocalTime.get();
+	data = getPayload(msg);
+	length = getHeader(msg)->length;
 
-		if( call Config.requiresRssiCca(msg)
-			&& (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) )
-		{
-			call SpiResource.release();
-			return EBUSY;
-		}
+	if( call PacketTimeSyncOffset.isSet(msg) ) {
+		// the number of bytes before the embedded timestamp
+		upload1 = (((void*)msg) + call PacketTimeSyncOffset.get(msg)) - (void*)data;
 
-		writeRegister(RF212_TRX_STATE, RF212_PLL_ON);
+		// the FCS is automatically generated (2 bytes)
+		upload2 = length - 2 - upload1;
 
-		// do something useful, just to wait a little
-		time32 = call LocalTime.get();
-		data = getPayload(msg);
-		length = getHeader(msg)->length;
+		// make sure that we have enough space for the timestamp
+		RADIO_ASSERT( upload2 >= 4 && upload2 <= 127 );
+	} else {
+		upload1 = length - 2;
+		upload2 = 0;
+	}
+	RADIO_ASSERT( upload1 >= 1 && upload1 <= 127 );
 
-		if( call PacketTimeSyncOffset.isSet(msg) )
-		{
-			// the number of bytes before the embedded timestamp
-			upload1 = (((void*)msg) + call PacketTimeSyncOffset.get(msg)) - (void*)data;
+	// we have missed an incoming message in this short amount of time
+	if( (readRegister(RF212_TRX_STATUS) & RF212_TRX_STATUS_MASK) != RF212_PLL_ON ) {
+		RADIO_ASSERT( (readRegister(RF212_TRX_STATUS) & RF212_TRX_STATUS_MASK) == RF212_BUSY_RX );
 
-			// the FCS is automatically generated (2 bytes)
-			upload2 = length - 2 - upload1;
-
-			// make sure that we have enough space for the timestamp
-			RADIO_ASSERT( upload2 >= 4 && upload2 <= 127 );
-		}
-		else
-		{
-			upload1 = length - 2;
-			upload2 = 0;
-		}
-		RADIO_ASSERT( upload1 >= 1 && upload1 <= 127 );
-
-		// we have missed an incoming message in this short amount of time
-		if( (readRegister(RF212_TRX_STATUS) & RF212_TRX_STATUS_MASK) != RF212_PLL_ON )
-		{
-			RADIO_ASSERT( (readRegister(RF212_TRX_STATUS) & RF212_TRX_STATUS_MASK) == RF212_BUSY_RX );
-
-			writeRegister(RF212_TRX_STATE, RF212_RX_ON);
-			call SpiResource.release();
-			return EBUSY;
-		}
+		writeRegister(RF212_TRX_STATE, RF212_RX_ON);
+		call SpiResource.release();
+		return EBUSY;
+	}
 
 #ifndef RF212_SLOW_SPI
 		atomic
@@ -599,12 +589,10 @@ implementation
 		return SUCCESS;
 	}
 
-	default tasklet_async event void RadioSend.sendDone(error_t error) { }
-	default tasklet_async event void RadioSend.ready() { }
 
 /*----------------- CCA -----------------*/
 
-	tasklet_async command error_t RadioCCA.request()
+	async command error_t RadioCCA.request()
 	{
 		if( cmd != CMD_NONE || state != STATE_RX_ON || ! isSpiAcquired() )
 			return EBUSY;
@@ -615,7 +603,7 @@ implementation
 		return SUCCESS;
 	}
 
-	default tasklet_async event void RadioCCA.done(error_t error) { }
+	default async event void RadioCCA.done(error_t error) { }
 
 /*----------------- RECEIVE -----------------*/
 
@@ -741,24 +729,6 @@ implementation
 				return;
 			}
 
-#ifdef RADIO_DEBUG
-			// TODO: handle this interrupt
-			if( irq & RF212_IRQ_TRX_UR )
-			{
-				if( call DiagMsg.record() )
-				{
-					call DiagMsg.str("assert ur");
-					call DiagMsg.uint16(call RadioAlarm.getNow());
-					call DiagMsg.hex8(readRegister(RF212_TRX_STATUS));
-					call DiagMsg.hex8(readRegister(RF212_TRX_STATE));
-					call DiagMsg.hex8(irq);
-					call DiagMsg.uint8(state);
-					call DiagMsg.uint8(cmd);
-					call DiagMsg.send();
-				}
-			}
-#endif
-
 #ifdef RF212_RSSI_ENERGY
 			if( irq & RF212_IRQ_TRX_END )
 			{
@@ -871,7 +841,7 @@ implementation
 
 					state = STATE_RX_ON;
 					cmd = CMD_NONE;
-					signal RadioSend.sendDone(SUCCESS);
+					signal RadioSend.sendDone(rxMsg, SUCCESS);
 
 					// TODO: we could have missed a received message
 					RADIO_ASSERT( ! (irq & RF212_IRQ_RX_START) );
@@ -891,12 +861,12 @@ implementation
 		}
 	}
 
-	default tasklet_async event bool RadioReceive.header(message_t* msg)
+	default async event bool RadioReceive.header(message_t* msg)
 	{
 		return TRUE;
 	}
 
-	default tasklet_async event message_t* RadioReceive.receive(message_t* msg)
+	default async event message_t* RadioReceive.receive(message_t* msg)
 	{
 		return msg;
 	}
@@ -908,7 +878,7 @@ implementation
 		call SpiResource.release();
 	}
 
-	tasklet_async event void Tasklet.run()
+	async event void Tasklet.run()
 	{
 		if( radioIrq )
 			serviceRadio();
