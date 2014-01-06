@@ -65,9 +65,6 @@ command error_t SplitControl.stop() {
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	dbg("Network", "nullNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
-	printf("NetworkAMSend.send get len %d\n", len);
-	printfflush();
-
 	if ((addr == TOS_NODE_ID) || (addr == NODE)) {
 		dbg("Network", "nullNet NetworkAMSend.sendDone(0x%1x, %d )", msg, SUCCESS);
 		signal NetworkAMSend.sendDone(msg, SUCCESS);

@@ -818,8 +818,6 @@ typedef nx_uint32_t timesync_radio_t;
 		// read the length byte
 		readLengthFromRxFifo(&length);
 
-		printf("readLength %d\n", length);
-
 		if (length < 3 || length > call RadioPacket.maxPayloadLength() + 2 ) {
 			// bad length: bail out
 			state = STATE_RX_ON;
@@ -843,6 +841,7 @@ typedef nx_uint32_t timesync_radio_t;
 		readRssiFromRxFifo(&rssi);
 		readCrcOkAndLqiFromRxFifo(&crc_ok_lqi);
 
+
 		/* UNCOMMENT THIS CODE IF THERE ARE TIMESTAMPING ERRORS	
 		// there are still bytes in the fifo or if there's an overflow, flush rx fifo
 		if (call FIFOP.get() == 1 || call FIFO.get() == 1 || call SFD.get() == 1) {
@@ -857,6 +856,7 @@ typedef nx_uint32_t timesync_radio_t;
 		}
 		*/
 
+
 		state = STATE_RX_ON;
 		cmd = CMD_NONE;
 
@@ -864,14 +864,19 @@ typedef nx_uint32_t timesync_radio_t;
 		enableReceiveSfd();
 		
 		// bail out if we're not interested in this message
-		if( !signal RadioReceive.header(rxMsg) )
+		if( !signal RadioReceive.header(rxMsg) ) {
+			printf("drop\n");
 			return;
+		}
 
 		// set RSSI, CRC and LQI only if we're accepting the message
 		call PacketRSSI.set(rxMsg, rssi);
 		call PacketLinkQuality.set(rxMsg, crc_ok_lqi & 0x7f);
 		crc = (crc_ok_lqi > 0x7f) ? 0 : 1;
 		
+
+		printf("crc %d\n", crc);
+
 
 		// signal reception only if it has passed the CRC check
 		if( crc == 0 ) {
