@@ -58,7 +58,6 @@ typedef nx_struct csmaca_header_t {
 
 enum
 {
-	INVALID_TIMESTAMP  = 0x80000000L,
 	TIME_ACK_TURNAROUND = 7, // jiffies
 };
 

@@ -74,15 +74,20 @@
 #include "csmacaMac.h"
 
 module UniqueReceiveP @safe() {
+provides interface Send;
 provides interface Receive;
 provides interface Init;
   
 uses interface RadioReceive as SubReceive;
+uses interface Send as SubSend;
 uses interface RadioPacket;
+uses interface Random;
 }
 
 implementation {
-  
+ 
+uint8_t localSendId;
+ 
 struct {
 	uint16_t source;
 	uint8_t dsn;
@@ -121,6 +126,8 @@ command error_t Init.init() {
 	for(i = 0; i < RECEIVE_QUEUE_SIZE; ++i) {
 		receiveQueue[i] = receiveQueueData + i;
 	}
+
+	localSendId = call Random.rand16();
 
 	return SUCCESS;
 }
@@ -168,6 +175,36 @@ task void deliverTask() {
 
 	post deliverTask();
 }
+
+command error_t Send.send(message_t *msg, uint8_t len) {
+	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, len);
+	header->dsn = localSendId;
+	localSendId = (++localSendId) % INVALID_ELEMENT;
+	return call SubSend.send(msg, len);
+}
+
+command error_t Send.cancel(message_t *msg) {
+        return call SubSend.cancel(msg);
+}
+
+
+command uint8_t Send.maxPayloadLength() {
+        return call SubSend.maxPayloadLength();
+}
+
+command void *Send.getPayload(message_t* msg, uint8_t len) {
+        return call SubSend.getPayload(msg, len);
+}
+
+/***************** SubSend Events ****************/
+event void SubSend.sendDone(message_t *msg, error_t error) {
+        //csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, sizeof(csmaca_header_t));
+        //dbgs(F_MAC, S_NONE, DBGS_SEND_DATA, header->src, header->dest);
+        signal Send.sendDone(msg, error);
+}
+
+
+
 
   
 /***************** SubReceive Events *****************/
