@@ -141,10 +141,7 @@ task void load_done() {
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
-	uint8_t *p = (uint8_t*)(msg->data);
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
-	dbg("Radio", "cc2420xRadio RadioBuffer.load(0x%1x)", msg);
-
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	header->destpan = msg->conf;
 	m = msg;
 	signal RadioBuffer.loadDone(msg, SUCCESS);
@@ -156,9 +153,6 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	uint8_t *p = (uint8_t*)(msg->data);
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
-	printf("RS.send to %d\n", (nxle_uint16_t)header->dest);
 	dbg("Radio", "cc2420xRadio RadioBuffer.send(0x%1x)", msg, useCca);
 	return call SubRadioSend.send(msg, useCca);
 }
@@ -168,36 +162,22 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	uint8_t *p = (uint8_t*)(msg->data);
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
-	printf("RS.sendDone( , %d  to %d)\n", error, header->dest);
-	printfflush();
 	signal RadioSend.sendDone(msg, error);
 }
 
 
 async event bool SubRadioReceive.header(message_t* msg) {
-	uint8_t *p = (uint8_t*)(msg->data);
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
-//	printf("rec\n");
-//	printfflush();
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	msg->conf = header->destpan;
 	return signal RadioReceive.header(msg);
 }
 
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
-	uint8_t *p = (uint8_t*)(msg->data);
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*) (p + call RadioPacket.headerLength(msg));
-	printf("rece\n");
-	printfflush();
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	msg->conf = header->destpan;
 	return signal RadioReceive.receive(msg);
 }
-
-
-
-
 
 
 }

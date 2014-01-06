@@ -662,14 +662,9 @@ typedef nx_uint32_t timesync_radio_t;
 			return EBUSY;
 		}
 
-		printf("TX to %d\n", (nx_uint16_t)getHeader(msg)->dest);
-			
 		data = getPayload(msg);
 		length = getHeader(msg)->length;
-	
 
-		printf("RadioSend.send length %d\n", length);
-	
 		// length | data[0] ... data[length-3] | automatically generated FCS
 
 		header = 7;
@@ -867,7 +862,6 @@ typedef nx_uint32_t timesync_radio_t;
 		
 		// bail out if we're not interested in this message
 		if( !signal RadioReceive.header(rxMsg) ) {
-			printf("drop\n");
 			return;
 		}
 
@@ -875,10 +869,6 @@ typedef nx_uint32_t timesync_radio_t;
 		call PacketRSSI.set(rxMsg, rssi);
 		call PacketLinkQuality.set(rxMsg, crc_ok_lqi & 0x7f);
 		crc = (crc_ok_lqi > 0x7f) ? 0 : 1;
-		
-
-		printf("crc %d\n", crc);
-
 
 		// signal reception only if it has passed the CRC check
 		if( crc == 0 ) {
@@ -1039,7 +1029,6 @@ async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
         nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
         hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + CC2420X_SIZEOF_CRC + sizeof(timesync_radio_t);
-	printf("RadioPacket sets length %d\n", length);
 }
 	
 

@@ -76,8 +76,6 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	int8_t rssi = (int8_t) meta->rssi;
 	rssi -= 45;	/* cc2420 spec */
 
-	printf("Rssi rec\n");
-
 	signal LedTimer.fired();
 
 	if (rssi > -90 ) {
