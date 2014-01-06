@@ -156,7 +156,7 @@ task void deliverTask() {
 		msg = signal Receive.receive(msg, (void*)header, call RadioPacket.payloadLength(msg));
 	}
 
-	call RadioPacket.clear(msg);
+	//call RadioPacket.clear(msg);
                         
 	atomic {
 		receiveQueue[receiveQueueHead] = msg;
