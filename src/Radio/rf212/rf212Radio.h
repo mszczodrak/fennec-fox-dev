@@ -33,17 +33,17 @@
 
 
 
-#ifndef __H_null_RADIO__
-#define __H_null_RADIO___
+#ifndef __H_rf212_RADIO__
+#define __H_rf212_RADIO___
 
 #define timesync_radio_t uint32_t
 
 enum {
-        null_MIN_MESSAGE_SIZE        	= 5,
-        null_MAX_MESSAGE_SIZE        	= 127,
+        rf212_MIN_MESSAGE_SIZE        	= 5,
+        rf212_MAX_MESSAGE_SIZE        	= 127,
 };
 
-nx_struct null_radio_header_t {
+nx_struct rf212_radio_header_t {
         nxle_uint8_t length;
 };
 

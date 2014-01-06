@@ -115,6 +115,8 @@ use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
 	uint8_t ack=1, uint8_t crc=1)
 
 use radio cc2420x $(FENNEC_FOX_LIB)/Radio/cc2420x ()
+use radio rf212 $(FENNEC_FOX_LIB)/Radio/rf212 ()
+use radio rf230 $(FENNEC_FOX_LIB)/Radio/rf230 ()
 
 # Cape Fox simulator radio
 use radio cape $(FENNEC_FOX_LIB)/Radio/cape ()

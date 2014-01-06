@@ -32,29 +32,49 @@
   */
 
 
+configuration rf212RadioC {
+provides interface SplitControl;
+provides interface Resource as RadioResource;
 
-#ifndef __H_null_RADIO__
-#define __H_null_RADIO___
+provides interface RadioPacket;
+provides interface RadioBuffer;
+provides interface RadioSend;
+provides interface RadioReceive;
 
-#define timesync_radio_t uint32_t
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
 
-enum {
-        null_MIN_MESSAGE_SIZE        	= 5,
-        null_MAX_MESSAGE_SIZE        	= 127,
-};
+provides interface RadioState;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
 
-nx_struct null_radio_header_t {
-        nxle_uint8_t length;
-};
+uses interface rf212RadioParams;
+}
 
-enum {
-        NULL_MIN_MESSAGE_SIZE         = 10,
-        NULL_MAX_MESSAGE_SIZE         = 128,
-        NULL_MAX_FAILED_LOADS         = 3,
-        NULL_FOOTER                   = 2,
-        NULL_SIZEOF_CRC               = 2,
-};
+implementation {
+
+components rf212RadioP;
+SplitControl = rf212RadioP;
+rf212RadioParams = rf212RadioP;
+RadioReceive = rf212RadioP.RadioReceive;
+
+RadioResource = rf212RadioP.RadioResource;
+
+RadioBuffer = rf212RadioP.RadioBuffer;
+RadioPacket = rf212RadioP.RadioPacket;
+RadioSend = rf212RadioP.RadioSend;
+
+RadioState = rf212RadioP.RadioState;
+RadioLinkPacketMetadata = rf212RadioP.RadioLinkPacketMetadata;
+RadioCCA = rf212RadioP.RadioCCA;
+
+PacketTransmitPower = rf212RadioP.PacketTransmitPower;
+PacketRSSI = rf212RadioP.PacketRSSI;
+PacketTimeSyncOffset = rf212RadioP.PacketTimeSyncOffset;
+PacketLinkQuality = rf212RadioP.PacketLinkQuality;
 
 
 
-#endif
+}
