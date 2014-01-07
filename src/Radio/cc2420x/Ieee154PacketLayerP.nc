@@ -281,22 +281,22 @@ implementation
 
 	async command uint8_t RadioPacket.headerLength(message_t* msg)
 	{
-		return call SubPacket.headerLength(msg) + sizeof(ieee154_simple_header_t);
+		return call SubPacket.headerLength(msg);
 	}
 
 	async command uint8_t RadioPacket.payloadLength(message_t* msg)
 	{
-		return call SubPacket.payloadLength(msg) - sizeof(ieee154_simple_header_t);
+		return call SubPacket.payloadLength(msg);
 	}
 
 	async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length)
 	{
-		call SubPacket.setPayloadLength(msg, length + sizeof(ieee154_simple_header_t));
+		call SubPacket.setPayloadLength(msg, length);
 	}
 
 	async command uint8_t RadioPacket.maxPayloadLength()
 	{
-		return call SubPacket.maxPayloadLength() - sizeof(ieee154_simple_header_t);
+		return call SubPacket.maxPayloadLength();
 	}
 
 	async command uint8_t RadioPacket.metadataLength(message_t* msg)

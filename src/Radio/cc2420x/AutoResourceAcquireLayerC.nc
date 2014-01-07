@@ -48,7 +48,7 @@ generic module AutoResourceAcquireLayerC()
 
 implementation
 {
-	message_t *pending;
+	norace message_t *pending;
 
 	async command error_t RadioSend.send(message_t* msg, bool useCca)
 	{

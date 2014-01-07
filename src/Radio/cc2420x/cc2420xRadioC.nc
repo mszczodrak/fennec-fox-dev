@@ -80,7 +80,6 @@ RadioBuffer = cc2420xRadioP.RadioBuffer;
 RadioSend = cc2420xRadioP.RadioSend;
 RadioState = cc2420xRadioP.RadioState;
 
-
 RadioPacket = Ieee154PacketLayerC;
 cc2420xRadioP.RadioPacket -> Ieee154PacketLayerC;
 cc2420xRadioP.SubRadioSend -> AutoResourceAcquireLayerC;
@@ -103,21 +102,19 @@ components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
 RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
 
-        Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
+Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
 
-        SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-        SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-        SoftwareAckLayerC.Config -> RadioP;
-        SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
-        SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
+SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+SoftwareAckLayerC.Config -> RadioP;
+SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
+SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
 
-        TimeStampingLayerC.LocalTimeRadio -> CC2420XDriverLayerC;
-        TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
-        //PacketTimeStampRadio = TimeStampingLayerC;
-        //PacketTimeStampMilli = TimeStampingLayerC;
-        TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+TimeStampingLayerC.LocalTimeRadio -> CC2420XDriverLayerC;
+TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
+TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
-        MetadataFlagsLayerC.SubPacket -> CC2420XDriverLayerC;
+MetadataFlagsLayerC.SubPacket -> CC2420XDriverLayerC;
 
 CC2420XDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
 PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;
