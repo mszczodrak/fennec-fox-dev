@@ -96,6 +96,9 @@ CC2420XDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(U
 CC2420XDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 CC2420XDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
+components new Ieee154PacketLayerC();
+Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
+
 components new TimeStampingLayerC();
 TimeStampingLayerC.LocalTimeRadio -> CC2420XDriverLayerC;
 TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
@@ -103,10 +106,17 @@ TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_MET
 
 CC2420XDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
 
+components new SoftwareAckLayerC();
+SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+SoftwareAckLayerC.Config -> RadioP;
+SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
+SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
+
 
 cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
-cc2420xRadioP.SubRadioSend -> CC2420XDriverLayerC.RadioSend;
-cc2420xRadioP.SubRadioReceive -> CC2420XDriverLayerC.RadioReceive;
+cc2420xRadioP.SubRadioSend -> SoftwareAckLayerC.RadioSend;
+cc2420xRadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
 cc2420xRadioP.RadioPacket -> CC2420XDriverLayerC.RadioPacket;
 
 }
