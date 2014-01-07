@@ -1,0 +1,4 @@
+
+include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
+
+#TOSMAKE_PATH+=$(FENNEC_FOX_LIB)/support/make

@@ -8,7 +8,7 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 #PFLAGS+=-DENABLE_SPI1_DMA
 
 include $(MAKERULES)
-include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
+include $(FENNEC_FOX_LIB)/support/make/Makerules
 
 PFLAGS+=-D__DBGS__
 
