@@ -49,6 +49,8 @@
 #include <string.h>
 #include <hashtable.h>
 
+#include <SerialPacket.c>
+
 #include <radio.c>
 #include <seh.c>
 #include <sim_noise.h>
@@ -296,4 +298,8 @@ Radio* Tossim::radio() {
 
 SEH* Tossim::seh() {
   return new SEH();
+}
+
+SerialPacket* Tossim::newSerialPacket() {
+  return new SerialPacket();
 }

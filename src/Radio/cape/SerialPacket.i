@@ -30,47 +30,45 @@
  */
 
 /**
- * This version of Main is the system interface the TinyOS boot
- * sequence in TOSSIM. It wires the boot sequence implementation to
- * the scheduler and hardware resources. Unlike the standard Main,
- * it does not actually define the <tt>main</tt> function, as a
- * TOSSIM simulation is triggered from Python.
+ * SWIG interface specification for delivering packets to a node
+ * (injecting traffic).
+ *
+ * Note that changing this file only changes the Python interface:
+ * you must also change the underlying TOSSIM code so Python
+ * has the proper functions to call. Look at mac.h, mac.c, and
+ * sim_mac.c.
  *
  * @author Philip Levis
- * @date   August 6 2005
+ * @author Chad Metcalf
+ * @date   July 17 2007
  */
 
-// $Id: MainC.nc,v 1.6 2010-06-29 22:07:51 scipio Exp $
 
-#include "hardware.h"
+%{
+#include <SerialPacket.h>
+%}
 
-configuration MainC {
-  provides interface Boot;
-  uses interface Init as SoftwareInit;
-}
-implementation {
-  components PlatformC, SimMainP, TinySchedulerC;
-  
-  // SimMoteP is not referred to by any component here.
-  // It is included to make sure nesC loads it, as it
-  // includes functionality many other systems depend on.
-  components SimMoteP;
-  
-  SimMainP.Scheduler -> TinySchedulerC;
-  SimMainP.PlatformInit -> PlatformC;
+%apply (char *STRING, int LENGTH) { (char *data, int len) };
 
-  // Export the SoftwareInit and Booted for applications
-  SoftwareInit = SimMainP.SoftwareInit;
-  Boot = SimMainP;
+class SerialPacket {
+  public:
+    SerialPacket();
+    ~SerialPacket();
 
-  // This component may not be used by the application, but it must
-  // be included. This is because there are Python calls that deliver
-  // packets, and those python calls must terminate somewhere. If
-  // the application does not wire this up to, e.g., ActiveMessageC,
-  // the default handlers make sure nothing happens when a script
-  // tries to deliver a packet to a node that has no radio stack.
+    void setDestination(int dest);
+    int destination();
 
+    void setLength(int len);
+    int length();
 
-components SerialActiveMessageC;  
-}
+    void setType(int type);
+    int type();
 
+    char* data();
+
+    void setData(char* data, int len);
+    int maxLength();
+    
+    void deliver(int node, long long int time);
+    void deliverNow(int node);
+};

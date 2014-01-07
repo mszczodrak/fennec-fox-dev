@@ -30,47 +30,83 @@
  */
 
 /**
- * This version of Main is the system interface the TinyOS boot
- * sequence in TOSSIM. It wires the boot sequence implementation to
- * the scheduler and hardware resources. Unlike the standard Main,
- * it does not actually define the <tt>main</tt> function, as a
- * TOSSIM simulation is triggered from Python.
+ *
+ * Injecting packets into TOSSIM.
  *
  * @author Philip Levis
- * @date   August 6 2005
+ * @author Chad Metcalf
+ * @date   July 15 2007
  */
 
-// $Id: MainC.nc,v 1.6 2010-06-29 22:07:51 scipio Exp $
+#include <SerialPacket.h>
+#include <sim_serial_packet.h>
 
-#include "hardware.h"
-
-configuration MainC {
-  provides interface Boot;
-  uses interface Init as SoftwareInit;
-}
-implementation {
-  components PlatformC, SimMainP, TinySchedulerC;
-  
-  // SimMoteP is not referred to by any component here.
-  // It is included to make sure nesC loads it, as it
-  // includes functionality many other systems depend on.
-  components SimMoteP;
-  
-  SimMainP.Scheduler -> TinySchedulerC;
-  SimMainP.PlatformInit -> PlatformC;
-
-  // Export the SoftwareInit and Booted for applications
-  SoftwareInit = SimMainP.SoftwareInit;
-  Boot = SimMainP;
-
-  // This component may not be used by the application, but it must
-  // be included. This is because there are Python calls that deliver
-  // packets, and those python calls must terminate somewhere. If
-  // the application does not wire this up to, e.g., ActiveMessageC,
-  // the default handlers make sure nothing happens when a script
-  // tries to deliver a packet to a node that has no radio stack.
-
-
-components SerialActiveMessageC;  
+SerialPacket::SerialPacket() {
+  msgPtr = sim_serial_packet_allocate();
+  allocated = 1;
 }
 
+SerialPacket::SerialPacket(sim_serial_packet_t* m) {
+  if (m != NULL) {
+    msgPtr = m;
+    allocated = 0;
+  }
+  else {
+    msgPtr = sim_serial_packet_allocate();
+    allocated = 1;
+  }
+}
+
+SerialPacket::~SerialPacket() {
+  if (allocated) {
+    sim_serial_packet_free(msgPtr);
+  }
+}
+
+void SerialPacket::setDestination(int dest) {
+  sim_serial_packet_set_destination(msgPtr, (uint16_t)dest);
+}
+int SerialPacket::destination() {
+  return sim_serial_packet_destination(msgPtr);
+}
+
+void SerialPacket::setLength(int len) {
+  sim_serial_packet_set_length(msgPtr, (uint8_t)len);
+}
+int SerialPacket::length() {
+  return sim_serial_packet_length(msgPtr);
+}
+
+void SerialPacket::setType(int type) {
+  sim_serial_packet_set_type(msgPtr, (uint8_t)type);
+}
+int SerialPacket::type() {
+  return sim_serial_packet_type(msgPtr);
+}
+
+char* SerialPacket::data() {
+  char* val =  (char*)sim_serial_packet_data(msgPtr);
+  return val;
+}
+
+void SerialPacket::setData(char* data, int len) {
+  len = (len > maxLength())? maxLength():len;
+  memcpy(sim_serial_packet_data(msgPtr), data, len);
+  setLength(len);
+}
+
+int SerialPacket::maxLength() {
+  return (int)sim_serial_packet_max_length(msgPtr);
+}
+
+sim_serial_packet_t* SerialPacket::getPacket() {
+  return msgPtr;
+}
+
+void SerialPacket::deliver(int node, long long int t) {
+  sim_serial_packet_deliver(node, msgPtr, t);
+}
+
+void SerialPacket::deliverNow(int node) {
+  deliver(node, 0);
+}

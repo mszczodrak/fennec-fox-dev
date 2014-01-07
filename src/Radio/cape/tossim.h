@@ -48,6 +48,8 @@
 #include <radio.h>
 #include <seh.h>
 #include <hashtable.h>
+#include <SerialPacket.h>
+
 
 typedef struct variable_string {
   char* type;
@@ -138,6 +140,8 @@ class Tossim {
   Radio* radio();
 
   SEH* seh();
+
+  SerialPacket* newSerialPacket();
 
  private:
   char timeBuf[256];

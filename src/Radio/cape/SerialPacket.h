@@ -30,47 +30,46 @@
  */
 
 /**
- * This version of Main is the system interface the TinyOS boot
- * sequence in TOSSIM. It wires the boot sequence implementation to
- * the scheduler and hardware resources. Unlike the standard Main,
- * it does not actually define the <tt>main</tt> function, as a
- * TOSSIM simulation is triggered from Python.
+ *
+ * Injecting packets into TOSSIM.
  *
  * @author Philip Levis
- * @date   August 6 2005
+ * @author Chad Metcalf
+ * @date   July 15 2007
  */
 
-// $Id: MainC.nc,v 1.6 2010-06-29 22:07:51 scipio Exp $
+#ifndef SERIAL_PACKET_H_INCLUDED
+#define SERIAL_PACKET_H_INCLUDED
 
-#include "hardware.h"
+#include <sim_serial_packet.h>
 
-configuration MainC {
-  provides interface Boot;
-  uses interface Init as SoftwareInit;
-}
-implementation {
-  components PlatformC, SimMainP, TinySchedulerC;
-  
-  // SimMoteP is not referred to by any component here.
-  // It is included to make sure nesC loads it, as it
-  // includes functionality many other systems depend on.
-  components SimMoteP;
-  
-  SimMainP.Scheduler -> TinySchedulerC;
-  SimMainP.PlatformInit -> PlatformC;
+class SerialPacket {
+  public:
+    SerialPacket();
+    SerialPacket(sim_serial_packet_t* msg);
+    ~SerialPacket();
 
-  // Export the SoftwareInit and Booted for applications
-  SoftwareInit = SimMainP.SoftwareInit;
-  Boot = SimMainP;
+    void setDestination(int dest);
+    int destination();
 
-  // This component may not be used by the application, but it must
-  // be included. This is because there are Python calls that deliver
-  // packets, and those python calls must terminate somewhere. If
-  // the application does not wire this up to, e.g., ActiveMessageC,
-  // the default handlers make sure nothing happens when a script
-  // tries to deliver a packet to a node that has no radio stack.
+    void setLength(int len);
+    int length();
 
+    void setType(int type);
+    int type();
 
-components SerialActiveMessageC;  
-}
+    char* data();
+    void setData(char* data, int len);
+    int maxLength();
 
+    sim_serial_packet_t* getPacket();
+
+    void deliver(int node, long long int t);
+    void deliverNow(int node);
+    
+ private:
+    int allocated;
+    sim_serial_packet_t* msgPtr;
+};
+
+#endif
