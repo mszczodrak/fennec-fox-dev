@@ -1,6 +1,9 @@
 #-*-Makefile-*- vim:syntax=make
 #$Id: sim.extra,v 1.14 2009-11-14 02:14:18 razvanm Exp $
 
+CAPE = $(FENNEC_FOX_LIB)/Radio/cape
+NCC_CAPE = $(FENNEC_FOX_LIB)/support/bin/ncc
+
 export GCC=gcc
 GPP=g++
 OPTFLAGS = -g -O0
@@ -10,12 +13,20 @@ PFLAGS += -fnesc-nido-tosnodes=1000 -fnesc-simulate -fnesc-nido-motenumber=sim_n
 WFLAGS = -Wno-nesc-data-race
 PYTHON_VERSION ?= $(shell python --version 2>&1 | sed 's/Python 2\.\([0-9]\)\.[0-9]+\{0,1\}/2.\1/')
 
-CAPE = $(FENNEC_FOX_LIB)/Radio/cape
-NCC_CAPE = $(FENNEC_FOX_LIB)/support/bin/ncc
 
 BUILDDIR   = simbuild/$(PLATFORM)
 CFILE    = $(BUILDDIR)/sim.c
 OBJFILE    = $(BUILDDIR)/sim.o
+
+
+CSFFILE         = $(CAPE)/sim_serial_forwarder.c
+CSFOBJFILE      = $(BUILDDIR)/c-sf.o
+SFFILE          = $(CAPE)/SerialForwarder.c
+SFOBJFILE       = $(BUILDDIR)/sf.o
+THROTTLEFILE    = $(CAPE)/Throttle.cpp
+THROTTLEOBJFILE = $(BUILDDIR)/throttle.o
+
+
 CXXFILE    = $(CAPE)/tossim.c
 CXXOBJFILE = $(BUILDDIR)/tossim.o
 HASHFILE    = $(CAPE)/hashtable.c
@@ -76,8 +87,14 @@ sim-exe: builddir $(BUILD_EXTRA_DEPS) FORCE
 	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(PYOBJFILE) $(OPTFLAGS) $(CFLAGS) $(PYFILE) -I$(PYDIR) -I$(SIMDIR) -DHAVE_CONFIG_H 
 	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(CXXOBJFILE) $(OPTFLAGS) $(CFLAGS) $(CXXFILE) -I$(PYDIR) -I$(SIMDIR)
 	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(HASHOBJFILE) $(OPTFLAGS) $(CFLAGS) $(HASHFILE) -I$(PYDIR) -I$(SIMDIR)
+
+	@echo "  compiling sf support and C libraries into sf.o, c-sf.o, and throttle.o"
+	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(CSFOBJFILE) $(OPTFLAGS) $(CFLAGS) $(SIM_CFLAGS) $(SF_FLAGS) $(CSFFILE) -I$(PYDIR) -I$(SIMDIR)
+	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(SFOBJFILE) $(OPTFLAGS) $(CFLAGS) $(SIM_CFLAGS) $(SF_FLAGS) $(SFFILE) -I$(PYDIR) -I$(SIMDIR)
+	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(THROTTLEOBJFILE) $(OPTFLAGS) $(CFLAGS) $(SIM_CFLAGS) $(SF_FLAGS) $(THROTTLEFILE) -I$(PYDIR) -I$(SIMDIR)
+
 	@echo "  linking into shared object ./$(SHARED_OBJECT)"
-	$(GPP) $(PLATFORM_BUILD_FLAGS) $(PLATFORM_CC_FLAGS) $(PYOBJFILE) $(OBJFILE) $(CXXOBJFILE) $(HASHOBJFILE) $(PLATFORM_LIB_FLAGS) -o $(SHARED_OBJECT)
+	$(GPP) $(PLATFORM_BUILD_FLAGS) $(PLATFORM_CC_FLAGS) $(PYOBJFILE) $(OBJFILE) $(CXXOBJFILE) $(HASHOBJFILE) $(CSFOBJFILE) $(SFOBJFILE) $(THROTTLEOBJFILE) $(PLATFORM_LIB_FLAGS) -o $(SHARED_OBJECT)
 	@echo "  copying Python script interface TOSSIM.py from lib/tossim to local directory"
 	@cp $(CAPE)/TOSSIM.py .
 	@echo " "
