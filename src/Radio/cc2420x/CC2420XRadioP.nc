@@ -29,16 +29,11 @@ module CC2420XRadioP
 	provides
 	{
 		interface SoftwareAckConfig;
-		interface ActiveMessageConfig;
-
 	}
 	uses
 	{
 		interface Ieee154PacketLayer;
-		interface RadioAlarm;
-		interface RadioPacket as CC2420XPacket;
 
-		interface PacketTimeStamp<TRadio, uint32_t>;
 	}
 }
 
@@ -87,49 +82,8 @@ implementation
 		return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC);
 	}
 
-	tasklet_async command void SoftwareAckConfig.reportChannelError()
+	async command void SoftwareAckConfig.reportChannelError()
 	{
-	}
-
-
-/*----------------- ActiveMessageConfig -----------------*/
-
-	command am_addr_t ActiveMessageConfig.destination(message_t* msg)
-	{
-		return call Ieee154PacketLayer.getDestAddr(msg);
-	}
-
-	command void ActiveMessageConfig.setDestination(message_t* msg, am_addr_t addr)
-	{
-		call Ieee154PacketLayer.setDestAddr(msg, addr);
-	}
-
-	command am_addr_t ActiveMessageConfig.source(message_t* msg)
-	{
-		return call Ieee154PacketLayer.getSrcAddr(msg);
-	}
-
-	command void ActiveMessageConfig.setSource(message_t* msg, am_addr_t addr)
-	{
-		call Ieee154PacketLayer.setSrcAddr(msg, addr);
-	}
-
-	command am_group_t ActiveMessageConfig.group(message_t* msg)
-	{
-		return call Ieee154PacketLayer.getDestPan(msg);
-	}
-
-	command void ActiveMessageConfig.setGroup(message_t* msg, am_group_t grp)
-	{
-		call Ieee154PacketLayer.setDestPan(msg, grp);
-	}
-
-	command error_t ActiveMessageConfig.checkFrame(message_t* msg)
-	{
-		if( ! call Ieee154PacketLayer.isDataFrame(msg) )
-			call Ieee154PacketLayer.createDataFrame(msg);
-
-		return SUCCESS;
 	}
 
 

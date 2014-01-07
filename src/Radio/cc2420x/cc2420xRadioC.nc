@@ -81,68 +81,56 @@ RadioSend = cc2420xRadioP.RadioSend;
 RadioState = cc2420xRadioP.RadioState;
 
 
-cc2420xRadioP.RadioPacket -> Ieee154PacketLayerC.RadioPacket;
-cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
-cc2420xRadioP.SubRadioSend -> SoftwareAckLayerC.RadioSend;
+RadioPacket = Ieee154PacketLayerC;
+cc2420xRadioP.RadioPacket -> Ieee154PacketLayerC;
+cc2420xRadioP.SubRadioSend -> AutoResourceAcquireLayerC;
 cc2420xRadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
+cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
 
-
-        #define UQ_METADATA_FLAGS       "UQ_CC2420X_METADATA_FLAGS"
-        #define UQ_RADIO_ALARM          "UQ_CC2420X_RADIO_ALARM"
-
-// -------- RadioP
-
-        components CC2420XRadioP as RadioP;
-
-        RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC;
-        RadioP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-        RadioP.PacketTimeStamp -> TimeStampingLayerC;
-        RadioP.CC2420XPacket -> RadioDriverLayerC;
+components CC2420XRadioP as RadioP;
+RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC;
 
 // -------- RadioAlarm
 
-        RadioAlarmC.Alarm -> RadioDriverLayerC;
+RadioAlarmC.Alarm -> CC2420XDriverLayerC;
 
-        ActiveMessageLayerC.Config -> RadioP;
-        ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
-        ActiveMessageLayerC.SubReceive -> SoftwareAckLayerC;
-        ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
 
-        components new AutoResourceAcquireLayerC();
-        AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-        AutoResourceAcquireLayerC -> SoftwareAckLayerC; 
+components new AutoResourceAcquireLayerC();
+AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+AutoResourceAcquireLayerC -> SoftwareAckLayerC.RadioSend; 
 
-        components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
-        SendResource = SendResourceC;
+components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
+RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+
 
         Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
 
         SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
         SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
         SoftwareAckLayerC.Config -> RadioP;
-        SoftwareAckLayerC.SubSend -> RadioDriverLayerC.RadioSend;
-        SoftwareAckLayerC.SubReceive -> RadioDriverLayerC.RadioReceive;
+        SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
+        SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
 
-        TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
+        TimeStampingLayerC.LocalTimeRadio -> CC2420XDriverLayerC;
         TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
         //PacketTimeStampRadio = TimeStampingLayerC;
         //PacketTimeStampMilli = TimeStampingLayerC;
         TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
-        MetadataFlagsLayerC.SubPacket -> RadioDriverLayerC;
+        MetadataFlagsLayerC.SubPacket -> CC2420XDriverLayerC;
 
-        components CC2420XDriverLayerC as RadioDriverLayerC;
-        RadioDriverLayerC.Config -> RadioP;
-        RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
-        PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
-        PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
-        PacketRSSI = RadioDriverLayerC.PacketRSSI;
-        RadioLinkPacketMetadata = RadioDriverLayerC;
+CC2420XDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
+PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;
+PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
+PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
+RadioLinkPacketMetadata = CC2420XDriverLayerC;
+PacketTimeSyncOffset = CC2420XDriverLayerC.PacketTimeSyncOffset;
+RadioCCA = CC2420XDriverLayerC.RadioCCA;
 
-        RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-        RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-        RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-        RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+CC2420XDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+CC2420XDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+CC2420XDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
 
 
