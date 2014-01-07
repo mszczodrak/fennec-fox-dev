@@ -68,12 +68,14 @@ implementation
 	norace message_t *txMsg;
 	norace message_t ackMsg;
 
-	async event void SubSend.ready() {
+	async event void SubSend.ready()
+	{
 		if( state == STATE_READY )
 			signal RadioSend.ready();
 	}
 
-	async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	async command error_t RadioSend.send(message_t* msg, bool useCca)
+	{
 		error_t error;
 
 		if( state == STATE_READY )
@@ -91,7 +93,8 @@ implementation
 		return error;
 	}
 
-	async event void SubSend.sendDone(message_t *msg, error_t error) {
+	async event void SubSend.sendDone(message_t *msg, error_t error)
+	{
 		if( state == STATE_ACK_SEND )
 		{
 			// TODO: what if error != SUCCESS
@@ -112,7 +115,7 @@ implementation
 			else
 			{
 				state = STATE_READY;
-				signal RadioSend.sendDone(msg, error);
+				signal RadioSend.sendDone(error);
 			}
 		}
 	}
@@ -124,7 +127,7 @@ implementation
 		call Config.reportChannelError();
 
 		state = STATE_READY;
-		signal RadioSend.sendDone(txMsg, SUCCESS);	// we have sent it, but not acked
+		signal RadioSend.sendDone(SUCCESS);	// we have sent it, but not acked
 	}
 
 	async event bool SubReceive.header(message_t* msg)
@@ -152,7 +155,7 @@ implementation
 				call AckReceivedFlag.set(txMsg);
 
 				state = STATE_READY;
-				signal RadioSend.sendDone(txMsg, SUCCESS);
+				signal RadioSend.sendDone(SUCCESS);
 			}
 
 			return msg;
@@ -163,7 +166,7 @@ implementation
 			call Config.createAckPacket(msg, &ackMsg);
 
 			// TODO: what to do if we are busy and cannot send an ack
-			if( call SubSend.send(&ackMsg, FALSE) == SUCCESS )
+			if( call SubSend.send(&ackMsg) == SUCCESS )
 				state = STATE_ACK_SEND;
 			else
 				RADIO_ASSERT(FALSE);
