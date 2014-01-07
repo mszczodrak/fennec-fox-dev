@@ -115,7 +115,7 @@ implementation
 			else
 			{
 				state = STATE_READY;
-				signal RadioSend.sendDone(error);
+				signal RadioSend.sendDone(txMsg, error);
 			}
 		}
 	}
@@ -127,7 +127,7 @@ implementation
 		call Config.reportChannelError();
 
 		state = STATE_READY;
-		signal RadioSend.sendDone(SUCCESS);	// we have sent it, but not acked
+		signal RadioSend.sendDone(txMsg, SUCCESS);	// we have sent it, but not acked
 	}
 
 	async event bool SubReceive.header(message_t* msg)
@@ -155,7 +155,7 @@ implementation
 				call AckReceivedFlag.set(txMsg);
 
 				state = STATE_READY;
-				signal RadioSend.sendDone(SUCCESS);
+				signal RadioSend.sendDone(msg, SUCCESS);
 			}
 
 			return msg;
@@ -166,7 +166,7 @@ implementation
 			call Config.createAckPacket(msg, &ackMsg);
 
 			// TODO: what to do if we are busy and cannot send an ack
-			if( call SubSend.send(&ackMsg) == SUCCESS )
+			if( call SubSend.send(&ackMsg, FALSE) == SUCCESS )
 				state = STATE_ACK_SEND;
 			else
 				RADIO_ASSERT(FALSE);

@@ -63,15 +63,15 @@ implementation {
 
 components cc2420xRadioP;
 components CC2420XDriverLayerC;
+
 components new RadioAlarmC();
 components new MetadataFlagsLayerC();
 components new Ieee154PacketLayerC();
 components new TimeStampingLayerC();
 components new SoftwareAckLayerC();
 
-components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
-RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-
+//components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
+//RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
 SplitControl = cc2420xRadioP;
 cc2420xRadioParams = cc2420xRadioP;
@@ -101,120 +101,34 @@ cc2420xRadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
 
 // -------- RadioAlarm
 
-        components new RadioAlarmC();
         RadioAlarmC.Alarm -> RadioDriverLayerC;
-
-// -------- Active Message
 
         ActiveMessageLayerC.Config -> RadioP;
         ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
-        ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
-        ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
-
-        AMSend = ActiveMessageLayerC;
-        Receive = ActiveMessageLayerC.Receive;
-        Snoop = ActiveMessageLayerC.Snoop;
-        SendNotifier = ActiveMessageLayerC;
-        AMPacket = ActiveMessageLayerC;
-        PacketForActiveMessage = ActiveMessageLayerC;
+        ActiveMessageLayerC.SubReceive -> SoftwareAckLayerC;
+        ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
 
         components new AutoResourceAcquireLayerC();
         AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-        AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
+        AutoResourceAcquireLayerC -> SoftwareAckLayerC; 
 
         components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
         SendResource = SendResourceC;
 
-// -------- Ieee154 Message
+        Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
 
-        components new Ieee154MessageLayerC();
-        Ieee154MessageLayerC.Ieee154PacketLayer -> Ieee154PacketLayerC;
-        Ieee154MessageLayerC.SubSend -> TinyosNetworkLayerC.Ieee154Send;
-        Ieee154MessageLayerC.SubReceive -> TinyosNetworkLayerC.Ieee154Receive;
-        Ieee154MessageLayerC.RadioPacket -> TinyosNetworkLayerC.Ieee154Packet;
-
-        Ieee154Send = Ieee154MessageLayerC;
-        Ieee154Receive = Ieee154MessageLayerC;
-        Ieee154Notifier = Ieee154MessageLayerC;
-        Ieee154Packet = Ieee154PacketLayerC;
-        PacketForIeee154Message = Ieee154MessageLayerC;
-
-// -------- Tinyos Network
-
-        components new TinyosNetworkLayerC();
-
-        TinyosNetworkLayerC.SubSend -> UniqueLayerC;
-        TinyosNetworkLayerC.SubReceive -> PacketLinkLayerC;
-        TinyosNetworkLayerC.SubPacket -> Ieee154PacketLayerC;
-
-// -------- IEEE 802.15.4 Packet
-
-        components new Ieee154PacketLayerC();
-        Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
-
-// -------- UniqueLayer Send part (wired twice)
-
-        components new UniqueLayerC();
-        UniqueLayerC.Config -> RadioP;
-        UniqueLayerC.SubSend -> PacketLinkLayerC;
-
-// -------- Packet Link
-
-        components new PacketLinkLayerC();
-        PacketLink = PacketLinkLayerC;
-        PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-        PacketLinkLayerC -> LowPowerListeningLayerC.Send;
-        PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
-        PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
-
-        components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
-        LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
-        LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
-        LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
-        LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
-        SplitControl = LowPowerListeningLayerC;
-        LowPowerListening = LowPowerListeningLayerC;
-
-// -------- MessageBuffer
-
-        components new MessageBufferLayerC();
-        MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
-        MessageBufferLayerC.RadioReceive -> UniqueLayerC;
-        MessageBufferLayerC.RadioState -> RadioDriverLayerC.RadioState;
-        RadioChannel = MessageBufferLayerC;
-
-// -------- UniqueLayer receive part (wired twice)
-
-        UniqueLayerC.SubReceive -> CollisionAvoidanceLayerC;
-
-        components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-        CollisionAvoidanceLayerC.Config -> RadioP;
-        CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
-        CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
-        CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-
-        components new SoftwareAckLayerC();
         SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
         SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-        PacketAcknowledgements = SoftwareAckLayerC;
         SoftwareAckLayerC.Config -> RadioP;
-        SoftwareAckLayerC.SubSend -> CsmaLayerC;
-        SoftwareAckLayerC.SubReceive -> CsmaLayerC;
+        SoftwareAckLayerC.SubSend -> RadioDriverLayerC.RadioSend;
+        SoftwareAckLayerC.SubReceive -> RadioDriverLayerC.RadioReceive;
 
-        components new DummyLayerC() as CsmaLayerC;
-        CsmaLayerC.Config -> RadioP;
-        CsmaLayerC -> RadioDriverLayerC.RadioSend;
-        CsmaLayerC -> RadioDriverLayerC.RadioReceive;
-        CsmaLayerC -> RadioDriverLayerC.RadioCCA;
-
-        components new TimeStampingLayerC();
         TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
         TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
-        PacketTimeStampRadio = TimeStampingLayerC;
-        PacketTimeStampMilli = TimeStampingLayerC;
+        //PacketTimeStampRadio = TimeStampingLayerC;
+        //PacketTimeStampMilli = TimeStampingLayerC;
         TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
-        components new MetadataFlagsLayerC();
         MetadataFlagsLayerC.SubPacket -> RadioDriverLayerC;
 
         components CC2420XDriverLayerC as RadioDriverLayerC;

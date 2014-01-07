@@ -44,9 +44,6 @@ module CC2420XDriverLayerP
 		interface PacketField<uint8_t> as PacketTimeSyncOffset;
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface LinkPacketMetadata;
-
-
-//		interface CC2420XDriverConfig as Config;
 	}
 
 	uses

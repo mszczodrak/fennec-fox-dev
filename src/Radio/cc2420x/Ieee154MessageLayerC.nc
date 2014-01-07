@@ -46,8 +46,8 @@ generic module Ieee154MessageLayerC()
 	{
 		interface Ieee154PacketLayer;
 		interface RadioPacket;
-		interface BareSend as SubSend;
-		interface BareReceive as SubReceive;
+		interface RadioSend as SubSend;
+		interface RadioReceive as SubReceive;
 	}
 }
 

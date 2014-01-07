@@ -24,44 +24,11 @@
 #ifndef __CC2420XRADIO_H__
 #define __CC2420XRADIO_H__
 
-#include <RadioConfig.h>
-#include <TinyosNetworkLayer.h>
+#include "CC2420XRadioConfig.h"
 #include <Ieee154PacketLayer.h>
-#include <ActiveMessageLayer.h>
 #include <MetadataFlagsLayer.h>
 #include <CC2420XDriverLayer.h>
 #include <TimeStampingLayer.h>
-#include <LowPowerListeningLayer.h>
-#include <PacketLinkLayer.h>
 
-typedef nx_struct cc2420xpacket_header_t
-{
-	cc2420x_header_t cc2420x;
-	ieee154_simple_header_t ieee154;
-#ifndef TFRAMES_ENABLED
-	network_header_t network;
-#endif
-#ifndef IEEE154FRAMES_ENABLED
-	activemessage_header_t am;
-#endif
-} cc2420xpacket_header_t;
-
-typedef nx_struct cc2420xpacket_footer_t
-{
-	// the time stamp is not recorded here, time stamped messaged cannot have max length
-} cc2420xpacket_footer_t;
-
-typedef struct cc2420xpacket_metadata_t
-{
-#ifdef LOW_POWER_LISTENING
-	lpl_metadata_t lpl;
-#endif
-#ifdef PACKET_LINK
-	link_metadata_t link;
-#endif
-	timestamp_metadata_t timestamp;
-	flags_metadata_t flags;
-	cc2420x_metadata_t cc2420x;
-} cc2420xpacket_metadata_t;
 
 #endif//__CC2420XRADIO_H__
