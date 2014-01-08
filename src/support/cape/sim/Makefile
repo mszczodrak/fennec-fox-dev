@@ -1,5 +1,9 @@
+SUBDIRS = topos
 
-all:
+ROOT = .
+include $(ROOT)/Makefile.include
 
 clean:
 	rm -rf results
+~                           
+
