@@ -119,8 +119,6 @@ class Simulation:
 	def runSingleSimulation(self):
 		sim_time = 0
 
-		print "Sim start"
-
 		if (self.enable_sf):
 			while True:
 				#print self.s_tossim.time()
@@ -139,7 +137,6 @@ class Simulation:
 if __name__ == "__main__":
 
 	how_many = int(sys.argv[1])
-	os.system("rm ./results/*")
 
 	for i in range(how_many):
 		print "Run %d   "%(i,)
