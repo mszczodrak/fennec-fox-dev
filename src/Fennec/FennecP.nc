@@ -39,31 +39,23 @@ uses interface SimpleStart as Registry;
 
 implementation {
 
-event void Boot.booted() {
-	//call Leds.led1On();
-	dbg("Fennec", "Fennec Boot.booted()");
-	call DbgSerial.start();
-}
-
 task void start_caches() {
 	dbg("Fennec", "Fennec start_caches()");
 	call Caches.start();
 }
 
+event void Boot.booted() {
+	//call Leds.led1On();
+	dbg("Fennec", "Fennec Boot.booted()");
+	call DbgSerial.start();
+	post start_caches();
+}
+
+
 event void DbgSerial.startDone(error_t err) {
-	if (err == SUCCESS) {
-		post start_caches();
-	} else {
-		call DbgSerial.start();
-	}
 }
 
 event void Caches.startDone(error_t err) {
-	if (err == SUCCESS) {
-		dbg("Fennec", "Fennec Caches.startDone()");
-	} else {
-		post start_caches();
-	}
 }
 
 event void Registry.startDone(error_t err) {}

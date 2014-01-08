@@ -16,27 +16,29 @@ module FennecSerialDbgP @safe() {
 implementation {
 
 #ifdef __DBGS__
-  message_t packet;
+uint8_t state = S_STOPPED;
+message_t packet;
 norace nx_struct debug_msg *msg;
-norace bool busy;
 #endif
 
-  command void SimpleStart.start() {
+command void SimpleStart.start() {
 #ifdef __DBGS__
-    msg = NULL;
-    busy = FALSE;
-    call SplitControl.start();
+	state = S_STARTING;
+	msg = NULL;
+	call SplitControl.start();
 #else
-    signal SimpleStart.startDone(SUCCESS);
+	signal SimpleStart.startDone(SUCCESS);
 #endif
   }
 
 #ifdef __DBGS__
 task void send_msg() {
-      nx_struct debug_msg q_msg = call Queue.dequeue();
-      memcpy(msg, &q_msg, sizeof(nx_struct debug_msg));
-      busy = 1;
-      call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg));
+	if (state == S_STARTED) {
+		nx_struct debug_msg q_msg = call Queue.dequeue();
+		state = S_TRANSMITTING;
+		memcpy(msg, &q_msg, sizeof(nx_struct debug_msg));
+		call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg));
+	}
 }
 
 event message_t* Receive.receive(message_t* bufPtr,
@@ -45,6 +47,7 @@ event message_t* Receive.receive(message_t* bufPtr,
 }
 
 event void AMSend.sendDone(message_t* bufPtr, error_t error) {
+	state = S_STARTED;
 	if (call Queue.empty()) {
 	} else {
 		post send_msg();
@@ -52,14 +55,17 @@ event void AMSend.sendDone(message_t* bufPtr, error_t error) {
 }
 
 event void SplitControl.startDone(error_t err) {
+	state = S_STARTED;
 	msg = (nx_struct debug_msg*) call AMSend.getPayload(&packet, sizeof(nx_struct debug_msg));
 	signal SimpleStart.startDone(SUCCESS);
 }
 
-event void SplitControl.stopDone(error_t err) {}
+event void SplitControl.stopDone(error_t err) {
+
+}
 #endif
 
-bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1) @C() {
+bool dbgs(uint8_t layer, uint8_t dbg_state, uint16_t action, uint16_t d0, uint16_t d1) @C() {
 #ifdef __DBGS__
 	atomic {
 		if (call Queue.full()) 
@@ -67,7 +73,7 @@ bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d
 
 		memset(msg, 0, sizeof(nx_struct debug_msg));
 		msg->layer = layer;
-		msg->state = state;
+		msg->state = dbg_state;
 		msg->action = action;
 		msg->d0 = d0;
 		msg->d1 = d1;
