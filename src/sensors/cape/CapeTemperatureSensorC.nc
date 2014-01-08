@@ -41,14 +41,10 @@ provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 
 implementation {
 
-enum {
-        CLIENT_ID = unique(UQ_TMP102),
-};
-
 components CapeTemperatureSensorP;
 SensorInfo = CapeTemperatureSensorP.SensorInfo;
-SensorCtrl = CapeTemperatureSensorP.SensorCtrl[CLIENT_ID];
-Read = CapeTemperatureSensorP.Read[CLIENT_ID];
+SensorCtrl = CapeTemperatureSensorP.SensorCtrl;
+Read = CapeTemperatureSensorP.Read;
 
 components new TimerMilliC() as Timer;
 CapeTemperatureSensorP.Timer -> Timer;
