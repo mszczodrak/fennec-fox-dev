@@ -44,10 +44,6 @@ provides interface Read<ff_sensor_data_t>;
 
 implementation {
 
-enum {
-        CLIENT_ID = unique(UQ_PHIDGET_ADC),
-};
-
 #ifndef TOSSIM
 
 components new phidget_adc_driverP();
@@ -73,8 +69,8 @@ phidget_adc_driverP.Leds -> LedsC;
 
 components new CapeAdcSensorC();
 SensorInfo = CapeAdcSensorC.SensorInfo;
-SensorCtrl = CapeAdcSensorC.SensorCtrl[CLIENT_ID];
-Read = CapeAdcSensorC.Read[CLIENT_ID];
+SensorCtrl = CapeAdcSensorC.SensorCtrl;
+Read = CapeAdcSensorC.Read;
 AdcSetup = CapeAdcSensorC.AdcSetup;
 
 #endif

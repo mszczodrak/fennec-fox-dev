@@ -170,6 +170,7 @@ event void Timer.fired() {
 }
 
 event void TimerSensor.fired() {
+	busy = FALSE;
 	raw_data = VIRTUAL_TEMPERATURE_VALUE;
 	post data_ready();
 }

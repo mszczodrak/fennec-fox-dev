@@ -35,8 +35,8 @@
 
 generic configuration CapeAdcSensorC() {
 provides interface SensorInfo;
-provides interface SensorCtrl[uint8_t id];
-provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
+provides interface SensorCtrl;
+provides interface Read<ff_sensor_data_t> as Read;
 provides interface AdcSetup;
 }
 

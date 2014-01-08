@@ -53,6 +53,7 @@ implementation {
 
 norace uint16_t raw_data = 0;
 norace uint16_t battery = 0;
+norace uint32_t sequence = 0;
 
 uint32_t rate;
 
@@ -71,8 +72,9 @@ msp430adc12_channel_config_t phidget_adc_config = {
 
 task void signal_readDone() {
 	return_data.size = sizeof(raw_data);
+	return_data.seq = ++sequence;
 	return_data.raw = &raw_data;
-	return_data.raw = &raw_data;
+	return_data.calibrated = &raw_data;
         return_data.type = call SensorInfo.getType();
         return_data.id = call SensorInfo.getId();
 	signal Read.readDone(SUCCESS, return_data);
