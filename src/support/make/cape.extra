@@ -1,7 +1,7 @@
 #-*-Makefile-*- vim:syntax=make
 #$Id: sim.extra,v 1.14 2009-11-14 02:14:18 razvanm Exp $
 
-CAPE = $(FENNEC_FOX_LIB)/Radio/cape
+CAPE = $(FENNEC_FOX_LIB)/support/cape/src
 NCC_CAPE = $(FENNEC_FOX_LIB)/support/bin/ncc
 
 export GCC=gcc
@@ -81,7 +81,7 @@ sim-exe: builddir $(BUILD_EXTRA_DEPS) FORCE
 	@echo "  placing object files in $(BUILDDIR)"
 	@echo "  writing XML schema to $(XML)"
 	@echo "  compiling $(COMPONENT) to object file sim.o"
-	$(NCC_CAPE) -c $(PLATFORM_FLAGS) -o $(OBJFILE) $(OPTFLAGS) $(PFLAGS) $(CFLAGS) $(WFLAGS) $(COMPONENT).nc $(LDFLAGS)  $(DUMPTYPES) -fnesc-dumpfile=$(XML) -I$(FENNEC_FOX_LIB)/Radio/cape
+	$(NCC_CAPE) -c $(PLATFORM_FLAGS) -o $(OBJFILE) $(OPTFLAGS) -I$(CAPE) $(PFLAGS) $(CFLAGS) $(WFLAGS) $(COMPONENT).nc $(LDFLAGS)  $(DUMPTYPES) -fnesc-dumpfile=$(XML) -I$(FENNEC_FOX_LIB)/Radio/cape
 
 	@echo "  compiling Python support and C libraries into pytossim.o, tossim.o, and c-support.o"
 	$(GPP) -c $(PLATFORM_CC_FLAGS) $(PLATFORM_FLAGS) -o $(PYOBJFILE) $(OPTFLAGS) $(CFLAGS) $(PYFILE) -I$(PYDIR) -I$(SIMDIR) -DHAVE_CONFIG_H 
