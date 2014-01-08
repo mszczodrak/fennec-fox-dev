@@ -67,6 +67,7 @@ command error_t SplitControl.start() {
 	dbg("Application", "TestSerialApp SplitControl.start()");
 	call Timer.startPeriodic(call TestSerialAppParams.get_delay());
 	call SerialSplitControl.start();
+        signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -74,7 +75,8 @@ command error_t SplitControl.stop() {
         call Timer.stop();
         call Leds.set(0);
 	dbg("Application", "TestSerialApp SplitControl.start()");
-	call SerialSplitControl.stop();
+	//call SerialSplitControl.stop();
+        signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -109,12 +111,10 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void SerialSplitControl.startDone(error_t error) {
 	dbg("Application", "TestSerialApp SerialSplitControl.startDone(%d)", error);
-        signal SplitControl.startDone(SUCCESS);
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
 	dbg("Application", "TestSerialApp SerialSplitControl.stopDone(%d)", error);
-        signal SplitControl.stopDone(SUCCESS);
 }
 
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
