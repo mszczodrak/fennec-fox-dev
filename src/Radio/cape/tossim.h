@@ -49,6 +49,7 @@
 #include <seh.h>
 #include <hashtable.h>
 #include <SerialPacket.h>
+#include <sim_serial_packet.h>
 
 
 typedef struct variable_string {

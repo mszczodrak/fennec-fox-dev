@@ -43,7 +43,7 @@
 
 #include <sim_serial_packet.h>
 #include <message.h>
-#include <platform_message.h>
+//#include <platform_message.h>
 
 // NOTE: This function is defined in lib/tossim/ActiveMessageC. It
 // has to be predeclared here because it is defined within that component.

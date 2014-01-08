@@ -49,10 +49,10 @@
 #include <string.h>
 #include <hashtable.h>
 
-#include <SerialPacket.c>
 
 #include <radio.c>
 #include <seh.c>
+#include <SerialPacket.c>
 #include <sim_noise.h>
 #include <sim_irradiance.h>
 

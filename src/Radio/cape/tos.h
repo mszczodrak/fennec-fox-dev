@@ -87,7 +87,6 @@ extern uint16_t TOS_NODE_ID;
 #include <sim_tossim.h>
 #include <sim_mote.h>
 #include <sim_log.h>
-//#include <sim_seh.c>
 
 // We only want to include these files if we are compiling TOSSIM proper,
 // that is, the C file representing the TinyOS application. The TinyOS
@@ -111,6 +110,8 @@ struct @exactlyonce { };
 #include <randomlib.c>
 #include <sim_noise.c>
 #include <sim_irradiance.c>
+#include <sim_serial_packet.c>
+
 
 #endif
 
