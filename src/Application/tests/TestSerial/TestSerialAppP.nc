@@ -82,6 +82,8 @@ event void Timer.fired() {
 	uint32_t* p = (uint32_t*) call SerialAMSend.getPayload(&packet,
                         sizeof(uint32_t));
 
+	dbg("Application", "TestSerialApp Timer.fired() - sending seqquence %d", seq);
+
 	*p = seq++;
 
 	/* Send message over the serial and check if serial started without error */
@@ -106,14 +108,12 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void SerialSplitControl.startDone(error_t error) {
-        if (error != SUCCESS) {
-        }
+	dbg("Application", "TestSerialApp SerialSplitControl.startDone(%d)", error);
         signal SplitControl.startDone(SUCCESS);
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
-        if (error != SUCCESS) {
-        }
+	dbg("Application", "TestSerialApp SerialSplitControl.stopDone(%d)", error);
         signal SplitControl.stopDone(SUCCESS);
 }
 
