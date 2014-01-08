@@ -1,0 +1,3 @@
+When generating new topos and compiling with LinkLayerModel
+do 
+java net.tinyos.sim.LinkLayerModel config.txt
