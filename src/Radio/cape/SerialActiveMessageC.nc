@@ -294,4 +294,9 @@ implementation {
         sim_event_t* evt = allocate_serial_deliver_event(node, msg, t);
         sim_queue_insert(evt);
     }
+
+
+	default event void SplitControl.startDone(error_t error) {}
+	default event void SplitControl.stopDone(error_t error) {}
+
 }
