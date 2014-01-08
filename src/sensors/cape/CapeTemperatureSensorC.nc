@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Columbia University.
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,39 +26,35 @@
  */
 
 /**
-  * TMP102 sensor driver.
+  * Virtual Temperature sensor used in cape simulator
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/08/2014
   */
 
-#include "tmp102_0_driver.h"
 
-configuration tmp102_0_driverC_ {
+configuration CapeTemperatureSensorC {
 provides interface SensorInfo;
 provides interface SensorCtrl[uint8_t id];
 provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
 }
+
 implementation {
-components tmp102_0_driverP;
-SensorInfo = tmp102_0_driverP.SensorInfo;
-SensorCtrl = tmp102_0_driverP.SensorCtrl;
-Read = tmp102_0_driverP.Read;
 
-components new Msp430I2C1C() as I2C;
-tmp102_0_driverP.Resource -> I2C;
-tmp102_0_driverP.ResourceRequested -> I2C;
-tmp102_0_driverP.I2CBasicAddr -> I2C;    
+enum {
+        CLIENT_ID = unique(UQ_TMP102),
+};
 
-components new BatteryC();
-tmp102_0_driverP.Battery -> BatteryC.Read;
+components CapeTemperatureSensorP;
+SensorInfo = CapeTemperatureSensorP.SensorInfo;
+SensorCtrl = CapeTemperatureSensorP.SensorCtrl[CLIENT_ID];
+Read = CapeTemperatureSensorP.Read[CLIENT_ID];
 
 components new TimerMilliC() as Timer;
-tmp102_0_driverP.Timer -> Timer;
+CapeTemperatureSensorP.Timer -> Timer;
 
 components new TimerMilliC() as TimerSensor;
-tmp102_0_driverP.TimerSensor -> TimerSensor;
+CapeTemperatureSensorP.TimerSensor -> TimerSensor;
 
-components LedsC;
-tmp102_0_driverP.Leds -> LedsC;
 }
+

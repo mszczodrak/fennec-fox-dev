@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Columbia University.
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,28 +26,21 @@
  */
 
 /**
-  * TMP102 sensor driver.
+  * Virtual Temperature sensor used in cape simulator
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/08/2014
   */
 
- 
 #include <Fennec.h>
-#include "tmp102_0_driver.h"
+#define VIRTUAL_TEMPERATURE_VALUE	20
 
-module tmp102_0_driverP @safe() {
+module CapeTemperatureSensorP {
 provides interface SensorInfo;
 provides interface SensorCtrl[uint8_t id];
 provides interface Read<ff_sensor_data_t> as Read[uint8_t id];
-
-uses interface Resource;
-uses interface ResourceRequested;
-uses interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;        
-uses interface Read<uint16_t> as Battery;
 uses interface Timer<TMilli> as Timer;   
 uses interface Timer<TMilli> as TimerSensor;
-uses interface Leds;
 }
 
 implementation {
@@ -126,12 +119,8 @@ task void start_sensor_timer() {
 }
 
 task void getMeasurement() {
-        //call Battery.read();
 	call TimerSensor.startOneShot(100);
 	busy = TRUE;
-	atomic P5DIR |= 0x01;
-	atomic P5OUT |= 0x01;
-	//post start_sensor_timer();
 }
 
 task void data_ready() {
@@ -180,80 +169,10 @@ event void Timer.fired() {
 	post getMeasurement();
 }
 
-void write_to_i2c() {
-	error_t i2c_err;
-	pointer = TMP102_TEMPREG;
-	i2c_err = call I2CBasicAddr.write((I2C_START | I2C_STOP),
-                        TMP102_ADDRESS, 1, &pointer);
-
-	if (i2c_err) {
-		busy = FALSE;
-		call Resource.release();
-	}
-}
-
 event void TimerSensor.fired() {
-	if (call Resource.isOwner()) {
-		write_to_i2c();
-	} else {
-		call Resource.request();
-	}
-}
-
-event void Resource.granted(){
-	write_to_i2c();
-}
-
-async event void I2CBasicAddr.readDone(error_t error, uint16_t addr, 
-					uint8_t length, uint8_t *data) {
-	uint16_t tmp = 0; 	
-
-	if (!call Resource.isOwner()) {
-		return; 
-	}
-
-	//for(tmp=0;tmp<0xffff;tmp++);    //delay
-
-	mode = data[1] & 1;
-	negative_number = data[0] >> 7;
-
-	if ((mode == TMP102_0_12BIT_MODE) && !negative_number) {
-		tmp = data[0];
-		tmp = tmp << 8;
-		tmp = tmp + data[1];
-		tmp = tmp >> 4;
-	}
-	busy = FALSE;
-	call Resource.release();
-	atomic raw_data = tmp;
+	raw_data = VIRTUAL_TEMPERATURE_VALUE;
 	post data_ready();
 }
-
-async event void I2CBasicAddr.writeDone(error_t error, uint16_t addr, 
-					uint8_t length, uint8_t *data) {
-	error_t i2c_err;
-	if (!call Resource.isOwner()) {
-		return; 
-	}
-	i2c_err = call I2CBasicAddr.read((I2C_START | I2C_STOP),  
-			TMP102_ADDRESS, 2, temperaturebuff);
-	if (i2c_err) {
-		busy = FALSE;
-		call Resource.release();
-	}
-}   
-
-event void Battery.readDone(error_t error, uint16_t data){
-	if (error == SUCCESS) {
-		uint32_t b = data;
-		b *= 3000;
-		b /= 4096;
-		battery = b;
-	}
-}
-  
-async event void ResourceRequested.requested(){}
-async event void ResourceRequested.immediateRequested(){}
 
 default event void Read.readDone[uint8_t id](error_t err, ff_sensor_data_t data) {}
 

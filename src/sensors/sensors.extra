@@ -34,3 +34,7 @@ CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Camera/ov7670
 
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Audio
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Sensors/Audio/wm8940
+
+#ifdef TOSSIM
+CFLAGS+=-I$(FENNEC_FOX_LIB)/sensors/cape
+#endif
