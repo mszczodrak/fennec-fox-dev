@@ -1,6 +1,6 @@
 all:
 	
 clean:
-	rm -rf results
+	rm -rf results*
 
                            
