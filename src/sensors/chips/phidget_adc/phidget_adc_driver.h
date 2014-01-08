@@ -23,7 +23,9 @@
 #ifndef _PHIDGET_ADC_DRIVER_H_
 #define _PHIDGET_ADC_DRIVER_H_
 
+#ifndef TOSSIM
 #include "Msp430Adc12.h"
+#endif
 
 #define UQ_PHIDGET_ADC "UQ_PHIDGET_ADC"
 
