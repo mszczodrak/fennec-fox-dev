@@ -3,6 +3,7 @@ support/sfc/fennec.extra
 Fennec/sfc
 Events/EventsC.nc
 Events/EventsP.nc
+TOSSIM.py
 TOSSIM.pyc
 _TOSSIMmodule.so
 app.xml
