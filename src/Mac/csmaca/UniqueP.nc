@@ -151,6 +151,7 @@ task void deliverTask() {
 		p = (uint8_t*)(msg->data);
 		header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 		msgDsn = header->dsn;
+		dbg("Mac", "csmaMac UniqueP deliverTask() from %u to %u", header->src, header->dest);
 	}
 
 	if(!hasSeen(msgSource, msgDsn)) {
@@ -202,6 +203,7 @@ event void SubSend.sendDone(message_t *msg, error_t error) {
 /***************** SubReceive Events *****************/
 async event message_t *SubReceive.receive(message_t* msg) {
 	message_t *m;
+	dbg("Mac", "csmaMac UniqueP SubReceive.receive(0x%1x)", msg);
 	atomic {
 		if( receiveQueueSize >= RECEIVE_QUEUE_SIZE ) {
 			m = msg;
@@ -224,8 +226,11 @@ async event bool SubReceive.header(message_t* msg) {
 	if (receiveQueueSize < RECEIVE_QUEUE_SIZE) {
 		uint8_t *p = (uint8_t*)(msg->data);
 		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
+		dbg("Mac", "csmaMac UniqueP SubReceive.header(0x%1x)  from %u to %u",
+				msg, header->src, header->dest);
 	        return ((header->dest == TOS_NODE_ID) || (header->dest == AM_BROADCAST_ADDR));
 	} else {
+		dbg("Mac", "csmaMac UniqueP SubReceive.header(0x%1x) - Queue.full()", msg);
 		return FALSE;
 	}
 	//return TRUE;
