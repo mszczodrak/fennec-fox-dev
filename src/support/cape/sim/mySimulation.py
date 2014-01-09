@@ -17,7 +17,7 @@ class Simulation:
 
 		self.s_tossim = Tossim([])
 		if (self.enable_sf):
-			self.s_sf = SerialForwarder(8080)
+			self.s_sf = SerialForwarder(9002)
 			self.throttle = Throttle(self.s_tossim, 10)	
 		self.s_radio = self.s_tossim.radio()
 		self.s_topology_file = "topos/36/linkgain.out"
@@ -65,7 +65,7 @@ class Simulation:
 		#self.s_tossim.addChannel("EHP", self.s_output_file)
 		#self.s_tossim.addChannel("LI", self.s_output_file)
 		#self.s_tossim.addChannel("Alarm", self.s_output_file)
-		self.s_tossim.addChannel("Application", self.s_output_file)
+		#self.s_tossim.addChannel("Application", self.s_output_file)
 		#self.s_tossim.addChannel("Network", self.s_output_file)
 		#self.s_tossim.addChannel("Mac", self.s_output_file)
 		#self.s_tossim.addChannel("Radio", self.s_output_file)
