@@ -10,7 +10,7 @@ from TOSSIM import *
 class Simulation:
 
 	def __init__(self):
-		self.enable_sf = 1
+		self.enable_sf = 0
 
 		if not os.path.isdir("./results"):
 			os.mkdir("./results")
@@ -64,7 +64,7 @@ class Simulation:
 		#self.s_tossim.addChannel("TossimPacketModelC", self.s_output_file)
 		#self.s_tossim.addChannel("EHP", self.s_output_file)
 		#self.s_tossim.addChannel("LI", self.s_output_file)
-		self.s_tossim.addChannel("Dbgs", self.s_output_file)
+		#self.s_tossim.addChannel("Dbgs", self.s_output_file)
 		self.s_tossim.addChannel("Application", self.s_output_file)
 		#self.s_tossim.addChannel("Network", self.s_output_file)
 		#self.s_tossim.addChannel("Mac", self.s_output_file)
