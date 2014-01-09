@@ -66,6 +66,7 @@ event void SplitControl.stopDone(error_t err) {
 #endif
 
 bool dbgs(uint8_t layer, uint8_t dbg_state, uint16_t action, uint16_t d0, uint16_t d1) @C() {
+	dbg("Dbgs", "Dbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
 #ifdef __DBGS__
 	atomic {
 		if (call Queue.full()) 
