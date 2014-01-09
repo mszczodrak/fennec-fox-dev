@@ -65,7 +65,7 @@ class Simulation:
 		#self.s_tossim.addChannel("EHP", self.s_output_file)
 		#self.s_tossim.addChannel("LI", self.s_output_file)
 		#self.s_tossim.addChannel("Dbgs", self.s_output_file)
-		self.s_tossim.addChannel("Application", self.s_output_file)
+		#self.s_tossim.addChannel("Application", self.s_output_file)
 		#self.s_tossim.addChannel("Network", self.s_output_file)
 		#self.s_tossim.addChannel("Mac", self.s_output_file)
 		#self.s_tossim.addChannel("Radio", self.s_output_file)
