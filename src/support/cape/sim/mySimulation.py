@@ -10,7 +10,7 @@ from TOSSIM import *
 class Simulation:
 
 	def __init__(self):
-		self.enable_sf = 0
+		self.enable_sf = 1
 
 		if not os.path.isdir("./results"):
 			os.mkdir("./results")
