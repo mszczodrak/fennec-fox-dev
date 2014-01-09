@@ -295,7 +295,6 @@ void congestionBackoff(message_t *msg) {
 //	myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
 	myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
 
-
 	dbg("Mac", "csmaMac congestionBackoff(0x%1x) is %d", msg, myCongestionBackoff);
 
 	if (myCongestionBackoff) {
