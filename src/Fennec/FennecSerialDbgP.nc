@@ -15,8 +15,9 @@ module FennecSerialDbgP @safe() {
 
 implementation {
 
-#ifdef __DBGS__
 uint8_t state = S_STOPPED;
+
+#ifdef __DBGS__
 message_t packet;
 norace nx_struct debug_msg *msg;
 #endif

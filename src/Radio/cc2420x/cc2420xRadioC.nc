@@ -66,7 +66,6 @@ components CC2420XDriverLayerC;
 
 components new RadioAlarmC();
 components new MetadataFlagsLayerC();
-//components new Ieee154PacketLayerC();
 components new TimeStampingLayerC();
 components new SoftwareAckLayerC();
 
@@ -97,8 +96,6 @@ AutoResourceAcquireLayerC -> SoftwareAckLayerC.RadioSend;
 
 components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
 RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-
-
 
 SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];

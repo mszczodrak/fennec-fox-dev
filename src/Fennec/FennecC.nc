@@ -46,10 +46,8 @@ FennecP.Leds -> LedsC;
 components RegistryC;
 FennecP.Registry -> RegistryC;
 
-#ifdef __DBGS__
 components FennecSerialDbgC;
 FennecP.DbgSerial -> FennecSerialDbgC;
-#endif
 
 #ifdef FENNEC_TOS_PRINTF
 components PrintfC;

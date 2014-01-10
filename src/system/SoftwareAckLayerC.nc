@@ -161,8 +161,9 @@ async event void RadioAlarm.fired() {
 
 async event bool SubReceive.header(message_t* msg) {
 	// drop unexpected ACKs
-	if( isAckPacket(msg) )
+	if( isAckPacket(msg) ) {
 		return state == STATE_ACK_WAIT;
+	}
 
 	// drop packets that need ACKs while waiting for our ACK
 //	if( state == STATE_ACK_WAIT && requiresAckWait(msg) )

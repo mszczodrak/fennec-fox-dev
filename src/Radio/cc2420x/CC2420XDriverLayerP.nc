@@ -91,7 +91,6 @@ void* getPayload(message_t* msg) {
 	return ((void*)msg->data);
 }
 
-
 /*----------------- STATE -----------------*/
 
 	enum
@@ -142,7 +141,7 @@ void* getPayload(message_t* msg) {
 	inline cc2420X_status_t enableReceiveSfd();
 
 
-	task void task_run();
+	void task_run();
 
 
 
@@ -165,7 +164,7 @@ void* getPayload(message_t* msg) {
 			RADIO_ASSERT(FALSE);
 
 		// make sure the rest of the command processing is called
-		post task_run();
+		task_run();
 	}
 
 /*----------------- REGISTER -----------------*/
@@ -437,7 +436,7 @@ void* getPayload(message_t* msg) {
 			call SpiResource.release();
 		}
 		else
-			post task_run();
+			task_run();
 	}
 
 	bool isSpiAcquired()
@@ -475,7 +474,7 @@ void* getPayload(message_t* msg) {
 
 		channel = c;
 		cmd = CMD_CHANNEL;
-		post task_run();
+		task_run();
 
 		return SUCCESS;
 	}
@@ -565,7 +564,7 @@ void* getPayload(message_t* msg) {
 			return EALREADY;
 
 		cmd = CMD_TURNOFF;
-		post task_run();
+		task_run();
 
 		return SUCCESS;
 	}
@@ -578,7 +577,7 @@ void* getPayload(message_t* msg) {
 			return EALREADY;
 
 		cmd = CMD_STANDBY;
-		post task_run();
+		task_run();
 
 		return SUCCESS;
 	}
@@ -592,7 +591,7 @@ void* getPayload(message_t* msg) {
 			return EALREADY;
 
 		cmd = CMD_TURNON;
-		post task_run();
+		task_run();
 
 		return SUCCESS;
 	}
@@ -886,7 +885,7 @@ void* getPayload(message_t* msg) {
 		}
 
 		// do the rest of the processing
-		post task_run();
+		task_run();
 	}
 
 	// FIFOP interrupt, last byte received
@@ -913,8 +912,7 @@ void* getPayload(message_t* msg) {
 		call SpiResource.release();
 	}
 
-	task void task_run()
-	{
+	void task_run() {
 		if( txEnd ) {
 			// end of transmission
 			if( isSpiAcquired() )
