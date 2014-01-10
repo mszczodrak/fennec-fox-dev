@@ -147,7 +147,7 @@ void* getPayload(message_t* msg) {
 	norace uint8_t rssiClear;
 	norace uint8_t rssiBusy;
 
-task void task_run();
+void task_run();
 
 /*----------------- REGISTER -----------------*/
 
@@ -292,7 +292,7 @@ task void task_run();
 			call SpiResource.release();
 		}
 		else
-			post task_run();
+			task_run();
 	}
 
 	bool isSpiAcquired()
@@ -329,7 +329,7 @@ command error_t RadioState.setChannel(uint8_t c) {
 
 		channel = c;
 		cmd = CMD_CHANNEL;
-		post task_run();
+		task_run();
 
 		return SUCCESS;
 	}
@@ -397,7 +397,7 @@ command error_t RadioState.turnOff() {
 		return EALREADY;
 
 	cmd = CMD_TURNOFF;
-	post task_run();
+	task_run();
 
 	return SUCCESS;
 }
@@ -409,7 +409,7 @@ command error_t RadioState.standby() {
 		return EALREADY;
 
 	cmd = CMD_STANDBY;
-	post task_run();
+	task_run();
 
 	return SUCCESS;
 }
@@ -421,7 +421,7 @@ command error_t RadioState.turnOn() {
 		return EALREADY;
 
 	cmd = CMD_TURNON;
-	post task_run();
+	task_run();
 
 	return SUCCESS;
 }
@@ -691,7 +691,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 			radioIrq = TRUE;
 		}
 
-		post task_run();
+		task_run();
 	}
 
 	void serviceRadio()
@@ -871,7 +871,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		call SpiResource.release();
 	}
 
-	task void task_run()
+	void task_run()
 	{
 		if( radioIrq )
 			serviceRadio();
