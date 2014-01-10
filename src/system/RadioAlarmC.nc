@@ -32,36 +32,25 @@
  * Author: Miklos Maroti
  */
 
-#include "CC2420XRadioConfig.h"
+#include "RadioConfig.h"
 
-generic configuration TimeStampingLayerC()
+generic configuration RadioAlarmC()
 {
 	provides
 	{
-		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-		interface RadioPacket;
+		interface RadioAlarm[uint8_t id]; // use unique
 	}
 
 	uses
 	{
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface RadioPacket as SubPacket;
-		interface PacketFlag as TimeStampFlag;
+		interface Alarm<TRadio, tradio_size> @exactlyonce();
 	}
 }
 
 implementation
 {
-	components new TimeStampingLayerP(), LocalTimeMilliC;
+	components new RadioAlarmP();
 
-	PacketTimeStampMilli = TimeStampingLayerP;
-	PacketTimeStampRadio = TimeStampingLayerP;
-	RadioPacket = TimeStampingLayerP.RadioPacket;
-	SubPacket = TimeStampingLayerP.SubPacket;
-
-	LocalTimeRadio = TimeStampingLayerP;
-	TimeStampingLayerP.LocalTimeMilli -> LocalTimeMilliC;
-
-	TimeStampFlag = TimeStampingLayerP.TimeStampFlag;
+	RadioAlarm = RadioAlarmP;
+	Alarm = RadioAlarmP;
 }

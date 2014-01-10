@@ -29,9 +29,8 @@
   * Fennec Fox rf212 radio driver adaptation
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/06/2014
+  * @updated: 01/10/2014
   */
-
 
 #include <Fennec.h>
 #include "rf212Radio.h"

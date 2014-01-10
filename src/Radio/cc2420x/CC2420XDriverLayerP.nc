@@ -24,7 +24,7 @@
 #include <CC2420XDriverLayer.h>
 #include <RadioAssert.h>
 #include <TimeSyncMessageLayer.h>
-#include <CC2420XRadioConfig.h>
+#include <RadioConfig.h>
 #include "CC2420.h"
 #include "Ieee154.h"
 module CC2420XDriverLayerP

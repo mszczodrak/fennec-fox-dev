@@ -44,7 +44,7 @@
  */
 
 #include <RadioAssert.h>
-#include "CC2420XRadioConfig.h"
+#include "RadioConfig.h"
 
 generic module RadioAlarmP()
 {

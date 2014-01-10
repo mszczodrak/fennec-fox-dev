@@ -48,6 +48,16 @@ uses interface PacketFlag as AckReceivedFlag;
 
 implementation {
 norace uint8_t state;
+
+typedef nx_struct ieee_radio_hdr_t {
+        nxle_uint8_t length;
+        nxle_uint16_t fcf;
+        nxle_uint8_t dsn;
+        nxle_uint16_t destpan;
+        nxle_uint16_t dest;
+        nxle_uint16_t src;
+} ieee_radio_hdr_t;
+
 enum
 {
 	STATE_READY = 0,
@@ -81,8 +91,8 @@ norace message_t *txMsg;
 norace message_t ackMsg;
 
 
-cc2420x_hdr_t* getHeader(message_t *msg) {
-	return (cc2420x_hdr_t*)(msg->data);
+ieee_radio_hdr_t* getHeader(message_t *msg) {
+	return (ieee_radio_hdr_t*)(msg->data);
 }
 
 bool isAckPacket(message_t* msg) {

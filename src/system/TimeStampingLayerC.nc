@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Vanderbilt University
+ * Copyright (c) 2007, Vanderbilt University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,30 +31,37 @@
  *
  * Author: Miklos Maroti
  */
- 
-#ifndef __TIMESYNCMESSAGELAYER_H__
-#define __TIMESYNCMESSAGELAYER_H__
 
-#include <AM.h>
+#include "RadioConfig.h"
 
-#ifndef AM_TIMESYNCMSG
-#define AM_TIMESYNCMSG 0x3D
-#endif
-
-// this is sent over the air
-typedef nx_int32_t timesync_relative_t;
-
-// this is stored in memory
-typedef nx_uint32_t timesync_absolute_t;
-
-typedef nx_struct timesync_footer_t
+generic configuration TimeStampingLayerC()
 {
-	nx_am_id_t type;	
-	nx_union timestamp_t
+	provides
 	{
-		timesync_relative_t relative;
-		timesync_absolute_t absolute;
-	} timestamp;
-} timesync_footer_t;
+		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+		interface RadioPacket;
+	}
 
-#endif//__TIMESYNCMESSAGELAYER_H__
+	uses
+	{
+		interface LocalTime<TRadio> as LocalTimeRadio;
+		interface RadioPacket as SubPacket;
+		interface PacketFlag as TimeStampFlag;
+	}
+}
+
+implementation
+{
+	components new TimeStampingLayerP(), LocalTimeMilliC;
+
+	PacketTimeStampMilli = TimeStampingLayerP;
+	PacketTimeStampRadio = TimeStampingLayerP;
+	RadioPacket = TimeStampingLayerP.RadioPacket;
+	SubPacket = TimeStampingLayerP.SubPacket;
+
+	LocalTimeRadio = TimeStampingLayerP;
+	TimeStampingLayerP.LocalTimeMilli -> LocalTimeMilliC;
+
+	TimeStampFlag = TimeStampingLayerP.TimeStampFlag;
+}

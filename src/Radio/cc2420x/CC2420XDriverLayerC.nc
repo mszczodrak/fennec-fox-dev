@@ -21,7 +21,7 @@
  * Author: Janos Sallai, Miklos Maroti
  */
 
-#include <CC2420XRadioConfig.h>
+#include <RadioConfig.h>
 #include <CC2420XDriverLayer.h>
 
 configuration CC2420XDriverLayerC

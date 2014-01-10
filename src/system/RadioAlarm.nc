@@ -32,36 +32,34 @@
  * Author: Miklos Maroti
  */
 
-#include "CC2420XRadioConfig.h"
+#include "RadioConfig.h"
 
-generic configuration TimeStampingLayerC()
+interface RadioAlarm
 {
-	provides
-	{
-		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-		interface RadioPacket;
-	}
+	/**
+	 * Returns TRUE if the alarm is free and ready to be used. Once the alarm
+	 * is free, it cannot become nonfree in the same tasklet block. Note,
+	 * if the alarm is currently set (even if for ourselves) then it is not free.
+	 */
+	async command bool isFree();
 
-	uses
-	{
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface RadioPacket as SubPacket;
-		interface PacketFlag as TimeStampFlag;
-	}
-}
+	/**
+	 * Waits till the specified timeout period expires. The alarm must be free.
+	 */
+	async command void wait(tradio_size timeout);
 
-implementation
-{
-	components new TimeStampingLayerP(), LocalTimeMilliC;
+	/**
+	 * Cancels the running alarm. The alarm must be pending.
+	 */
+	async command void cancel();
 
-	PacketTimeStampMilli = TimeStampingLayerP;
-	PacketTimeStampRadio = TimeStampingLayerP;
-	RadioPacket = TimeStampingLayerP.RadioPacket;
-	SubPacket = TimeStampingLayerP.SubPacket;
+	/**
+	 * This event is fired when the specified timeout period expires.
+	 */
+	async event void fired();
 
-	LocalTimeRadio = TimeStampingLayerP;
-	TimeStampingLayerP.LocalTimeMilli -> LocalTimeMilliC;
-
-	TimeStampFlag = TimeStampingLayerP.TimeStampFlag;
+	/**
+	 * Returns the current time as measured by the radio stack.
+	 */
+	async command tradio_size getNow();
 }

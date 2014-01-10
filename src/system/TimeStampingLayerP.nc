@@ -32,7 +32,7 @@
  * Author: Miklos Maroti
  */
 
-#include "CC2420XRadioConfig.h"
+#include "RadioConfig.h"
 #include "TimeStampingLayer.h"
 
 generic module TimeStampingLayerP()
