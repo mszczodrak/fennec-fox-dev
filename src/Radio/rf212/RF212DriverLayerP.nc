@@ -83,7 +83,6 @@ module RF212DriverLayerP
 
 		interface PacketTimeStamp<TRadio, uint32_t>;
 
-		interface Tasklet;
 		interface RadioAlarm;
 	}
 }
@@ -147,6 +146,8 @@ void* getPayload(message_t* msg) {
 
 	norace uint8_t rssiClear;
 	norace uint8_t rssiBusy;
+
+task void task_run();
 
 /*----------------- REGISTER -----------------*/
 
@@ -291,7 +292,7 @@ void* getPayload(message_t* msg) {
 			call SpiResource.release();
 		}
 		else
-			call Tasklet.schedule();
+			post task_run();
 	}
 
 	bool isSpiAcquired()
@@ -328,7 +329,7 @@ command error_t RadioState.setChannel(uint8_t c) {
 
 		channel = c;
 		cmd = CMD_CHANNEL;
-		call Tasklet.schedule();
+		post task_run();
 
 		return SUCCESS;
 	}
@@ -396,7 +397,7 @@ command error_t RadioState.turnOff() {
 		return EALREADY;
 
 	cmd = CMD_TURNOFF;
-	call Tasklet.schedule();
+	post task_run();
 
 	return SUCCESS;
 }
@@ -408,7 +409,7 @@ command error_t RadioState.standby() {
 		return EALREADY;
 
 	cmd = CMD_STANDBY;
-	call Tasklet.schedule();
+	post task_run();
 
 	return SUCCESS;
 }
@@ -420,7 +421,7 @@ command error_t RadioState.turnOn() {
 		return EALREADY;
 
 	cmd = CMD_TURNON;
-	call Tasklet.schedule();
+	post task_run();
 
 	return SUCCESS;
 }
@@ -690,7 +691,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 			radioIrq = TRUE;
 		}
 
-		call Tasklet.schedule();
+		post task_run();
 	}
 
 	void serviceRadio()
@@ -870,7 +871,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		call SpiResource.release();
 	}
 
-	async event void Tasklet.run()
+	task void task_run()
 	{
 		if( radioIrq )
 			serviceRadio();

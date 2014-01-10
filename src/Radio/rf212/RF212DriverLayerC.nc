@@ -69,7 +69,7 @@ configuration RF212DriverLayerC
 
 implementation
 {
-	components RF212DriverLayerP, HplRF212C, BusyWaitMicroC, TaskletC, MainC;
+	components RF212DriverLayerP, HplRF212C, BusyWaitMicroC, MainC;
 
 	RadioState = RF212DriverLayerP;
 	RadioSend = RF212DriverLayerP;
@@ -107,7 +107,6 @@ implementation
 	RF212DriverLayerP.RSTN -> HplRF212C.RSTN;
 
 	RF212DriverLayerP.IRQ -> HplRF212C.IRQ;
-	RF212DriverLayerP.Tasklet -> TaskletC;
 	RF212DriverLayerP.BusyWait -> BusyWaitMicroC;
 
 #ifdef RADIO_DEBUG
