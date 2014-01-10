@@ -66,7 +66,7 @@ components CC2420XDriverLayerC;
 
 components new RadioAlarmC();
 components new MetadataFlagsLayerC();
-components new Ieee154PacketLayerC();
+//components new Ieee154PacketLayerC();
 components new TimeStampingLayerC();
 components new SoftwareAckLayerC();
 
@@ -80,14 +80,11 @@ RadioBuffer = cc2420xRadioP.RadioBuffer;
 RadioSend = cc2420xRadioP.RadioSend;
 RadioState = cc2420xRadioP.RadioState;
 
-RadioPacket = Ieee154PacketLayerC;
-cc2420xRadioP.RadioPacket -> Ieee154PacketLayerC;
+RadioPacket = TimeStampingLayerC.RadioPacket;
+cc2420xRadioP.RadioPacket -> TimeStampingLayerC.RadioPacket;
 cc2420xRadioP.SubRadioSend -> AutoResourceAcquireLayerC;
 cc2420xRadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
 cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
-
-components CC2420XRadioP as RadioP;
-RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC;
 
 // -------- RadioAlarm
 
@@ -102,13 +99,12 @@ components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
 RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
 
-Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
 
 SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-SoftwareAckLayerC.Config -> RadioP;
 SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
 SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
+SoftwareAckLayerC.RadioPacket -> TimeStampingLayerC.RadioPacket;
 
 TimeStampingLayerC.LocalTimeRadio -> CC2420XDriverLayerC;
 TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
@@ -128,9 +124,5 @@ CC2420XDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(U
 CC2420XDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 CC2420XDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-
-
-
-
 
 }

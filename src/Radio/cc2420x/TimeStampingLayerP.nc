@@ -135,6 +135,7 @@ implementation
 
 	async command uint8_t RadioPacket.metadataLength(message_t* msg)
 	{
+		// TODO: perhaps remove timestamp_metadata since we add it in the radio driver below
 		return call SubPacket.metadataLength(msg) + sizeof(timestamp_metadata_t);
 	}
 

@@ -36,163 +36,201 @@
 
 generic module SoftwareAckLayerC()
 {
-	provides
-	{
-		interface RadioSend;
-		interface RadioReceive;
-		interface PacketAcknowledgements;
-	}
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface PacketAcknowledgements;
+uses interface RadioSend as SubSend;
+uses interface RadioReceive as SubReceive;
+uses interface RadioAlarm;
+uses interface RadioPacket;
+uses interface PacketFlag as AckReceivedFlag;
+}
 
-	uses
-	{
-		interface RadioSend as SubSend;
-		interface RadioReceive as SubReceive;
-		interface RadioAlarm;
+implementation {
+norace uint8_t state;
+enum
+{
+	STATE_READY = 0,
+	STATE_DATA_SEND = 1,
+	STATE_ACK_WAIT = 2,
+	STATE_ACK_SEND = 3,
+};
 
-		interface SoftwareAckConfig as Config;
-		interface PacketFlag as AckReceivedFlag;
+        enum
+        {
+                IEEE154_DATA_FRAME_MASK = (IEEE154_TYPE_MASK << IEEE154_FCF_FRAME_TYPE)
+                        | (1 << IEEE154_FCF_INTRAPAN)
+                        | (IEEE154_ADDR_MASK << IEEE154_FCF_DEST_ADDR_MODE)
+                        | (IEEE154_ADDR_MASK << IEEE154_FCF_SRC_ADDR_MODE),
+
+                IEEE154_DATA_FRAME_VALUE = (IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE)
+                        | (1 << IEEE154_FCF_INTRAPAN)
+                        | (IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE)
+                        | (IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE),
+
+                IEEE154_DATA_FRAME_PRESERVE = (1 << IEEE154_FCF_ACK_REQ)
+                        | (1 << IEEE154_FCF_FRAME_PENDING),
+
+                IEEE154_ACK_FRAME_LENGTH = 3,   // includes the FCF, DSN
+                IEEE154_ACK_FRAME_MASK = (IEEE154_TYPE_MASK << IEEE154_FCF_FRAME_TYPE),
+                IEEE154_ACK_FRAME_VALUE = (IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE),
+        };
+
+
+norace message_t *txMsg;
+norace message_t ackMsg;
+
+
+cc2420x_hdr_t* getHeader(message_t *msg) {
+	return (cc2420x_hdr_t*)(msg->data);
+}
+
+bool isAckPacket(message_t* msg) {
+	return (getHeader(msg)->fcf & IEEE154_ACK_FRAME_MASK) == IEEE154_ACK_FRAME_VALUE;
+}
+
+bool verifyAckReply(message_t* data, message_t* ack) {
+	return getHeader(ack)->dsn == getHeader(data)->dsn
+		&& (getHeader(ack)->fcf & IEEE154_ACK_FRAME_MASK) == IEEE154_ACK_FRAME_VALUE;
+}
+
+void setAckRequired(message_t* msg, bool ack) {
+	if( ack ) {
+		getHeader(msg)->fcf |= (1 << IEEE154_FCF_ACK_REQ);
+	} else {
+		getHeader(msg)->fcf &= ~(uint16_t)(1 << IEEE154_FCF_ACK_REQ);
 	}
 }
 
-implementation
-{
-	norace uint8_t state;
-	enum
-	{
-		STATE_READY = 0,
-		STATE_DATA_SEND = 1,
-		STATE_ACK_WAIT = 2,
-		STATE_ACK_SEND = 3,
-	};
 
-	norace message_t *txMsg;
-	norace message_t ackMsg;
+bool requiresAckWait(message_t* msg) {
+	return ( getHeader(msg)->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) &&
+		((( getHeader(msg)->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == IEEE154_TYPE_DATA);
+}
 
-	async event void SubSend.ready()
-	{
-		if( state == STATE_READY )
-			signal RadioSend.ready();
-	}
+bool requiresAckReply(message_t* msg) {
+	return ( getHeader(msg)->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) &&
+		((( getHeader(msg)->fcf >> IEEE154_FCF_FRAME_TYPE ) & 7) == IEEE154_TYPE_DATA) &&
+		(getHeader(msg)->dest == TOS_NODE_ID);
+}
 
-	async command error_t RadioSend.send(message_t* msg, bool useCca)
-	{
-		error_t error;
+void createAckReply(message_t* data, message_t* ack) {
+	call RadioPacket.setPayloadLength(ack, IEEE154_ACK_FRAME_LENGTH);
+	getHeader(ack)->fcf = IEEE154_ACK_FRAME_VALUE;
+	getHeader(ack)->dsn = getHeader(data)->dsn;
+}
 
-		if( state == STATE_READY )
-		{
-			if( (error = call SubSend.send(msg, useCca)) == SUCCESS )
-			{
-				call AckReceivedFlag.clear(msg);
-				state = STATE_DATA_SEND;
-				txMsg = msg;
-			}
+
+#ifndef SOFTWAREACK_TIMEOUT
+#define SOFTWAREACK_TIMEOUT     1000
+#endif
+
+
+uint16_t getAckTimeout() {
+	return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC);
+}
+
+
+async event void SubSend.ready() {
+	if( state == STATE_READY )
+		signal RadioSend.ready();
+}
+
+async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	error_t error;
+	if( state == STATE_READY ) {
+		if( (error = call SubSend.send(msg, useCca)) == SUCCESS ) {
+			call AckReceivedFlag.clear(msg);
+			state = STATE_DATA_SEND;
+			txMsg = msg;
 		}
-		else
-			error = EBUSY;
-
-		return error;
+	} else {
+		error = EBUSY;
 	}
 
-	async event void SubSend.sendDone(message_t *msg, error_t error)
-	{
-		if( state == STATE_ACK_SEND )
-		{
-			// TODO: what if error != SUCCESS
-			RADIO_ASSERT( error == SUCCESS );
+	return error;
+}
+
+async event void SubSend.sendDone(message_t *msg, error_t error) {
+	if( state == STATE_ACK_SEND ) {
+		// TODO: what if error != SUCCESS
+		RADIO_ASSERT( error == SUCCESS );
+		state = STATE_READY;
+	} else {
+		cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+		RADIO_ASSERT( state == STATE_DATA_SEND );
+		RADIO_ASSERT( call RadioAlarm.isFree() );
+
+		if( error == SUCCESS && requiresAckWait(txMsg) && call RadioAlarm.isFree() ) {
+			call RadioAlarm.wait(getAckTimeout());
+			state = STATE_ACK_WAIT;
+		} else {
+			state = STATE_READY;
+			signal RadioSend.sendDone(txMsg, error);
+		}
+	}
+}
+
+async event void RadioAlarm.fired() {
+	RADIO_ASSERT( state == STATE_ACK_WAIT );
+
+	state = STATE_READY;
+	signal RadioSend.sendDone(txMsg, SUCCESS);	// we have sent it, but not acked
+}
+
+async event bool SubReceive.header(message_t* msg) {
+	// drop unexpected ACKs
+	if( isAckPacket(msg) )
+		return state == STATE_ACK_WAIT;
+
+	// drop packets that need ACKs while waiting for our ACK
+//	if( state == STATE_ACK_WAIT && requiresAckWait(msg) )
+//		return FALSE;
+
+	return signal RadioReceive.header(msg);
+}
+
+async event message_t* SubReceive.receive(message_t* msg) {
+	RADIO_ASSERT( state == STATE_ACK_WAIT || state == STATE_READY );
+
+	if( isAckPacket(msg) ) {
+		if( state == STATE_ACK_WAIT && verifyAckReply(txMsg, msg) ) {
+			call RadioAlarm.cancel();
+			call AckReceivedFlag.set(txMsg);
 
 			state = STATE_READY;
+			signal RadioSend.sendDone(msg, SUCCESS);
 		}
+		return msg;
+	}
+
+	if( state == STATE_READY && requiresAckReply(msg) ) {
+		createAckReply(msg, &ackMsg);
+
+		// TODO: what to do if we are busy and cannot send an ack
+		if( call SubSend.send(&ackMsg, FALSE) == SUCCESS )
+			state = STATE_ACK_SEND;
 		else
-		{
-			RADIO_ASSERT( state == STATE_DATA_SEND );
-			RADIO_ASSERT( call RadioAlarm.isFree() );
-
-			if( error == SUCCESS && call Config.requiresAckWait(txMsg) && call RadioAlarm.isFree() )
-			{
-				call RadioAlarm.wait(call Config.getAckTimeout());
-				state = STATE_ACK_WAIT;
-			}
-			else
-			{
-				state = STATE_READY;
-				signal RadioSend.sendDone(txMsg, error);
-			}
-		}
+			RADIO_ASSERT(FALSE);
 	}
 
-	async event void RadioAlarm.fired()
-	{
-		RADIO_ASSERT( state == STATE_ACK_WAIT );
-
-		call Config.reportChannelError();
-
-		state = STATE_READY;
-		signal RadioSend.sendDone(txMsg, SUCCESS);	// we have sent it, but not acked
-	}
-
-	async event bool SubReceive.header(message_t* msg)
-	{
-		// drop unexpected ACKs
-		if( call Config.isAckPacket(msg) )
-			return state == STATE_ACK_WAIT;
-
-		// drop packets that need ACKs while waiting for our ACK
-//		if( state == STATE_ACK_WAIT && call Config.requiresAckWait(msg) )
-//			return FALSE;
-
-		return signal RadioReceive.header(msg);
-	}
-
-	async event message_t* SubReceive.receive(message_t* msg)
-	{
-		RADIO_ASSERT( state == STATE_ACK_WAIT || state == STATE_READY );
-
-		if( call Config.isAckPacket(msg) )
-		{
-			if( state == STATE_ACK_WAIT && call Config.verifyAckPacket(txMsg, msg) )
-			{
-				call RadioAlarm.cancel();
-				call AckReceivedFlag.set(txMsg);
-
-				state = STATE_READY;
-				signal RadioSend.sendDone(msg, SUCCESS);
-			}
-
-			return msg;
-		}
-
-		if( state == STATE_READY && call Config.requiresAckReply(msg) )
-		{
-			call Config.createAckPacket(msg, &ackMsg);
-
-			// TODO: what to do if we are busy and cannot send an ack
-			if( call SubSend.send(&ackMsg, FALSE) == SUCCESS )
-				state = STATE_ACK_SEND;
-			else
-				RADIO_ASSERT(FALSE);
-		}
-
-		return signal RadioReceive.receive(msg);
-	}
+	return signal RadioReceive.receive(msg);
+}
 
 /*----------------- PacketAcknowledgements -----------------*/
 
-	async command error_t PacketAcknowledgements.requestAck(message_t* msg)
-	{
-		call Config.setAckRequired(msg, TRUE);
+async command error_t PacketAcknowledgements.requestAck(message_t* msg) {
+	setAckRequired(msg, TRUE);
+	return SUCCESS;
+}
 
-		return SUCCESS;
-	}
+async command error_t PacketAcknowledgements.noAck(message_t* msg) {
+	setAckRequired(msg, FALSE);
+	return SUCCESS;
+}
 
-	async command error_t PacketAcknowledgements.noAck(message_t* msg)
-	{
-		call Config.setAckRequired(msg, FALSE);
+async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
+	return call AckReceivedFlag.get(msg);
+}
 
-		return SUCCESS;
-	}
-
-	async command bool PacketAcknowledgements.wasAcked(message_t* msg)
-	{
-		return call AckReceivedFlag.get(msg);
-	}
 }
