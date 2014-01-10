@@ -157,7 +157,6 @@ async event void SubSend.sendDone(message_t *msg, error_t error) {
 		RADIO_ASSERT( error == SUCCESS );
 		state = STATE_READY;
 	} else {
-		cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 		RADIO_ASSERT( state == STATE_DATA_SEND );
 		RADIO_ASSERT( call RadioAlarm.isFree() );
 

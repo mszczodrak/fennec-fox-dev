@@ -22,14 +22,14 @@ norace nx_struct debug_msg *msg;
 #endif
 
 command void SimpleStart.start() {
+	state = S_STOPPED;
 #ifdef __DBGS__
 	state = S_STARTING;
 	msg = NULL;
 	call SplitControl.start();
-#else
-	signal SimpleStart.startDone(SUCCESS);
 #endif
-  }
+	signal SimpleStart.startDone(SUCCESS);
+}
 
 #ifdef __DBGS__
 task void send_msg() {
@@ -57,7 +57,6 @@ event void AMSend.sendDone(message_t* bufPtr, error_t error) {
 event void SplitControl.startDone(error_t err) {
 	state = S_STARTED;
 	msg = (nx_struct debug_msg*) call AMSend.getPayload(&packet, sizeof(nx_struct debug_msg));
-	signal SimpleStart.startDone(SUCCESS);
 }
 
 event void SplitControl.stopDone(error_t err) {
@@ -83,7 +82,6 @@ bool dbgs(uint8_t layer, uint8_t dbg_state, uint16_t action, uint16_t d0, uint16
 		post send_msg();
 	}
 #endif
-
 	return 0;
 }
 
