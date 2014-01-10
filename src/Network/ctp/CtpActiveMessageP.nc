@@ -21,7 +21,7 @@ uint8_t getCtpType(message_t* msg) {
 	uint8_t t;
 	uint8_t *ptr = (uint8_t*)call MacAMSend.getPayload(msg, sizeof(2));
 	if (ptr == NULL) {
-		dbg("Network", "CtpActiveMessageP getCtpType(0x%1x) - got NULL", msg);
+		dbg("Network-Detail", "CTP CtpActiveMessageP getCtpType(0x%1x) - got NULL", msg);
 		return 0;
 	}
 	ptr++;
@@ -30,19 +30,19 @@ uint8_t getCtpType(message_t* msg) {
 }
 
 void do_sendDone(message_t *msg, error_t error) {
-	dbg("Network", "CtpActiveMessageP do_sendDone(0x%1x, %d) - type %d",
+	dbg("Network", "CTP CtpActiveMessageP do_sendDone(0x%1x, %d) - type %d",
 				msg, error, getCtpType(msg));
 	signal AMSend.sendDone[getCtpType(msg)](msg, error);
 }
 
 message_t* do_receive(message_t *msg, void *payload, uint8_t len) {
-	dbg("Network", "CtpActiveMessageP do_receive(0x%1x, 0x%1x, %d) - type %d",
+	dbg("Network", "CTP CtpActiveMessageP do_receive(0x%1x, 0x%1x, %d) - type %d",
 				msg, payload, len, getCtpType(msg));
 	return signal Receive.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
 }
 
 message_t* do_snoop(message_t *msg, void *payload, uint8_t len) {
-	dbg("Network", "CtpActiveMessageP do_snoop(0x%1x, 0x%1x, %d) - type %d",
+	dbg("Network-Detail", "CTP CtpActiveMessageP do_snoop(0x%1x, 0x%1x, %d) - type %d",
 				msg, payload, len, getCtpType(msg));
 	return signal Snoop.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
 }
@@ -60,7 +60,7 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t *msg, uint8_t 
 }
 
 command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
-	dbg("Network", "ctpActiveMessageP AMSend.maxPayloadLength()");
+	dbg("Network-Detail", "CTP ctpActiveMessageP AMSend.maxPayloadLength()");
 	return call MacAMSend.maxPayloadLength();
 }
 
@@ -125,7 +125,7 @@ command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
 }
 
 command uint8_t Packet.maxPayloadLength() {
-	dbg("Network", "ctpActiveMessageP Packet.maxPayloadLength()");
+	dbg("Network-Detail", "CTP %s ctpActiveMessageP Packet.maxPayloadLength()", __FUNCTION__);
 	return call MacPacket.maxPayloadLength();
 }
 

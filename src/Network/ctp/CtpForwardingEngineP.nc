@@ -433,7 +433,7 @@ task void sendTask() {
 	  clearState(QUEUE_CONGESTED);
 	}
 
-        dbg("Network", "Network send data message\n");	
+        dbg("Network", "CTP send data message\n");	
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.
@@ -518,6 +518,7 @@ task void sendTask() {
     if (error != SUCCESS) {
       /* The radio wasn't able to send the packet: retransmit it. */
       dbg("Forwarder", "%s: send failed\n", __FUNCTION__);
+      dbg("Network", "CTP %s: send failed", __FUNCTION__);
       call CollectionDebug.logEventMsg(NET_C_FE_SENDDONE_FAIL, 
 				       call CollectionPacket.getSequenceNumber(msg), 
 				       call CollectionPacket.getOrigin(msg), 
@@ -530,6 +531,7 @@ task void sendTask() {
       call CtpInfo.recomputeRoutes();
       if (--qe->retries) { 
         dbg("Forwarder", "%s: not acked, retransmit\n", __FUNCTION__);
+        dbg("Network", "CTP %s: not acked, retransmit", __FUNCTION__);
         //dbgs(F_NETWORK, S_ACK_WAIT, DBGS_NOT_ACKED_RESEND, call SubAMPacket.destination(msg), call SubAMPacket.destination(msg));
         call CollectionDebug.logEventMsg(NET_C_FE_SENDDONE_WAITACK, 
 					 call CollectionPacket.getSequenceNumber(msg), 
@@ -537,8 +539,8 @@ task void sendTask() {
                                          call SubAMPacket.destination(msg));
         startRetxmitTimer(SENDDONE_NOACK_WINDOW, SENDDONE_NOACK_OFFSET);
       } else {
+        dbg("Network", "CTP %s: not acked, drop packaget", __FUNCTION__);
 	/* Hit max retransmit threshold: drop the packet. */
-        //dbgs(F_NETWORK, S_ACK_WAIT, DBGS_NOT_ACKED_FAILED, call SubAMPacket.destination(msg), call SubAMPacket.destination(msg));
 	call SendQueue.dequeue();
         clearState(SENDING);
         startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
@@ -550,6 +552,7 @@ task void sendTask() {
       /* Packet was acknowledged. Updated the link estimator,
 	 free the buffer (pool or sendDone), start timer to
 	 send next packet. */
+      dbg("Network", "CTP %s: acked and success", __FUNCTION__);
       call SendQueue.dequeue();
       clearState(SENDING);
       startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
@@ -707,6 +710,7 @@ task void sendTask() {
 					       call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 					       call Packet.payloadLength(msg),
 						getHeader(msg)->origin);
+      call SentCache.insert(msg);
       return signal Receive.receive[collectid](msg, 
 					       call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 					       call Packet.payloadLength(msg));

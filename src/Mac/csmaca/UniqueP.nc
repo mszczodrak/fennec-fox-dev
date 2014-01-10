@@ -151,7 +151,8 @@ task void deliverTask() {
 		p = (uint8_t*)(msg->data);
 		header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 		msgDsn = header->dsn;
-		dbg("Mac", "csmaMac UniqueP deliverTask() from %u to %u", header->src, header->dest);
+		dbg("Mac", "csmaMac UniqueP deliverTask() from %u to %u, msgDsn: %d",
+					header->src, header->dest, header->dsn);
 	}
 
 	if(!hasSeen(msgSource, msgDsn)) {
@@ -176,6 +177,8 @@ task void deliverTask() {
 command error_t Send.send(message_t *msg, uint8_t len) {
 	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, len);
 	header->dsn = localSendId++;
+	dbg("Mac", "csmaMac UniqueP Send.send(0x%1x, %u) to %u, msgDsn: %d",
+					msg, len, header->dest, header->dsn);
 	return call SubSend.send(msg, len);
 }
 
@@ -258,12 +261,14 @@ bool hasSeen(uint16_t msgSource, uint8_t msgDsn) {
 			if(receivedMessages[i].source == msgSource) {
 				if(receivedMessages[i].dsn == msgDsn) {
 					// Only exit this loop if we found a duplicate packet
+					dbg("Mac", "csmaMac UniqueP hasSeen src: %u dsn: %u - TRUE", msgSource, msgDsn);
 					return TRUE;
 				}
 				recycleSourceElement = i;
 			}
 		}
 	}
+	dbg("Mac", "csmaMac UniqueP hasSeen src: %u dsn: %u - FALSE", msgSource, msgDsn);
 	return FALSE;
 }
   

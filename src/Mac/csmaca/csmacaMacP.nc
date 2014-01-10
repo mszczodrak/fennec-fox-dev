@@ -191,12 +191,12 @@ command error_t MacAMSend.cancel(message_t* msg) {
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
-	dbg("Mac", "csmaMac MacAMSend.maxPayloadLength()");
+	dbg("Mac-Detail", "csmaMac MacAMSend.maxPayloadLength()");
 	return call MacPacket.maxPayloadLength();
 }
 
 command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-	dbg("Mac", "csmaMac MacAMSend.getPayload(0x%1x, %d)", msg, len);
+	dbg("Mac-Detail", "csmaMac MacAMSend.getPayload(0x%1x, %d)", msg, len);
 	return call MacPacket.getPayload(msg, len);
 }
 
