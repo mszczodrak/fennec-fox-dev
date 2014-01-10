@@ -35,8 +35,7 @@
 #ifndef __TIMESTAMPINGLAYER_H__
 #define __TIMESTAMPINGLAYER_H__
 
-typedef struct timestamp_metadata_t
-{
+typedef struct timestamp_metadata_t {
 	uint32_t timestamp;
 } timestamp_metadata_t;
 

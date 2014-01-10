@@ -35,10 +35,10 @@
  */
 
 #include <RF212DriverLayer.h>
-#include <Tasklet.h>
 #include <RadioAssert.h>
 #include <TimeSyncMessageLayer.h>
 #include <RadioConfig.h>
+#include "RFX_IEEE.h"
 
 module RF212DriverLayerP
 {
@@ -85,29 +85,20 @@ module RF212DriverLayerP
 
 		interface Tasklet;
 		interface RadioAlarm;
-
-#ifdef RADIO_DEBUG
-		interface DiagMsg;
-#endif
 	}
 }
 
-implementation
-{
-	rf212_header_t* getHeader(message_t* msg)
-	{
-		return ((void*)msg) + call Config.headerLength(msg);
-	}
+implementation {
 
-	void* getPayload(message_t* msg)
-	{
-		return ((void*)msg) + call RadioPacket.headerLength(msg);
-	}
+typedef nx_uint32_t timesync_radio_t;
 
-	rf212_metadata_t* getMeta(message_t* msg)
-	{
-		return ((void*)msg) + sizeof(message_t) - call RadioPacket.metadataLength(msg);
-	}
+rf212_hdr_t* getHeader(message_t* msg) {
+	return (rf212_hdr_t*)msg->data;
+}
+
+void* getPayload(message_t* msg) {
+	return ((void*)msg->data);
+}
 
 /*----------------- STATE -----------------*/
 
@@ -457,7 +448,8 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		writeRegister(RF212_PHY_TX_PWR, txPower);
 	}
 
-	if( call Config.requiresRssiCca(msg)
+	if( (getHeader(msg)->fcf & IEEE154_DATA_FRAME_MASK) == IEEE154_DATA_FRAME_VALUE
+
 		&& (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) )
 	{
 		call SpiResource.release();
@@ -633,7 +625,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 			// we do not store the CRC field
 			length -= 2;
 
-			read = call Config.headerPreloadLength();
+			read = 7; // headerPreloadLength
 			if( length < read )
 				read = length;
 
@@ -908,41 +900,35 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 /*----------------- RadioPacket -----------------*/
 
-	async command uint8_t RadioPacket.headerLength(message_t* msg)
-	{
-		return call Config.headerLength(msg) + sizeof(rf212_header_t);
-	}
+async command uint8_t RadioPacket.headerLength(message_t* msg) {
+	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command uint8_t RadioPacket.payloadLength(message_t* msg)
-	{
-		return getHeader(msg)->length - 2;
-	}
 
-	async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length)
-	{
-		RADIO_ASSERT( 1 <= length && length <= 125 );
-		RADIO_ASSERT( call RadioPacket.headerLength(msg) + length + call RadioPacket.metadataLength(msg) <= sizeof(message_t) );
+async command uint8_t RadioPacket.payloadLength(message_t* msg) {
+	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-		// we add the length of the CRC, which is automatically generated
-		getHeader(msg)->length = length + 2;
-	}
+async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
+	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
+	hdr->length = length + sizeof(nx_struct rf212_radio_header_t) + RF212_SIZEOF_CRC + sizeof(timesync_radio_t);
+}
 
-	async command uint8_t RadioPacket.maxPayloadLength()
-	{
-		RADIO_ASSERT( call Config.maxPayloadLength() - sizeof(rf212_header_t) <= 125 );
 
-		return call Config.maxPayloadLength() - sizeof(rf212_header_t);
-	}
+async command uint8_t RadioPacket.maxPayloadLength() {
+	return RF212_MAX_MESSAGE_SIZE - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command uint8_t RadioPacket.metadataLength(message_t* msg)
-	{
-		return call Config.metadataLength(msg) + sizeof(rf212_metadata_t);
-	}
+async command uint8_t RadioPacket.metadataLength(message_t* msg) {
+	return sizeof(metadata_t);
+}
 
-	async command void RadioPacket.clear(message_t* msg)
-	{
-		// all flags are automatically cleared
-	}
+async command void RadioPacket.clear(message_t* msg) {
+	memset(msg, 0x0, sizeof(message_t));
+}
+
 
 /*----------------- PacketTransmitPower -----------------*/
 
@@ -953,7 +939,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	async command uint8_t PacketTransmitPower.get(message_t* msg)
 	{
-		return getMeta(msg)->power;
+		return getMetadata(msg)->tx_power;
 	}
 
 	async command void PacketTransmitPower.clear(message_t* msg)
@@ -964,7 +950,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	async command void PacketTransmitPower.set(message_t* msg, uint8_t value)
 	{
 		call TransmitPowerFlag.set(msg);
-		getMeta(msg)->power = value;
+		getMetadata(msg)->tx_power = value;
 	}
 
 /*----------------- PacketRSSI -----------------*/
@@ -976,7 +962,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	async command uint8_t PacketRSSI.get(message_t* msg)
 	{
-		return getMeta(msg)->rssi;
+		return getMetadata(msg)->rssi;
 	}
 
 	async command void PacketRSSI.clear(message_t* msg)
@@ -990,7 +976,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		call TransmitPowerFlag.clear(msg);
 
 		call RSSIFlag.set(msg);
-		getMeta(msg)->rssi = value;
+		getMetadata(msg)->rssi = value;
 	}
 
 /*----------------- PacketTimeSyncOffset -----------------*/
@@ -1027,7 +1013,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	async command uint8_t PacketLinkQuality.get(message_t* msg)
 	{
-		return getMeta(msg)->lqi;
+		return getMetadata(msg)->lqi;
 	}
 
 	async command void PacketLinkQuality.clear(message_t* msg)
@@ -1036,7 +1022,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
 	{
-		getMeta(msg)->lqi = value;
+		getMetadata(msg)->lqi = value;
 	}
 
 /*----------------- LinkPacketMetadata -----------------*/

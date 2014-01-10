@@ -67,7 +67,7 @@ RadioState = CSMATransmitP.RadioState;
 
 RadioStdControl = CSMATransmitP.RadioStdControl;
 
-components new MuxAlarm32khz32C() as Alarm;
+components AlarmMultiplexC as Alarm;
 CSMATransmitP.BackoffTimer -> Alarm;
 
 RadioBuffer = CSMATransmitP.RadioBuffer;

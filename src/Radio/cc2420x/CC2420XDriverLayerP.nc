@@ -27,6 +27,7 @@
 #include <RadioConfig.h>
 #include "CC2420.h"
 #include "Ieee154.h"
+#include "RFX_IEEE.h"
 module CC2420XDriverLayerP
 {
 	provides
@@ -78,42 +79,17 @@ module CC2420XDriverLayerP
 	}
 }
 
-implementation
-{
+implementation {
 
 typedef nx_uint32_t timesync_radio_t;
 
-        enum
-        {
-                IEEE154_DATA_FRAME_MASK = (IEEE154_TYPE_MASK << IEEE154_FCF_FRAME_TYPE)
-                        | (1 << IEEE154_FCF_INTRAPAN)
-                        | (IEEE154_ADDR_MASK << IEEE154_FCF_DEST_ADDR_MODE)
-                        | (IEEE154_ADDR_MASK << IEEE154_FCF_SRC_ADDR_MODE),
+cc2420x_hdr_t* getHeader(message_t* msg) {
+	return (cc2420x_hdr_t*)msg->data;
+}
 
-                IEEE154_DATA_FRAME_VALUE = (IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE)
-                        | (1 << IEEE154_FCF_INTRAPAN)
-                        | (IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE)
-                        | (IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE),
-
-                IEEE154_DATA_FRAME_PRESERVE = (1 << IEEE154_FCF_ACK_REQ)
-                        | (1 << IEEE154_FCF_FRAME_PENDING),
-
-                IEEE154_ACK_FRAME_LENGTH = 3,   // includes the FCF, DSN
-                IEEE154_ACK_FRAME_MASK = (IEEE154_TYPE_MASK << IEEE154_FCF_FRAME_TYPE),
-                IEEE154_ACK_FRAME_VALUE = (IEEE154_TYPE_ACK << IEEE154_FCF_FRAME_TYPE),
-        };
-
-
-
-	cc2420x_hdr_t* getHeader(message_t* msg)
-	{
-		return (cc2420x_hdr_t*)msg->data;
-	}
-
-	void* getPayload(message_t* msg)
-	{
-		return ((void*)msg->data);
-	}
+void* getPayload(message_t* msg) {
+	return ((void*)msg->data);
+}
 
 
 /*----------------- STATE -----------------*/
@@ -663,7 +639,7 @@ typedef nx_uint32_t timesync_radio_t;
 
 		// length | data[0] ... data[length-3] | automatically generated FCS
 
-		header = 7;
+		header = 7; // headerPreloadLength
 		if( header > length )
 			header = length;
 
