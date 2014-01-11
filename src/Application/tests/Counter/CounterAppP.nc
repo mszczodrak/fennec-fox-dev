@@ -139,8 +139,7 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
-	
-	
+
 	dbg("Application", "CounterApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
 	dbg("Application", "CounterApp receive seqno: %d source: %d", cm->seqno, cm->source); 
 
