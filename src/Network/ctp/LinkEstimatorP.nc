@@ -654,7 +654,7 @@ implementation {
              * which does return call CC2420Packet.getLqi(msg) > 105
              */
 
-            if (msg->lqi > 105) {
+            if (getMetadata(msg)->lqi > 105) {
 	      if (signal CompareBit.shouldInsert(msg, 
 						 call Packet.getPayload(msg, call Packet.payloadLength(msg)),
 						 call Packet.payloadLength(msg))) {

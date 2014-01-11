@@ -44,7 +44,6 @@ uses interface RadioSend as SubSend;
 uses interface RadioReceive as SubReceive;
 uses interface RadioAlarm;
 uses interface RadioPacket;
-uses interface PacketFlag as AckReceivedFlag;
 }
 
 implementation {
@@ -122,7 +121,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	error_t error;
 	if( state == STATE_READY ) {
 		if( (error = call SubSend.send(msg, useCca)) == SUCCESS ) {
-			call AckReceivedFlag.clear(msg);
+			getMetadata(msg)->ack = FALSE;
 			state = STATE_DATA_SEND;
 			txMsg = msg;
 		}
@@ -143,9 +142,11 @@ async event void SubSend.sendDone(message_t *msg, error_t error) {
 		RADIO_ASSERT( call RadioAlarm.isFree() );
 
 		if( error == SUCCESS && requiresAckWait(txMsg) && call RadioAlarm.isFree() ) {
+			printf("send done - wait\n");
 			call RadioAlarm.wait(getAckTimeout());
 			state = STATE_ACK_WAIT;
 		} else {
+			printf("send done\n");
 			state = STATE_READY;
 			signal RadioSend.sendDone(txMsg, error);
 		}
@@ -154,6 +155,8 @@ async event void SubSend.sendDone(message_t *msg, error_t error) {
 
 async event void RadioAlarm.fired() {
 	RADIO_ASSERT( state == STATE_ACK_WAIT );
+
+	printf("missed\n");
 
 	state = STATE_READY;
 	signal RadioSend.sendDone(txMsg, SUCCESS);	// we have sent it, but not acked
@@ -176,9 +179,13 @@ async event message_t* SubReceive.receive(message_t* msg) {
 	RADIO_ASSERT( state == STATE_ACK_WAIT || state == STATE_READY );
 
 	if( isAckPacket(msg) ) {
+		printf("rec ack\n");
+
 		if( state == STATE_ACK_WAIT && verifyAckReply(txMsg, msg) ) {
 			call RadioAlarm.cancel();
-			call AckReceivedFlag.set(txMsg);
+			getMetadata(txMsg)->ack = TRUE;
+			getMetadata(txMsg)->rssi = getMetadata(msg)->rssi;
+			getMetadata(txMsg)->lqi = getMetadata(msg)->lqi;
 
 			state = STATE_READY;
 			signal RadioSend.sendDone(msg, SUCCESS);
@@ -188,6 +195,7 @@ async event message_t* SubReceive.receive(message_t* msg) {
 
 	if( state == STATE_READY && requiresAckReply(msg) ) {
 		createAckReply(msg, &ackMsg);
+		printf("rec send ack\n");
 
 		// TODO: what to do if we are busy and cannot send an ack
 		if( call SubSend.send(&ackMsg, FALSE) == SUCCESS )
@@ -196,6 +204,7 @@ async event message_t* SubReceive.receive(message_t* msg) {
 			RADIO_ASSERT(FALSE);
 	}
 
+	printf("rec\n");
 	return signal RadioReceive.receive(msg);
 }
 
@@ -212,7 +221,7 @@ async command error_t PacketAcknowledgements.noAck(message_t* msg) {
 }
 
 async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
-	return call AckReceivedFlag.get(msg);
+	return getMetadata(msg)->ack;
 }
 
 }
