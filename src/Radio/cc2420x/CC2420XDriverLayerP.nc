@@ -667,15 +667,17 @@ void* getPayload(message_t* msg) {
 
 		timesync = call PacketTimeSyncOffset.isSet(msg) ? ((void*)msg) + call PacketTimeSyncOffset.get(msg) : 0;
 
-		if( timesync == 0 ) {
+		if( call PacketTimeSyncOffset.isSet(msg)) {
+			printf("w time\n");
+			// timesync required: write the payload before the timesync bytes to the fifo
+			// TODO: we're assuming here that the timestamp is at the end of the message
+			writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_relative) - 1);
+		} else {
+			printf("wo time\n");
 			// no timesync: write the entire payload to the fifo
 			if(length>0)
 				writeTxFifo((void*)((msg->data)+header), length - 1);
 			state = STATE_BUSY_TX_2_RX_ON;
-		} else {
-			// timesync required: write the payload before the timesync bytes to the fifo
-			// TODO: we're assuming here that the timestamp is at the end of the message
-			writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_relative) - 1);
 		}
 		
 		
@@ -695,7 +697,7 @@ void* getPayload(message_t* msg) {
 		// adjust for delay between the STXON strobe and the transmission of the SFD
 		time32 += TX_SFD_DELAY;
 
-		if( timesync != 0 ) {
+		if( call PacketTimeSyncOffset.isSet(msg)) {
 			// read and adjust the timestamp field
 			timesync_relative = (*(timesync_absolute_t*)timesync) - time32;
 
@@ -709,9 +711,6 @@ void* getPayload(message_t* msg) {
 		// and clear the rx fifo -- should something have arrived in the meantime
 		return SUCCESS;
 	}
-
-	default async event void RadioSend.sendDone(message_t *msg, error_t error) { }
-	default async event void RadioSend.ready() { }
 
 /*----------------- CCA -----------------*/
 
@@ -1040,6 +1039,8 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 }
 
 async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+	// HACK TODO
+	return FALSE;
         return getMetadata(msg)->flags & (1<<3);
 }
 
