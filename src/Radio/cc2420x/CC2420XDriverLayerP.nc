@@ -970,20 +970,18 @@ void* getPayload(message_t* msg) {
 			post releaseSpi();
 	}
 
-/*----------------- RadioPacket -----------------*/
-	
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
 	return sizeof(nx_struct cc2420x_radio_header_t);
 }
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
-        return hdr->length - sizeof(nx_struct cc2420x_radio_header_t) - CC2420X_SIZEOF_CRC - sizeof(timesync_radio_t);
+	return hdr->length - sizeof(nx_struct cc2420x_radio_header_t) - CC2420X_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-        nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
-        hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + CC2420X_SIZEOF_CRC + sizeof(timesync_radio_t);
+	nx_struct cc2420x_radio_header_t *hdr = (nx_struct cc2420x_radio_header_t*)(msg->data);
+	hdr->length = length + sizeof(nx_struct cc2420x_radio_header_t) + CC2420X_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 	
 
@@ -1000,79 +998,71 @@ async command void RadioPacket.clear(message_t* msg) {
 }
 
 async command bool PacketTransmitPower.isSet(message_t* msg) {
-        return getMetadata(msg)->flags & (1<<1);
+	return getMetadata(msg)->flags & (1<<1);
 }
 
 async command uint8_t PacketTransmitPower.get(message_t* msg) {
-        return getMetadata(msg)->tx_power;
+	return getMetadata(msg)->tx_power;
 }
 
 async command void PacketTransmitPower.clear(message_t* msg) {
-        getMetadata(msg)->flags &= ~(1<<1);
+	getMetadata(msg)->flags &= ~(1<<1);
 }
 
 async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
-        getMetadata(msg)->flags |= (1<<1);
-        getMetadata(msg)->tx_power = value;
+	getMetadata(msg)->flags |= (1<<1);
+	getMetadata(msg)->tx_power = value;
 }
 
 async command bool PacketRSSI.isSet(message_t* msg) {
-        return getMetadata(msg)->flags & (1<<2);
+	return getMetadata(msg)->flags & (1<<2);
 }
 
 async command uint8_t PacketRSSI.get(message_t* msg) {
-        return getMetadata(msg)->rssi;
+	return getMetadata(msg)->rssi;
 }
 
 async command void PacketRSSI.clear(message_t* msg) {
-        getMetadata(msg)->flags &= ~(1<<2);
+	getMetadata(msg)->flags &= ~(1<<2);
 }
 
 async command void PacketRSSI.set(message_t* msg, uint8_t value) {
-        call PacketTransmitPower.clear(msg);
-        getMetadata(msg)->flags |= (1<<2);
-        getMetadata(msg)->rssi = value;
+	call PacketTransmitPower.clear(msg);
+	getMetadata(msg)->flags |= (1<<2);
+	getMetadata(msg)->rssi = value;
 }
 
 async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
-        return getMetadata(msg)->flags & (1<<3);
+	return getMetadata(msg)->flags & (1<<3);
 }
 
 async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-        return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
 }
 
 async command void PacketTimeSyncOffset.clear(message_t* msg) {
-        getMetadata(msg)->flags &= ~(1<<3);
+	getMetadata(msg)->flags &= ~(1<<3);
 }
 
 async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
-        getMetadata(msg)->flags |= (1<<3);
-        // we do not store the value, the time sync field is always the last 4 bytes
+	getMetadata(msg)->flags |= (1<<3);
+	// we do not store the value, the time sync field is always the last 4 bytes
 }
 
 async command bool PacketLinkQuality.isSet(message_t* msg) {
-        return TRUE;
+	return TRUE;
 }
 
 async command uint8_t PacketLinkQuality.get(message_t* msg) {
-        return getMetadata(msg)->lqi;
+	return getMetadata(msg)->lqi;
 }
 
 async command void PacketLinkQuality.clear(message_t* msg){
 }
 
 async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
-        getMetadata(msg)->lqi = value;
+	getMetadata(msg)->lqi = value;
 }
-
-
-
-
-
-
-
-/*----------------- LinkPacketMetadata -----------------*/
 
 async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return call PacketLinkQuality.get(msg) > 105;

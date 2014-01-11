@@ -630,8 +630,6 @@ async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
 }
 
 async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-	// TODO: 
-	//return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
 	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
 }
 
