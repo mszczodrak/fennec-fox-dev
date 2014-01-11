@@ -668,12 +668,10 @@ void* getPayload(message_t* msg) {
 		timesync = call PacketTimeSyncOffset.isSet(msg) ? ((void*)msg) + call PacketTimeSyncOffset.get(msg) : 0;
 
 		if( call PacketTimeSyncOffset.isSet(msg)) {
-			printf("w time\n");
 			// timesync required: write the payload before the timesync bytes to the fifo
 			// TODO: we're assuming here that the timestamp is at the end of the message
 			writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_relative) - 1);
 		} else {
-			printf("wo time\n");
 			// no timesync: write the entire payload to the fifo
 			if(length>0)
 				writeTxFifo((void*)((msg->data)+header), length - 1);
@@ -800,7 +798,6 @@ void* getPayload(message_t* msg) {
 		readRssiFromRxFifo(&rssi);
 		readCrcOkAndLqiFromRxFifo(&crc_ok_lqi);
 
-
 		/* UNCOMMENT THIS CODE IF THERE ARE TIMESTAMPING ERRORS	
 		// there are still bytes in the fifo or if there's an overflow, flush rx fifo
 		if (call FIFOP.get() == 1 || call FIFO.get() == 1 || call SFD.get() == 1) {
@@ -831,6 +828,9 @@ void* getPayload(message_t* msg) {
 		call PacketRSSI.set(rxMsg, rssi);
 		call PacketLinkQuality.set(rxMsg, crc_ok_lqi & 0x7f);
 		crc = (crc_ok_lqi > 0x7f) ? 0 : 1;
+
+		//getMetadata(rxMsg)->rssi = rssi;
+		getMetadata(rxMsg)->crc = !crc;
 
 		// signal reception only if it has passed the CRC check
 		if( crc == 0 ) {
