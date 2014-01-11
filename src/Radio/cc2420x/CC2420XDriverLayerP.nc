@@ -603,8 +603,6 @@ void* getPayload(message_t* msg) {
 		uint8_t length;
 		uint8_t header;
 		uint32_t time32;
-		void* timesync;
-		timesync_relative_t timesync_relative;
 		uint32_t sfdTime;
 		txMsg = msg;
 		if( cmd != CMD_NONE || (state != STATE_IDLE && state != STATE_RX_ON) || ! isSpiAcquired() || rxSfd || txEnd )
@@ -665,12 +663,11 @@ void* getPayload(message_t* msg) {
 		RADIO_ASSERT(sfd3 == 0);
 		RADIO_ASSERT(sfd4 == 0);
 
-		timesync = call PacketTimeSyncOffset.isSet(msg) ? ((void*)msg) + call PacketTimeSyncOffset.get(msg) : 0;
 
 		if( call PacketTimeSyncOffset.isSet(msg)) {
 			// timesync required: write the payload before the timesync bytes to the fifo
 			// TODO: we're assuming here that the timestamp is at the end of the message
-			writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_relative) - 1);
+			writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_absolute_t) - 1);
 		} else {
 			// no timesync: write the entire payload to the fifo
 			if(length>0)
@@ -697,11 +694,11 @@ void* getPayload(message_t* msg) {
 
 		if( call PacketTimeSyncOffset.isSet(msg)) {
 			// read and adjust the timestamp field
-			timesync_relative = (*(timesync_absolute_t*)timesync) - time32;
-
+			uint32_t *relative_time = (uint32_t*)((msg->data) + call PacketTimeSyncOffset.get(msg));
+			*relative_time -= time32;
 			// write it to the fifo
 			// TODO: we're assuming here that the timestamp is at the end of the message			
-			writeTxFifo((uint8_t*)(&timesync_relative), sizeof(timesync_relative));
+			writeTxFifo((uint8_t*)(&relative_time), sizeof(timesync_absolute_t));
 			state = STATE_BUSY_TX_2_RX_ON;
 		}
 
@@ -845,7 +842,6 @@ void* getPayload(message_t* msg) {
 			time32 -= time;
 
 			rxMsg = signal RadioReceive.receive(rxMsg);
-
 		}
 						
 	}
@@ -1039,14 +1035,10 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 }
 
 async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
-	// HACK TODO
-	return FALSE;
         return getMetadata(msg)->flags & (1<<3);
 }
 
 async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-        // TODO:
-        //return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
         return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
 }
 
@@ -1082,9 +1074,8 @@ async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
 
 /*----------------- LinkPacketMetadata -----------------*/
 
-	async command bool LinkPacketMetadata.highChannelQuality(message_t* msg)
-	{
-		return call PacketLinkQuality.get(msg) > 105;
-	}
+async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
+	return call PacketLinkQuality.get(msg) > 105;
+}
 
 }

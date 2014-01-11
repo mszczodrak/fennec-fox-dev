@@ -312,9 +312,9 @@ command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 
 /***************** SubSend Events ****************/
 event void SubSend.sendDone(message_t* msg, error_t result) {
-	printf("sendDone error: %u \t rssi: %u \t lqi: %u \t crc: %u \t ack: %u\n",
-		result, getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc, getMetadata(msg)->ack);
-	printfflush();
+//	printf("sendDone error: %u \t rssi: %u \t lqi: %u \t crc: %u \t ack: %u\n",
+//		result, getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc, getMetadata(msg)->ack);
+//	printfflush();
 	dbg("Mac", "csmaMac SubSend.sendDone(0x%1x, %d)", msg, result);
 	signal MacAMSend.sendDone(msg, result);
 }
@@ -322,6 +322,9 @@ event void SubSend.sendDone(message_t* msg, error_t result) {
 /***************** SubReceive Events ****************/
 event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	uint8_t *ptr;
+//	printf("rec len: %u \t rssi: %u \t lqi: %u \t crc: %u \t ack: %u\n",
+//		len, getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc, getMetadata(msg)->ack);
+//	printfflush();
 	atomic {
 		ptr = (uint8_t*) payload;
 		ptr += sizeof(csmaca_header_t);
@@ -334,10 +337,10 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 		}
 	}
 
-	printf("rssi: %u \t lqi: %u \t crc: %u \t ack: %u\n", 
-			getMetadata(msg)->rssi, getMetadata(msg)->lqi, 
-			getMetadata(msg)->crc, getMetadata(msg)->ack);
-	printfflush();
+//	printf("rssi: %u \t lqi: %u \t crc: %u \t ack: %u\n", 
+//			getMetadata(msg)->rssi, getMetadata(msg)->lqi, 
+//			getMetadata(msg)->crc, getMetadata(msg)->ack);
+//	printfflush();
 
 	if (call MacAMPacket.isForMe(msg)) {
 		return signal MacReceive.receive(msg, ptr, len);
