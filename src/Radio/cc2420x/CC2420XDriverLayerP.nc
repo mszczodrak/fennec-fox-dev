@@ -601,7 +601,6 @@ void* getPayload(message_t* msg) {
 		uint16_t time;
 		uint8_t p;
 		uint8_t length;
-		uint8_t* data;
 		uint8_t header;
 		uint32_t time32;
 		void* timesync;
@@ -629,7 +628,6 @@ void* getPayload(message_t* msg) {
 			return EBUSY;
 		}
 
-		data = getPayload(msg);
 		length = getHeader(msg)->length;
 
 		// length | data[0] ... data[length-3] | automatically generated FCS
@@ -641,7 +639,7 @@ void* getPayload(message_t* msg) {
 		length -= header;
 
 		// first upload the header to gain some time
-		writeTxFifo(data, header);
+		writeTxFifo((void*)msg->data, header);
 
 		atomic {
     		// there's a chance that there was a receive SFD interrupt in such a short time
@@ -672,12 +670,12 @@ void* getPayload(message_t* msg) {
 		if( timesync == 0 ) {
 			// no timesync: write the entire payload to the fifo
 			if(length>0)
-				writeTxFifo(data+header, length - 1);
+				writeTxFifo((void*)((msg->data)+header), length - 1);
 			state = STATE_BUSY_TX_2_RX_ON;
 		} else {
 			// timesync required: write the payload before the timesync bytes to the fifo
 			// TODO: we're assuming here that the timestamp is at the end of the message
-			writeTxFifo(data+header, length - sizeof(timesync_relative) - 1);
+			writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_relative) - 1);
 		}
 		
 		
@@ -765,8 +763,8 @@ void* getPayload(message_t* msg) {
 	{
 		uint8_t length;
 		uint16_t crc = 1;
-		uint8_t* data;
 		uint8_t rssi;
+		uint8_t* data;
 		uint8_t crc_ok_lqi;
 		uint16_t sfdTime;				
 						
