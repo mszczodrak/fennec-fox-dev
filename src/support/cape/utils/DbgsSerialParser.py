@@ -38,7 +38,7 @@ class UARTGateway:
 		date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(tt))
 		m = "%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d" % (msg.get_layer(), msg.get_state(),
 			msg.get_action(), msg.get_d0(), msg.get_d1(),
-				date, 0, tt * 1000, self.log_counter)
+				date, msg.getAddr(), tt * 1000, self.log_counter)
 		self.log_counter += 1
 
 		if self.log != '':
@@ -47,16 +47,6 @@ class UARTGateway:
 		else:
 			print m
 		
-	
-
-	
-		#src = msg.get_src()
-		#seq = msg.get_seq()
-		#freq = msg.get_freq()
-		#data = msg.get_data()
-		#print data
-
-
 	def run(self):
 		while 1:
 			pass
