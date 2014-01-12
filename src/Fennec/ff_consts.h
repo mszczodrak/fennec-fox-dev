@@ -8,6 +8,9 @@
 #define TYPE_HOUR	3
 #define TYPE_DAY	4
 
+#define UQ_RADIO_ALARM          "UQ_CC2420X_RADIO_ALARM"
+
+
 enum {
         OFF                     = 0,
         ON                      = 1,

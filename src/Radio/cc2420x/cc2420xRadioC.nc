@@ -57,10 +57,6 @@ provides interface RadioCCA;
 
 implementation {
 
-#define UQ_METADATA_FLAGS       "UQ_CC2420X_METADATA_FLAGS"
-#define UQ_RADIO_ALARM          "UQ_CC2420X_RADIO_ALARM"
-
-
 components cc2420xRadioP;
 components CC2420XDriverLayerC;
 

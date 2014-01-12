@@ -57,6 +57,4 @@ typedef nx_struct cc2420x_hdr_t {
         nxle_uint16_t src;
 } cc2420x_hdr_t;
 
-
-
 #endif
