@@ -153,14 +153,6 @@ typedef union cc2420X_txctrl {
 static const cc2420X_txctrl_t cc2420X_txctrl_default = {.f.pa_level = 31, .f.reserved = 1, .f.pa_current = 3, .f.tx_turnaround = 1, .f.txmixbuf_cur = 2};
 
 
-#ifndef CC2420X_DEF_CHANNEL
-#define CC2420X_DEF_CHANNEL 11
-#endif
-
-#ifndef CC2420X_DEF_RFPOWER
-#define CC2420X_DEF_RFPOWER 31
-#endif
-
 enum {
 	CC2420X_TX_PWR_MASK = 0x1f,
 	CC2420X_CHANNEL_MASK = 0x1f,

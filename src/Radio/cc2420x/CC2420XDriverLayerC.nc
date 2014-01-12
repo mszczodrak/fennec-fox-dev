@@ -50,6 +50,7 @@ configuration CC2420XDriverLayerC
 
 		interface RadioAlarm;
 	}
+uses interface cc2420xRadioParams;
 }
 
 implementation
@@ -61,6 +62,8 @@ implementation
 
 	MainC.SoftwareInit -> DriverLayerP.SoftwareInit;
 	MainC.SoftwareInit -> HplC.Init;
+
+	cc2420xRadioParams = DriverLayerP;
 
 	RadioState = DriverLayerP;
 	RadioSend = DriverLayerP;

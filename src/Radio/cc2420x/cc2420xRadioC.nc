@@ -83,6 +83,7 @@ cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
 
 RadioAlarmC.Alarm -> CC2420XDriverLayerC;
 
+cc2420xRadioParams = CC2420XDriverLayerC;
 
 components new AutoResourceAcquireLayerC();
 AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];

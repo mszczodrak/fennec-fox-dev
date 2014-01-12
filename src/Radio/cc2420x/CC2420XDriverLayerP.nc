@@ -73,6 +73,7 @@ module CC2420XDriverLayerP
 #endif
 		interface Leds;
 	}
+uses interface cc2420xRadioParams;
 }
 
 implementation {
@@ -371,6 +372,8 @@ void* getPayload(message_t* msg) {
 		// start up voltage regulator
     	call VREN.set();
     	call BusyWait.wait( 600 ); // .6ms VR startup time
+		txPower = call cc2420xRadioParams.get_power();
+		channel = call cc2420xRadioParams.get_channel();
     		
     	// do a reset
 		call RSTN.clr();
@@ -413,8 +416,6 @@ void* getPayload(message_t* msg) {
 	{
 		resetRadio();		
 		
-		txPower = CC2420X_DEF_RFPOWER & CC2420X_TX_PWR_MASK;
-		channel = CC2420X_DEF_CHANNEL & CC2420X_CHANNEL_MASK;		
 
 	}
 
@@ -609,7 +610,7 @@ void* getPayload(message_t* msg) {
 			return EBUSY;
 
 		p = (call PacketTransmitPower.isSet(msg) ?
-			call PacketTransmitPower.get(msg) : CC2420X_DEF_RFPOWER) & CC2420X_TX_PWR_MASK;
+			call PacketTransmitPower.get(msg) : txPower);
 
 		if( p != txPower )
 		{
@@ -897,6 +898,10 @@ void* getPayload(message_t* msg) {
 		call SpiResource.release();
 	}
 
+	task void radioStateDone() {
+		signal RadioState.done();
+	}
+
 	void task_run() {
 		if( txEnd ) {
 			// end of transmission
@@ -959,7 +964,7 @@ void* getPayload(message_t* msg) {
 			if( cmd == CMD_SIGNAL_DONE )
 			{
 				cmd = CMD_NONE;
-				signal RadioState.done();
+				post radioStateDone();
 			}
 		}
 
