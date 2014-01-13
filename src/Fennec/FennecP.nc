@@ -44,11 +44,14 @@ task void start_caches() {
 	call Caches.start();
 }
 
-event void Boot.booted() {
-	//call Leds.led1On();
+task void boot() {
 	dbg("Fennec", "Fennec Boot.booted()");
 	call DbgSerial.start();
 	post start_caches();
+}
+
+event void Boot.booted() {
+	post boot();
 }
 
 
