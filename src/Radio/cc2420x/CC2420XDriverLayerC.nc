@@ -81,9 +81,9 @@ uses interface cc2420xRadioParams;
 implementation {
 
 components CC2420XDriverLayerP as DriverLayerP,
-		BusyWaitMicroC,
-		MainC,
-		HplCC2420XC as HplC;
+	BusyWaitMicroC,
+	MainC,
+	HplCC2420XC as HplC;
 
 MainC.SoftwareInit -> DriverLayerP.SoftwareInit;
 MainC.SoftwareInit -> HplC.Init;
