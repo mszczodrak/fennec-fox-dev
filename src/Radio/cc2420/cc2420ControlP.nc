@@ -123,134 +123,120 @@ typedef enum {
 	S_XOSC_STARTED,
 } cc2420_control_state_t;
 
-  uint8_t m_channel;
+uint8_t m_channel;
+uint8_t m_tx_power;
+uint16_t m_pan;
+uint16_t m_short_addr;
+ieee_eui64_t m_ext_addr;
+bool m_sync_busy;
+/** TRUE if acknowledgments are enabled */
+bool autoAckEnabled;
+/** TRUE if acknowledgments are generated in hardware only */
+bool hwAutoAckDefault;
+/** TRUE if software or hardware address recognition is enabled */
+bool addressRecognition;
+/** TRUE if address recognition should also be performed in hardware */
+bool hwAddressRecognition;
+bool autoCrc;
+norace cc2420_control_state_t m_state = S_VREG_STOPPED;
   
-  uint8_t m_tx_power;
-  
-  uint16_t m_pan;
-  
-  uint16_t m_short_addr;
+/***************** Prototypes ****************/
+void writeFsctrl();
+void writeMdmctrl0();
+void writeId();
+void writeTxctrl();
 
-  ieee_eui64_t m_ext_addr;
-  
-  bool m_sync_busy;
-  
-  /** TRUE if acknowledgments are enabled */
-  bool autoAckEnabled;
-  
-  /** TRUE if acknowledgments are generated in hardware only */
-  bool hwAutoAckDefault;
-  
-  /** TRUE if software or hardware address recognition is enabled */
-  bool addressRecognition;
-  
-  /** TRUE if address recognition should also be performed in hardware */
-  bool hwAddressRecognition;
+task void sync();
+task void syncDone();
 
-  bool autoCrc;
-  
-  norace cc2420_control_state_t m_state = S_VREG_STOPPED;
-  
-  /***************** Prototypes ****************/
-
-  void writeFsctrl();
-  void writeMdmctrl0();
-  void writeId();
-  void writeTxctrl();
-
-  task void sync();
-  task void syncDone();
-
-  task void get_params() {
-    atomic {
-      m_tx_power = call cc2420RadioParams.get_power();
-      m_channel = call cc2420RadioParams.get_channel();
-      autoAckEnabled = call cc2420RadioParams.get_ack();    
-      autoCrc = call cc2420RadioParams.get_crc();
-    }
-  }
+task void get_params() {
+	atomic {
+		m_tx_power = call cc2420RadioParams.get_power();
+		m_channel = call cc2420RadioParams.get_channel();
+		autoAckEnabled = call cc2420RadioParams.get_ack();    
+		autoCrc = call cc2420RadioParams.get_crc();
+	}
+}
     
-  /***************** Init Commands ****************/
-  command error_t Init.init() {
-    int i, t;
-    call CSN.makeOutput();
-    call RSTN.makeOutput();
-    call VREN.makeOutput();
+/***************** Init Commands ****************/
+command error_t Init.init() {
+	int i, t;
+	call CSN.makeOutput();
+	call RSTN.makeOutput();
+	call VREN.makeOutput();
 
-    on_time = 0;
+	on_time = 0;
     
-    m_short_addr = call ActiveMessageAddress.amAddress();
-    m_ext_addr = call LocalIeeeEui64.getId();
-    m_pan = call ActiveMessageAddress.amGroup();
+	m_short_addr = call ActiveMessageAddress.amAddress();
+	m_ext_addr = call LocalIeeeEui64.getId();
+	m_pan = call ActiveMessageAddress.amGroup();
     
-    m_ext_addr = call LocalIeeeEui64.getId();
-    for (i = 0; i < 4; i++) {
-      t = m_ext_addr.data[i];
-      m_ext_addr.data[i] = m_ext_addr.data[7-i];
-      m_ext_addr.data[7-i] = t;
-    }
+	m_ext_addr = call LocalIeeeEui64.getId();
+	for (i = 0; i < 4; i++) {
+		t = m_ext_addr.data[i];
+		m_ext_addr.data[i] = m_ext_addr.data[7-i];
+		m_ext_addr.data[7-i] = t;
+	}
 
-    m_tx_power = call cc2420RadioParams.get_power();
-    m_channel = call cc2420RadioParams.get_channel();
+	m_tx_power = call cc2420RadioParams.get_power();
+	m_channel = call cc2420RadioParams.get_channel();
 
 #if defined(CC2420_NO_ADDRESS_RECOGNITION)
-    addressRecognition = FALSE;
+	addressRecognition = FALSE;
 #else
-    addressRecognition = TRUE;
+	addressRecognition = TRUE;
 #endif
     
 #if defined(CC2420_HW_ADDRESS_RECOGNITION)
-    hwAddressRecognition = TRUE;
+	hwAddressRecognition = TRUE;
 #else
-    hwAddressRecognition = FALSE;
+	hwAddressRecognition = FALSE;
 #endif
     
     
 #if defined(CC2420_NO_ACKNOWLEDGEMENTS)
-    autoAckEnabled = FALSE;
+	autoAckEnabled = FALSE;
 #else
-    autoAckEnabled = TRUE;
+	autoAckEnabled = TRUE;
 #endif
     
 #if defined(CC2420_HW_ACKNOWLEDGEMENTS)
-    hwAutoAckDefault = TRUE;
-    hwAddressRecognition = TRUE;
+	hwAutoAckDefault = TRUE;
+	hwAddressRecognition = TRUE;
 #else
-    hwAutoAckDefault = FALSE;
+	hwAutoAckDefault = FALSE;
 #endif
-    return SUCCESS;
-  }
+	return SUCCESS;
+}
 
-  /***************** Resource Commands ****************/
-  async command error_t RadioResource.immediateRequest() {
-    error_t error = call SpiResource.immediateRequest();
-    if ( error == SUCCESS ) {
-      call CSN.clr();
-    }
-    return error;
-  }
+/***************** Resource Commands ****************/
+async command error_t RadioResource.immediateRequest() {
+	error_t error = call SpiResource.immediateRequest();
+	if ( error == SUCCESS ) {
+		call CSN.clr();
+	}
+	return error;
+}
 
-  async command error_t RadioResource.request() {
-    return call SpiResource.request();
-  }
+async command error_t RadioResource.request() {
+	return call SpiResource.request();
+}
 
-  async command bool RadioResource.isOwner() {
-    return call SpiResource.isOwner();
-  }
+async command bool RadioResource.isOwner() {
+	return call SpiResource.isOwner();
+}
 
 async command error_t RadioResource.release() {
-    atomic {
-      call CSN.set();
-      return call SpiResource.release();
-    }
+	atomic {
+		call CSN.set();
+		return call SpiResource.release();
+	}
 }
 
 task void report_start() {
 	on_time = call StartupTimer.getNow();
 	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
 	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_START_V_REG, 0, 0);
-	//printf("radio on\n");
-	//printfflush();
 }
 
 task void report_stop() {
@@ -258,157 +244,150 @@ task void report_stop() {
 	on_time = call StartupTimer.getNow();
 	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, (uint16_t)(on_time >> 16), (uint16_t)on_time);
 	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_STOP_V_REG, 0, 0);
-	//printf("radio off\n");
-	//printfflush();
 	//dbgs(F_RADIO, S_NONE, DBGS_RADIO_ON_PERIOD, (uint16_t)(on_time >> 16), (uint16_t)on_time);
 }
 
-  /***************** RadioPower Commands ****************/
-  async command error_t RadioPower.startVReg() {
-    post get_params();
-    atomic {
-      if ( m_state != S_VREG_STOPPED ) {
-        return FAIL;
-      }
-      m_state = S_VREG_STARTING;
-    }
-    call VREN.set();
-    call StartupTimer.start( CC2420_TIME_VREN );
-    post report_start();
-    return SUCCESS;
-  }
+/***************** RadioPower Commands ****************/
+async command error_t RadioPower.startVReg() {
+	post get_params();
+	atomic {
+		if ( m_state != S_VREG_STOPPED ) {
+			return FAIL;
+		}
+		m_state = S_VREG_STARTING;
+	}
+	call VREN.set();
+	call StartupTimer.start( CC2420_TIME_VREN );
+	post report_start();
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.stopVReg() {
-    m_state = S_VREG_STOPPED;
-    call RSTN.clr();
-    call VREN.clr();
-    call RSTN.set();
-    post report_stop();
-    return SUCCESS;
-  }
+async command error_t RadioPower.stopVReg() {
+	m_state = S_VREG_STOPPED;
+	call RSTN.clr();
+	call VREN.clr();
+	call RSTN.set();
+	post report_stop();
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.startOscillator() {
-    atomic {
-      if ( m_state != S_VREG_STARTED ) {
-        return FAIL;
-      }
+async command error_t RadioPower.startOscillator() {
+	atomic {
+		if ( m_state != S_VREG_STARTED ) {
+			return FAIL;
+		}
         
-      m_state = S_XOSC_STARTING;
-      call IOCFG1.write( CC2420_SFDMUX_XOSC16M_STABLE << 
-                         CC2420_IOCFG1_CCAMUX );
+		m_state = S_XOSC_STARTING;
+		call IOCFG1.write( CC2420_SFDMUX_XOSC16M_STABLE << 
+			CC2420_IOCFG1_CCAMUX );
                          
-      call InterruptCCA.enableRisingEdge();
-      call SXOSCON.strobe();
+		call InterruptCCA.enableRisingEdge();
+		call SXOSCON.strobe();
       
-      call IOCFG0.write( ( 1 << CC2420_IOCFG0_FIFOP_POLARITY ) |
-          ( 127 << CC2420_IOCFG0_FIFOP_THR ) );
+		call IOCFG0.write( ( 1 << CC2420_IOCFG0_FIFOP_POLARITY ) |
+			( 127 << CC2420_IOCFG0_FIFOP_THR ) );
                          
-      writeFsctrl();
-      writeMdmctrl0();
+		writeFsctrl();
+		writeMdmctrl0();
   
-      call RXCTRL1.write( ( 1 << CC2420_RXCTRL1_RXBPF_LOCUR ) |
-          ( 1 << CC2420_RXCTRL1_LOW_LOWGAIN ) |
-          ( 1 << CC2420_RXCTRL1_HIGH_HGM ) |
-          ( 1 << CC2420_RXCTRL1_LNA_CAP_ARRAY ) |
-          ( 1 << CC2420_RXCTRL1_RXMIX_TAIL ) |
-          ( 1 << CC2420_RXCTRL1_RXMIX_VCM ) |
-          ( 2 << CC2420_RXCTRL1_RXMIX_CURRENT ) );
+		call RXCTRL1.write( ( 1 << CC2420_RXCTRL1_RXBPF_LOCUR ) |
+			( 1 << CC2420_RXCTRL1_LOW_LOWGAIN ) |
+			( 1 << CC2420_RXCTRL1_HIGH_HGM ) |
+			( 1 << CC2420_RXCTRL1_LNA_CAP_ARRAY ) |
+			( 1 << CC2420_RXCTRL1_RXMIX_TAIL ) |
+			( 1 << CC2420_RXCTRL1_RXMIX_VCM ) |
+			( 2 << CC2420_RXCTRL1_RXMIX_CURRENT ) );
 
-      writeTxctrl();
-    }
-    return SUCCESS;
-  }
+		writeTxctrl();
+	}
+	return SUCCESS;
+}
 
 
-  async command error_t RadioPower.stopOscillator() {
-    atomic {
-      if ( m_state != S_XOSC_STARTED ) {
-        return FAIL;
-      }
-      m_state = S_VREG_STARTED;
-      call SXOSCOFF.strobe();
-    }
-    return SUCCESS;
-  }
+async command error_t RadioPower.stopOscillator() {
+	atomic {
+		if ( m_state != S_XOSC_STARTED ) {
+			return FAIL;
+		}
+		m_state = S_VREG_STARTED;
+		call SXOSCOFF.strobe();
+	}
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.rxOn() {
-    atomic {
-      if ( m_state != S_XOSC_STARTED ) {
-        return FAIL;
-      }
-      call SRXON.strobe();
-    }
-    return SUCCESS;
-  }
+async command error_t RadioPower.rxOn() {
+	atomic {
+		if ( m_state != S_XOSC_STARTED ) {
+			return FAIL;
+		}
+		call SRXON.strobe();
+	}
+	return SUCCESS;
+}
 
-  async command error_t RadioPower.rfOff() {
-    atomic {  
-      if ( m_state != S_XOSC_STARTED ) {
-        return FAIL;
-      }
-      call SRFOFF.strobe();
-    }
-    return SUCCESS;
-  }
+async command error_t RadioPower.rfOff() {
+	atomic {  
+		if ( m_state != S_XOSC_STARTED ) {
+			return FAIL;
+		}
+		call SRFOFF.strobe();
+	}
+	return SUCCESS;
+}
 
-  
-  /***************** RadioConfig Commands ****************/
-  command uint8_t RadioConfig.getChannel() {
-    atomic return m_channel;
-  }
+/***************** RadioConfig Commands ****************/
+command uint8_t RadioConfig.getChannel() {
+	atomic return m_channel;
+}
 
-  command void RadioConfig.setChannel( uint8_t channel ) {
-    atomic m_channel = channel;
-  }
+command void RadioConfig.setChannel( uint8_t channel ) {
+	atomic m_channel = channel;
+}
 
-//  command ieee_eui64_t RadioConfig.getExtAddr() {
-//    return m_ext_addr;
-//  }
+async command uint16_t RadioConfig.getShortAddr() {
+	atomic return m_short_addr;
+}
 
-  async command uint16_t RadioConfig.getShortAddr() {
-    atomic return m_short_addr;
-  }
+command void RadioConfig.setShortAddr( uint16_t addr ) {
+	atomic m_short_addr = addr;
+}
 
-  command void RadioConfig.setShortAddr( uint16_t addr ) {
-    atomic m_short_addr = addr;
-  }
+async command uint16_t RadioConfig.getPanAddr() {
+	atomic return m_pan;
+}
 
-  async command uint16_t RadioConfig.getPanAddr() {
-    atomic return m_pan;
-  }
+command void RadioConfig.setPanAddr( uint16_t pan ) {
+	atomic m_pan = pan;
+}
 
-  command void RadioConfig.setPanAddr( uint16_t pan ) {
-    atomic m_pan = pan;
-  }
-
-  /**
-   * Sync must be called to commit software parameters configured on
-   * the microcontroller (through the RadioConfig interface) to the
-   * CC2420 radio chip.
-   */
-  command error_t RadioConfig.sync() {
-    atomic {
-      if ( m_sync_busy ) {
-        return FAIL;
-      }
+/**
+ * Sync must be called to commit software parameters configured on
+ * the microcontroller (through the RadioConfig interface) to the
+ * CC2420 radio chip.
+ */
+command error_t RadioConfig.sync() {
+	atomic {
+		if ( m_sync_busy ) {
+			return FAIL;
+		}
       
-      m_sync_busy = TRUE;
-      if ( m_state == S_XOSC_STARTED ) {
-        call SyncResource.request();
-      } else {
-        post syncDone();
-      }
-    }
-    return SUCCESS;
-  }
+		m_sync_busy = TRUE;
+		if ( m_state == S_XOSC_STARTED ) {
+			call SyncResource.request();
+		} else {
+			post syncDone();
+		}
+	}
+	return SUCCESS;
+}
 
-  /**
-   * @param enableAddressRecognition TRUE to turn address recognition on
-   * @param useHwAddressRecognition TRUE to perform address recognition first
-   *     in hardware. This doesn't affect software address recognition. The
-   *     driver must sync with the chip after changing this value.
-   */
-  command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
+/**
+ * @param enableAddressRecognition TRUE to turn address recognition on
+ * @param useHwAddressRecognition TRUE to perform address recognition first
+ *     in hardware. This doesn't affect software address recognition. The
+ *     driver must sync with the chip after changing this value.
+ */
+command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
     atomic {
       addressRecognition = enableAddressRecognition;
       hwAddressRecognition = useHwAddressRecognition;
