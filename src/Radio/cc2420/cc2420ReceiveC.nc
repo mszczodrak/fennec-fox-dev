@@ -80,7 +80,7 @@ provides interface ReceiveIndicator as PacketIndicator;
 
 uses interface RadioConfig;
 uses interface RadioPacket;
-uses interface PacketField<uint32_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 }
 
