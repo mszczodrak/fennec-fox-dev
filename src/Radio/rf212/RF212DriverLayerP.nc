@@ -40,51 +40,31 @@
 #include <RadioConfig.h>
 #include "RFX_IEEE.h"
 
-module RF212DriverLayerP
-{
-	provides
-	{
-		interface Init as PlatformInit @exactlyonce();
-		interface Init as SoftwareInit @exactlyonce();
+module RF212DriverLayerP {
+provides interface Init as PlatformInit @exactlyonce();
+provides interface Init as SoftwareInit @exactlyonce();
 
-		interface RadioState;
-		interface RadioSend;
-		interface RadioReceive;
-		interface RadioCCA;
-		interface RadioPacket;
+provides interface RadioState;
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
 
-		interface PacketField<uint8_t> as PacketTransmitPower;
-		interface PacketField<uint8_t> as PacketRSSI;
-		interface PacketField<uint8_t> as PacketTimeSyncOffset;
-		interface PacketField<uint8_t> as PacketLinkQuality;
-		interface LinkPacketMetadata;
-	}
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
 
-	uses
-	{
-		interface GeneralIO as SELN;
-		interface Resource as SpiResource;
-
-		interface FastSpiByte;
-
-		interface GeneralIO as SLP_TR;
-		interface GeneralIO as RSTN;
-
-		interface GpioCapture as IRQ;
-
-		interface BusyWait<TMicro, uint16_t>;
-		interface LocalTime<TRadio>;
-
-		interface RF212DriverConfig as Config;
-
-		interface PacketFlag as TransmitPowerFlag;
-		interface PacketFlag as RSSIFlag;
-		interface PacketFlag as TimeSyncFlag;
-
-		interface PacketTimeStamp<TRadio, uint32_t>;
-
-		interface RadioAlarm;
-	}
+uses interface GeneralIO as SELN;
+uses interface Resource as SpiResource;
+uses interface FastSpiByte;
+uses interface GeneralIO as SLP_TR;
+uses interface GeneralIO as RSTN;
+uses interface GpioCapture as IRQ;
+uses interface BusyWait<TMicro, uint16_t>;
+uses interface LocalTime<TRadio>;
+uses interface RadioAlarm;
 uses interface rf212RadioParams;
 }
 
@@ -560,21 +540,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		// go back to RX_ON state when finished
 		writeRegister(RF212_TRX_STATE, RF212_RX_ON);
 
-		call PacketTimeSyncOffset.set(msg, time32);
-
-#ifdef RADIO_DEBUG_MESSAGES
-		if( call DiagMsg.record() )
-		{
-			length = getHeader(msg)->length;
-
-			call DiagMsg.chr('t');
-			call DiagMsg.uint32(call PacketTimeStamp.isValid(msg) ? call PacketTimeStamp.timestamp(msg) : 0);
-			call DiagMsg.uint16(call RadioAlarm.getNow());
-			call DiagMsg.int8(length);
-			call DiagMsg.hex8s(getPayload(msg), length - 2);
-			call DiagMsg.send();
-		}
-#endif
+		call PacketTimeSyncOffset.set(msg, 0);
 
 		// wait for the TRX_END interrupt
 		state = STATE_BUSY_TX_2_RX_ON;
@@ -656,22 +622,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 		call SELN.set();
 		state = STATE_RX_ON;
-
-#ifdef RADIO_DEBUG_MESSAGES
-		if( call DiagMsg.record() )
-		{
-			length = getHeader(rxMsg)->length;
-
-			call DiagMsg.chr('r');
-			call DiagMsg.uint32(call PacketTimeStamp.isValid(rxMsg) ? call PacketTimeStamp.timestamp(rxMsg) : 0);
-			call DiagMsg.uint16(call RadioAlarm.getNow());
-			call DiagMsg.int8(crcValid ? length : -length);
-			call DiagMsg.hex8s(getPayload(rxMsg), length - 2);
-			call DiagMsg.int8(call PacketRSSI.isSet(rxMsg) ? call PacketRSSI.get(rxMsg) : -1);
-			call DiagMsg.uint8(call PacketLinkQuality.isSet(rxMsg) ? call PacketLinkQuality.get(rxMsg) : 0);
-			call DiagMsg.send();
-		}
-#endif
 
 		cmd = CMD_NONE;
 

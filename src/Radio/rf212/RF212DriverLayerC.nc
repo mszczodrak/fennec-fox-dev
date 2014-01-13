@@ -35,90 +35,66 @@
 #include <RadioConfig.h>
 #include <RF212DriverLayer.h>
 
-configuration RF212DriverLayerC
-{
-	provides
-	{
-		interface RadioState;
-		interface RadioSend;
-		interface RadioReceive;
-		interface RadioCCA;
-		interface RadioPacket;
+configuration RF212DriverLayerC {
 
-		interface PacketField<uint8_t> as PacketTransmitPower;
-		interface PacketField<uint8_t> as PacketRSSI;
-		interface PacketField<uint8_t> as PacketTimeSyncOffset;
-		interface PacketField<uint8_t> as PacketLinkQuality;
-		interface LinkPacketMetadata;
+provides interface RadioState;
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
 
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface Alarm<TRadio, tradio_size>;
-	}
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
 
-	uses
-	{
-		interface RF212DriverConfig as Config;
-		interface PacketTimeStamp<TRadio, uint32_t>;
+provides interface LocalTime<TRadio> as LocalTimeRadio;
+provides interface Alarm<TRadio, tradio_size>;
 
-		interface PacketFlag as TransmitPowerFlag;
-		interface PacketFlag as RSSIFlag;
-		interface PacketFlag as TimeSyncFlag;
-		interface RadioAlarm;
-	}
+uses interface RadioAlarm;
 uses interface rf212RadioParams;
 }
 
-implementation
-{
-	components RF212DriverLayerP, HplRF212C, BusyWaitMicroC, MainC;
+implementation {
+components RF212DriverLayerP, HplRF212C, BusyWaitMicroC, MainC;
 
-	RadioState = RF212DriverLayerP;
-	RadioSend = RF212DriverLayerP;
-	RadioReceive = RF212DriverLayerP;
-	RadioCCA = RF212DriverLayerP;
-	RadioPacket = RF212DriverLayerP;
+RadioState = RF212DriverLayerP;
+RadioSend = RF212DriverLayerP;
+RadioReceive = RF212DriverLayerP;
+RadioCCA = RF212DriverLayerP;
+RadioPacket = RF212DriverLayerP;
 
-	LocalTimeRadio = HplRF212C;
+LocalTimeRadio = HplRF212C;
 
-	Config = RF212DriverLayerP;
+PacketTransmitPower = RF212DriverLayerP.PacketTransmitPower;
 
-	PacketTransmitPower = RF212DriverLayerP.PacketTransmitPower;
-	TransmitPowerFlag = RF212DriverLayerP.TransmitPowerFlag;
+PacketRSSI = RF212DriverLayerP.PacketRSSI;
 
-	PacketRSSI = RF212DriverLayerP.PacketRSSI;
-	RSSIFlag = RF212DriverLayerP.RSSIFlag;
+PacketTimeSyncOffset = RF212DriverLayerP.PacketTimeSyncOffset;
 
-	PacketTimeSyncOffset = RF212DriverLayerP.PacketTimeSyncOffset;
-	TimeSyncFlag = RF212DriverLayerP.TimeSyncFlag;
+PacketLinkQuality = RF212DriverLayerP.PacketLinkQuality;
+LinkPacketMetadata = RF212DriverLayerP;
 
-	PacketLinkQuality = RF212DriverLayerP.PacketLinkQuality;
-	PacketTimeStamp = RF212DriverLayerP.PacketTimeStamp;
-	LinkPacketMetadata = RF212DriverLayerP;
+RF212DriverLayerP.LocalTime -> HplRF212C;
 
-	RF212DriverLayerP.LocalTime -> HplRF212C;
+Alarm = HplRF212C.Alarm;
+RadioAlarm = RF212DriverLayerP.RadioAlarm;
 
-	Alarm = HplRF212C.Alarm;
-	RadioAlarm = RF212DriverLayerP.RadioAlarm;
+RF212DriverLayerP.SELN -> HplRF212C.SELN;
+RF212DriverLayerP.SpiResource -> HplRF212C.SpiResource;
+RF212DriverLayerP.FastSpiByte -> HplRF212C;
 
-	RF212DriverLayerP.SELN -> HplRF212C.SELN;
-	RF212DriverLayerP.SpiResource -> HplRF212C.SpiResource;
-	RF212DriverLayerP.FastSpiByte -> HplRF212C;
+RF212DriverLayerP.SLP_TR -> HplRF212C.SLP_TR;
+RF212DriverLayerP.RSTN -> HplRF212C.RSTN;
 
-	RF212DriverLayerP.SLP_TR -> HplRF212C.SLP_TR;
-	RF212DriverLayerP.RSTN -> HplRF212C.RSTN;
+RF212DriverLayerP.IRQ -> HplRF212C.IRQ;
+RF212DriverLayerP.BusyWait -> BusyWaitMicroC;
 
-	RF212DriverLayerP.IRQ -> HplRF212C.IRQ;
-	RF212DriverLayerP.BusyWait -> BusyWaitMicroC;
+rf212RadioParams = RF212DriverLayerP;
 
-#ifdef RADIO_DEBUG
-	components DiagMsgC;
-	RF212DriverLayerP.DiagMsg -> DiagMsgC;
-#endif
+MainC.SoftwareInit -> RF212DriverLayerP.SoftwareInit;
 
-	rf212RadioParams = RF212DriverLayerP;
-
-	MainC.SoftwareInit -> RF212DriverLayerP.SoftwareInit;
-
-	components RealMainP;
-	RealMainP.PlatformInit -> RF212DriverLayerP.PlatformInit;
+components RealMainP;
+RealMainP.PlatformInit -> RF212DriverLayerP.PlatformInit;
 }
