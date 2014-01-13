@@ -7,8 +7,10 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 #PFLAGS+=-DENABLE_SPI0_DMA
 #PFLAGS+=-DENABLE_SPI1_DMA
 
-include $(MAKERULES)
+#PFLAGS=-v 
+
 include $(FENNEC_FOX_LIB)/support/make/Makerules
+include $(MAKERULES)
 
 PFLAGS+=-D__DBGS__
 
