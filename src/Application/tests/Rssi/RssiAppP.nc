@@ -72,21 +72,24 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	metadata_t *meta = (metadata_t*)getMetadata(msg);
-	int8_t rssi = (int8_t) meta->rssi;
+	int8_t rssi = (int8_t) getMetadata(msg)->rssi;
 	rssi -= 45;	/* cc2420 spec */
+
+#ifdef FENNEC_TOS_PRINTF
+	printf("%u %u %u\n", getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc);
+	printf("%d\n", rssi);
+	printfflush();
+#endif
 
 	signal LedTimer.fired();
 
-	if (rssi > -90 ) {
-		call Leds.led0On();
-	}
+	call Leds.led0On();
 
-	if (rssi > -65 ) {
+	if (rssi > -90 ) {
 		call Leds.led1On();
 	}
 
-	if (rssi > -40 ) {
+	if (rssi > -60 ) {
 		call Leds.led2On();
 	}
 
