@@ -21,89 +21,113 @@
  * Author: Janos Sallai, Miklos Maroti
  */
 
+/*
+ * Copyright (c) 2014, Columbia University.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of the <organization> nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+  * Fennec Fox cc2420x radio driver adaptation
+  *
+  * @author: Marcin K Szczodrak
+  * @updated: 01/12/2014
+  */
+
 #include <RadioConfig.h>
 #include <CC2420XDriverLayer.h>
 
-configuration CC2420XDriverLayerC
-{
-	provides
-	{
-		interface RadioState;
-		interface RadioSend;
-		interface RadioReceive;
-		interface RadioCCA;
-		interface RadioPacket;
+configuration CC2420XDriverLayerC {
+provides interface RadioState;
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
 
-		interface PacketField<uint8_t> as PacketTransmitPower;
-		interface PacketField<uint8_t> as PacketRSSI;
-		interface PacketField<uint8_t> as PacketTimeSyncOffset;
-		interface PacketField<uint8_t> as PacketLinkQuality;
-		interface LinkPacketMetadata;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
 
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface Alarm<TRadio, tradio_size>;
-	}
+provides interface LocalTime<TRadio> as LocalTimeRadio;
+provides interface Alarm<TRadio, tradio_size>;
 
-	uses
-	{
-		interface PacketTimeStamp<TRadio, uint32_t>;
-
-		interface RadioAlarm;
-	}
+uses interface RadioAlarm;
 uses interface cc2420xRadioParams;
 }
 
-implementation
-{
-	components CC2420XDriverLayerP as DriverLayerP,
+implementation {
+
+components CC2420XDriverLayerP as DriverLayerP,
 		BusyWaitMicroC,
 		MainC,
 		HplCC2420XC as HplC;
 
-	MainC.SoftwareInit -> DriverLayerP.SoftwareInit;
-	MainC.SoftwareInit -> HplC.Init;
+MainC.SoftwareInit -> DriverLayerP.SoftwareInit;
+MainC.SoftwareInit -> HplC.Init;
 
-	cc2420xRadioParams = DriverLayerP;
+cc2420xRadioParams = DriverLayerP;
 
-	RadioState = DriverLayerP;
-	RadioSend = DriverLayerP;
-	RadioReceive = DriverLayerP;
-	RadioCCA = DriverLayerP;
-	RadioPacket = DriverLayerP;
+RadioState = DriverLayerP;
+RadioSend = DriverLayerP;
+RadioReceive = DriverLayerP;
+RadioCCA = DriverLayerP;
+RadioPacket = DriverLayerP;
 
-	LocalTimeRadio = HplC;
+LocalTimeRadio = HplC;
 
-	DriverLayerP.VREN -> HplC.VREN;
-	DriverLayerP.CSN -> HplC.CSN;
-	DriverLayerP.CCA -> HplC.CCA;
-	DriverLayerP.RSTN -> HplC.RSTN;
-	DriverLayerP.FIFO -> HplC.FIFO;
-	DriverLayerP.FIFOP -> HplC.FIFOP;
-	DriverLayerP.SFD -> HplC.SFD;
+DriverLayerP.VREN -> HplC.VREN;
+DriverLayerP.CSN -> HplC.CSN;
+DriverLayerP.CCA -> HplC.CCA;
+DriverLayerP.RSTN -> HplC.RSTN;
+DriverLayerP.FIFO -> HplC.FIFO;
+DriverLayerP.FIFOP -> HplC.FIFOP;
+DriverLayerP.SFD -> HplC.SFD;
 
-	PacketTransmitPower = DriverLayerP.PacketTransmitPower;
+PacketTransmitPower = DriverLayerP.PacketTransmitPower;
 
-	PacketRSSI = DriverLayerP.PacketRSSI;
+PacketRSSI = DriverLayerP.PacketRSSI;
 
-	PacketTimeSyncOffset = DriverLayerP.PacketTimeSyncOffset;
+PacketTimeSyncOffset = DriverLayerP.PacketTimeSyncOffset;
 
-	PacketLinkQuality = DriverLayerP.PacketLinkQuality;
-	PacketTimeStamp = DriverLayerP.PacketTimeStamp;
-	LinkPacketMetadata = DriverLayerP;
+PacketLinkQuality = DriverLayerP.PacketLinkQuality;
+LinkPacketMetadata = DriverLayerP;
 
-	Alarm = HplC.Alarm;
-	RadioAlarm = DriverLayerP.RadioAlarm;
+Alarm = HplC.Alarm;
+RadioAlarm = DriverLayerP.RadioAlarm;
 
-	DriverLayerP.SpiResource -> HplC.SpiResource;
-	DriverLayerP.FastSpiByte -> HplC;
+DriverLayerP.SpiResource -> HplC.SpiResource;
+DriverLayerP.FastSpiByte -> HplC;
 
-	DriverLayerP.SfdCapture -> HplC;
-	DriverLayerP.FifopInterrupt -> HplC;
+DriverLayerP.SfdCapture -> HplC;
+DriverLayerP.FifopInterrupt -> HplC;
 
-	DriverLayerP.BusyWait -> BusyWaitMicroC;
+DriverLayerP.BusyWait -> BusyWaitMicroC;
 
-	DriverLayerP.LocalTime-> HplC.LocalTimeRadio;
+DriverLayerP.LocalTime-> HplC.LocalTimeRadio;
 
-	components LedsC;
-	DriverLayerP.Leds -> LedsC;
+components LedsC;
+DriverLayerP.Leds -> LedsC;
 }

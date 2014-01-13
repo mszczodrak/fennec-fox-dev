@@ -21,6 +21,41 @@
  * Author: Janos Sallai
  */
 
+/*
+ * Copyright (c) 2014, Columbia University.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of the <organization> nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+  * Fennec Fox cc2420x radio driver adaptation
+  *
+  * @author: Marcin K Szczodrak
+  * @updated: 01/12/2014
+  */
+
+
 #include <CC2420XDriverLayer.h>
 #include <RadioAssert.h>
 #include <TimeSyncMessageLayer.h>
@@ -28,51 +63,38 @@
 #include "CC2420.h"
 #include "Ieee154.h"
 #include "RFX_IEEE.h"
-module CC2420XDriverLayerP
-{
-	provides
-	{
-		interface Init as SoftwareInit @exactlyonce();
+module CC2420XDriverLayerP {
+provides interface Init as SoftwareInit @exactlyonce();
 
-		interface RadioState;
-		interface RadioSend;
-		interface RadioReceive;
-		interface RadioCCA;
-		interface RadioPacket;
+provides interface RadioState;
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
 
-		interface PacketField<uint8_t> as PacketTransmitPower;
-		interface PacketField<uint8_t> as PacketRSSI;
-		interface PacketField<uint8_t> as PacketTimeSyncOffset;
-		interface PacketField<uint8_t> as PacketLinkQuality;
-		interface LinkPacketMetadata;
-	}
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
 
-	uses
-	{
-		interface Resource as SpiResource;
-		interface BusyWait<TMicro, uint16_t>;
-		interface LocalTime<TRadio>;
+uses interface Resource as SpiResource;
+uses interface BusyWait<TMicro, uint16_t>;
+uses interface LocalTime<TRadio>;
 
-		interface FastSpiByte;
-		interface GeneralIO as CSN;
-		interface GeneralIO as VREN;
-		interface GeneralIO as CCA;
-		interface GeneralIO as RSTN;
-		interface GeneralIO as FIFO;
-		interface GeneralIO as FIFOP;
-		interface GeneralIO as SFD;
-		interface GpioCapture as SfdCapture;
-		interface GpioInterrupt as FifopInterrupt;
+uses interface FastSpiByte;
+uses interface GeneralIO as CSN;
+uses interface GeneralIO as VREN;
+uses interface GeneralIO as CCA;
+uses interface GeneralIO as RSTN;
+uses interface GeneralIO as FIFO;
+uses interface GeneralIO as FIFOP;
+uses interface GeneralIO as SFD;
+uses interface GpioCapture as SfdCapture;
+uses interface GpioInterrupt as FifopInterrupt;
 
-		interface PacketTimeStamp<TRadio, uint32_t>;
-
-		interface RadioAlarm;
-
-#ifdef RADIO_DEBUG
-		interface DiagMsg;
-#endif
-		interface Leds;
-	}
+uses interface RadioAlarm;
+uses interface Leds;
 uses interface cc2420xRadioParams;
 }
 
