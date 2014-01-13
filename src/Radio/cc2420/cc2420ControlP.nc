@@ -388,190 +388,187 @@ command error_t RadioConfig.sync() {
  *     driver must sync with the chip after changing this value.
  */
 command void RadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {
-    atomic {
-      addressRecognition = enableAddressRecognition;
-      hwAddressRecognition = useHwAddressRecognition;
-    }
-  }
+	atomic {
+		addressRecognition = enableAddressRecognition;
+		hwAddressRecognition = useHwAddressRecognition;
+	}
+}
   
-  /**
-   * @return TRUE if address recognition is enabled
-   */
-  async command bool RadioConfig.isAddressRecognitionEnabled() {
-    atomic return addressRecognition;
-  }
+/**
+ * @return TRUE if address recognition is enabled
+ */
+async command bool RadioConfig.isAddressRecognitionEnabled() {
+	atomic return addressRecognition;
+}
   
-  /**
-   * @return TRUE if address recognition is performed first in hardware.
-   */
-  async command bool RadioConfig.isHwAddressRecognitionDefault() {
-    atomic return hwAddressRecognition;
-  }
+/**
+ * @return TRUE if address recognition is performed first in hardware.
+ */
+async command bool RadioConfig.isHwAddressRecognitionDefault() {
+	atomic return hwAddressRecognition;
+}
   
-  
-  /**
-   * Sync must be called for acknowledgement changes to take effect
-   * @param enableAutoAck TRUE to enable auto acknowledgements
-   * @param hwAutoAck TRUE to default to hardware auto acks, FALSE to
-   *     default to software auto acknowledgements
-   */
-  command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
-    atomic autoAckEnabled = enableAutoAck;
-    atomic hwAutoAckDefault = hwAutoAck;
-  }
-  
-  /**
-   * @return TRUE if hardware auto acks are the default, FALSE if software
-   *     acks are the default
-   */
-  async command bool RadioConfig.isHwAutoAckDefault() {
-    atomic return hwAutoAckDefault;    
-  }
-  
-  /**
-   * @return TRUE if auto acks are enabled
-   */
-  async command bool RadioConfig.isAutoAckEnabled() {
-    atomic return autoAckEnabled;
-  }
-  
-  
-  /***************** Spi Resources Events ****************/
-  event void SyncResource.granted() {
-    call CSN.clr();
-    call SRFOFF.strobe();
-    writeFsctrl();
-    writeMdmctrl0();
-    writeId();
-    call CSN.set();
-    call CSN.clr();
-    call SRXON.strobe();
-    call CSN.set();
-    call SyncResource.release();
-    post syncDone();
-  }
 
-  event void SpiResource.granted() {
-    call CSN.clr();
-    signal RadioResource.granted();
-  }
+/**
+ * Sync must be called for acknowledgement changes to take effect
+ * @param enableAutoAck TRUE to enable auto acknowledgements
+ * @param hwAutoAck TRUE to default to hardware auto acks, FALSE to
+ *     default to software auto acknowledgements
+ */
+command void RadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {
+	atomic autoAckEnabled = enableAutoAck;
+	atomic hwAutoAckDefault = hwAutoAck;
+}
+  
+/**
+ * @return TRUE if hardware auto acks are the default, FALSE if software
+ *     acks are the default
+ */
+async command bool RadioConfig.isHwAutoAckDefault() {
+	atomic return hwAutoAckDefault;    
+}
+  
+/**
+ * @return TRUE if auto acks are enabled
+ */
+async command bool RadioConfig.isAutoAckEnabled() {
+	atomic return autoAckEnabled;
+}
+  
+  
+/***************** Spi Resources Events ****************/
+event void SyncResource.granted() {
+	call CSN.clr();
+	call SRFOFF.strobe();
+	writeFsctrl();
+	writeMdmctrl0();
+	writeId();
+	call CSN.set();
+	call CSN.clr();
+	call SRXON.strobe();
+	call CSN.set();
+	call SyncResource.release();
+	post syncDone();
+}
+
+event void SpiResource.granted() {
+	call CSN.clr();
+	signal RadioResource.granted();
+}
 
   
-  /***************** StartupTimer Events ****************/
-  async event void StartupTimer.fired() {
-    if ( m_state == S_VREG_STARTING ) {
-      m_state = S_VREG_STARTED;
-      call RSTN.clr();
-      call RSTN.set();
-      signal RadioPower.startVRegDone();
-    }
-  }
+/***************** StartupTimer Events ****************/
+async event void StartupTimer.fired() {
+	if ( m_state == S_VREG_STARTING ) {
+		m_state = S_VREG_STARTED;
+		call RSTN.clr();
+		call RSTN.set();
+		signal RadioPower.startVRegDone();
+	}
+}
 
-  /***************** InterruptCCA Events ****************/
-  async event void InterruptCCA.fired() {
-    m_state = S_XOSC_STARTED;
-    call InterruptCCA.disable();
-    call IOCFG1.write( 0 );
-    writeId();
-    call CSN.set();
-    call CSN.clr();
-    signal RadioPower.startOscillatorDone();
-  }
+/***************** InterruptCCA Events ****************/
+async event void InterruptCCA.fired() {
+	m_state = S_XOSC_STARTED;
+	call InterruptCCA.disable();
+	call IOCFG1.write( 0 );
+	writeId();
+	call CSN.set();
+	call CSN.clr();
+	signal RadioPower.startOscillatorDone();
+}
  
-  /***************** ActiveMessageAddress Events ****************/
-  async event void ActiveMessageAddress.changed() {
-    atomic {
-      m_short_addr = call ActiveMessageAddress.amAddress();
-      m_pan = call ActiveMessageAddress.amGroup();
-    }
+/***************** ActiveMessageAddress Events ****************/
+async event void ActiveMessageAddress.changed() {
+	atomic {
+		m_short_addr = call ActiveMessageAddress.amAddress();
+		m_pan = call ActiveMessageAddress.amGroup();
+	}
+	post sync();
+}
+  
+/***************** Tasks ****************/
+/**
+ * Attempt to synchronize our current settings with the CC2420
+ */
+task void sync() {
+	call RadioConfig.sync();
+}
+  
+task void syncDone() {
+	atomic m_sync_busy = FALSE;
+	signal RadioConfig.syncDone( SUCCESS );
+}
+  
+  
+/***************** Functions ****************/
+/**
+ * Write teh FSCTRL register
+ */
+void writeFsctrl() {
+	uint8_t channel;
     
-    post sync();
-  }
-  
-  /***************** Tasks ****************/
-  /**
-   * Attempt to synchronize our current settings with the CC2420
-   */
-  task void sync() {
-    call RadioConfig.sync();
-  }
-  
-  task void syncDone() {
-    atomic m_sync_busy = FALSE;
-    signal RadioConfig.syncDone( SUCCESS );
-  }
-  
-  
-  /***************** Functions ****************/
-  /**
-   * Write teh FSCTRL register
-   */
-  void writeFsctrl() {
-    uint8_t channel;
+	atomic {
+		channel = m_channel;
+	}
     
-    atomic {
-      channel = m_channel;
-    }
-    
-    call FSCTRL.write( ( 1 << CC2420_FSCTRL_LOCK_THR ) |
-          ( ( (channel - 11)*5+357 ) << CC2420_FSCTRL_FREQ ) );
-  }
+	call FSCTRL.write( ( 1 << CC2420_FSCTRL_LOCK_THR ) |
+		( ( (channel - 11)*5+357 ) << CC2420_FSCTRL_FREQ ) );
+}
 
-  /**
-   * Write the MDMCTRL0 register
-   * Disabling hardware address recognition improves acknowledgment success
-   * rate and low power communications reliability by causing the local node
-   * to do work while the real destination node of the packet is acknowledging.
-   */
-  void writeMdmctrl0() {
-    atomic {
-      call MDMCTRL0.write( ( 1 << CC2420_MDMCTRL0_RESERVED_FRAME_MODE ) |
-          ( ((addressRecognition && hwAddressRecognition) ? 1 : 0) << CC2420_MDMCTRL0_ADR_DECODE ) |
-          ( 2 << CC2420_MDMCTRL0_CCA_HYST ) |
-          ( 3 << CC2420_MDMCTRL0_CCA_MOD ) |
-          ( 1 << CC2420_MDMCTRL0_AUTOCRC ) |
-          ( (autoAckEnabled && hwAutoAckDefault) << CC2420_MDMCTRL0_AUTOACK ) |
-          ( 0 << CC2420_MDMCTRL0_AUTOACK ) |
-          ( 2 << CC2420_MDMCTRL0_PREAMBLE_LENGTH ) );
-    }
-    // Jon Green:
-    // MDMCTRL1.CORR_THR is defaulted to 20 instead of 0 like the datasheet says
-    // If we add in changes to MDMCTRL1, be sure to include this fix.
-  }
+/**
+ * Write the MDMCTRL0 register
+ * Disabling hardware address recognition improves acknowledgment success
+ * rate and low power communications reliability by causing the local node
+ * to do work while the real destination node of the packet is acknowledging.
+ */
+void writeMdmctrl0() {
+	atomic {
+		call MDMCTRL0.write( ( 1 << CC2420_MDMCTRL0_RESERVED_FRAME_MODE ) |
+			( ((addressRecognition && hwAddressRecognition) ? 1 : 0) << CC2420_MDMCTRL0_ADR_DECODE ) |
+			( 2 << CC2420_MDMCTRL0_CCA_HYST ) |
+			( 3 << CC2420_MDMCTRL0_CCA_MOD ) |
+			( 1 << CC2420_MDMCTRL0_AUTOCRC ) |
+			( (autoAckEnabled && hwAutoAckDefault) << CC2420_MDMCTRL0_AUTOACK ) |
+			( 0 << CC2420_MDMCTRL0_AUTOACK ) |
+			( 2 << CC2420_MDMCTRL0_PREAMBLE_LENGTH ) );
+	}
+	// Jon Green:
+	// MDMCTRL1.CORR_THR is defaulted to 20 instead of 0 like the datasheet says
+	// If we add in changes to MDMCTRL1, be sure to include this fix.
+}
   
-  /**
-   * Write the PANID register
-   */
-  void writeId() {
-    nxle_uint16_t id[ 6 ];
+/**
+ * Write the PANID register
+ */
+void writeId() {
+	nxle_uint16_t id[ 6 ];
 
-    atomic {
-      /* Eui-64 is stored in big endian */
-      memcpy((uint8_t *)id, m_ext_addr.data, 8);
-      id[ 4 ] = m_pan;
-      id[ 5 ] = m_short_addr;
-    }
+	atomic {
+		/* Eui-64 is stored in big endian */
+		memcpy((uint8_t *)id, m_ext_addr.data, 8);
+		id[ 4 ] = m_pan;
+		id[ 5 ] = m_short_addr;
+	}
 
-    call IEEEADR.write(0, (uint8_t *)&id, 12);
-  }
+	call IEEEADR.write(0, (uint8_t *)&id, 12);
+}
 
-  /* Write the Transmit control register. This
-     is needed so acknowledgments are sent at the
-     correct transmit power even if a node has
-     not sent a packet (Google Code Issue #27) -pal */
+/* Write the Transmit control register. This
+   is needed so acknowledgments are sent at the
+   correct transmit power even if a node has
+   not sent a packet (Google Code Issue #27) -pal */
 
-  void writeTxctrl() {
-    atomic {
-      call TXCTRL.write( ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
-			 ( 3 << CC2420_TXCTRL_PA_CURRENT ) |
-			 ( 1 << CC2420_TXCTRL_RESERVED ) |
-			 ( (m_tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
-    }
-  }
-  /***************** Defaults ****************/
-  default event void RadioConfig.syncDone( error_t error ) {
-  }
+void writeTxctrl() {
+	atomic {
+		call TXCTRL.write( ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
+			( 3 << CC2420_TXCTRL_PA_CURRENT ) |
+			( 1 << CC2420_TXCTRL_RESERVED ) |
+			( (m_tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
+	}
+}
+/***************** Defaults ****************/
+default event void RadioConfig.syncDone( error_t error ) {
+}
 
-
-  
 }
