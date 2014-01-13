@@ -84,23 +84,25 @@ norace message_t * ONE_NOK r_msg;
 norace message_t * ONE_NOK r_msg_ptr;
 norace uint8_t m_state = S_STOPPED;
 
-enum {
-	S_STOPPED,
-	S_STARTING,
-	S_STARTED,
-	S_STOPPING,
-	S_TRANSMITTING,
-};
-
 error_t sendErr = SUCCESS;
+
+norace message_t receiveQueueData[NULL_MAC_RECEIVE_QUEUE_SIZE];
+norace message_t* receiveQueue[NULL_MAC_RECEIVE_QUEUE_SIZE];
+
+norace uint8_t receiveQueueHead;
+norace uint8_t receiveQueueSize;
 
 /****************** Prototypes ****************/
 task void startDone_task();
 task void stopDone_task();
 task void sendDone_task();
-task void proc_receive();
 
 task void startDone_task() {
+	uint8_t i;
+	for(i = 0; i < NULL_MAC_RECEIVE_QUEUE_SIZE; ++i) {
+		receiveQueue[i] = receiveQueueData + i;
+	}
+
 	m_state = S_STARTED;
 	call SplitControlState.forceState(S_STARTED);
 }
@@ -118,13 +120,6 @@ null_mac_header_t* getHeader(message_t *m) {
 	uint8_t *p = (uint8_t*)(m->data);
 	return (null_mac_header_t*)(p + call RadioPacket.headerLength(m));
 }
-
-task void proc_receive() {
-
-
-}
-
-
 
 error_t SplitControl_start() {
 
@@ -382,36 +377,73 @@ task void sendDone_task() {
 	signal MacAMSend.sendDone( m_msg, packetErr );
 }
 
+task void deliverTask() {
+        // get rid of as many messages as possible without interveining tasks
+        message_t* msg;
+        uint8_t *p;
+	uint8_t len;
+
+	atomic {
+		if( receiveQueueSize == 0 ) {
+			return;
+		}
+
+		msg = receiveQueue[receiveQueueHead];
+		p = (uint8_t*)(msg->data);
+		p += (call RadioPacket.headerLength(msg) + sizeof(null_mac_header_t));
+		len = (call RadioPacket.payloadLength(msg) - sizeof(null_mac_header_t));
+	}
+
+	if (call MacAMPacket.isForMe(msg)) {
+		dbg("Mac", "nullMac MacReceive.receive(0x%1x, 0x%1x, %d )", msg, p, len);
+		msg = signal MacReceive.receive(msg, p, len);
+	} else {
+		dbg("Mac", "nullMac MacSnoop.receive(0x%1x, 0x%1x, %d )", msg, p, len);
+		msg = signal MacSnoop.receive(msg, p, len);
+	}
+
+	atomic {
+		call RadioPacket.clear(msg);
+		receiveQueue[receiveQueueHead] = msg;
+		if( ++receiveQueueHead >= NULL_MAC_RECEIVE_QUEUE_SIZE )
+			receiveQueueHead = 0;
+
+		--receiveQueueSize;
+	}
+	post deliverTask();
+}
+
+
+
 async event message_t* RadioReceive.receive(message_t* msg) {
-	uint8_t len = call RadioPacket.payloadLength(msg);
-	void* payload = (void*) getHeader(msg);
-	metadata_t* metadata = (metadata_t*) msg->metadata;
-	uint8_t *ptr = (uint8_t*) payload;
-	
-	if(!(metadata)->crc) {
+	message_t *m;
+	if(!(getMetadata(msg))->crc) {
 		dbg("Mac", "nullMac MacAMSend.receive did not pass CRC");
 		return msg;
 	}
 
-	getMetadata(msg)->rssi = metadata->rssi;
-	getMetadata(msg)->lqi = metadata->lqi;
-	getMetadata(msg)->crc = metadata->crc;
+	dbg("Mac", "nullMac RadioReceive.receive(0x%1x)", msg);
+	atomic {
+		if( receiveQueueSize >= NULL_MAC_RECEIVE_QUEUE_SIZE ) {
+			m = msg;
+		} else {
+			uint8_t idx = receiveQueueHead + receiveQueueSize;
+			if( idx >= NULL_MAC_RECEIVE_QUEUE_SIZE )
+				idx -= NULL_MAC_RECEIVE_QUEUE_SIZE;
 
-	if (call MacAMPacket.isForMe(msg)) {
-	        dbg("Mac", "nullMac MacReceive.receive(0x%1x, 0x%1x, %d )", msg,
-                        ptr + sizeof(null_mac_header_t),
-                        len - sizeof(null_mac_header_t));
-        	return signal MacReceive.receive(msg,
-                        ptr + sizeof(null_mac_header_t),
-                        len - sizeof(null_mac_header_t));
-	} else {
-		dbg("Mac", "nullMac MacSnoop.receive(0x%1x, 0x%1x, %d )", msg,
-			ptr + sizeof(null_mac_header_t),
-			len - sizeof(null_mac_header_t));
-		return signal MacSnoop.receive(msg,
-			ptr + sizeof(null_mac_header_t),
-			len - sizeof(null_mac_header_t));
+			m = receiveQueue[idx];
+			receiveQueue[idx] = msg;
+
+			++receiveQueueSize;
+			post deliverTask();
+		}
 	}
+	return m;
+}
+
+async event bool RadioReceive.header(message_t* msg) {
+	return receiveQueueSize < NULL_MAC_RECEIVE_QUEUE_SIZE;
+	//return TRUE;
 }
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
@@ -443,9 +475,6 @@ async event void RadioCCA.done(error_t err) {
 
 }
 
-async event bool RadioReceive.header(message_t* msg) {
-        return TRUE;
-}
 
 
 }

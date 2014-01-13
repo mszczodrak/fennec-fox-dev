@@ -37,6 +37,11 @@
 #ifndef __H_NULL_MAC_H_
 #define __H_NULL_MAC_H_
 
+#define NULL_MAC_RECEIVE_HISTORY_SIZE 4
+#define NULL_MAC_INVALID_ELEMENT      0xFF
+#define NULL_MAC_RECEIVE_QUEUE_SIZE   5
+
+
 typedef nx_struct null_mac_header_t {
         nxle_uint16_t fcf;
         nxle_uint8_t dsn;

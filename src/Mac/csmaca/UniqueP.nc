@@ -30,7 +30,7 @@
  */
  
 /** 
- * This layer keeps a history of the past RECEIVE_HISTORY_SIZE received messages
+ * This layer keeps a history of the past CSMACA_MAC_RECEIVE_HISTORY_SIZE received messages
  * If the source address and dsn number of a newly received message matches
  * our recent history, we drop the message because we've already seen it.
  * @author David Moss
@@ -91,21 +91,15 @@ uint8_t localSendId = 0;
 struct {
 	uint16_t source;
 	uint8_t dsn;
-} receivedMessages[RECEIVE_HISTORY_SIZE];
+} receivedMessages[CSMACA_MAC_RECEIVE_HISTORY_SIZE];
   
 uint8_t writeIndex = 0;
   
 /** History element containing info on a source previously received from */
 uint8_t recycleSourceElement;
   
-enum {
-	INVALID_ELEMENT = 0xFF,
-	RECEIVE_QUEUE_SIZE = 5,
-};
-
-
-message_t receiveQueueData[RECEIVE_QUEUE_SIZE];
-message_t* receiveQueue[RECEIVE_QUEUE_SIZE];
+message_t receiveQueueData[CSMACA_MAC_RECEIVE_QUEUE_SIZE];
+message_t* receiveQueue[CSMACA_MAC_RECEIVE_QUEUE_SIZE];
 
 norace uint8_t receiveQueueHead;
 norace uint8_t receiveQueueSize;
@@ -114,12 +108,12 @@ norace uint8_t receiveQueueSize;
 /***************** Init Commands *****************/
 command error_t Init.init() {
 	int i;
-	for(i = 0; i < RECEIVE_HISTORY_SIZE; i++) {
+	for(i = 0; i < CSMACA_MAC_RECEIVE_HISTORY_SIZE; i++) {
 		receivedMessages[i].source = (am_addr_t) 0xFFFF;
 		receivedMessages[i].dsn = 0;
 	}
 
-	for(i = 0; i < RECEIVE_QUEUE_SIZE; ++i) {
+	for(i = 0; i < CSMACA_MAC_RECEIVE_QUEUE_SIZE; ++i) {
 		receiveQueue[i] = receiveQueueData + i;
 	}
 
@@ -165,7 +159,7 @@ task void deliverTask() {
 	atomic {
 		call RadioPacket.clear(msg);
 		receiveQueue[receiveQueueHead] = msg;
-		if( ++receiveQueueHead >= RECEIVE_QUEUE_SIZE )
+		if( ++receiveQueueHead >= CSMACA_MAC_RECEIVE_QUEUE_SIZE )
 			receiveQueueHead = 0;
 
 		--receiveQueueSize;
@@ -208,12 +202,12 @@ async event message_t *SubReceive.receive(message_t* msg) {
 	message_t *m;
 	dbg("Mac", "csmaMac UniqueP SubReceive.receive(0x%1x)", msg);
 	atomic {
-		if( receiveQueueSize >= RECEIVE_QUEUE_SIZE ) {
+		if( receiveQueueSize >= CSMACA_MAC_RECEIVE_QUEUE_SIZE ) {
 			m = msg;
 		} else {
 			uint8_t idx = receiveQueueHead + receiveQueueSize;
-			if( idx >= RECEIVE_QUEUE_SIZE )
-				idx -= RECEIVE_QUEUE_SIZE;
+			if( idx >= CSMACA_MAC_RECEIVE_QUEUE_SIZE )
+				idx -= CSMACA_MAC_RECEIVE_QUEUE_SIZE;
 
 			m = receiveQueue[idx];
 			receiveQueue[idx] = msg;
@@ -226,7 +220,7 @@ async event message_t *SubReceive.receive(message_t* msg) {
 }
   
 async event bool SubReceive.header(message_t* msg) {
-	if (receiveQueueSize < RECEIVE_QUEUE_SIZE) {
+	if (receiveQueueSize < CSMACA_MAC_RECEIVE_QUEUE_SIZE) {
 		uint8_t *p = (uint8_t*)(msg->data);
 		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 		dbg("Mac", "csmaMac UniqueP SubReceive.header(0x%1x)  from %u to %u",
@@ -254,10 +248,10 @@ async event bool SubReceive.header(message_t* msg) {
  */
 bool hasSeen(uint16_t msgSource, uint8_t msgDsn) {
 	int i;
-	recycleSourceElement = INVALID_ELEMENT;
+	recycleSourceElement = CSMACA_MAC_INVALID_ELEMENT;
 
 	atomic {
-		for(i = 0; i < RECEIVE_HISTORY_SIZE; i++) {
+		for(i = 0; i < CSMACA_MAC_RECEIVE_HISTORY_SIZE; i++) {
 			if(receivedMessages[i].source == msgSource) {
 				if(receivedMessages[i].dsn == msgDsn) {
 					// Only exit this loop if we found a duplicate packet
@@ -283,7 +277,7 @@ void insert(uint16_t msgSource, uint8_t msgDsn) {
 	bool increment = FALSE;
    
 	atomic {
-		if(element == INVALID_ELEMENT || writeIndex == element) {
+		if(element == CSMACA_MAC_INVALID_ELEMENT || writeIndex == element) {
 			// Use the writeIndex element to insert this new message into
 			element = writeIndex;
 			increment = TRUE;
@@ -292,7 +286,7 @@ void insert(uint16_t msgSource, uint8_t msgDsn) {
 		receivedMessages[element].dsn = msgDsn;
 		if(increment) {
 			writeIndex++;
-			writeIndex %= RECEIVE_HISTORY_SIZE;
+			writeIndex %= CSMACA_MAC_RECEIVE_HISTORY_SIZE;
 		}
 	}
 }

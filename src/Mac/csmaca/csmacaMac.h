@@ -40,9 +40,9 @@
  * Ideally, your receive history size should be equal to the number of
  * RF neighbors your node will have
  */
-#ifndef RECEIVE_HISTORY_SIZE
-#define RECEIVE_HISTORY_SIZE 4
-#endif
+#define CSMACA_MAC_RECEIVE_HISTORY_SIZE	4
+#define CSMACA_MAC_INVALID_ELEMENT	0xFF
+#define CSMACA_MAC_RECEIVE_QUEUE_SIZE	5
 
 typedef nx_struct csmaca_header_t {
 	nxle_uint16_t fcf;
