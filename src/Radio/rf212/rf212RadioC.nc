@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2014, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
   * Fennec Fox rf212 radio driver adaptation
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/05/2014
+  * @updated: 01/11/2014
   */
 
 
