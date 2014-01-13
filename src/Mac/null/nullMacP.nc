@@ -196,9 +196,9 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	metadata = (metadata_t*) msg->metadata;
 	call MacAMPacket.setGroup(msg, msg->conf);
 
-	msg->crc = 0;
-	msg->rssi = 0;
-	msg->lqi = 0;
+	getMetadata(msg)->crc = 0;
+	getMetadata(msg)->rssi = 0;
+	getMetadata(msg)->lqi = 0;
 
 	if (len > call MacPacket.maxPayloadLength()) {
 		return ESIZE;
@@ -393,9 +393,9 @@ async event message_t* RadioReceive.receive(message_t* msg) {
 		return msg;
 	}
 
-	msg->rssi = metadata->rssi;
-	msg->lqi = metadata->lqi;
-	msg->crc = metadata->crc;
+	getMetadata(msg)->rssi = metadata->rssi;
+	getMetadata(msg)->lqi = metadata->lqi;
+	getMetadata(msg)->crc = metadata->crc;
 
 	if (call MacAMPacket.isForMe(msg)) {
 	        dbg("Mac", "nullMac MacReceive.receive(0x%1x, 0x%1x, %d )", msg,
