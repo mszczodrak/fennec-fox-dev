@@ -105,7 +105,7 @@ uses interface CC2420Ram as RXNONCE;
 uses interface CC2420Ram as RXFIFO_RAM;
 uses interface CC2420Strobe as SNOP;
 uses interface Leds;
-uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint32_t> as PacketTimeSyncOffset;
 }
 
 implementation {

@@ -65,6 +65,7 @@ configuration RF212DriverLayerC
 		interface PacketFlag as TimeSyncFlag;
 		interface RadioAlarm;
 	}
+uses interface rf212RadioParams;
 }
 
 implementation
@@ -113,6 +114,8 @@ implementation
 	components DiagMsgC;
 	RF212DriverLayerP.DiagMsg -> DiagMsgC;
 #endif
+
+	rf212RadioParams = RF212DriverLayerP;
 
 	MainC.SoftwareInit -> RF212DriverLayerP.SoftwareInit;
 

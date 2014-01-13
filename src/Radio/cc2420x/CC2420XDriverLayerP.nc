@@ -1041,7 +1041,7 @@ async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
 	return getMetadata(msg)->flags & (1<<3);
 }
 
-async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+async command uint32_t PacketTimeSyncOffset.get(message_t* msg) {
 	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
 }
 
@@ -1049,7 +1049,7 @@ async command void PacketTimeSyncOffset.clear(message_t* msg) {
 	getMetadata(msg)->flags &= ~(1<<3);
 }
 
-async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+async command void PacketTimeSyncOffset.set(message_t* msg, uint32_t value) {
 	getMetadata(msg)->flags |= (1<<3);
 	// we do not store the value, the time sync field is always the last 4 bytes
 }

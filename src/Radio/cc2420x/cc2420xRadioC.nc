@@ -47,7 +47,7 @@ provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSyncOffset;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
