@@ -103,11 +103,8 @@ RadioPacket = RF212DriverLayerP;
 LocalTimeRadio = HplRF212C;
 
 PacketTransmitPower = RF212DriverLayerP.PacketTransmitPower;
-
 PacketRSSI = RF212DriverLayerP.PacketRSSI;
-
 PacketTimeSyncOffset = RF212DriverLayerP.PacketTimeSyncOffset;
-
 PacketLinkQuality = RF212DriverLayerP.PacketLinkQuality;
 LinkPacketMetadata = RF212DriverLayerP;
 
@@ -132,4 +129,6 @@ MainC.SoftwareInit -> RF212DriverLayerP.SoftwareInit;
 
 components RealMainP;
 RealMainP.PlatformInit -> RF212DriverLayerP.PlatformInit;
+
+
 }
