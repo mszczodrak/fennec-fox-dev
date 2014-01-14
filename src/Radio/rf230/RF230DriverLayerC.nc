@@ -79,7 +79,7 @@ provides interface RadioPacket;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LinkPacketMetadata;
 
@@ -104,7 +104,7 @@ LocalTimeRadio = HplRF230C;
 
 PacketTransmitPower = DriverLayerP.PacketTransmitPower;
 PacketRSSI = DriverLayerP.PacketRSSI;
-PacketTimeSyncOffset = DriverLayerP.PacketTimeSyncOffset;
+PacketTimeSync = DriverLayerP.PacketTimeSync;
 PacketLinkQuality = DriverLayerP.PacketLinkQuality;
 LinkPacketMetadata = DriverLayerP;
 

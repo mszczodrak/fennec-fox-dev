@@ -47,7 +47,7 @@ configuration RF230DriverHwAckC
 
 		interface PacketField<uint8_t> as PacketTransmitPower;
 		interface PacketField<uint8_t> as PacketRSSI;
-		interface PacketField<uint8_t> as PacketTimeSyncOffset;
+		interface PacketField<uint8_t> as PacketTimeSync;
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface LinkPacketMetadata;
 
@@ -60,7 +60,6 @@ configuration RF230DriverHwAckC
 	uses
 	{
 		interface RF230DriverConfig as Config;
-		interface PacketTimeStamp<TRadio, uint32_t>;
 		interface Ieee154PacketLayer;
 
 		interface PacketFlag as TransmitPowerFlag;
@@ -92,7 +91,7 @@ implementation
 	PacketRSSI = DriverLayerP.PacketRSSI;
 	RSSIFlag = DriverLayerP.RSSIFlag;
 
-	PacketTimeSyncOffset = DriverLayerP.PacketTimeSyncOffset;
+	PacketTimeSync = DriverLayerP.PacketTimeSync;
 	TimeSyncFlag = DriverLayerP.TimeSyncFlag;
 
 	PacketLinkQuality = DriverLayerP.PacketLinkQuality;

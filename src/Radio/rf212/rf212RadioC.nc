@@ -47,7 +47,7 @@ provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
@@ -101,7 +101,7 @@ PacketTransmitPower = RF212DriverLayerC.PacketTransmitPower;
 PacketLinkQuality = RF212DriverLayerC.PacketLinkQuality;
 PacketRSSI = RF212DriverLayerC.PacketRSSI;
 RadioLinkPacketMetadata = RF212DriverLayerC;
-PacketTimeSyncOffset = RF212DriverLayerC.PacketTimeSyncOffset;
+PacketTimeSync = RF212DriverLayerC.PacketTimeSync;
 RadioCCA = RF212DriverLayerC.RadioCCA;
 
 RF212DriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];

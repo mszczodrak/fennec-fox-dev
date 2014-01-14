@@ -1000,7 +1000,8 @@ async command bool PacketTimeSync.isSet(message_t* msg) {
 }
 
 async command uint32_t PacketTimeSync.get(message_t* msg) {
-	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+	return (uint32_t)(*((msg->data) + (call RadioPacket.headerLength(msg) +
+		call RadioPacket.payloadLength(msg))));
 }
 
 async command void PacketTimeSync.clear(message_t* msg) {

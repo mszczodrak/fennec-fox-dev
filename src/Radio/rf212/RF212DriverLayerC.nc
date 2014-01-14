@@ -80,7 +80,7 @@ provides interface RadioPacket;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LinkPacketMetadata;
 
@@ -104,7 +104,7 @@ LocalTimeRadio = HplRF212C;
 
 PacketTransmitPower = RF212DriverLayerP.PacketTransmitPower;
 PacketRSSI = RF212DriverLayerP.PacketRSSI;
-PacketTimeSyncOffset = RF212DriverLayerP.PacketTimeSyncOffset;
+PacketTimeSync = RF212DriverLayerP.PacketTimeSync;
 PacketLinkQuality = RF212DriverLayerP.PacketLinkQuality;
 LinkPacketMetadata = RF212DriverLayerP;
 

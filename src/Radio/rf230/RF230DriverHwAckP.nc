@@ -53,7 +53,7 @@ module RF230DriverHwAckP
 
 		interface PacketField<uint8_t> as PacketTransmitPower;
 		interface PacketField<uint8_t> as PacketRSSI;
-		interface PacketField<uint8_t> as PacketTimeSyncOffset;
+		interface PacketField<uint8_t> as PacketTimeSync;
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface LinkPacketMetadata;
 
@@ -81,9 +81,6 @@ module RF230DriverHwAckP
 		interface PacketFlag as RSSIFlag;
 		interface PacketFlag as TimeSyncFlag;
 
-		interface PacketTimeStamp<TRadio, uint32_t>;
-
-		interface Tasklet;
 		interface RadioAlarm;
 
 		interface PacketFlag as AckReceivedFlag;
@@ -505,10 +502,11 @@ tasklet_async command uint8_t RadioState.getChannel()
 		data = getPayload(msg);
 		length = getHeader(msg)->length;
 
-		if( call PacketTimeSyncOffset.isSet(msg) )
+		if( call PacketTimeSync.isSet(msg) )
 		{
 			// the number of bytes before the embedded timestamp
-			upload1 = (((void*)msg) - (void*)data + call PacketTimeSyncOffset.get(msg));
+			upload1 = (((void*)msg) - (void*)data + (call RadioPacket.headerLength(msg) +
+			                call RadioPacket.payloadLength(msg)));
 
 			// the FCS is automatically generated (2 bytes)
 			upload2 = length - 2 - upload1;
@@ -969,77 +967,4 @@ tasklet_async command uint8_t RadioState.getChannel()
 		getMeta(msg)->rssi = value;
 	}
 
-/*----------------- PacketTimeSyncOffset -----------------*/
-
-	async command bool PacketTimeSyncOffset.isSet(message_t* msg)
-	{
-		return call TimeSyncFlag.get(msg);
-	}
-
-	async command uint8_t PacketTimeSyncOffset.get(message_t* msg)
-	{
-		return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
-	}
-
-	async command void PacketTimeSyncOffset.clear(message_t* msg)
-	{
-		call TimeSyncFlag.clear(msg);
-	}
-
-	async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value)
-	{
-		// we do not store the value, the time sync field is always the last 4 bytes
-		RADIO_ASSERT( call PacketTimeSyncOffset.get(msg) == value );
-
-		call TimeSyncFlag.set(msg);
-	}
-
-/*----------------- PacketLinkQuality -----------------*/
-
-	async command bool PacketLinkQuality.isSet(message_t* msg)
-	{
-		return TRUE;
-	}
-
-	async command uint8_t PacketLinkQuality.get(message_t* msg)
-	{
-		return getMeta(msg)->lqi;
-	}
-
-	async command void PacketLinkQuality.clear(message_t* msg)
-	{
-	}
-
-	async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
-	{
-		getMeta(msg)->lqi = value;
-	}
-
-/*----------------- PacketAcknowledgements -----------------*/
-
-	async command error_t PacketAcknowledgements.requestAck(message_t* msg)
-	{
-		call Ieee154PacketLayer.setAckRequired(msg, TRUE);
-
-		return SUCCESS;
-	}
-
-	async command error_t PacketAcknowledgements.noAck(message_t* msg)
-	{
-		call Ieee154PacketLayer.setAckRequired(msg, FALSE);
-
-		return SUCCESS;
-	}
-
-	async command bool PacketAcknowledgements.wasAcked(message_t* msg)
-	{
-		return call AckReceivedFlag.get(msg);
-	}
-
-/*----------------- LinkPacketMetadata -----------------*/
-
-	async command bool LinkPacketMetadata.highChannelQuality(message_t* msg)
-	{
-		return call PacketLinkQuality.get(msg) > 200;
-	}
 }
