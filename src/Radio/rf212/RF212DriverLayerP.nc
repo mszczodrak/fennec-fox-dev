@@ -117,216 +117,195 @@ void* getPayload(message_t* msg) {
 
 /*----------------- STATE -----------------*/
 
-	norace uint8_t state;
-	enum
-	{
-		STATE_P_ON = 0,
-		STATE_SLEEP = 1,
-		STATE_SLEEP_2_TRX_OFF = 2,
-		STATE_TRX_OFF = 3,
-		STATE_TRX_OFF_2_RX_ON = 4,
-		STATE_RX_ON = 5,
-		STATE_BUSY_TX_2_RX_ON = 6,
-	};
+norace uint8_t state;
+enum {
+	STATE_P_ON = 0,
+	STATE_SLEEP = 1,
+	STATE_SLEEP_2_TRX_OFF = 2,
+	STATE_TRX_OFF = 3,
+	STATE_TRX_OFF_2_RX_ON = 4,
+	STATE_RX_ON = 5,
+	STATE_BUSY_TX_2_RX_ON = 6,
+};
 
-	norace uint8_t cmd;
-	enum
-	{
-		CMD_NONE = 0,			// the state machine has stopped
-		CMD_TURNOFF = 1,		// goto SLEEP state
-		CMD_STANDBY = 2,		// goto TRX_OFF state
-		CMD_TURNON = 3,			// goto RX_ON state
-		CMD_TRANSMIT = 4,		// currently transmitting a message
-		CMD_RECEIVE = 5,		// currently receiving a message
-		CMD_CCA = 6,			// performing clear chanel assesment
-		CMD_CHANNEL = 7,		// changing the channel
-		CMD_SIGNAL_DONE = 8,		// signal the end of the state transition
-		CMD_DOWNLOAD = 9,		// download the received message
-	};
+norace uint8_t cmd;
+enum {
+	CMD_NONE = 0,			// the state machine has stopped
+	CMD_TURNOFF = 1,		// goto SLEEP state
+	CMD_STANDBY = 2,		// goto TRX_OFF state
+	CMD_TURNON = 3,			// goto RX_ON state
+	CMD_TRANSMIT = 4,		// currently transmitting a message
+	CMD_RECEIVE = 5,		// currently receiving a message
+	CMD_CCA = 6,			// performing clear chanel assesment
+	CMD_CHANNEL = 7,		// changing the channel
+	CMD_SIGNAL_DONE = 8,		// signal the end of the state transition
+	CMD_DOWNLOAD = 9,		// download the received message
+};
 	
-	
-	enum {
-		// this disables the RF212OffP component
-		RF212RADIOON = unique("RF212RadioOn"),
-	};
+enum {
+	// this disables the RF212OffP component
+	RF212RADIOON = unique("RF212RadioOn"),
+};
 
-	norace bool radioIrq;
+norace bool radioIrq;
 
-	norace uint8_t txPower;
-	norace uint8_t channel;
+norace uint8_t txPower;
+norace uint8_t channel;
 
-	norace message_t* rxMsg;
-	message_t rxMsgBuffer;
+norace message_t* rxMsg;
+message_t rxMsgBuffer;
 
-	uint16_t capturedTime;	// the current time when the last interrupt has occured
-
-	norace uint8_t rssiClear;
-	norace uint8_t rssiBusy;
+uint16_t capturedTime;	// the current time when the last interrupt has occured
+norace uint8_t rssiClear;
+norace uint8_t rssiBusy;
 
 void task_run();
 
 /*----------------- REGISTER -----------------*/
 
-	inline void writeRegister(uint8_t reg, uint8_t value)
-	{
-		RADIO_ASSERT( call SpiResource.isOwner() );
-		RADIO_ASSERT( reg == (reg & RF212_CMD_REGISTER_MASK) );
-		call SELN.clr();
-		call FastSpiByte.splitWrite(RF212_CMD_REGISTER_WRITE | reg);
-		call FastSpiByte.splitReadWrite(value);
-		call FastSpiByte.splitRead();
-		call SELN.set();
-	}
+inline void writeRegister(uint8_t reg, uint8_t value) {
+	RADIO_ASSERT( call SpiResource.isOwner() );
+	RADIO_ASSERT( reg == (reg & RF212_CMD_REGISTER_MASK) );
+	call SELN.clr();
+	call FastSpiByte.splitWrite(RF212_CMD_REGISTER_WRITE | reg);
+	call FastSpiByte.splitReadWrite(value);
+	call FastSpiByte.splitRead();
+	call SELN.set();
+}
 
-	inline uint8_t readRegister(uint8_t reg)
-	{
-		RADIO_ASSERT( call SpiResource.isOwner() );
-		RADIO_ASSERT( reg == (reg & RF212_CMD_REGISTER_MASK) );
-		call SELN.clr();
-		call FastSpiByte.splitWrite(RF212_CMD_REGISTER_READ | reg);
-		call FastSpiByte.splitReadWrite(0);
-		reg = call FastSpiByte.splitRead();
-		call SELN.set();
+inline uint8_t readRegister(uint8_t reg) {
+	RADIO_ASSERT( call SpiResource.isOwner() );
+	RADIO_ASSERT( reg == (reg & RF212_CMD_REGISTER_MASK) );
+	call SELN.clr();
+	call FastSpiByte.splitWrite(RF212_CMD_REGISTER_READ | reg);
+	call FastSpiByte.splitReadWrite(0);
+	reg = call FastSpiByte.splitRead();
+	call SELN.set();
 
-		return reg;
-	}
+	return reg;
+}
 
 /*----------------- ALARM -----------------*/
 
 // TODO: these constants are depending on the (changable) physical layer
-	enum
-	{
-		TX_SFD_DELAY = (uint16_t)(177 * RADIO_ALARM_MICROSEC),
-		RX_SFD_DELAY = (uint16_t)(8 * RADIO_ALARM_MICROSEC),
-	};
+enum {
+	TX_SFD_DELAY = (uint16_t)(177 * RADIO_ALARM_MICROSEC),
+	RX_SFD_DELAY = (uint16_t)(8 * RADIO_ALARM_MICROSEC),
+};
 
-	async event void RadioAlarm.fired()
-	{
-	}
+async event void RadioAlarm.fired() {
+}
 
 /*----------------- INIT -----------------*/
 
-	command error_t PlatformInit.init()
-	{
-		call SELN.makeOutput();
-		call SELN.set();
-		call SLP_TR.makeOutput();
-		call SLP_TR.clr();
-		call RSTN.makeOutput();
-		call RSTN.set();
+command error_t PlatformInit.init() {
+	call SELN.makeOutput();
+	call SELN.set();
+	call SLP_TR.makeOutput();
+	call SLP_TR.clr();
+	call RSTN.makeOutput();
+	call RSTN.set();
 
-		rxMsg = &rxMsgBuffer;
+	rxMsg = &rxMsgBuffer;
 
-		// these are just good approximates
-		rssiClear = 0;
-		rssiBusy = 90;
+	// these are just good approximates
+	rssiClear = 0;
+	rssiBusy = 90;
 
-		return SUCCESS;
-	}
+	return SUCCESS;
+}
 
-	command error_t SoftwareInit.init()
-	{
-		// for powering up the radio
-		return call SpiResource.request();
-	}
+command error_t SoftwareInit.init() {
+	// for powering up the radio
+	return call SpiResource.request();
+}
 
-	void resetRadio()
-	{
-		//TODO: all waiting should be optimized in this function
-		call BusyWait.wait(15);
-		call RSTN.clr();
-		call SLP_TR.clr();
-		call BusyWait.wait(15);
-		call RSTN.set();
+void resetRadio() {
+	//TODO: all waiting should be optimized in this function
+	call BusyWait.wait(15);
+	call RSTN.clr();
+	call SLP_TR.clr();
+	call BusyWait.wait(15);
+	call RSTN.set();
+	writeRegister(RF212_TRX_CTRL_0, RF212_TRX_CTRL_0_VALUE);
+	writeRegister(RF212_TRX_STATE, RF212_TRX_OFF);
 
-		writeRegister(RF212_TRX_CTRL_0, RF212_TRX_CTRL_0_VALUE);
-		writeRegister(RF212_TRX_STATE, RF212_TRX_OFF);
+	//this is way too much (should be done in around 200us), but 510 seemd too short, and it happens quite rarely
+	call BusyWait.wait(1000);
 
-		//this is way too much (should be done in around 200us), but 510 seemd too short, and it happens quite rarely
-		call BusyWait.wait(1000);
+	writeRegister(RF212_IRQ_MASK, RF212_IRQ_TRX_UR | RF212_IRQ_PLL_LOCK | RF212_IRQ_TRX_END | RF212_IRQ_RX_START | RF212_IRQ_CCA_ED_DONE);
+	// update register values if different from default
+	if( RF212_CCA_THRES_VALUE != 0x77 )
+		writeRegister(RF212_CCA_THRES, RF212_CCA_THRES_VALUE);
 
-		writeRegister(RF212_IRQ_MASK, RF212_IRQ_TRX_UR | RF212_IRQ_PLL_LOCK | RF212_IRQ_TRX_END | RF212_IRQ_RX_START | RF212_IRQ_CCA_ED_DONE);
+	if( RF212_DEF_RFPOWER != 0x60 )
+		writeRegister(RF212_PHY_TX_PWR, RF212_DEF_RFPOWER);
 
-		// update register values if different from default
-		if( RF212_CCA_THRES_VALUE != 0x77 )
-			writeRegister(RF212_CCA_THRES, RF212_CCA_THRES_VALUE);
+	if( RF212_TRX_CTRL_2_VALUE != RF212_DATA_MODE_DEFAULT )
+		writeRegister(RF212_TRX_CTRL_2, RF212_TRX_CTRL_2_VALUE);
 
-		if( RF212_DEF_RFPOWER != 0x60 )
-			writeRegister(RF212_PHY_TX_PWR, RF212_DEF_RFPOWER);
+	writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
+	state = STATE_TRX_OFF;
+}
 
-		if( RF212_TRX_CTRL_2_VALUE != RF212_DATA_MODE_DEFAULT )
-			writeRegister(RF212_TRX_CTRL_2, RF212_TRX_CTRL_2_VALUE);
+void initRadio() {
+	call BusyWait.wait(510);
 
-		writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
-		state = STATE_TRX_OFF;
-	}
+	call RSTN.clr();
+	call SLP_TR.clr();
+	call BusyWait.wait(6);
+	call RSTN.set();
 
-	void initRadio()
-	{
-		call BusyWait.wait(510);
+	writeRegister(RF212_TRX_CTRL_0, RF212_TRX_CTRL_0_VALUE);
+	writeRegister(RF212_TRX_STATE, RF212_TRX_OFF);
 
-		call RSTN.clr();
-		call SLP_TR.clr();
-		call BusyWait.wait(6);
-		call RSTN.set();
+	call BusyWait.wait(510);
+	writeRegister(RF212_IRQ_MASK, RF212_IRQ_TRX_UR | RF212_IRQ_PLL_LOCK | RF212_IRQ_TRX_END | RF212_IRQ_RX_START | RF212_IRQ_CCA_ED_DONE);
+	// update register values if different from default
+	if( RF212_CCA_THRES_VALUE != 0x77 )
+		writeRegister(RF212_CCA_THRES, RF212_CCA_THRES_VALUE);
 
-		writeRegister(RF212_TRX_CTRL_0, RF212_TRX_CTRL_0_VALUE);
-		writeRegister(RF212_TRX_STATE, RF212_TRX_OFF);
+	if( RF212_DEF_RFPOWER != 0x60 )
+		writeRegister(RF212_PHY_TX_PWR, RF212_DEF_RFPOWER);
 
-		call BusyWait.wait(510);
+	if( RF212_TRX_CTRL_2_VALUE != RF212_DATA_MODE_DEFAULT )
+		writeRegister(RF212_TRX_CTRL_2, RF212_TRX_CTRL_2_VALUE);
 
-		writeRegister(RF212_IRQ_MASK, RF212_IRQ_TRX_UR | RF212_IRQ_PLL_LOCK | RF212_IRQ_TRX_END | RF212_IRQ_RX_START | RF212_IRQ_CCA_ED_DONE);
+	txPower = RF212_DEF_RFPOWER;
+	channel = RF212_DEF_CHANNEL & RF212_CHANNEL_MASK;
+	writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
 
-		// update register values if different from default
-		if( RF212_CCA_THRES_VALUE != 0x77 )
-			writeRegister(RF212_CCA_THRES, RF212_CCA_THRES_VALUE);
-
-		if( RF212_DEF_RFPOWER != 0x60 )
-			writeRegister(RF212_PHY_TX_PWR, RF212_DEF_RFPOWER);
-
-		if( RF212_TRX_CTRL_2_VALUE != RF212_DATA_MODE_DEFAULT )
-			writeRegister(RF212_TRX_CTRL_2, RF212_TRX_CTRL_2_VALUE);
-
-		txPower = RF212_DEF_RFPOWER;
-		channel = RF212_DEF_CHANNEL & RF212_CHANNEL_MASK;
-		writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
-
-		call SLP_TR.set();
-		state = STATE_SLEEP;
-	}
+	call SLP_TR.set();
+	state = STATE_SLEEP;
+}
 
 /*----------------- SPI -----------------*/
+event void SpiResource.granted() {
+	call SELN.makeOutput();
+	call SELN.set();
 
-	event void SpiResource.granted()
-	{
+	if( state == STATE_P_ON ) {
+		initRadio();
+		call SpiResource.release();
+	}
+	else
+		task_run();
+}
+
+bool isSpiAcquired() {
+	if( call SpiResource.isOwner() )
+		return TRUE;
+
+	if( call SpiResource.immediateRequest() == SUCCESS ) {
 		call SELN.makeOutput();
 		call SELN.set();
 
-		if( state == STATE_P_ON )
-		{
-			initRadio();
-			call SpiResource.release();
-		}
-		else
-			task_run();
+		return TRUE;
 	}
 
-	bool isSpiAcquired()
-	{
-		if( call SpiResource.isOwner() )
-			return TRUE;
-
-		if( call SpiResource.immediateRequest() == SUCCESS )
-		{
-			call SELN.makeOutput();
-			call SELN.set();
-
-			return TRUE;
-		}
-
-		call SpiResource.request();
-		return FALSE;
-	}
+	call SpiResource.request();
+	return FALSE;
+}
 
 /*----------------- CHANNEL -----------------*/
 
@@ -336,75 +315,65 @@ command uint8_t RadioState.getChannel() {
 
 command error_t RadioState.setChannel(uint8_t c) {
 
-		c &= RF212_CHANNEL_MASK;
+	c &= RF212_CHANNEL_MASK;
 
-		if( cmd != CMD_NONE )
-			return EBUSY;
-		else if( channel == c )
-			return EALREADY;
+	if( cmd != CMD_NONE )
+		return EBUSY;
+	else if( channel == c )
+		return EALREADY;
 
-		channel = c;
-		cmd = CMD_CHANNEL;
-		task_run();
+	channel = c;
+	cmd = CMD_CHANNEL;
+	task_run();
+	return SUCCESS;
+}
 
-		return SUCCESS;
+inline void changeChannel() {
+	RADIO_ASSERT( cmd == CMD_CHANNEL );
+	RADIO_ASSERT( state == STATE_SLEEP || state == STATE_TRX_OFF || state == STATE_RX_ON );
+
+	if( isSpiAcquired() ) {
+		writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
+
+		if( state == STATE_RX_ON )
+			state = STATE_TRX_OFF_2_RX_ON;
+		else
+			cmd = CMD_SIGNAL_DONE;
 	}
-
-	inline void changeChannel()
-	{
-		RADIO_ASSERT( cmd == CMD_CHANNEL );
-		RADIO_ASSERT( state == STATE_SLEEP || state == STATE_TRX_OFF || state == STATE_RX_ON );
-
-		if( isSpiAcquired() )
-		{
-			writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
-
-			if( state == STATE_RX_ON )
-				state = STATE_TRX_OFF_2_RX_ON;
-			else
-				cmd = CMD_SIGNAL_DONE;
-		}
-	}
+}
 
 /*----------------- TURN ON/OFF -----------------*/
 
-	inline void changeState()
-	{
-		if( (cmd == CMD_STANDBY || cmd == CMD_TURNON) && state == STATE_SLEEP && isSpiAcquired())
-		{
-			RADIO_ASSERT( ! radioIrq );
-			call IRQ.captureRisingEdge();
-			state = STATE_SLEEP_2_TRX_OFF;
-			call SLP_TR.clr();
-		}
-		else if( cmd == CMD_TURNON && state == STATE_TRX_OFF && isSpiAcquired() )
-		{
-			// setChannel was ignored in SLEEP because the SPI was not working, so do it here
-			writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
+inline void changeState() {
+	if( (cmd == CMD_STANDBY || cmd == CMD_TURNON) && state == STATE_SLEEP && isSpiAcquired()) {
+		RADIO_ASSERT( ! radioIrq );
+		call IRQ.captureRisingEdge();
+		state = STATE_SLEEP_2_TRX_OFF;
+		call SLP_TR.clr();
+	} else if( cmd == CMD_TURNON && state == STATE_TRX_OFF && isSpiAcquired() ) {
+		// setChannel was ignored in SLEEP because the SPI was not working, so do it here
+		writeRegister(RF212_PHY_CC_CCA, RF212_CCA_MODE_VALUE | channel);
 
-			writeRegister(RF212_TRX_STATE, RF212_RX_ON);
-			state = STATE_TRX_OFF_2_RX_ON;
-		}
-		else if( (cmd == CMD_TURNOFF || cmd == CMD_STANDBY)
-			&& state == STATE_RX_ON && isSpiAcquired() )
-		{
-			call IRQ.disable();
-			radioIrq = FALSE;
+		writeRegister(RF212_TRX_STATE, RF212_RX_ON);
+		state = STATE_TRX_OFF_2_RX_ON;
+	} else if( (cmd == CMD_TURNOFF || cmd == CMD_STANDBY)
+			&& state == STATE_RX_ON && isSpiAcquired() ) {
+		call IRQ.disable();
+		radioIrq = FALSE;
 			
-			writeRegister(RF212_TRX_STATE, RF212_FORCE_TRX_OFF);
-			state = STATE_TRX_OFF;
-		}
-
-		if( cmd == CMD_TURNOFF && state == STATE_TRX_OFF )
-		{
-			readRegister(RF212_IRQ_STATUS); // clear the interrupt register
-			call SLP_TR.set();
-			state = STATE_SLEEP;
-			cmd = CMD_SIGNAL_DONE;
-		}
-		else if( cmd == CMD_STANDBY && state == STATE_TRX_OFF )
-			cmd = CMD_SIGNAL_DONE;
+		writeRegister(RF212_TRX_STATE, RF212_FORCE_TRX_OFF);
+		state = STATE_TRX_OFF;
 	}
+
+	if( cmd == CMD_TURNOFF && state == STATE_TRX_OFF ) {
+		readRegister(RF212_IRQ_STATUS); // clear the interrupt register
+		call SLP_TR.set();
+		state = STATE_SLEEP;
+		cmd = CMD_SIGNAL_DONE;
+	}
+	else if( cmd == CMD_STANDBY && state == STATE_TRX_OFF )
+		cmd = CMD_SIGNAL_DONE;
+}
 
 command error_t RadioState.turnOff() {
 	if( cmd != CMD_NONE )
