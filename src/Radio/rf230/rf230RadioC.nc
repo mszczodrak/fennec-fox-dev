@@ -58,10 +58,15 @@ provides interface RadioCCA;
 implementation {
 
 components rf230RadioP;
-components RF230DriverLayerC;
 
 components new RadioAlarmC();
+
+#ifdef RF230_HARDWARE_ACK
+components RF230DriverHwAckC as RadioDriverLayerC;
+#else
+components RF230DriverLayerC as RadioDriverLayerC;
 components new SoftwareAckLayerC();
+#endif
 
 //components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
 //RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
@@ -73,37 +78,45 @@ RadioBuffer = rf230RadioP.RadioBuffer;
 RadioSend = rf230RadioP.RadioSend;
 RadioState = rf230RadioP.RadioState;
 
-RadioPacket = RF230DriverLayerC.RadioPacket;
-rf230RadioP.RadioPacket -> RF230DriverLayerC.RadioPacket;
+RadioPacket = RadioDriverLayerC.RadioPacket;
+rf230RadioP.RadioPacket -> RadioDriverLayerC.RadioPacket;
 rf230RadioP.SubRadioSend -> AutoResourceAcquireLayerC;
-rf230RadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
-rf230RadioP.SubRadioState -> RF230DriverLayerC.RadioState;
+rf230RadioP.SubRadioState -> RadioDriverLayerC.RadioState;
 
 // -------- RadioAlarm
 
-RadioAlarmC.Alarm -> RF230DriverLayerC;
+RadioAlarmC.Alarm -> RadioDriverLayerC;
 
-rf230RadioParams = RF230DriverLayerC;
+rf230RadioParams = RadioDriverLayerC;
 
 components new AutoResourceAcquireLayerC();
 AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+
+
+#ifndef RF230_HARDWARE_ACK
+AutoResourceAcquireLayerC -> RadioDriverLayerC.RadioSend; 
+rf230RadioP.SubRadioReceive -> RadioDriverLayerC.RadioReceive;
+#else 
 AutoResourceAcquireLayerC -> SoftwareAckLayerC.RadioSend; 
+SoftwareAckLayerC.SubSend -> RadioDriverLayerC.RadioSend;
+SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+SoftwareAckLayerC.SubReceive -> RadioDriverLayerC.RadioReceive;
+SoftwareAckLayerC.RadioPacket -> RadioDriverLayerC.RadioPacket;
+rf230RadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
+#endif
+
 
 components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
 RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
-SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-SoftwareAckLayerC.SubSend -> RF230DriverLayerC.RadioSend;
-SoftwareAckLayerC.SubReceive -> RF230DriverLayerC.RadioReceive;
-SoftwareAckLayerC.RadioPacket -> RF230DriverLayerC.RadioPacket;
 
-PacketTransmitPower = RF230DriverLayerC.PacketTransmitPower;
-PacketLinkQuality = RF230DriverLayerC.PacketLinkQuality;
-PacketRSSI = RF230DriverLayerC.PacketRSSI;
-RadioLinkPacketMetadata = RF230DriverLayerC;
-PacketTimeSync = RF230DriverLayerC.PacketTimeSync;
-RadioCCA = RF230DriverLayerC.RadioCCA;
+PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
+PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
+PacketRSSI = RadioDriverLayerC.PacketRSSI;
+RadioLinkPacketMetadata = RadioDriverLayerC;
+PacketTimeSync = RadioDriverLayerC.PacketTimeSync;
+RadioCCA = RadioDriverLayerC.RadioCCA;
 
-RF230DriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
 }
