@@ -37,12 +37,12 @@
 #define FF_FLAGS_H
 
 /* Fennec System Flags */
-#define	F_RADIO                 1
-#define F_ADDRESSING		2
+#define F_APPLICATION           1
+#define F_NETWORK               2
 #define F_MAC                   3
-#define F_QOI                   4
-#define F_NETWORK               5
-#define F_APPLICATION           6
+#define	F_RADIO                 4
+#define F_ADDRESSING		5
+#define F_QOI                   6
 #define F_EVENTS                7
 #define F_MAC_ADDRESSING	8
 #define F_NETWORK_ADDRESSING	9
@@ -54,5 +54,7 @@
 #define F_BRIDGING              14
 #define F_DATA_SRC              15
 #define F_NEW_ADDR		16
+
+#define F_LAYERS		4
 
 #endif
