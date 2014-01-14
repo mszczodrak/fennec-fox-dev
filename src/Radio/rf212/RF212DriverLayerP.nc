@@ -448,7 +448,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		// TODO - this is wrong
 		// the number of bytes before the embedded timestamp
 		upload1 = (((void*)msg) + (call RadioPacket.headerLength(msg) +
-                call RadioPacket.payloadLength(msg)) - (void*)data;
+	                call RadioPacket.payloadLength(msg)) - (void*)data);
 
 		// the FCS is automatically generated (2 bytes)
 		upload2 = length - 2 - upload1;
