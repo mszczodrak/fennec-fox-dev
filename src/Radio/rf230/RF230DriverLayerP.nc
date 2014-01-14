@@ -71,7 +71,7 @@
 #include <RF230DriverLayer.h>
 #include <RadioAssert.h>
 #include <TimeSyncMessageLayer.h>
-#include <RadioConfig.h>
+#include "RadioConfig.h"
 #include "RFX_IEEE.h"
 
 module RF230DriverLayerP {
