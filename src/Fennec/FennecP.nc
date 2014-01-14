@@ -1,6 +1,5 @@
-
-
-#iopyright (c) 2009, Columbia University.
+/*
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
