@@ -105,8 +105,8 @@ uses interface rf230RadioParams;
 
 implementation {
 
-rf230_header_t* getHeader(message_t* msg) {
-		return (rf230_hdr_t*)msg->data;
+rf230_hdr_t* getHeader(message_t* msg) {
+	return (rf230_hdr_t*)msg->data;
 }
 
 void* getPayload(message_t* msg) {
@@ -180,6 +180,14 @@ inline uint8_t readRegister(uint8_t reg) {
 
 	return reg;
 }
+
+void packetTimeStampRadioSet(message_t* msg, uint32_t value) {
+	uint8_t *p = (uint8_t*)(msg->data);
+	uint32_t *t = (uint32_t*)(p + call PacketTimeSyncOffset.get(msg));
+	*t = value;
+	call PacketTimeSyncOffset.set(msg, 0);
+}
+
 
 /*----------------- ALARM -----------------*/
 
@@ -293,11 +301,11 @@ bool isSpiAcquired() {
 
 /*----------------- CHANNEL -----------------*/
 
-async command uint8_t RadioState.getChannel() {
+command uint8_t RadioState.getChannel() {
 	return channel;
 }
 
-async command error_t RadioState.setChannel(uint8_t c) {
+command error_t RadioState.setChannel(uint8_t c) {
 	c &= RF230_CHANNEL_MASK;
 
 	if( cmd != CMD_NONE )
@@ -366,7 +374,7 @@ inline void changeState() {
 		cmd = CMD_SIGNAL_DONE;
 }
 
-async command error_t RadioState.turnOff() {
+command error_t RadioState.turnOff() {
 	if( cmd != CMD_NONE )
 		return EBUSY;
 	else if( state == STATE_SLEEP )
@@ -378,7 +386,7 @@ async command error_t RadioState.turnOff() {
 	return SUCCESS;
 }
 
-async command error_t RadioState.standby() {
+command error_t RadioState.standby() {
 	if( cmd != CMD_NONE || (state == STATE_SLEEP && ! call RadioAlarm.isFree()) )
 		return EBUSY;
 	else if( state == STATE_TRX_OFF )
@@ -389,7 +397,7 @@ async command error_t RadioState.standby() {
 	return SUCCESS;
 }
 
-async command error_t RadioState.turnOn() {
+command error_t RadioState.turnOn() {
 	if( cmd != CMD_NONE || (state == STATE_SLEEP && ! call RadioAlarm.isFree()) )
 		return EBUSY;
 	else if( state == STATE_RX_ON )
@@ -401,11 +409,11 @@ async command error_t RadioState.turnOn() {
 	return SUCCESS;
 }
 
-default async event void RadioState.done() { }
+default event void RadioState.done() { }
 
 /*----------------- TRANSMIT -----------------*/
 
-async command error_t RadioSend.send(message_t* msg) {
+async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	uint16_t time;
 	uint32_t time32;
 	uint8_t* data;
@@ -424,8 +432,7 @@ async command error_t RadioSend.send(message_t* msg) {
 		writeRegister(RF230_PHY_TX_PWR, RF230_TX_AUTO_CRC_ON | txPower);
 	}
 
-	if( call Config.requiresRssiCca(msg)
-		&& (readRegister(RF230_PHY_RSSI) & RF230_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) ) {
+	if( useCca && (readRegister(RF230_PHY_RSSI) & RF230_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) ) {
 		call SpiResource.release();
 		return EBUSY;
 	}
@@ -524,7 +531,7 @@ async command error_t RadioSend.send(message_t* msg) {
 	// go back to RX_ON state when finished
 	writeRegister(RF230_TRX_STATE, RF230_RX_ON);
 
-	call PacketTimeStamp.set(msg, time32);
+	packetTimeStampRadioSet(msg, time32);
 
 	// wait for the TRX_END interrupt
 	state = STATE_BUSY_TX_2_RX_ON;
@@ -533,7 +540,7 @@ async command error_t RadioSend.send(message_t* msg) {
 	return SUCCESS;
 }
 
-default async event void RadioSend.sendDone(error_t error) { }
+default async event void RadioSend.sendDone(message_t *msg, error_t error) { }
 default async event void RadioSend.ready() { }
 
 /*----------------- CCA -----------------*/
@@ -582,7 +589,7 @@ inline void downloadMessage() {
 		// we do not store the CRC field
 		length -= 2;
 
-		read = call Config.headerPreloadLength();
+		read = 7; // headerPreloadLength
 		if( length < read )
 			read = length;
 
@@ -706,10 +713,10 @@ void serviceRadio() {
 				{
 					time32 = call LocalTime.get();
 					time32 += (int16_t)(time - RX_SFD_DELAY) - (int16_t)(time32);
-					call PacketTimeStamp.set(rxMsg, time32);
+					packetTimeStampRadioSet(rxMsg, time32);
 				}
 				else
-					call PacketTimeStamp.clear(rxMsg);
+					call PacketTimeSyncOffset.clear(rxMsg);
 
 				cmd = CMD_RECEIVE;
 			}
@@ -724,7 +731,7 @@ void serviceRadio() {
 
 				state = STATE_RX_ON;
 				cmd = CMD_NONE;
-				signal RadioSend.sendDone(SUCCESS);
+				signal RadioSend.sendDone(rxMsg, SUCCESS);
 
 				// TODO: we could have missed a received message
 				RADIO_ASSERT( ! (irq & RF230_IRQ_RX_START) );

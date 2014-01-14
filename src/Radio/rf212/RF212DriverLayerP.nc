@@ -183,6 +183,13 @@ inline uint8_t readRegister(uint8_t reg) {
 	return reg;
 }
 
+void packetTimeStampRadioSet(message_t* msg, uint32_t value) {
+	uint8_t *p = (uint8_t*)(msg->data);
+	uint32_t *t = (uint32_t*)(p + call PacketTimeSyncOffset.get(msg));
+	*t = value;
+	call PacketTimeSyncOffset.set(msg, 0);
+}
+
 /*----------------- ALARM -----------------*/
 
 // TODO: these constants are depending on the (changable) physical layer
@@ -536,7 +543,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	// go back to RX_ON state when finished
 	writeRegister(RF212_TRX_STATE, RF212_RX_ON);
 
-	call PacketTimeSyncOffset.set(msg, 0);
+	packetTimeStampRadioSet(msg, time32);
 
 	// wait for the TRX_END interrupt
 	state = STATE_BUSY_TX_2_RX_ON;
@@ -749,7 +756,7 @@ void serviceRadio() {
 				{
 					time32 = call LocalTime.get();
 					time32 += (int16_t)(time - RX_SFD_DELAY) - (int16_t)(time32);
-					call PacketTimeSyncOffset.set(rxMsg, time32);
+					packetTimeStampRadioSet(rxMsg, time32);
 				}
 				else {
 					call PacketTimeSyncOffset.clear(rxMsg);
