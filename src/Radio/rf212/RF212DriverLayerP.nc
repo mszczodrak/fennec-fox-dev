@@ -105,8 +105,6 @@ uses interface rf212RadioParams;
 
 implementation {
 
-typedef nx_uint32_t timesync_radio_t;
-
 rf212_hdr_t* getHeader(message_t* msg) {
 	return (rf212_hdr_t*)msg->data;
 }

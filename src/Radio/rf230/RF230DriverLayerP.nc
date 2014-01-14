@@ -69,10 +69,10 @@
 
 
 #include <RF230DriverLayer.h>
-#include <Tasklet.h>
 #include <RadioAssert.h>
 #include <TimeSyncMessageLayer.h>
 #include <RadioConfig.h>
+#include "RFX_IEEE.h"
 
 module RF230DriverLayerP {
 provides interface Init as PlatformInit @exactlyonce();
@@ -99,7 +99,7 @@ uses interface GpioCapture as IRQ;
 uses interface BusyWait<TMicro, uint16_t>;
 uses interface LocalTime<TRadio>;
 uses interface RadioAlarm;
-uses interface rf212RadioParams;
+uses interface rf230RadioParams;
 
 }
 
@@ -793,24 +793,24 @@ void task_run() {
 
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
-	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
-	hdr->length = length + sizeof(nx_struct rf212_radio_header_t) + RF212_SIZEOF_CRC + sizeof(timesync_radio_t);
+	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
+	hdr->length = length + sizeof(nx_struct rf230_radio_header_t) + RF230_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 
 
 async command uint8_t RadioPacket.maxPayloadLength() {
-	return RF212_MAX_MESSAGE_SIZE - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+	return RF230_MAX_MESSAGE_SIZE - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.metadataLength(message_t* msg) {

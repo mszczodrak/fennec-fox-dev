@@ -174,7 +174,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 async command uint8_t RadioPacket.maxPayloadLength() {
 	dbg("Radio", "rf230Radio RadioBuffer.maxPayloadLength()");
-	return NULL_MAX_MESSAGE_SIZE - sizeof(nx_struct rf230_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
+	return RF230_MAX_MESSAGE_SIZE - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
@@ -183,12 +183,12 @@ async command uint8_t RadioPacket.headerLength(message_t* msg) {
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct rf230_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
+	return hdr->length - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
 	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
-	hdr->length = length + sizeof(nx_struct rf230_radio_header_t) + NULL_SIZEOF_CRC + sizeof(timesync_radio_t);
+	hdr->length = length + sizeof(nx_struct rf230_radio_header_t) + RF230_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.metadataLength(message_t* msg) {

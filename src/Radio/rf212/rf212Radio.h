@@ -36,6 +36,8 @@
 #ifndef __H_rf212_RADIO__
 #define __H_rf212_RADIO___
 
+typedef nx_uint32_t timesync_radio_t;
+
 nx_struct rf212_radio_header_t {
         nxle_uint8_t length;
 };

@@ -26,35 +26,37 @@
  */
 
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox rf230 radio driver adaptation
   *
   * @author: Marcin K Szczodrak
+  * @updated: 01/06/2014
   */
-
-
 
 #ifndef __H_rf230_RADIO__
 #define __H_rf230_RADIO___
 
-#define timesync_radio_t uint32_t
-
-enum {
-        rf230_MIN_MESSAGE_SIZE        	= 5,
-        rf230_MAX_MESSAGE_SIZE        	= 127,
-};
+typedef nx_uint32_t timesync_radio_t;
 
 nx_struct rf230_radio_header_t {
         nxle_uint8_t length;
 };
 
 enum {
-        NULL_MIN_MESSAGE_SIZE         = 10,
-        NULL_MAX_MESSAGE_SIZE         = 128,
-        NULL_MAX_FAILED_LOADS         = 3,
-        NULL_FOOTER                   = 2,
-        NULL_SIZEOF_CRC               = 2,
+        RF230_MIN_MESSAGE_SIZE         = 5,
+        RF230_MAX_MESSAGE_SIZE         = 128,
+        RF230_MAX_FAILED_LOADS         = 3,
+        RF230_FOOTER                   = 2,
+        RF230_SIZEOF_CRC               = 2,
 };
 
+typedef nx_struct rf230_hdr_t {
+        nxle_uint8_t length;
+        nxle_uint16_t fcf;
+        nxle_uint8_t dsn;
+        nxle_uint16_t destpan;
+        nxle_uint16_t dest;
+        nxle_uint16_t src;
+} rf230_hdr_t;
 
 
 #endif
