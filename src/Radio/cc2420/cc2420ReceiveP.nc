@@ -105,7 +105,7 @@ uses interface CC2420Ram as RXNONCE;
 uses interface CC2420Ram as RXFIFO_RAM;
 uses interface CC2420Strobe as SNOP;
 uses interface Leds;
-uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint32_t> as PacketTimeSync;
 }
 
 implementation {
@@ -314,14 +314,14 @@ async event void RXFIFO.readDone( uint8_t* rx_buf, uint8_t rx_len, error_t error
 		//new packet is buffered up, or we don't have timestamp in fifo, or ack
 		if ( ( m_missed_packets && call FIFO.get() ) || !call FIFOP.get()
 				|| !m_timestamp_size || rxFrameLength <= 10) {
-			call PacketTimeSyncOffset.clear(m_p_rx_buf);
+			call PacketTimeSync.clear(m_p_rx_buf);
 		} else {
 			if (m_timestamp_size==1)
-				call PacketTimeSyncOffset.set(m_p_rx_buf, m_timestamp_queue[ m_timestamp_head ]);
+				call PacketTimeSync.set(m_p_rx_buf, m_timestamp_queue[ m_timestamp_head ]);
 			m_timestamp_head = ( m_timestamp_head + 1 ) % TIMESTAMP_QUEUE_SIZE;
 			m_timestamp_size--;
 			if (m_timestamp_size>0) {
-				call PacketTimeSyncOffset.clear(m_p_rx_buf);
+				call PacketTimeSync.clear(m_p_rx_buf);
 				m_timestamp_head = 0;
 				m_timestamp_size = 0;
 			}

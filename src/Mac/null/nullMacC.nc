@@ -55,7 +55,7 @@ uses interface RadioSend;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
-uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
 uses interface RadioCCA;
 uses interface RadioState;
@@ -95,7 +95,7 @@ nullMacP.SplitControlState -> StateC;
 
 PacketTransmitPower = nullMacP.PacketTransmitPower;
 PacketRSSI = nullMacP.PacketRSSI;
-PacketTimeSyncOffset = nullMacP.PacketTimeSyncOffset;
+PacketTimeSync = nullMacP.PacketTimeSync;
 PacketLinkQuality = nullMacP.PacketLinkQuality;
 
 }

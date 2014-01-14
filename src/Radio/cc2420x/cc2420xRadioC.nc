@@ -47,7 +47,7 @@ provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
@@ -101,7 +101,7 @@ PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;
 PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
 PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
 RadioLinkPacketMetadata = CC2420XDriverLayerC;
-PacketTimeSyncOffset = CC2420XDriverLayerC.PacketTimeSyncOffset;
+PacketTimeSync = CC2420XDriverLayerC.PacketTimeSync;
 RadioCCA = CC2420XDriverLayerC.RadioCCA;
 
 CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];

@@ -45,7 +45,7 @@ provides interface RadioCCA;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
@@ -66,7 +66,7 @@ RadioPacket = cc2420DriverP.RadioPacket;
 
 PacketTransmitPower = cc2420DriverP.PacketTransmitPower;
 PacketRSSI = cc2420DriverP.PacketRSSI;
-PacketTimeSyncOffset = cc2420DriverP.PacketTimeSyncOffset;
+PacketTimeSync = cc2420DriverP.PacketTimeSync;
 PacketLinkQuality = cc2420DriverP.PacketLinkQuality;
 
 RadioLinkPacketMetadata = cc2420DriverP.RadioLinkPacketMetadata;

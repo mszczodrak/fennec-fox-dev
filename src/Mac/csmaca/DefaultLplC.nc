@@ -88,7 +88,7 @@ uses interface RadioCCA;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
-uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
 
 }
@@ -127,7 +127,7 @@ RadioCCA = DefaultLplP.RadioCCA;
 
 PacketTransmitPower = DefaultLplP.PacketTransmitPower;
 PacketRSSI = DefaultLplP.PacketRSSI;
-PacketTimeSyncOffset = DefaultLplP.PacketTimeSyncOffset;
+PacketTimeSync = DefaultLplP.PacketTimeSync;
 PacketLinkQuality = DefaultLplP.PacketLinkQuality;
 
 

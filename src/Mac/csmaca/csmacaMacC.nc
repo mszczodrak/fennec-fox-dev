@@ -56,7 +56,7 @@ uses interface RadioPacket;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
-uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
 
 uses interface RadioCCA;
@@ -114,7 +114,7 @@ RadioCCA = LplC.RadioCCA;
 
 PacketTransmitPower = LplC.PacketTransmitPower;
 PacketRSSI = LplC.PacketRSSI;
-PacketTimeSyncOffset = LplC.PacketTimeSyncOffset;
+PacketTimeSync = LplC.PacketTimeSync;
 PacketLinkQuality = LplC.PacketLinkQuality;
 
 
@@ -133,7 +133,7 @@ RadioPacket = CSMATransmitC.RadioPacket;
 RadioCCA = CSMATransmitC.RadioCCA;
 PacketTransmitPower = CSMATransmitC.PacketTransmitPower;
 PacketRSSI = CSMATransmitC.PacketRSSI;
-PacketTimeSyncOffset = CSMATransmitC.PacketTimeSyncOffset;
+PacketTimeSync = CSMATransmitC.PacketTimeSync;
 PacketLinkQuality = CSMATransmitC.PacketLinkQuality;
 
 LplC.CSMATransmit -> CSMATransmitC.CSMATransmit;

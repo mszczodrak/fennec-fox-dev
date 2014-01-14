@@ -80,7 +80,7 @@ provides interface ReceiveIndicator as PacketIndicator;
 
 uses interface RadioConfig;
 uses interface RadioPacket;
-uses interface PacketField<uint8_t> as PacketTimeSyncOffset;
+uses interface PacketField<uint32_t> as PacketTimeSync;
 
 }
 
@@ -100,7 +100,7 @@ CC2420Receive = cc2420ReceiveP;
 RadioReceive = cc2420ReceiveP;
 PacketIndicator = cc2420ReceiveP.PacketIndicator;
 RadioPacket = cc2420ReceiveP.RadioPacket;
-PacketTimeSyncOffset = cc2420ReceiveP.PacketTimeSyncOffset;
+PacketTimeSync = cc2420ReceiveP.PacketTimeSync;
 
 MainC.SoftwareInit -> cc2420ReceiveP;
   

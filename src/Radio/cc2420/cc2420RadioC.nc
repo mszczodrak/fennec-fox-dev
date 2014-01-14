@@ -45,7 +45,7 @@ provides interface RadioBuffer;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
@@ -96,9 +96,9 @@ RadioLinkPacketMetadata = cc2420DriverC.RadioLinkPacketMetadata;
   
 PacketTransmitPower = cc2420DriverC.PacketTransmitPower;
 PacketRSSI = cc2420DriverC.PacketRSSI;
-PacketTimeSyncOffset = cc2420DriverC.PacketTimeSyncOffset;
+PacketTimeSync = cc2420DriverC.PacketTimeSync;
 PacketLinkQuality = cc2420DriverC.PacketLinkQuality;
 
-cc2420ReceiveC.PacketTimeSyncOffset -> cc2420DriverC.PacketTimeSyncOffset;
+cc2420ReceiveC.PacketTimeSync -> cc2420DriverC.PacketTimeSync;
 
 }

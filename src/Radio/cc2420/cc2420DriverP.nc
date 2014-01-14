@@ -86,9 +86,14 @@ provides interface StdControl;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
- 
+provides interface RadioSend;
+provides interface RadioBuffer;
+provides interface RadioPacket;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
+
 uses interface Leds; 
 uses interface GpioCapture as CaptureSFD;
 uses interface GeneralIO as CCA;
@@ -115,11 +120,6 @@ uses interface CC2420Ram as TXNONCE;
 
 uses interface CC2420Receive;
 uses interface cc2420RadioParams;
-provides interface RadioSend;
-provides interface RadioBuffer;
-provides interface RadioPacket;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
 uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 uses interface ReceiveIndicator as PacketIndicator;
@@ -359,10 +359,10 @@ async event void CaptureSFD.captured( uint16_t rtime ) {
 			// the state here since we know that we are not receiving anymore
 			m_receiving = FALSE;
 			call CaptureSFD.captureFallingEdge();
-			call PacketTimeSyncOffset.set(radio_msg, time32);
-			if (call PacketTimeSyncOffset.isSet(radio_msg)) {
-			//uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_hdr_t) + call PacketTimeSyncOffset.get(radio_msg);
-				uint8_t absOffset = call PacketTimeSyncOffset.get(radio_msg);
+			call PacketTimeSync.set(radio_msg, time32);
+			if (call PacketTimeSync.isSet(radio_msg)) {
+				uint8_t absOffset = (call RadioPacket.headerLength(radio_msg) + 
+							call RadioPacket.payloadLength(radio_msg));
 				timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)radio_msg+absOffset);
 				// set timesync event time as the offset between the 
 				// event time and the SFD interrupt time (TEP  133)
@@ -435,7 +435,7 @@ async event void CaptureSFD.captured( uint16_t rtime ) {
 				if ((sfd_state == 0) && (rtime - m_prev_time < 10) ) {
 					call CC2420Receive.sfd_dropped();
 					if (radio_msg)
-						call PacketTimeSyncOffset.clear(radio_msg);
+						call PacketTimeSync.clear(radio_msg);
 				}
 				break;
 			}
@@ -666,19 +666,20 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 }
 
 
-async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+async command bool PacketTimeSync.isSet(message_t* msg) {
 	return getMetadata(msg)->flags & (1<<3);
 }
 
-async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+async command uint32_t PacketTimeSync.get(message_t* msg) {
+	return (uint32_t)(*((msg->data) + (call RadioPacket.headerLength(msg) +
+                call RadioPacket.payloadLength(msg))));
 }
 
-async command void PacketTimeSyncOffset.clear(message_t* msg) {
+async command void PacketTimeSync.clear(message_t* msg) {
 	getMetadata(msg)->flags &= ~(1<<3);
 }
 
-async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+async command void PacketTimeSync.set(message_t* msg, uint32_t value) {
 	getMetadata(msg)->flags |= (1<<3);
 	// we do not store the value, the time sync field is always the last 4 bytes
 }

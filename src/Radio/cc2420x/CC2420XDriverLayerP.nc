@@ -74,7 +74,7 @@ provides interface RadioPacket;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LinkPacketMetadata;
 
@@ -636,7 +636,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	RADIO_ASSERT(sfd4 == 0);
 
 
-	if( call PacketTimeSyncOffset.isSet(msg)) {
+	if( call PacketTimeSync.isSet(msg)) {
 		// timesync required: write the payload before the timesync bytes to the fifo
 		// TODO: we're assuming here that the timestamp is at the end of the message
 		writeTxFifo((void*)(msg->data)+header, length - sizeof(timesync_absolute_t) - 1);
@@ -664,9 +664,10 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	// adjust for delay between the STXON strobe and the transmission of the SFD
 	time32 += TX_SFD_DELAY;
 
-	if( call PacketTimeSyncOffset.isSet(msg)) {
+	if( call PacketTimeSync.isSet(msg)) {
 		// read and adjust the timestamp field
-		uint32_t *relative_time = (uint32_t*)((msg->data) + call PacketTimeSyncOffset.get(msg));
+		uint32_t *relative_time = (uint32_t*)((msg->data) + (call RadioPacket.headerLength(msg) +
+									call RadioPacket.payloadLength(msg)));
 		*relative_time -= time32;
 		// write it to the fifo
 		// TODO: we're assuming here that the timestamp is at the end of the message			
@@ -994,19 +995,19 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 	getMetadata(msg)->rssi = value;
 }
 
-async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+async command bool PacketTimeSync.isSet(message_t* msg) {
 	return getMetadata(msg)->flags & (1<<3);
 }
 
-async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+async command uint32_t PacketTimeSync.get(message_t* msg) {
 	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
 }
 
-async command void PacketTimeSyncOffset.clear(message_t* msg) {
+async command void PacketTimeSync.clear(message_t* msg) {
 	getMetadata(msg)->flags &= ~(1<<3);
 }
 
-async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+async command void PacketTimeSync.set(message_t* msg, uint32_t value) {
 	getMetadata(msg)->flags |= (1<<3);
 	// we do not store the value, the time sync field is always the last 4 bytes
 }
