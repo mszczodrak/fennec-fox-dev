@@ -763,171 +763,134 @@ task void radioStateDone() {
 }
 
 
-void task_run()
-	{
-		if( radioIrq )
-			serviceRadio();
+void task_run() {
+	if( radioIrq )
+		serviceRadio();
 
-		if( cmd != CMD_NONE )
+	if( cmd != CMD_NONE )
+	{
+		if( cmd == CMD_DOWNLOAD )
+			downloadMessage();
+		else if( CMD_TURNOFF <= cmd && cmd <= CMD_TURNON )
+			changeState();
+		else if( cmd == CMD_CHANNEL )
+			changeChannel();
+
+		if( cmd == CMD_SIGNAL_DONE )
 		{
-			if( cmd == CMD_DOWNLOAD )
-				downloadMessage();
-			else if( CMD_TURNOFF <= cmd && cmd <= CMD_TURNON )
-				changeState();
-			else if( cmd == CMD_CHANNEL )
-				changeChannel();
-
-			if( cmd == CMD_SIGNAL_DONE )
-			{
-				cmd = CMD_NONE;
-				signal RadioState.done();
-			}
+			cmd = CMD_NONE;
+			post radioStateDone();
 		}
-
-		if( cmd == CMD_NONE && state == STATE_RX_ON && ! radioIrq )
-			signal RadioSend.ready();
-
-		if( cmd == CMD_NONE )
-			post releaseSpi();
 	}
 
-/*----------------- RadioPacket -----------------*/
+	if( cmd == CMD_NONE && state == STATE_RX_ON && ! radioIrq )
+		signal RadioSend.ready();
 
-	async command uint8_t RadioPacket.headerLength(message_t* msg)
-	{
-		return call Config.headerLength(msg) + sizeof(rf230_header_t);
-	}
+	if( cmd == CMD_NONE )
+		post releaseSpi();
+}
 
-	async command uint8_t RadioPacket.payloadLength(message_t* msg)
-	{
-		return getHeader(msg)->length - 2;
-	}
 
-	async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length)
-	{
-		RADIO_ASSERT( 1 <= length && length <= 125 );
-		RADIO_ASSERT( call RadioPacket.headerLength(msg) + length + call RadioPacket.metadataLength(msg) <= sizeof(message_t) );
 
-		// we add the length of the CRC, which is automatically generated
-		getHeader(msg)->length = length + 2;
-	}
+async command uint8_t RadioPacket.headerLength(message_t* msg) {
+	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command uint8_t RadioPacket.maxPayloadLength()
-	{
-		RADIO_ASSERT( call Config.maxPayloadLength() - sizeof(rf230_header_t) <= 125 );
 
-		return call Config.maxPayloadLength() - sizeof(rf230_header_t);
-	}
+async command uint8_t RadioPacket.payloadLength(message_t* msg) {
+	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command uint8_t RadioPacket.metadataLength(message_t* msg)
-	{
-		return call Config.metadataLength(msg) + sizeof(rf230_metadata_t);
-	}
+async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
+	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
+	hdr->length = length + sizeof(nx_struct rf212_radio_header_t) + RF212_SIZEOF_CRC + sizeof(timesync_radio_t);
+}
 
-	async command void RadioPacket.clear(message_t* msg)
-	{
-		// all flags are automatically cleared
-	}
 
-/*----------------- PacketTransmitPower -----------------*/
+async command uint8_t RadioPacket.maxPayloadLength() {
+	return RF212_MAX_MESSAGE_SIZE - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+}
 
-	async command bool PacketTransmitPower.isSet(message_t* msg)
-	{
-		return call TransmitPowerFlag.get(msg);
-	}
+async command uint8_t RadioPacket.metadataLength(message_t* msg) {
+	return sizeof(metadata_t);
+}
 
-	async command uint8_t PacketTransmitPower.get(message_t* msg)
-	{
-		return getMeta(msg)->power;
-	}
+async command void RadioPacket.clear(message_t* msg) {
+	memset(msg, 0x0, sizeof(message_t));
+}
 
-	async command void PacketTransmitPower.clear(message_t* msg)
-	{
-		call TransmitPowerFlag.clear(msg);
-	}
+async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
+	return call PacketLinkQuality.get(msg) > 200;
+}
 
-	async command void PacketTransmitPower.set(message_t* msg, uint8_t value)
-	{
-		call TransmitPowerFlag.set(msg);
-		getMeta(msg)->power = value;
-	}
+async command bool PacketTransmitPower.isSet(message_t* msg) {
+	return getMetadata(msg)->flags & (1<<1);
+}
 
-/*----------------- PacketRSSI -----------------*/
+async command uint8_t PacketTransmitPower.get(message_t* msg) {
+	return getMetadata(msg)->tx_power;
+}
 
-	async command bool PacketRSSI.isSet(message_t* msg)
-	{
-		return call RSSIFlag.get(msg);
-	}
+async command void PacketTransmitPower.clear(message_t* msg) {
+	getMetadata(msg)->flags &= ~(1<<1);
+}
 
-	async command uint8_t PacketRSSI.get(message_t* msg)
-	{
-		return getMeta(msg)->rssi;
-	}
+async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
+	getMetadata(msg)->flags |= (1<<1);
+	getMetadata(msg)->tx_power = value;
+}
 
-	async command void PacketRSSI.clear(message_t* msg)
-	{
-		call RSSIFlag.clear(msg);
-	}
+async command bool PacketRSSI.isSet(message_t* msg) {
+	return getMetadata(msg)->flags & (1<<2);
+}
 
-	async command void PacketRSSI.set(message_t* msg, uint8_t value)
-	{
-		// just to be safe if the user fails to clear the packet
-		call TransmitPowerFlag.clear(msg);
+async command uint8_t PacketRSSI.get(message_t* msg) {
+	return getMetadata(msg)->rssi;
+}
 
-		call RSSIFlag.set(msg);
-		getMeta(msg)->rssi = value;
-	}
+async command void PacketRSSI.clear(message_t* msg) {
+	getMetadata(msg)->flags &= ~(1<<2);
+}
 
-/*----------------- PacketTimeSyncOffset -----------------*/
+async command void PacketRSSI.set(message_t* msg, uint8_t value) {
+	call PacketTransmitPower.clear(msg);
+	getMetadata(msg)->flags |= (1<<2);
+	getMetadata(msg)->rssi = value;
+}
 
-	async command bool PacketTimeSyncOffset.isSet(message_t* msg)
-	{
-		return call TimeSyncFlag.get(msg);
-	}
+async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+	return getMetadata(msg)->flags & (1<<3);
+}
 
-	async command uint8_t PacketTimeSyncOffset.get(message_t* msg)
-	{
-		return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
-	}
+async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+}
 
-	async command void PacketTimeSyncOffset.clear(message_t* msg)
-	{
-		call TimeSyncFlag.clear(msg);
-	}
+async command void PacketTimeSyncOffset.clear(message_t* msg) {
+	getMetadata(msg)->flags &= ~(1<<3);
+}
 
-	async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value)
-	{
-		// we do not store the value, the time sync field is always the last 4 bytes
-		RADIO_ASSERT( call PacketTimeSyncOffset.get(msg) == value );
+async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+	getMetadata(msg)->flags |= (1<<3);
+	// we do not store the value, the time sync field is always the last 4 bytes
+}
 
-		call TimeSyncFlag.set(msg);
-	}
+async command bool PacketLinkQuality.isSet(message_t* msg) {
+	return TRUE;
+}
 
-/*----------------- PacketLinkQuality -----------------*/
+async command uint8_t PacketLinkQuality.get(message_t* msg) {
+	return getMetadata(msg)->lqi;
+}
 
-	async command bool PacketLinkQuality.isSet(message_t* msg)
-	{
-		return TRUE;
-	}
+async command void PacketLinkQuality.clear(message_t* msg){
+}
 
-	async command uint8_t PacketLinkQuality.get(message_t* msg)
-	{
-		return getMeta(msg)->lqi;
-	}
+async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
+	getMetadata(msg)->lqi = value;
+}
 
-	async command void PacketLinkQuality.clear(message_t* msg)
-	{
-	}
 
-	async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
-	{
-		getMeta(msg)->lqi = value;
-	}
-
-/*----------------- LinkPacketMetadata -----------------*/
-
-	async command bool LinkPacketMetadata.highChannelQuality(message_t* msg)
-	{
-		return call PacketLinkQuality.get(msg) > 200;
-	}
 }
