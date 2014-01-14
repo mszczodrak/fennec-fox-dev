@@ -47,7 +47,7 @@ uses interface nullRadioParams;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
@@ -256,21 +256,20 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 	getMetadata(msg)->rssi = value;
 }
 
-async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+async command bool PacketTimeSync.isSet(message_t* msg) {
 	return getMetadata(msg)->flags & (1<<3);
 }
     
-async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-	// TODO:
-	//return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
-	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
+async command uint32_t PacketTimeSync.get(message_t* msg) {
+	return (uint32_t)(*((msg->data) + (call RadioPacket.headerLength(msg) +
+		call RadioPacket.payloadLength(msg))));
 }
 
-async command void PacketTimeSyncOffset.clear(message_t* msg) {
+async command void PacketTimeSync.clear(message_t* msg) {
 	getMetadata(msg)->flags &= ~(1<<3);
 }
 
-async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+async command void PacketTimeSync.set(message_t* msg, uint32_t value) {
 	getMetadata(msg)->flags |= (1<<3);
 	// we do not store the value, the time sync field is always the last 4 bytes
 }

@@ -43,7 +43,7 @@ provides interface RadioReceive;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface RadioState;
@@ -72,7 +72,7 @@ RadioCCA = nullRadioP.RadioCCA;
 
 PacketTransmitPower = nullRadioP.PacketTransmitPower;
 PacketRSSI = nullRadioP.PacketRSSI;
-PacketTimeSyncOffset = nullRadioP.PacketTimeSyncOffset;
+PacketTimeSync = nullRadioP.PacketTimeSync;
 PacketLinkQuality = nullRadioP.PacketLinkQuality;
 
 
