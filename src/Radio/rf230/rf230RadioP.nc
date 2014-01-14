@@ -29,9 +29,8 @@
   * Fennec Fox rf230 radio driver adaptation
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/11/2014
+  * @updated: 01/10/2014
   */
-
 
 #include <Fennec.h>
 #include "rf230Radio.h"
@@ -39,126 +38,112 @@
 module rf230RadioP @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
-provides interface Resource as RadioResource;
 provides interface RadioBuffer;
-provides interface RadioPacket;
 provides interface RadioSend;
+provides interface RadioState;
 
 uses interface rf230RadioParams;
 
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
-
-provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
+uses interface RadioState as SubRadioState;
+uses interface RadioReceive as SubRadioReceive;
+uses interface RadioSend as SubRadioSend;
+uses interface RadioPacket;
 
 }
 
 implementation {
 
-uint8_t channel;
 norace uint8_t state = S_STOPPED;
 norace message_t *m;
 bool sc = FALSE;
+norace error_t err;
 
 task void start_done() {
-	state = S_STARTED;
+	if (err == SUCCESS) {
+        	state = S_STARTED;
+	}
 	signal RadioState.done();
 	if (sc == TRUE) {
-		signal SplitControl.startDone(SUCCESS);
-		sc = FALSE;
-	}
-}
-
-task void finish_starting_radio() {
-	post start_done();
+                signal SplitControl.startDone(err);
+                sc = FALSE;
+        }
 }
 
 task void stop_done() {
-	state = S_STOPPED;
+	if (err == SUCCESS) {
+		state = S_STOPPED;
+	}
 	signal RadioState.done();
 	if (sc == TRUE) {
-		signal SplitControl.stopDone(SUCCESS);
+		signal SplitControl.stopDone(err);
 		sc = FALSE;
 	}
 }
 
 command error_t SplitControl.start() {
-	sc = TRUE;
-	return call RadioState.turnOn();
+        sc = TRUE;
+        return call RadioState.turnOn();
 }
-
 
 command error_t SplitControl.stop() {
-	sc = TRUE;
-	return call RadioState.turnOff();
+        sc = TRUE;
+        return call RadioState.turnOff();
 }
 
-
 command error_t RadioState.turnOn() {
-	dbg("Radio", "rf230Radio SplitControl.start()");
-
-	if (state == S_STOPPED) {
-		state = S_STARTING;
-		post start_done();
-		return SUCCESS;
-
-	} else if(state == S_STARTED) {
-		post start_done();
-		return EALREADY;
-
-	} else if(state == S_STARTING) {
-		return SUCCESS;
+	state = S_STARTING;
+	if (call SubRadioState.turnOn() != SUCCESS) {
+		signal SubRadioState.done();
 	}
 	return SUCCESS;
 }
 
 command error_t RadioState.turnOff() {
-	dbg("Radio", "rf230Radio SplitControl.stop()");
-	if (state == S_STARTED) {
-		state = S_STOPPING;
-		post stop_done();
-		return SUCCESS;
-	} else if(state == S_STOPPED) {
-		post stop_done();
-		return EALREADY;
-	} else if(state == S_STOPPING) {
-		return SUCCESS;
+	state = S_STOPPING;
+	if (call SubRadioState.turnOff() != SUCCESS) {
+		signal SubRadioState.done();
 	}
 	return SUCCESS;
 }
 
 command error_t RadioState.standby() {
-	return call RadioState.turnOff();
+        return call RadioState.turnOff();
 }
 
-command error_t RadioState.setChannel(uint8_t new_channel) {
-	channel = new_channel;
-	signal RadioState.done();
-        return SUCCESS;
+command error_t RadioState.setChannel(uint8_t channel) {
+        return call SubRadioState.setChannel( channel );
 }
 
 command uint8_t RadioState.getChannel() {
-        return channel;
+        return call SubRadioState.getChannel();
 }
 
+event void SubRadioState.done() {
+	switch(state) {
+	case S_STARTING:
+		post start_done();		
+		break;
 
+	case S_STOPPING:
+		post stop_done();
+		break;
 
-async command error_t RadioCCA.request() {
-	return SUCCESS;
+	default:
+		break;
+
+	}
 }
+
 
 task void load_done() {
 	signal RadioBuffer.loadDone(m, SUCCESS);
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
-	dbg("Radio", "rf230Radio RadioBuffer.load(0x%1x)", msg);
+	rf230_hdr_t* header = (rf230_hdr_t*)(msg->data);
+	header->destpan = msg->conf;
 	m = msg;
-	post load_done();
+	signal RadioBuffer.loadDone(msg, SUCCESS);
 	return SUCCESS;
 }
 
@@ -168,130 +153,30 @@ task void send_done() {
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "rf230Radio RadioBuffer.send(0x%1x)", msg, useCca);
-	post send_done();
-	return SUCCESS;
+	return call SubRadioSend.send(msg, useCca);
 }
 
-async command uint8_t RadioPacket.maxPayloadLength() {
-	dbg("Radio", "rf230Radio RadioBuffer.maxPayloadLength()");
-	return RF230_MAX_MESSAGE_SIZE - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
+async event void SubRadioSend.ready() {
+	signal RadioSend.ready();
 }
 
-async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	return sizeof(nx_struct rf230_radio_header_t);
-}
-
-async command uint8_t RadioPacket.payloadLength(message_t* msg) {
-	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct rf230_radio_header_t) - RF230_SIZEOF_CRC - sizeof(timesync_radio_t);
-}
-
-async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-	nx_struct rf230_radio_header_t *hdr = (nx_struct rf230_radio_header_t*)(msg->data);
-	hdr->length = length + sizeof(nx_struct rf230_radio_header_t) + RF230_SIZEOF_CRC + sizeof(timesync_radio_t);
-}
-
-async command uint8_t RadioPacket.metadataLength(message_t* msg) {
-        return sizeof(metadata_t);
-}
-
-async command void RadioPacket.clear(message_t* msg) {
-        memset(msg, 0x0, sizeof(message_t));
+async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	signal RadioSend.sendDone(msg, error);
 }
 
 
-
-async command error_t RadioResource.immediateRequest() {
-	return SUCCESS;
-}
-
-async command error_t RadioResource.request() {
-	return SUCCESS;
-}
-
-async command bool RadioResource.isOwner() {
-	return SUCCESS;
-}
-
-async command error_t RadioResource.release() {
-	return SUCCESS;
-}
-
-async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
-       //      return call PacketLinkQuality.get(msg) > 105;
+async event bool SubRadioReceive.header(message_t* msg) {
+	rf230_hdr_t* header = (rf230_hdr_t*)(msg->data);
+	msg->conf = header->destpan;
+	return signal RadioReceive.header(msg);
 }
 
 
-async command bool PacketTransmitPower.isSet(message_t* msg) {
-	return getMetadata(msg)->flags & (1<<1);
+async event message_t *SubRadioReceive.receive(message_t* msg) {
+	rf230_hdr_t* header = (rf230_hdr_t*)(msg->data);
+	msg->conf = header->destpan;
+	return signal RadioReceive.receive(msg);
 }
-
-async command uint8_t PacketTransmitPower.get(message_t* msg) {
-	return getMetadata(msg)->tx_power;
-}
-
-async command void PacketTransmitPower.clear(message_t* msg) {
-	getMetadata(msg)->flags &= ~(1<<1);
-}
-
-async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
-	getMetadata(msg)->flags |= (1<<1);
-	getMetadata(msg)->tx_power = value;
-}
-
-async command bool PacketRSSI.isSet(message_t* msg) {
-	return getMetadata(msg)->flags & (1<<2);
-}
-
-async command uint8_t PacketRSSI.get(message_t* msg) {
-	return getMetadata(msg)->rssi;
-}
-
-async command void PacketRSSI.clear(message_t* msg) {
-	getMetadata(msg)->flags &= ~(1<<2);
-}
-
-async command void PacketRSSI.set(message_t* msg, uint8_t value) {
-	call PacketTransmitPower.clear(msg);
-	getMetadata(msg)->flags |= (1<<2);
-	getMetadata(msg)->rssi = value;
-}
-
-async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
-	return getMetadata(msg)->flags & (1<<3);
-}
-    
-async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-	// TODO:
-	//return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg) - sizeof(timesync_absolute_t);
-	return call RadioPacket.headerLength(msg) + call RadioPacket.payloadLength(msg);
-}
-
-async command void PacketTimeSyncOffset.clear(message_t* msg) {
-	getMetadata(msg)->flags &= ~(1<<3);
-}
-
-async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
-	getMetadata(msg)->flags |= (1<<3);
-	// we do not store the value, the time sync field is always the last 4 bytes
-}
-
-async command bool PacketLinkQuality.isSet(message_t* msg) {
-	return TRUE;
-}
-
-async command uint8_t PacketLinkQuality.get(message_t* msg) {
-	return getMetadata(msg)->lqi;
-}
-
-async command void PacketLinkQuality.clear(message_t* msg){
-}
-
-async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
-	getMetadata(msg)->lqi = value;
-}
-
-
 
 
 }
