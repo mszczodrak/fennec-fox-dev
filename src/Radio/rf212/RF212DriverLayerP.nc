@@ -428,16 +428,13 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	length = call PacketTransmitPower.isSet(msg) ?
 		call PacketTransmitPower.get(msg) : RF212_DEF_RFPOWER;
 
-	if( length != txPower )
-	{
+	if( length != txPower ) {
 		txPower = length;
 		writeRegister(RF212_PHY_TX_PWR, txPower);
 	}
 
 	if( (getHeader(msg)->fcf & IEEE154_DATA_FRAME_MASK) == IEEE154_DATA_FRAME_VALUE
-
-		&& (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) )
-	{
+		&& (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) > ((rssiClear + rssiBusy) >> 3) ) {
 		call SpiResource.release();
 		return EBUSY;
 	}
@@ -474,351 +471,330 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	}
 
 #ifndef RF212_SLOW_SPI
-		atomic
-		{
-			call SLP_TR.set();
-			time = call RadioAlarm.getNow();
-		}
-		call SLP_TR.clr();
+	atomic {
+		call SLP_TR.set();
+		time = call RadioAlarm.getNow();
+	}
+	call SLP_TR.clr();
 #endif
 
-		RADIO_ASSERT( ! radioIrq );
+	RADIO_ASSERT( ! radioIrq );
 
-		call SELN.clr();
-		call FastSpiByte.splitWrite(RF212_CMD_FRAME_WRITE);
+	call SELN.clr();
+	call FastSpiByte.splitWrite(RF212_CMD_FRAME_WRITE);
 
-		// length | data[0] ... data[length-3] | automatically generated FCS
-		call FastSpiByte.splitReadWrite(length);
+	// length | data[0] ... data[length-3] | automatically generated FCS
+	call FastSpiByte.splitReadWrite(length);
 
-		do {
-			call FastSpiByte.splitReadWrite(*(data++));
-		}
-		while( --upload1 != 0 );
+	do {
+		call FastSpiByte.splitReadWrite(*(data++));
+	}
+	while( --upload1 != 0 );
 
 #ifdef RF212_SLOW_SPI
-		atomic
-		{
-			call SLP_TR.set();
-			time = call RadioAlarm.getNow();
-		}
-		call SLP_TR.clr();
+	atomic {
+		call SLP_TR.set();
+		time = call RadioAlarm.getNow();
+	}
+	call SLP_TR.clr();
 #endif
 
-		time32 += (int16_t)(time + TX_SFD_DELAY) - (int16_t)(time32);
+	time32 += (int16_t)(time + TX_SFD_DELAY) - (int16_t)(time32);
 
-		if( upload2 != 0 )
-		{
-			uint32_t absolute = *(timesync_absolute_t*)data;
-			*(timesync_relative_t*)data = absolute - time32;
+	if( upload2 != 0 ) {
+		uint32_t absolute = *(timesync_absolute_t*)data;
+		*(timesync_relative_t*)data = absolute - time32;
 
-			// do not modify the data pointer so we can reset the timestamp
-			RADIO_ASSERT( upload1 == 0 );
-			do {
-				call FastSpiByte.splitReadWrite(data[upload1]);
-			}
-			while( ++upload1 != upload2 );
-
-			*(timesync_absolute_t*)data = absolute;
+		// do not modify the data pointer so we can reset the timestamp
+		RADIO_ASSERT( upload1 == 0 );
+		do {
+			call FastSpiByte.splitReadWrite(data[upload1]);
 		}
-		
-		//dummy bytes for FCS. Otherwise we'll get an TRX_UR interrupt. It's strange though, the RF23x, doesn't need this
-		call FastSpiByte.splitReadWrite(0);
-		call FastSpiByte.splitReadWrite(0);
+		while( ++upload1 != upload2 );
 
-		// wait for the SPI transfer to finish
-		call FastSpiByte.splitRead();
-		call SELN.set();
-
-		/*
-		 * There is a very small window (~1 microsecond) when the RF212 went
-		 * into PLL_ON state but was somehow not properly initialized because
-		 * of an incoming message and could not go into BUSY_TX. I think the
-		 * radio can even receive a message, and generate a TRX_UR interrupt
-		 * because of concurrent access, but that message probably cannot be
-		 * recovered.
-		 *
-		 * TODO: this needs to be verified, and make sure that the chip is
-		 * not locked up in this case.
-		 */
-
-		// go back to RX_ON state when finished
-		writeRegister(RF212_TRX_STATE, RF212_RX_ON);
-
-		call PacketTimeSyncOffset.set(msg, 0);
-
-		// wait for the TRX_END interrupt
-		state = STATE_BUSY_TX_2_RX_ON;
-		cmd = CMD_TRANSMIT;
-
-		return SUCCESS;
+		*(timesync_absolute_t*)data = absolute;
 	}
+		
+	//dummy bytes for FCS. Otherwise we'll get an TRX_UR interrupt. It's strange though, the RF23x, doesn't need this
+	call FastSpiByte.splitReadWrite(0);
+	call FastSpiByte.splitReadWrite(0);
+
+	// wait for the SPI transfer to finish
+	call FastSpiByte.splitRead();
+	call SELN.set();
+
+	/*
+	 * There is a very small window (~1 microsecond) when the RF212 went
+	 * into PLL_ON state but was somehow not properly initialized because
+	 * of an incoming message and could not go into BUSY_TX. I think the
+	 * radio can even receive a message, and generate a TRX_UR interrupt
+	 * because of concurrent access, but that message probably cannot be
+	 * recovered.
+	 *
+	 * TODO: this needs to be verified, and make sure that the chip is
+	 * not locked up in this case.
+	 */
+
+	// go back to RX_ON state when finished
+	writeRegister(RF212_TRX_STATE, RF212_RX_ON);
+
+	call PacketTimeSyncOffset.set(msg, 0);
+
+	// wait for the TRX_END interrupt
+	state = STATE_BUSY_TX_2_RX_ON;
+	cmd = CMD_TRANSMIT;
+
+	return SUCCESS;
+}
 
 
 /*----------------- CCA -----------------*/
 
-	async command error_t RadioCCA.request()
-	{
-		if( cmd != CMD_NONE || state != STATE_RX_ON || ! isSpiAcquired() )
-			return EBUSY;
+async command error_t RadioCCA.request() {
+	if( cmd != CMD_NONE || state != STATE_RX_ON || ! isSpiAcquired() )
+		return EBUSY;
 
-		cmd = CMD_CCA;
-		writeRegister(RF212_PHY_CC_CCA, RF212_CCA_REQUEST | RF212_CCA_MODE_VALUE | channel);
+	cmd = CMD_CCA;
+	writeRegister(RF212_PHY_CC_CCA, RF212_CCA_REQUEST | RF212_CCA_MODE_VALUE | channel);
 
-		return SUCCESS;
-	}
+	return SUCCESS;
+}
 
-	default async event void RadioCCA.done(error_t error) { }
+default async event void RadioCCA.done(error_t error) { }
 
 /*----------------- RECEIVE -----------------*/
 
-	inline void downloadMessage()
-	{
-		uint8_t length;
-		bool crcValid = FALSE;
+inline void downloadMessage() {
+	uint8_t length;
+	bool crcValid = FALSE;
 
-		call SELN.clr();
-		call FastSpiByte.write(RF212_CMD_FRAME_READ);
+	call SELN.clr();
+	call FastSpiByte.write(RF212_CMD_FRAME_READ);
 
-		// read the length byte
-		length = call FastSpiByte.write(0);
+	// read the length byte
+	length = call FastSpiByte.write(0);
 
-		// if correct length
-		if( length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2 )
-		{
-			uint8_t read;
-			uint8_t* data;
+	// if correct length
+	if( length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2 ) {
+		uint8_t read;
+		uint8_t* data;
 
-			// initiate the reading
-			call FastSpiByte.splitWrite(0);
+		// initiate the reading
+		call FastSpiByte.splitWrite(0);
 
-			data = getPayload(rxMsg);
-			getHeader(rxMsg)->length = length;
+		data = getPayload(rxMsg);
+		getHeader(rxMsg)->length = length;
 
-			// we do not store the CRC field
-			length -= 2;
+		// we do not store the CRC field
+		length -= 2;
 
-			read = 7; // headerPreloadLength
-			if( length < read )
-				read = length;
+		read = 7; // headerPreloadLength
+		if( length < read )
+			read = length;
 
-			length -= read;
+		length -= read;
 
-			do {
-				*(data++) = call FastSpiByte.splitReadWrite(0);
-			}
-			while( --read != 0  );
-
-			if( signal RadioReceive.header(rxMsg) )
-			{
-				while( length-- != 0 )
-					*(data++) = call FastSpiByte.splitReadWrite(0);
-
-				call FastSpiByte.splitReadWrite(0);	// two CRC bytes
-				call FastSpiByte.splitReadWrite(0);
-
-				call PacketLinkQuality.set(rxMsg, call FastSpiByte.splitReadWrite(0));
-				call FastSpiByte.splitReadWrite(0);	// ED
-				crcValid = call FastSpiByte.splitRead() & RF212_RX_CRC_VALID;	// RX_STATUS
-			}
-			else
-				call FastSpiByte.splitRead(); // finish the SPI transfer
+		do {
+			*(data++) = call FastSpiByte.splitReadWrite(0);
 		}
+		while( --read != 0  );
 
-		call SELN.set();
-		state = STATE_RX_ON;
+		if( signal RadioReceive.header(rxMsg) ) {
+			while( length-- != 0 )
+				*(data++) = call FastSpiByte.splitReadWrite(0);
 
-		cmd = CMD_NONE;
+			call FastSpiByte.splitReadWrite(0);	// two CRC bytes
+			call FastSpiByte.splitReadWrite(0);
 
-		// signal only if it has passed the CRC check
-		if( crcValid )
-			rxMsg = signal RadioReceive.receive(rxMsg);
+			call PacketLinkQuality.set(rxMsg, call FastSpiByte.splitReadWrite(0));
+			call FastSpiByte.splitReadWrite(0);	// ED
+			crcValid = call FastSpiByte.splitRead() & RF212_RX_CRC_VALID;	// RX_STATUS
+		}
+		else
+			call FastSpiByte.splitRead(); // finish the SPI transfer
 	}
+
+	call SELN.set();
+	state = STATE_RX_ON;
+
+	cmd = CMD_NONE;
+
+	// signal only if it has passed the CRC check
+	if( crcValid )
+		rxMsg = signal RadioReceive.receive(rxMsg);
+}
 
 /*----------------- IRQ -----------------*/
 
-	async event void IRQ.captured(uint16_t time)
-	{
-		RADIO_ASSERT( ! radioIrq );
+async event void IRQ.captured(uint16_t time) {
+	RADIO_ASSERT( ! radioIrq );
 
-		atomic
-		{
-			capturedTime = time;
-			radioIrq = TRUE;
-		}
-
-		task_run();
+	atomic {
+		capturedTime = time;
+		radioIrq = TRUE;
 	}
 
-	void serviceRadio()
-	{
-		if( state != STATE_SLEEP && isSpiAcquired() )
-		{
-			uint16_t time;
-			uint32_t time32;
-			uint8_t irq;
-			uint8_t temp;
+	task_run();
+}
 
-			atomic time = capturedTime;
-			radioIrq = FALSE;
-			irq = readRegister(RF212_IRQ_STATUS);
-			//this is really bad, but unfortunatly sometimes happens (e.g. radio receives a message while turning on). can't found better solution than reset
-			if(irq == 0 ){
+void serviceRadio() {
+	if( state != STATE_SLEEP && isSpiAcquired() ) {
+		uint16_t time;
+		uint32_t time32;
+		uint8_t irq;
+		uint8_t temp;
+
+		atomic time = capturedTime;
+		radioIrq = FALSE;
+		irq = readRegister(RF212_IRQ_STATUS);
+		//this is really bad, but unfortunatly sometimes happens (e.g. radio receives a message while turning on). can't found better solution than reset
+		if(irq == 0 ){
+			RADIO_ASSERT(FALSE);
+			if (cmd == CMD_TURNON){
+				resetRadio();
+				//CMD_TURNON will be restarted at the tasklet when serviceRadio returns
+			} else
 				RADIO_ASSERT(FALSE);
-				if (cmd == CMD_TURNON){
-					resetRadio();
-					//CMD_TURNON will be restarted at the tasklet when serviceRadio returns
-				} else
-					RADIO_ASSERT(FALSE);
-				/*
-				 * We don't care (yet) with CHANNEL, CCA, RECEIVE and TRANSMIT, mostly becouse all of them needs to turn the radio back on, which needs PLL_LOCK irq,
-				 * but we don't want to signal RadioState.done()
-				 * However it seems most problems happens when turning on the radio
-				 */
-				return;
-			}
+			/*
+			 * We don't care (yet) with CHANNEL, CCA, RECEIVE and TRANSMIT, mostly becouse all of them needs to turn the radio back on, which needs PLL_LOCK irq,
+			 * but we don't want to signal RadioState.done()
+			 * However it seems most problems happens when turning on the radio
+			 */
+			return;
+		}
 
 #ifdef RF212_RSSI_ENERGY
-			if( irq & RF212_IRQ_TRX_END )
-			{
-				if( irq == RF212_IRQ_TRX_END ||
-					(irq == (RF212_IRQ_RX_START | RF212_IRQ_TRX_END) && cmd == CMD_NONE) )
-					call PacketRSSI.set(rxMsg, readRegister(RF212_PHY_ED_LEVEL));
-				else
-					call PacketRSSI.clear(rxMsg);
-			}
+		if( irq & RF212_IRQ_TRX_END ) {
+			if( irq == RF212_IRQ_TRX_END ||
+				(irq == (RF212_IRQ_RX_START | RF212_IRQ_TRX_END) && cmd == CMD_NONE) )
+				call PacketRSSI.set(rxMsg, readRegister(RF212_PHY_ED_LEVEL));
+			else
+				call PacketRSSI.clear(rxMsg);
+		}
 #endif
 
-			if ( irq & RF212_IRQ_CCA_ED_DONE)
+		if ( irq & RF212_IRQ_CCA_ED_DONE) {
+			if( state == STATE_SLEEP_2_TRX_OFF )
+				state = STATE_TRX_OFF;
+			else if( cmd == CMD_CCA )
 			{
-				if( state == STATE_SLEEP_2_TRX_OFF )
-					state = STATE_TRX_OFF;
-				else if( cmd == CMD_CCA )
-				{
-					uint8_t cca;
+				uint8_t cca;
+				RADIO_ASSERT( state == STATE_RX_ON );
 
-					RADIO_ASSERT( state == STATE_RX_ON );
+				cmd = CMD_NONE;
+				cca = readRegister(RF212_TRX_STATUS);
 
-					cmd = CMD_NONE;
-					cca = readRegister(RF212_TRX_STATUS);
+				// sometimes we don't handle yet the RX_START interrupt, but we're already receiving.
+				// It's all right though, CCA reports busy as it should.
+				RADIO_ASSERT( (cca & RF212_TRX_STATUS_MASK) == RF212_RX_ON || (cca & RF212_TRX_STATUS_MASK) == RF212_BUSY_RX);
 
-					// sometimes we don't handle yet the RX_START interrupt, but we're already receiving.
-					// It's all right though, CCA reports busy as it should.
-					RADIO_ASSERT( (cca & RF212_TRX_STATUS_MASK) == RF212_RX_ON || (cca & RF212_TRX_STATUS_MASK) == RF212_BUSY_RX);
-
-					signal RadioCCA.done( (cca & RF212_CCA_DONE) ? ((cca & RF212_CCA_STATUS) ? SUCCESS : EBUSY) : FAIL );
-				}
-				else if( state != STATE_RX_ON ) //if we receive a message during CCA, we will still get this interrupt, but we're already reported FAIL at RX_START
-					RADIO_ASSERT(FALSE);
+				signal RadioCCA.done( (cca & RF212_CCA_DONE) ? ((cca & RF212_CCA_STATUS) ? SUCCESS : EBUSY) : FAIL );
 			}
+			else if( state != STATE_RX_ON ) //if we receive a message during CCA, we will still get this interrupt, but we're already reported FAIL at RX_START
+				RADIO_ASSERT(FALSE);
+		}
 
 //			This should be OK now, since we enable the interrupts in SLEEP state, before changing to TRX_OFF
-// 			// sometimes we miss a PLL lock interrupt after turn on
-// 			if( cmd == CMD_TURNON || cmd == CMD_CHANNEL )
-// 			{
-// 				RADIO_ASSERT( irq & RF212_IRQ_PLL_LOCK );
-// 				RADIO_ASSERT( state == STATE_TRX_OFF_2_RX_ON );
+// 		// sometimes we miss a PLL lock interrupt after turn on
+// 		if( cmd == CMD_TURNON || cmd == CMD_CHANNEL )
+// 		{
+// 			RADIO_ASSERT( irq & RF212_IRQ_PLL_LOCK );
+// 			RADIO_ASSERT( state == STATE_TRX_OFF_2_RX_ON );
 //
-// 				state = STATE_RX_ON;
-// 				cmd = CMD_SIGNAL_DONE;
-// 			}	else
-			if( irq & RF212_IRQ_PLL_LOCK )
+// 			state = STATE_RX_ON;
+// 			cmd = CMD_SIGNAL_DONE;
+// 		}	else
+		if( irq & RF212_IRQ_PLL_LOCK )
+		{
+			RADIO_ASSERT( state == STATE_TRX_OFF_2_RX_ON );
+			if( cmd == CMD_TURNON || cmd == CMD_CHANNEL )
 			{
-				RADIO_ASSERT( state == STATE_TRX_OFF_2_RX_ON );
-				if( cmd == CMD_TURNON || cmd == CMD_CHANNEL )
-				{
-					state = STATE_RX_ON;
-					cmd = CMD_SIGNAL_DONE;
-				} else
-					RADIO_ASSERT( FALSE );
+				state = STATE_RX_ON;
+				cmd = CMD_SIGNAL_DONE;
+			} else
+				RADIO_ASSERT( FALSE );
+		}
+
+		if( irq & RF212_IRQ_RX_START )
+		{
+			if( cmd == CMD_CCA )
+			{
+				cmd = CMD_NONE;
+				signal RadioCCA.done(FAIL);
 			}
-
-			if( irq & RF212_IRQ_RX_START )
+			if( cmd == CMD_NONE )
 			{
-				if( cmd == CMD_CCA )
+				RADIO_ASSERT( state == STATE_RX_ON );
+				// the most likely place for busy channel, with no TRX_END interrupt
+				if( irq == RF212_IRQ_RX_START )
 				{
-					cmd = CMD_NONE;
-					signal RadioCCA.done(FAIL);
-				}
-
-				if( cmd == CMD_NONE )
-				{
-					RADIO_ASSERT( state == STATE_RX_ON );
-
-					// the most likely place for busy channel, with no TRX_END interrupt
-					if( irq == RF212_IRQ_RX_START )
-					{
-						temp = readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK;
-						rssiBusy += temp - (rssiBusy >> 2);
+					temp = readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK;
+					rssiBusy += temp - (rssiBusy >> 2);
 #ifndef RF212_RSSI_ENERGY
-						call PacketRSSI.set(rxMsg, temp);
-					}
-					else
-					{
-						call PacketRSSI.clear(rxMsg);
+					call PacketRSSI.set(rxMsg, temp);
+				}
+				else
+				{
+					call PacketRSSI.clear(rxMsg);
 #endif
-					}
-
-					/*
-					 * The timestamp corresponds to the first event which could not
-					 * have been a PLL_LOCK because then cmd != CMD_NONE, so we must
-					 * have received a message (and could also have received the
-					 * TRX_END interrupt in the mean time, but that is fine. Also,
-					 * we could not be after a transmission, because then cmd =
-					 * CMD_TRANSMIT.
-					 */
-					if( irq == RF212_IRQ_RX_START ) // just to be cautious
-					{
-						time32 = call LocalTime.get();
-						time32 += (int16_t)(time - RX_SFD_DELAY) - (int16_t)(time32);
-						call PacketTimeSyncOffset.set(rxMsg, time32);
-					}
-					else {
-						call PacketTimeSyncOffset.clear(rxMsg);
-					}
-
-					cmd = CMD_RECEIVE;
 				}
-				else
-					RADIO_ASSERT( cmd == CMD_TURNOFF );
-			}
 
-			if( irq & RF212_IRQ_TRX_END )
+				/*
+				 * The timestamp corresponds to the first event which could not
+				 * have been a PLL_LOCK because then cmd != CMD_NONE, so we must
+				 * have received a message (and could also have received the
+				 * TRX_END interrupt in the mean time, but that is fine. Also,
+				 * we could not be after a transmission, because then cmd =
+				 * CMD_TRANSMIT.
+				 */
+				if( irq == RF212_IRQ_RX_START ) // just to be cautious
+				{
+					time32 = call LocalTime.get();
+					time32 += (int16_t)(time - RX_SFD_DELAY) - (int16_t)(time32);
+					call PacketTimeSyncOffset.set(rxMsg, time32);
+				}
+				else {
+					call PacketTimeSyncOffset.clear(rxMsg);
+				}
+				cmd = CMD_RECEIVE;
+			}
+			else
+				RADIO_ASSERT( cmd == CMD_TURNOFF );
+		}
+
+		if( irq & RF212_IRQ_TRX_END )
+		{
+			if( cmd == CMD_TRANSMIT )
 			{
-				if( cmd == CMD_TRANSMIT )
-				{
-					RADIO_ASSERT( state == STATE_BUSY_TX_2_RX_ON );
+				RADIO_ASSERT( state == STATE_BUSY_TX_2_RX_ON );
+				state = STATE_RX_ON;
+				cmd = CMD_NONE;
+				signal RadioSend.sendDone(rxMsg, SUCCESS);
 
-					state = STATE_RX_ON;
-					cmd = CMD_NONE;
-					signal RadioSend.sendDone(rxMsg, SUCCESS);
-
-					// TODO: we could have missed a received message
-					RADIO_ASSERT( ! (irq & RF212_IRQ_RX_START) );
-				}
-				else if( cmd == CMD_RECEIVE )
-				{
-					RADIO_ASSERT( state == STATE_RX_ON );
-
-					// the most likely place for clear channel (hope to avoid acks)
-					rssiClear += (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) - (rssiClear >> 2);
-
-					cmd = CMD_DOWNLOAD;
-				}
-				else
-					RADIO_ASSERT(FALSE);
+				// TODO: we could have missed a received message
+				RADIO_ASSERT( ! (irq & RF212_IRQ_RX_START) );
 			}
+			else if( cmd == CMD_RECEIVE )
+			{
+				RADIO_ASSERT( state == STATE_RX_ON );
+
+				// the most likely place for clear channel (hope to avoid acks)
+				rssiClear += (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) - (rssiClear >> 2);
+				cmd = CMD_DOWNLOAD;
+			}
+			else
+				RADIO_ASSERT(FALSE);
 		}
 	}
+}
 
-	default async event bool RadioReceive.header(message_t* msg)
-	{
-		return TRUE;
-	}
+default async event bool RadioReceive.header(message_t* msg) {
+	return TRUE;
+}
 
-	default async event message_t* RadioReceive.receive(message_t* msg)
-	{
-		return msg;
-	}
+default async event message_t* RadioReceive.receive(message_t* msg) {
+	return msg;
+}
 
 /*----------------- TASKLET -----------------*/
 
