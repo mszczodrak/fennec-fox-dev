@@ -248,10 +248,6 @@ async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t t
 	return call Fennec.getModuleId(call Fennec.getConfId(from_module_id), to_layer_id);
 }
 
-async command struct stack_params Fennec.getConfParams(module_t module_id) {
-        return states[call Fennec.getStateId()].conf_params[get_conf_id_in_state(module_id)];
-}
-
 async command error_t Fennec.checkPacket(message_t *msg) {
 	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
 		dbg("Caches", "CachesP Fennec.checPacket(0x%1x) - FAIL", msg);
