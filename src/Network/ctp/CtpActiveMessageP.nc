@@ -30,13 +30,13 @@ uint8_t getCtpType(message_t* msg) {
 }
 
 void do_sendDone(message_t *msg, error_t error) {
-	dbg("Network", "CTP CtpActiveMessageP do_sendDone(0x%1x, %d) - type %d",
+	dbg("Network-Detail", "CTP CtpActiveMessageP do_sendDone(0x%1x, %d) - type %d",
 				msg, error, getCtpType(msg));
 	signal AMSend.sendDone[getCtpType(msg)](msg, error);
 }
 
 message_t* do_receive(message_t *msg, void *payload, uint8_t len) {
-	dbg("Network", "CTP CtpActiveMessageP do_receive(0x%1x, 0x%1x, %d) - type %d",
+	dbg("Network-Detail", "CTP CtpActiveMessageP do_receive(0x%1x, 0x%1x, %d) - type %d",
 				msg, payload, len, getCtpType(msg));
 	return signal Receive.receive[getCtpType(msg)](msg, (void*)(((uint8_t*)payload)), len);
 }
