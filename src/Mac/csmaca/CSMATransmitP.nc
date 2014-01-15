@@ -343,18 +343,23 @@ command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
 }
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
-	dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d)", msg, error);
 	if(call SplitControlState.isState(S_STOPPING)) {
+		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) - STOPPING",
+						msg, error);
 		shutdown();
 		return;
 	}
 	if (error != SUCCESS) {
+		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) != SUCCESS"
+						, msg, error);
 		sendDoneErr = error;
 		post signalSendDone();
 		return;
 	}
 
 	if ( m_state == S_CANCEL ) {
+		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) = S_CANCEL",
+						msg, error);
 		sendDoneErr = ECANCEL;
 		post signalSendDone();
 	} else if ( !m_cca ) {
@@ -367,6 +372,8 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	} else {
 		m_state = S_SAMPLE_CCA;
 
+		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) = SAMPLE_CCA",
+					msg, error);
 		requestInitialBackoff(msg, FALSE);
 		if (myInitialBackoff) {
 			call BackoffTimer.start(myInitialBackoff);
@@ -386,6 +393,7 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
    */
 async event void BackoffTimer.fired() {
 	dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired()");
+	dbg("Mac", "csmaMac CSMATransmitP BackoffTimer.fired()");
 	if(call SplitControlState.isState(S_STOPPING)) {
 		dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_STOPPING");
 		shutdown();
@@ -410,8 +418,11 @@ async event void BackoffTimer.fired() {
 	case S_BEGIN_TRANSMIT:
 		dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_BEGIN_TRANSMIT");
 		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
+			dbg("Mac", "csmaMac CSMATransmitP RadioSend.send() != SUCCESS");
 			signal RadioSend.sendDone(m_msg, FAIL);
+			return;
 		}
+		dbg("Mac", "csmaMac CSMATransmitP RadioSend.send() == SUCCESS");
 		break;
 
 	case S_CANCEL:

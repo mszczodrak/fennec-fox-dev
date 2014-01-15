@@ -177,7 +177,7 @@ uint32_t t;
 bool tHasPassed;
 
 void chooseAdvertiseTime() {
-	dbg("Network", "CtpRoutingEngineP chooseAdvertiseTime()");
+	dbg("Network-Detail", "CtpRoutingEngineP chooseAdvertiseTime()");
 	t = currentInterval;
 	t /= 2;
 	t += call Random.rand32() % t;
@@ -186,13 +186,13 @@ void chooseAdvertiseTime() {
 }
 
 void resetInterval() {
-	dbg("Network", "CtpRoutingEngineP resetInterval()");
+	dbg("Network-Detail", "CtpRoutingEngineP resetInterval()");
 	currentInterval = minInterval;
 	chooseAdvertiseTime();
 }
 
 void decayInterval() {
-	dbg("Network", "CtpRoutingEngineP decayInterval()");
+	dbg("Network-Detail", "CtpRoutingEngineP decayInterval()");
 	currentInterval *= 2;
 	if (currentInterval > maxInterval) {
 		currentInterval = maxInterval;
@@ -202,7 +202,7 @@ void decayInterval() {
 
 void remainingInterval() {
 	uint32_t remaining = currentInterval;
-	dbg("Network", "CtpRoutingEngineP remainingInterval()");
+	dbg("Network-Detail", "CtpRoutingEngineP remainingInterval()");
 	remaining -= t;
 	tHasPassed = TRUE;
 	call BeaconTimer.startOneShot(remaining);
@@ -418,14 +418,14 @@ command error_t StdControl.stop() {
     }
 
 event void RouteTimer.fired() {
-	dbg("Network", "CtpRoutingEngineP RouteTimer.fired()");
+	dbg("Network-Detail", "CtpRoutingEngineP RouteTimer.fired()");
 	if (running) {
 		post updateRouteTask();
 	}
 }
       
 event void BeaconTimer.fired() {
-	dbg("Network", "CtpRoutingEngineP BeaconTimer.fired()");
+	dbg("Network-Detail", "CtpRoutingEngineP BeaconTimer.fired()");
 	if (running) {
         	if (!tHasPassed) {
           		post updateRouteTask(); //always send the most up to date info
