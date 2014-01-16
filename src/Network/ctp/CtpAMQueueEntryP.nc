@@ -41,11 +41,9 @@
 #include "AM.h"
 
 generic module CtpAMQueueEntryP(am_id_t amId) @safe() {
-  provides interface AMSend;
-  uses{
-    interface Send;
-    interface AMPacket;
-  }
+provides interface AMSend;
+uses interface Send;
+uses interface AMPacket;
 }
 
 implementation {

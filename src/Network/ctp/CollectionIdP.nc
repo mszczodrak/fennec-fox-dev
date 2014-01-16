@@ -43,7 +43,7 @@
 #include "Collection.h"
 
 generic module CollectionIdP(collection_id_t collectid) {
-  provides interface CollectionId;
+provides interface CollectionId;
 }
 
 implementation {
