@@ -82,7 +82,7 @@ uses interface Receive as SubReceive;
 uses interface SplitControl as SubControl;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
-uses interface csmacaMacParams;
+uses interface csmacaParams;
 uses interface CSMATransmit;
 uses interface RadioCCA;
 
@@ -110,7 +110,7 @@ MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
 
 CSMATransmit = DefaultLplP.CSMATransmit;
 
-csmacaMacParams = DefaultLplP.csmacaMacParams;
+csmacaParams = DefaultLplP.csmacaParams;
 SubControl = DefaultLplP.SubControl;
 SubReceive = DefaultLplP.SubReceive;
 SubSend = DefaultLplP.SubSend;

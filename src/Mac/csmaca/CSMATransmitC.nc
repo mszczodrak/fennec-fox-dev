@@ -45,7 +45,7 @@ uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
-uses interface csmacaMacParams;
+uses interface csmacaParams;
 uses interface Resource as RadioResource;
 uses interface RadioCCA;
 
@@ -78,7 +78,7 @@ RadioBuffer = CSMATransmitP.RadioBuffer;
 RadioSend = CSMATransmitP.RadioSend;
 RadioPacket = CSMATransmitP.RadioPacket;
 
-csmacaMacParams = CSMATransmitP.csmacaMacParams;
+csmacaParams = CSMATransmitP.csmacaParams;
 
 components RandomC;
 CSMATransmitP.Random -> RandomC;

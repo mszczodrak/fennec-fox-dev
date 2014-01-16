@@ -71,7 +71,7 @@
   */
 
  
-#include "csmacaMac.h"
+#include "csmaca.h"
 
 module UniqueP @safe() {
 provides interface Send;

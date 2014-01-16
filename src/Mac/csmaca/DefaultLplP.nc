@@ -99,7 +99,7 @@ uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
 
 uses interface RadioCCA;
-uses interface csmacaMacParams;
+uses interface csmacaParams;
 }
 
 implementation {
@@ -146,10 +146,10 @@ command error_t SplitControl.start() {
 	// Radio was off, now has been told to turn on or duty cycle.
 	state = S_STARTING;
 
-	if (TOS_NODE_ID == call csmacaMacParams.get_sink_addr()) {
+	if (TOS_NODE_ID == call csmacaParams.get_sink_addr()) {
 		sleepInterval = 0;
 	} else {
-		sleepInterval = call csmacaMacParams.get_delay_after_receive();
+		sleepInterval = call csmacaParams.get_delay_after_receive();
 	}
 
 	if(sleepInterval > 0) {
@@ -444,7 +444,7 @@ task void resend() {
   
   
 void startOffTimer() {
-	call OffTimer.startOneShot(call csmacaMacParams.get_delay_after_receive());
+	call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 }
 
 

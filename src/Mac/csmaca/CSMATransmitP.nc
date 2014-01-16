@@ -35,7 +35,7 @@
 #include "crc.h"
 #include "message.h"
 #include "Fennec.h"
-#include "csmacaMac.h"
+#include "csmaca.h"
 
 module CSMATransmitP @safe() {
 provides interface CSMATransmit;
@@ -48,7 +48,7 @@ uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
-uses interface csmacaMacParams;
+uses interface csmacaParams;
 uses interface Random;
 uses interface State as SplitControlState;
 uses interface Resource as RadioResource;
@@ -171,7 +171,7 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	header = (csmaca_header_t*) call Send.getPayload( p_msg, len);
 	metadata = (metadata_t*) p_msg->metadata;
 
-	if ((!call csmacaMacParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
+	if ((!call csmacaParams.get_ack()) && (header->fcf & 1 << IEEE154_FCF_ACK_REQ)) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	}
 
@@ -199,13 +199,13 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
                      ( 1 << IEEE154_FCF_INTRAPAN ) );
 
-	metadata->ack = !call csmacaMacParams.get_ack();
+	metadata->ack = !call csmacaParams.get_ack();
 	metadata->rssi = 0;
 	metadata->lqi = 0;
 
-	csmaca_backoff_period = call csmacaMacParams.get_backoff();
-	csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
-	csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+	csmaca_backoff_period = call csmacaParams.get_backoff();
+	csmaca_min_backoff = call csmacaParams.get_min_backoff();
+	csmaca_delay_after_receive = call csmacaParams.get_delay_after_receive();
 
 	if (m_state == S_CANCEL) {
 		return ECANCEL;
@@ -217,7 +217,7 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	}
 
 	m_state = S_LOAD;
-	m_cca = call csmacaMacParams.get_cca();
+	m_cca = call csmacaParams.get_cca();
 	m_msg = m_msg;
 	totalCcaChecks = 0;
 
@@ -255,9 +255,9 @@ task void sendDone_task() {
 }
 
 task void startDone_task() {
-	csmaca_backoff_period = call csmacaMacParams.get_backoff();
-	csmaca_min_backoff = call csmacaMacParams.get_min_backoff();
-	csmaca_delay_after_receive = call csmacaMacParams.get_delay_after_receive();
+	csmaca_backoff_period = call csmacaParams.get_backoff();
+	csmaca_min_backoff = call csmacaParams.get_min_backoff();
+	csmaca_delay_after_receive = call csmacaParams.get_delay_after_receive();
 
 	m_state = S_STARTED;
 

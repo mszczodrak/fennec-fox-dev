@@ -104,7 +104,7 @@
  *  @see Net2-WG
  */
 
-#include "ctpNet.h"
+#include "ctp.h"
 
 generic module CtpRoutingEngineP(uint8_t routingTableSize, uint32_t minInterval, uint32_t maxInterval) {
 provides interface UnicastNameFreeRouting as Routing;
