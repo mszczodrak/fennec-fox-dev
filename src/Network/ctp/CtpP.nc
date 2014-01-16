@@ -74,47 +74,45 @@
  */
 
 
-generic configuration CtpP() {
-provides interface StdControl;
-provides interface Send[uint8_t client];
-provides interface Receive[collection_id_t id];
-provides interface Receive as Snoop[collection_id_t];
-provides interface Intercept[collection_id_t id];
+configuration CtpP {
+  provides {
+    interface StdControl;
+    interface Send[uint8_t client];
+    interface Receive[collection_id_t id];
+    interface Receive as Snoop[collection_id_t];
+    interface Intercept[collection_id_t id];
 
-provides interface Packet;
-provides interface AMPacket;
-provides interface CollectionPacket;
-provides interface CtpPacket;
+    interface Packet;
+    interface AMPacket;
+    interface CollectionPacket;
+    interface CtpPacket;
 
-provides interface CtpInfo;
-provides interface LinkEstimator;
-provides interface CtpCongestion;
-provides interface RootControl;    
-
-provides interface PacketAcknowledgements;
+    interface CtpInfo;
+    interface LinkEstimator;
+    interface CtpCongestion;
+    interface RootControl;    
+  }
 
 uses interface CollectionId[uint8_t client];
 uses interface CollectionDebug;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
-
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
+  enum {
+    CLIENT_COUNT = uniqueCount(UQ_CTP_CLIENT),
+    FORWARD_COUNT = 12,
+    TREE_ROUTING_TABLE_SIZE = 10,
+    QUEUE_SIZE = CLIENT_COUNT + FORWARD_COUNT,
+    CACHE_SIZE = 4,
+  };
+
 enum {
-	QUEUE_SIZE = 12,
-	TREE_ROUTING_TABLE_SIZE = 10,
-	CACHE_SIZE = 4,
 	NUM_CLIENTS = uniqueCount(UQ_AMQUEUE_SEND)
 };
 
 
-components new CtpActiveMessageC();
+components CtpActiveMessageC;
 components new CtpForwardingEngineP() as Forwarder;
 components LedsC;
   
@@ -132,31 +130,21 @@ CtpCongestion = Forwarder;
   
 Forwarder.Leds -> LedsC;
 
-PacketAcknowledgements = CtpActiveMessageC.PacketAcknowledgements;
-MacAMSend = CtpActiveMessageC;
-MacReceive = CtpActiveMessageC.MacReceive;
-MacSnoop = CtpActiveMessageC.MacSnoop;
-MacAMPacket = CtpActiveMessageC.MacAMPacket;
-MacPacket = CtpActiveMessageC.MacPacket;
-MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
-
-components new PoolC(message_t, QUEUE_SIZE) as MessagePoolP;
-components new PoolC(fe_queue_entry_t, QUEUE_SIZE) as QEntryPoolP;
+components new PoolC(message_t, FORWARD_COUNT) as MessagePoolP;
+components new PoolC(fe_queue_entry_t, FORWARD_COUNT) as QEntryPoolP;
 Forwarder.QEntryPool -> QEntryPoolP;
 Forwarder.MessagePool -> MessagePoolP;
 
 components new QueueC(fe_queue_entry_t*, QUEUE_SIZE) as SendQueueP;
 Forwarder.SendQueue -> SendQueueP;
 
-components MainC, new LruCtpMsgCacheP(CACHE_SIZE) as CacheP;
-StdControl = CacheP;
-Forwarder.SentCache -> CacheP;
-CacheP.CtpPacket -> Forwarder;
-MainC.SoftwareInit -> CacheP;
+components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
+StdControl = SentCacheP;
+Forwarder.SentCache -> SentCacheP;
 
 components new TimerMilliC() as RoutingBeaconTimer;
 components new TimerMilliC() as RouteUpdateTimer;
-components new LinkEstimatorP() as Estimator;
+components LinkEstimatorP as Estimator;
 Forwarder.LinkEstimator -> Estimator;
 
 components new CtpRoutingEngineP(TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;

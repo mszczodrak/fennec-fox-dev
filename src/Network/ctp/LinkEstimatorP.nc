@@ -39,7 +39,7 @@
 
 #include "./LinkEstimator.h"
 
-generic module LinkEstimatorP() {
+module LinkEstimatorP {
   provides {
     interface StdControl;
     interface AMSend as Send;
