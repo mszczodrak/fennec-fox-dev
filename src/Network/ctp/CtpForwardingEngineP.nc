@@ -144,7 +144,6 @@ interface Leds;
     interface Receive as SubSnoop;
     interface CtpInfo;
     interface RootControl;
-    interface CollectionId[uint8_t client];
     interface AMPacket as SubAMPacket;
     interface Random;
 
@@ -286,7 +285,7 @@ command error_t StdControl.stop() {
     hdr->origin = TOS_NODE_ID;
     hdr->am = AM_CTP_DATA;
     hdr->originSeqNo  = seqno++;
-    hdr->type = call CollectionId.fetch[client]();
+    hdr->type = 0;
     hdr->thl = 0;
 
     if (clientPtrs[client] == NULL) {
@@ -916,10 +915,6 @@ task void sendTask() {
     return msg;
   }
 
-  default command collection_id_t CollectionId.fetch[uint8_t client]() {
-    return 0;
-  }
-  
   /* Default implementations for CollectionDebug calls.
    * These allow CollectionDebug not to be wired to anything if debugging
    * is not desired. */
