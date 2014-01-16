@@ -1,6 +1,6 @@
 #include "AM.h"
 
-configuration CtpActiveMessageC {
+generic configuration CtpActiveMessageC() {
 provides interface SplitControl;
 provides interface AMSend[am_id_t id];
 provides interface Receive[am_id_t id];

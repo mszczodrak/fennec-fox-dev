@@ -80,7 +80,6 @@ components LedsC;
 ctpNetP.Leds -> LedsC;
 
 components new CtpP();
-components CtpActiveMessageC;
 
 components new CollectionIdP(CL_TEST);
 CtpP.CollectionId[CLIENT_ID] -> CollectionIdP;
@@ -89,12 +88,12 @@ NetworkReceive = CtpP.Receive[CL_TEST];
 NetworkSnoop = CtpP.Snoop[CL_TEST];
 
 
-MacAMSend = CtpActiveMessageC;
-MacReceive = CtpActiveMessageC.MacReceive;
-MacSnoop = CtpActiveMessageC.MacSnoop;
-MacAMPacket = CtpActiveMessageC.MacAMPacket;
-MacPacket = CtpActiveMessageC.MacPacket;
-MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
+MacAMSend = CtpP;
+MacReceive = CtpP.MacReceive;
+MacSnoop = CtpP.MacSnoop;
+MacAMPacket = CtpP.MacAMPacket;
+MacPacket = CtpP.MacPacket;
+MacPacketAcknowledgements = CtpP.MacPacketAcknowledgements;
 
 ctpNetP.RoutingControl -> CtpP;
 ctpNetP.RootControl -> CtpP;
@@ -102,7 +101,7 @@ ctpNetP.CtpSend -> CtpP.Send[CLIENT_ID];
 
 
 ctpNetP.CtpPacket -> CtpP.Packet;
-ctpNetP.CtpPacketAcknowledgements -> CtpActiveMessageC.PacketAcknowledgements;
+ctpNetP.CtpPacketAcknowledgements -> CtpP.PacketAcknowledgements;
 
 ctpNetP.CtpAMPacket -> CtpP.AMPacket;
 MacLinkPacketMetadata = CtpP.MacLinkPacketMetadata;

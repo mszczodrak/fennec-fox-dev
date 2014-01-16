@@ -75,27 +75,34 @@
 
 
 generic configuration CtpP() {
-  provides {
-    interface StdControl;
-    interface Send[uint8_t client];
-    interface Receive[collection_id_t id];
-    interface Receive as Snoop[collection_id_t];
-    interface Intercept[collection_id_t id];
+provides interface StdControl;
+provides interface Send[uint8_t client];
+provides interface Receive[collection_id_t id];
+provides interface Receive as Snoop[collection_id_t];
+provides interface Intercept[collection_id_t id];
 
-    interface Packet;
-    interface AMPacket;
-    interface CollectionPacket;
-    interface CtpPacket;
+provides interface Packet;
+provides interface AMPacket;
+provides interface CollectionPacket;
+provides interface CtpPacket;
 
-    interface CtpInfo;
-    interface LinkEstimator;
-    interface CtpCongestion;
-    interface RootControl;    
-  }
+provides interface CtpInfo;
+provides interface LinkEstimator;
+provides interface CtpCongestion;
+provides interface RootControl;    
+
+provides interface PacketAcknowledgements;
 
 uses interface CollectionId[uint8_t client];
 uses interface CollectionDebug;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+
+uses interface AMSend as MacAMSend;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
@@ -112,7 +119,7 @@ enum {
 };
 
 
-components CtpActiveMessageC;
+components new CtpActiveMessageC();
 components new CtpForwardingEngineP() as Forwarder;
 components LedsC;
   
@@ -130,6 +137,14 @@ CtpCongestion = Forwarder;
   
 Forwarder.Leds -> LedsC;
 
+PacketAcknowledgements = CtpActiveMessageC.PacketAcknowledgements;
+MacAMSend = CtpActiveMessageC;
+MacReceive = CtpActiveMessageC.MacReceive;
+MacSnoop = CtpActiveMessageC.MacSnoop;
+MacAMPacket = CtpActiveMessageC.MacAMPacket;
+MacPacket = CtpActiveMessageC.MacPacket;
+MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
+
 components new PoolC(message_t, FORWARD_COUNT) as MessagePoolP;
 components new PoolC(fe_queue_entry_t, FORWARD_COUNT) as QEntryPoolP;
 Forwarder.QEntryPool -> QEntryPoolP;
@@ -138,15 +153,9 @@ Forwarder.MessagePool -> MessagePoolP;
 components new QueueC(fe_queue_entry_t*, QUEUE_SIZE) as SendQueueP;
 Forwarder.SendQueue -> SendQueueP;
 
-
-//components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
-//StdControl = SentCacheP;
-
-
 components MainC, new LruCtpMsgCacheP(CACHE_SIZE) as CacheP;
 StdControl = CacheP;
 Forwarder.SentCache -> CacheP;
-//Cache = CacheP;
 CacheP.CtpPacket -> Forwarder;
 MainC.SoftwareInit -> CacheP;
 
