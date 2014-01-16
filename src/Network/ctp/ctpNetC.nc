@@ -35,6 +35,7 @@
 
 
 #include <Fennec.h>
+#include <Ctp.h>
 
 generic configuration ctpNetC() {
 provides interface SplitControl;
@@ -64,6 +65,7 @@ enum {
 	SAMPLE_RATE_KEY = 0x1,
 	CL_TEST = 0xee,
 	TEST_NETWORK_QUEUE_SIZE = 8,
+	CLIENT_ID = unique(UQ_CTP_CLIENT),
 };
 
 components new ctpNetP();
@@ -77,12 +79,15 @@ NetworkPacketAcknowledgements = ctpNetP;
 components LedsC;
 ctpNetP.Leds -> LedsC;
 
-components CtpP;
+components new CtpP();
 components CtpActiveMessageC;
-components new CollectionSenderC(CL_TEST);
 
-NetworkReceive = CollectionSenderC.NetworkReceive;
-NetworkSnoop = CollectionSenderC.NetworkSnoop;
+components new CollectionIdP(CL_TEST);
+CtpP.CollectionId[CLIENT_ID] -> CollectionIdP;
+
+NetworkReceive = CtpP.Receive[CL_TEST];
+NetworkSnoop = CtpP.Snoop[CL_TEST];
+
 
 MacAMSend = CtpActiveMessageC;
 MacReceive = CtpActiveMessageC.MacReceive;
@@ -93,10 +98,13 @@ MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
 
 ctpNetP.RoutingControl -> CtpP;
 ctpNetP.RootControl -> CtpP;
-ctpNetP.CtpSend -> CollectionSenderC.Send;
+ctpNetP.CtpSend -> CtpP.Send[CLIENT_ID];
+
+
 ctpNetP.CtpPacket -> CtpP.Packet;
 ctpNetP.CtpPacketAcknowledgements -> CtpActiveMessageC.PacketAcknowledgements;
 
 ctpNetP.CtpAMPacket -> CtpP.AMPacket;
 MacLinkPacketMetadata = CtpP.MacLinkPacketMetadata;
+
 }

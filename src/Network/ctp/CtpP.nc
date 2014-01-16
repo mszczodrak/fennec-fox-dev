@@ -74,7 +74,7 @@
  */
 
 
-configuration CtpP {
+generic configuration CtpP() {
   provides {
     interface StdControl;
     interface Send[uint8_t client];
@@ -138,9 +138,17 @@ Forwarder.MessagePool -> MessagePoolP;
 components new QueueC(fe_queue_entry_t*, QUEUE_SIZE) as SendQueueP;
 Forwarder.SendQueue -> SendQueueP;
 
-components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
-StdControl = SentCacheP;
-Forwarder.SentCache -> SentCacheP;
+
+//components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
+//StdControl = SentCacheP;
+
+
+components MainC, new LruCtpMsgCacheP(CACHE_SIZE) as CacheP;
+StdControl = CacheP;
+Forwarder.SentCache -> CacheP;
+//Cache = CacheP;
+CacheP.CtpPacket -> Forwarder;
+MainC.SoftwareInit -> CacheP;
 
 components new TimerMilliC() as RoutingBeaconTimer;
 components new TimerMilliC() as RouteUpdateTimer;
