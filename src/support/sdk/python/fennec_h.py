@@ -96,11 +96,11 @@ PANIC_WARNING           = 2
 
 
 #                /* Fennec System Flags */
-F_ADDRESSING		= 1
+F_APPLICATION           = 1
 F_NETWORK               = 2
 F_MAC   		= 3
 F_RADIO			= 4
-F_APPLICATION           = 5
+F_ADDRESSING		= 5
 F_QOI     		= 6
 F_EVENTS                = 7
 F_MAC_ADDRESSING        = 8
