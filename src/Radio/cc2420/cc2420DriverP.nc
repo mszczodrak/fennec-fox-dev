@@ -119,7 +119,7 @@ uses interface CC2420Ram as KEY1;
 uses interface CC2420Ram as TXNONCE;
 
 uses interface CC2420Receive;
-uses interface cc2420RadioParams;
+uses interface cc2420Params;
 uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 uses interface ReceiveIndicator as PacketIndicator;
@@ -167,7 +167,7 @@ command error_t StdControl.start() {
 	m_tx_power = 0;
 	m_receiving = FALSE;
 	failed_load_counter = 0;
-	param_tx_power = call cc2420RadioParams.get_power();
+	param_tx_power = call cc2420Params.get_power();
 	call CaptureSFD.captureRisingEdge();
 	abortSpiRelease = FALSE;
 	return SUCCESS;
@@ -209,7 +209,7 @@ async event void ChipSpiResource.releasing() {
 }
 
 task void updateTXPower() {
-	param_tx_power = call cc2420RadioParams.get_power();
+	param_tx_power = call cc2420Params.get_power();
 } 
 
 task void radioSendDone() {

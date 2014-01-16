@@ -35,10 +35,10 @@
 
 #include <Fennec.h>
 #include <Ieee154.h> 
-#include "csmacaMac.h"
+#include "csmaca.h"
 
 
-module csmacaMacP @safe() {
+module csmacaP @safe() {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
@@ -50,7 +50,7 @@ provides interface AMPacket as MacAMPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
-uses interface csmacaMacParams;
+uses interface csmacaParams;
 
 uses interface SplitControl as RadioControl;
 
@@ -332,7 +332,7 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 
 		dbg("Mac", "csmaMac SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
 
-		if((call csmacaMacParams.get_crc()) && (!getMetadata(msg)->crc)) {
+		if((call csmacaParams.get_crc()) && (!getMetadata(msg)->crc)) {
 			return msg;
 		}
 	}

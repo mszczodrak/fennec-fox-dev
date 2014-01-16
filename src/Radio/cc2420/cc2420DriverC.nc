@@ -50,7 +50,7 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
-uses interface cc2420RadioParams;
+uses interface cc2420Params;
 }
 
 implementation {
@@ -58,7 +58,7 @@ implementation {
 components cc2420DriverP;
 StdControl = cc2420DriverP.StdControl;
 RadioCCA = cc2420DriverP.RadioCCA;
-cc2420RadioParams = cc2420DriverP.cc2420RadioParams;
+cc2420Params = cc2420DriverP.cc2420Params;
 
 RadioBuffer = cc2420DriverP;
 RadioSend = cc2420DriverP.RadioSend;

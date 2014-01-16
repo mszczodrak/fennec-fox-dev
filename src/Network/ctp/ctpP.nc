@@ -33,12 +33,12 @@
   */
 
 #include <Fennec.h>
-#include "ctpNet.h"
+#include "ctp.h"
 
-generic module ctpNetP() {
+generic module ctpP() {
 provides interface SplitControl;
 
-uses interface ctpNetParams;
+uses interface ctpParams;
 uses interface Leds;
 
 provides interface AMSend as NetworkAMSend;
@@ -57,10 +57,10 @@ uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
 implementation {
 
 command error_t SplitControl.start() {
-	dbg("Network", "ctpNetP SplitControl.start()");
+	dbg("Network", "ctpP SplitControl.start()");
 	call RoutingControl.start();
-	dbg("Network", "ctpNetP SplitControl.start() - root: %d", call ctpNetParams.get_root());
-	if (TOS_NODE_ID == call ctpNetParams.get_root()) {
+	dbg("Network", "ctpP SplitControl.start() - root: %d", call ctpParams.get_root());
+	if (TOS_NODE_ID == call ctpParams.get_root()) {
 		call RootControl.setRoot();
 	}
 
@@ -69,7 +69,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	dbg("Network", "ctpNetP SplitControl.stop()");
+	dbg("Network", "ctpP SplitControl.stop()");
 	call RoutingControl.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;

@@ -26,16 +26,17 @@
  */
 
 /**
-  * Counter Test Application Module
+  * Fennec Fox Rssi Application module
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/03/2014
+  * @updated: 05/22/2011
   */
 
-generic configuration CounterAppC() {
+
+generic configuration RssiC() {
 provides interface SplitControl;
 
-uses interface CounterAppParams;
+uses interface RssiParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -46,23 +47,25 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
+components new RssiP();
+SplitControl = RssiP;
 
-components new CounterAppP();
-SplitControl = CounterAppP;
+RssiParams = RssiP;
 
-CounterAppParams = CounterAppP;
-
-NetworkAMSend = CounterAppP.NetworkAMSend;
-NetworkReceive = CounterAppP.NetworkReceive;
-NetworkSnoop = CounterAppP.NetworkSnoop;
-NetworkAMPacket = CounterAppP.NetworkAMPacket;
-NetworkPacket = CounterAppP.NetworkPacket;
-NetworkPacketAcknowledgements = CounterAppP.NetworkPacketAcknowledgements;
+NetworkAMSend = RssiP.NetworkAMSend;
+NetworkReceive = RssiP.NetworkReceive;
+NetworkSnoop = RssiP.NetworkSnoop;
+NetworkAMPacket = RssiP.NetworkAMPacket;
+NetworkPacket = RssiP.NetworkPacket;
+NetworkPacketAcknowledgements = RssiP.NetworkPacketAcknowledgements;
 
 components LedsC;
-components new TimerMilliC();
+RssiP.Leds -> LedsC;
 
-CounterAppP.Leds -> LedsC;
-CounterAppP.Timer -> TimerMilliC;
+components new TimerMilliC() as SendTimerC;
+RssiP.SendTimer -> SendTimerC;
+
+components new TimerMilliC() as LedTimerC;
+RssiP.LedTimer -> LedTimerC;
 
 }

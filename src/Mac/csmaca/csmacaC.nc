@@ -32,9 +32,9 @@
   * @updated: 01/03/2014
   */
 
-#include "csmacaMac.h"
+#include "csmaca.h"
 
-configuration csmacaMacC {
+configuration csmacaC {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
@@ -44,7 +44,7 @@ provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
-uses interface csmacaMacParams;
+uses interface csmacaParams;
 
 uses interface RadioReceive;
 
@@ -67,41 +67,41 @@ uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 implementation {
 
-components csmacaMacP;
+components csmacaP;
 
-SplitControl = csmacaMacP;
-MacAMSend = csmacaMacP.MacAMSend;
-MacReceive = csmacaMacP.MacReceive;
-MacSnoop = csmacaMacP.MacSnoop;
-MacPacket = csmacaMacP.MacPacket;
-MacAMPacket = csmacaMacP.MacAMPacket;
-MacPacketAcknowledgements = csmacaMacP.MacPacketAcknowledgements;
-MacLinkPacketMetadata = csmacaMacP.MacLinkPacketMetadata;
-csmacaMacParams = csmacaMacP;
+SplitControl = csmacaP;
+MacAMSend = csmacaP.MacAMSend;
+MacReceive = csmacaP.MacReceive;
+MacSnoop = csmacaP.MacSnoop;
+MacPacket = csmacaP.MacPacket;
+MacAMPacket = csmacaP.MacAMPacket;
+MacPacketAcknowledgements = csmacaP.MacPacketAcknowledgements;
+MacLinkPacketMetadata = csmacaP.MacLinkPacketMetadata;
+csmacaParams = csmacaP;
 
-RadioResource = csmacaMacP.RadioResource;
-RadioPacket = csmacaMacP.RadioPacket;
+RadioResource = csmacaP.RadioResource;
+RadioPacket = csmacaP.RadioPacket;
 
 
-RadioLinkPacketMetadata = csmacaMacP.RadioLinkPacketMetadata;
+RadioLinkPacketMetadata = csmacaP.RadioLinkPacketMetadata;
 
 components CSMATransmitC;
 RadioResource = CSMATransmitC.RadioResource;
 RadioState = CSMATransmitC.RadioState;
 
 components DefaultLplC as LplC;
-csmacaMacP.RadioControl -> LplC.SplitControl;
+csmacaP.RadioControl -> LplC.SplitControl;
 
 components UniqueC;
 
 RadioPacket = UniqueC.RadioPacket;
 
-csmacaMacP.SubSend -> UniqueC;
-csmacaMacP.SubReceive -> LplC;
+csmacaP.SubSend -> UniqueC;
+csmacaP.SubReceive -> LplC;
 
 // SplitControl Layers
 
-LplC.MacPacketAcknowledgements -> csmacaMacP.MacPacketAcknowledgements;
+LplC.MacPacketAcknowledgements -> csmacaP.MacPacketAcknowledgements;
 LplC.SubControl -> CSMATransmitC;
 
 UniqueC.SubSend -> LplC.Send;
@@ -118,14 +118,14 @@ PacketTimeSync = LplC.PacketTimeSync;
 PacketLinkQuality = LplC.PacketLinkQuality;
 
 
-csmacaMacParams = LplC.csmacaMacParams;
-csmacaMacParams = CSMATransmitC.csmacaMacParams;
+csmacaParams = LplC.csmacaParams;
+csmacaParams = CSMATransmitC.csmacaParams;
 
 components RandomC;
-csmacaMacP.Random -> RandomC;
+csmacaP.Random -> RandomC;
 
 components LedsC;
-csmacaMacP.Leds -> LedsC;
+csmacaP.Leds -> LedsC;
 
 RadioBuffer = CSMATransmitC.RadioBuffer;
 RadioSend = CSMATransmitC.RadioSend;

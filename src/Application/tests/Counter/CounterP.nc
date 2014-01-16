@@ -34,12 +34,12 @@
 
 #include <Fennec.h>
 #include <Timer.h>
-#include "CounterApp.h"
+#include "Counter.h"
 
-generic module CounterAppP() {
+generic module CounterP() {
 provides interface SplitControl;
 
-uses interface CounterAppParams;
+uses interface CounterParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -69,20 +69,20 @@ bool sendBusy = FALSE;
 uint16_t seqno;
 
 command error_t SplitControl.start() {
-	uint32_t send_delay = call CounterAppParams.get_delay() * 
-		call CounterAppParams.get_delay_scale();
+	uint32_t send_delay = call CounterParams.get_delay() * 
+		call CounterParams.get_delay_scale();
 	//call Leds.led0On();
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
-	dbg("Application", "CounterApp SplitControl.start()");
+	dbg("Application", "Counter SplitControl.start()");
 
-	dbg("Application", "CounterApp starting delay: %d", send_delay);
-	dbg("Application", "CounterApp starting src: %d  dest: %d",
-		call CounterAppParams.get_src(), call CounterAppParams.get_dest());
+	dbg("Application", "Counter starting delay: %d", send_delay);
+	dbg("Application", "Counter starting src: %d  dest: %d",
+		call CounterParams.get_src(), call CounterParams.get_dest());
 	seqno = 0;
 	sendBusy = FALSE;
 
-	if ((call CounterAppParams.get_src() == BROADCAST) || 
-	(call CounterAppParams.get_src() == TOS_NODE_ID)) {
+	if ((call CounterParams.get_src() == BROADCAST) || 
+	(call CounterParams.get_src() == TOS_NODE_ID)) {
 		call Leds.led1On();
 		call Timer.startPeriodic(send_delay);
 	}
@@ -93,7 +93,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "CounterApp SplitControl.stop()");
+	dbg("Application", "Counter SplitControl.stop()");
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -110,18 +110,18 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
-	if (call NetworkAMSend.send(call CounterAppParams.get_dest(), &packet, 
+	if (call NetworkAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
 		dbgs(F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
-					call CounterAppParams.get_dest());
-		dbg("Application", "CounterApp sendMessage() seqno: %d source: %d - FAILED", 
+					call CounterParams.get_dest());
+		dbg("Application", "Counter sendMessage() seqno: %d source: %d - FAILED", 
 					msg->seqno, msg->source); 
 	} else {
 		sendBusy = TRUE;
 		dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
-					call CounterAppParams.get_dest());
-		dbg("Application", "CounterApp call NetworkAMSend.send(%d, 0x%1x, %d)",
-					call CounterAppParams.get_dest(), &packet,
+					call CounterParams.get_dest());
+		dbg("Application", "Counter call NetworkAMSend.send(%d, 0x%1x, %d)",
+					call CounterParams.get_dest(), &packet,
 					sizeof(CounterMsg));
 		call Leds.set(seqno);
 	}
@@ -129,7 +129,7 @@ void sendMessage() {
 
 event void Timer.fired() {
 	if (!sendBusy) {
-		dbg("Application", "CounterApp Timer.fired()");
+		dbg("Application", "Counter Timer.fired()");
 		sendMessage();
 	}
 	seqno++;
@@ -138,7 +138,7 @@ event void Timer.fired() {
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 	//CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
 	//						sizeof(CounterMsg));
-	dbg("Application", "CounterApp event NetworkAMSend.sendDone(0x%1x, %d)",
+	dbg("Application", "Counter event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
 }
@@ -147,8 +147,8 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
 
-	dbg("Application", "CounterApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
-	dbg("Application", "CounterApp receive seqno: %d source: %d", cm->seqno, cm->source); 
+	dbg("Application", "Counter event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
+	dbg("Application", "Counter receive seqno: %d source: %d", cm->seqno, cm->source); 
 
 	call Leds.set(cm->seqno);
 	if (cm->seqno > (seqno + 20)) {

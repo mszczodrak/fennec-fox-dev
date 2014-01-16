@@ -35,10 +35,10 @@
 #include <Fennec.h>
 #include <Ctp.h>
 
-generic configuration ctpNetC() {
+generic configuration ctpC() {
 provides interface SplitControl;
 
-uses interface ctpNetParams;
+uses interface ctpParams;
 
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -66,16 +66,16 @@ enum {
 	CLIENT_ID = unique(UQ_CTP_CLIENT),
 };
 
-components new ctpNetP();
-SplitControl = ctpNetP;
-ctpNetParams = ctpNetP;
-NetworkAMSend = ctpNetP;
-NetworkAMPacket = ctpNetP;
-NetworkPacket = ctpNetP;
-NetworkPacketAcknowledgements = ctpNetP;
+components new ctpP();
+SplitControl = ctpP;
+ctpParams = ctpP;
+NetworkAMSend = ctpP;
+NetworkAMPacket = ctpP;
+NetworkPacket = ctpP;
+NetworkPacketAcknowledgements = ctpP;
 
 components LedsC;
-ctpNetP.Leds -> LedsC;
+ctpP.Leds -> LedsC;
 
 components new CtpP();
 
@@ -93,15 +93,15 @@ MacAMPacket = CtpP.MacAMPacket;
 MacPacket = CtpP.MacPacket;
 MacPacketAcknowledgements = CtpP.MacPacketAcknowledgements;
 
-ctpNetP.RoutingControl -> CtpP;
-ctpNetP.RootControl -> CtpP;
-ctpNetP.CtpSend -> CtpP.Send[CLIENT_ID];
+ctpP.RoutingControl -> CtpP;
+ctpP.RootControl -> CtpP;
+ctpP.CtpSend -> CtpP.Send[CLIENT_ID];
 
 
-ctpNetP.CtpPacket -> CtpP.Packet;
-ctpNetP.CtpPacketAcknowledgements -> CtpP.PacketAcknowledgements;
+ctpP.CtpPacket -> CtpP.Packet;
+ctpP.CtpPacketAcknowledgements -> CtpP.PacketAcknowledgements;
 
-ctpNetP.CtpAMPacket -> CtpP.AMPacket;
+ctpP.CtpAMPacket -> CtpP.AMPacket;
 MacLinkPacketMetadata = CtpP.MacLinkPacketMetadata;
 
 }

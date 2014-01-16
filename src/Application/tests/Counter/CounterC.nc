@@ -26,20 +26,16 @@
  */
 
 /**
-  * Fennec Fox Rssi Application module
+  * Counter Test Application Module
   *
   * @author: Marcin K Szczodrak
-  * @updated: 05/22/2011
+  * @updated: 01/03/2014
   */
 
-
-#include <Fennec.h>
-#include "RssiApp.h"
-
-generic module RssiAppP() {
+generic configuration CounterC() {
 provides interface SplitControl;
 
-uses interface RssiAppParams;
+uses interface CounterParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -47,75 +43,26 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-
-uses interface Leds;
-uses interface Timer<TMilli> as SendTimer;
-uses interface Timer<TMilli> as LedTimer;
 }
 
 implementation {
 
-message_t packet;
+components new CounterP();
+SplitControl = CounterP;
 
-task void reset_led_timer() {
-	call LedTimer.startOneShot(2 * call RssiAppParams.get_delay());
-}
+CounterParams = CounterP;
 
-command error_t SplitControl.start() {
-	dbg("Application", "RssiApp SplitControl.start()");
-	call SendTimer.startPeriodic(call RssiAppParams.get_delay());
-	post reset_led_timer();
-	signal SplitControl.startDone(SUCCESS);
-	return SUCCESS;
-}
+NetworkAMSend = CounterP.NetworkAMSend;
+NetworkReceive = CounterP.NetworkReceive;
+NetworkSnoop = CounterP.NetworkSnoop;
+NetworkAMPacket = CounterP.NetworkAMPacket;
+NetworkPacket = CounterP.NetworkPacket;
+NetworkPacketAcknowledgements = CounterP.NetworkPacketAcknowledgements;
 
-command error_t SplitControl.stop() {
-	dbg("Application", "RssiApp SplitControl.start()");
-	signal SplitControl.stopDone(SUCCESS);
-	return SUCCESS;
-}
+components LedsC;
+components new TimerMilliC();
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-
-}
-
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	int8_t rssi = (int8_t) getMetadata(msg)->rssi;
-	rssi -= 45;	/* cc2420 spec */
-
-#ifdef FENNEC_TOS_PRINTF
-	printf("%u %u %u\n", getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc);
-	printf("%d\n", rssi);
-	printfflush();
-#endif
-
-	signal LedTimer.fired();
-
-	call Leds.led0On();
-
-	if (rssi > -90 ) {
-		call Leds.led1On();
-	}
-
-	if (rssi > -60 ) {
-		call Leds.led2On();
-	}
-
-	return msg;
-}
-
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	return msg;
-}
-
-event void SendTimer.fired() {
-	memset(&packet, 0, sizeof(message_t));
-	call NetworkAMSend.send(BROADCAST, &packet, 80);
-}
-
-event void LedTimer.fired() {
-	call Leds.set(0);
-	post reset_led_timer();
-}
+CounterP.Leds -> LedsC;
+CounterP.Timer -> TimerMilliC;
 
 }

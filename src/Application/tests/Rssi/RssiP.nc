@@ -33,10 +33,13 @@
   */
 
 
-geneirc configuration RssiAppC() {
+#include <Fennec.h>
+#include "Rssi.h"
+
+generic module RssiP() {
 provides interface SplitControl;
 
-uses interface RssiAppParams;
+uses interface RssiParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -44,28 +47,75 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+
+uses interface Leds;
+uses interface Timer<TMilli> as SendTimer;
+uses interface Timer<TMilli> as LedTimer;
 }
 
 implementation {
-components new RssiAppP();
-SplitControl = RssiAppP;
 
-RssiAppParams = RssiAppP;
+message_t packet;
 
-NetworkAMSend = RssiAppP.NetworkAMSend;
-NetworkReceive = RssiAppP.NetworkReceive;
-NetworkSnoop = RssiAppP.NetworkSnoop;
-NetworkAMPacket = RssiAppP.NetworkAMPacket;
-NetworkPacket = RssiAppP.NetworkPacket;
-NetworkPacketAcknowledgements = RssiAppP.NetworkPacketAcknowledgements;
+task void reset_led_timer() {
+	call LedTimer.startOneShot(2 * call RssiParams.get_delay());
+}
 
-components LedsC;
-RssiAppP.Leds -> LedsC;
+command error_t SplitControl.start() {
+	dbg("Application", "Rssi SplitControl.start()");
+	call SendTimer.startPeriodic(call RssiParams.get_delay());
+	post reset_led_timer();
+	signal SplitControl.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-components new TimerMilliC() as SendTimerC;
-RssiAppP.SendTimer -> SendTimerC;
+command error_t SplitControl.stop() {
+	dbg("Application", "Rssi SplitControl.start()");
+	signal SplitControl.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-components new TimerMilliC() as LedTimerC;
-RssiAppP.LedTimer -> LedTimerC;
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+
+}
+
+event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	int8_t rssi = (int8_t) getMetadata(msg)->rssi;
+	rssi -= 45;	/* cc2420 spec */
+
+#ifdef FENNEC_TOS_PRINTF
+	printf("%u %u %u\n", getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc);
+	printf("%d\n", rssi);
+	printfflush();
+#endif
+
+	signal LedTimer.fired();
+
+	call Leds.led0On();
+
+	if (rssi > -90 ) {
+		call Leds.led1On();
+	}
+
+	if (rssi > -60 ) {
+		call Leds.led2On();
+	}
+
+	return msg;
+}
+
+event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event void SendTimer.fired() {
+	memset(&packet, 0, sizeof(message_t));
+	call NetworkAMSend.send(BROADCAST, &packet, 80);
+}
+
+event void LedTimer.fired() {
+	call Leds.set(0);
+	post reset_led_timer();
+}
 
 }
