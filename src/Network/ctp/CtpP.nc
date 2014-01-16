@@ -93,10 +93,8 @@ configuration CtpP {
     interface RootControl;    
   }
 
-  uses {
-    interface CollectionId[uint8_t client];
-    interface CollectionDebug;
-  }
+uses interface CollectionId[uint8_t client];
+uses interface CollectionDebug;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
 
@@ -109,93 +107,106 @@ implementation {
     CACHE_SIZE = 4,
   };
 
-  components CtpActiveMessageC;
-  components new CtpForwardingEngineP() as Forwarder;
-  components LedsC;
+enum {
+	NUM_CLIENTS = uniqueCount(UQ_AMQUEUE_SEND)
+};
+
+
+components CtpActiveMessageC;
+components new CtpForwardingEngineP() as Forwarder;
+components LedsC;
   
-  Send = Forwarder;
-  StdControl = Forwarder;
-  Receive = Forwarder.Receive;
-  Snoop = Forwarder.Snoop;
-  Intercept = Forwarder;
-  Packet = Forwarder;
-  AMPacket = Forwarder;
-  CollectionId = Forwarder;
-  CollectionPacket = Forwarder;
-  CtpPacket = Forwarder;
-  CtpCongestion = Forwarder;
+Send = Forwarder;
+StdControl = Forwarder;
+Receive = Forwarder.Receive;
+Snoop = Forwarder.Snoop;
+Intercept = Forwarder;
+Packet = Forwarder;
+AMPacket = Forwarder;
+CollectionId = Forwarder;
+CollectionPacket = Forwarder;
+CtpPacket = Forwarder;
+CtpCongestion = Forwarder;
   
-  Forwarder.Leds -> LedsC;
+Forwarder.Leds -> LedsC;
 
-  components new PoolC(message_t, FORWARD_COUNT) as MessagePoolP;
-  components new PoolC(fe_queue_entry_t, FORWARD_COUNT) as QEntryPoolP;
-  Forwarder.QEntryPool -> QEntryPoolP;
-  Forwarder.MessagePool -> MessagePoolP;
+components new PoolC(message_t, FORWARD_COUNT) as MessagePoolP;
+components new PoolC(fe_queue_entry_t, FORWARD_COUNT) as QEntryPoolP;
+Forwarder.QEntryPool -> QEntryPoolP;
+Forwarder.MessagePool -> MessagePoolP;
 
-  components new QueueC(fe_queue_entry_t*, QUEUE_SIZE) as SendQueueP;
-  Forwarder.SendQueue -> SendQueueP;
+components new QueueC(fe_queue_entry_t*, QUEUE_SIZE) as SendQueueP;
+Forwarder.SendQueue -> SendQueueP;
 
-  components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
-  StdControl = SentCacheP;
-  Forwarder.SentCache -> SentCacheP;
+components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
+StdControl = SentCacheP;
+Forwarder.SentCache -> SentCacheP;
 
-  components new TimerMilliC() as RoutingBeaconTimer;
-  components new TimerMilliC() as RouteUpdateTimer;
-  components LinkEstimatorP as Estimator;
-  Forwarder.LinkEstimator -> Estimator;
+components new TimerMilliC() as RoutingBeaconTimer;
+components new TimerMilliC() as RouteUpdateTimer;
+components LinkEstimatorP as Estimator;
+Forwarder.LinkEstimator -> Estimator;
 
-  components new CtpRoutingEngineP(TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;
+components new CtpRoutingEngineP(TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;
 
-  components new CtpLplAMSenderC(AM_CTP_DATA) as AMSenderC;
-  components new CtpLplAMSenderC(AM_CTP_ROUTING) as SendControl;
+components new CtpAMQueueEntryP(AM_CTP_DATA) as AMSenderC;
+AMSenderC.AMPacket -> CtpActiveMessageC;
+AMSenderC.Send -> CtpAMQueueImplP.Send[unique(UQ_AMQUEUE_SEND)];
 
-  StdControl = Router;
-  StdControl = Estimator;
-  RootControl = Router;
-  Router.BeaconSend -> Estimator.Send;
-  Router.BeaconReceive -> Estimator.Receive;
-  Router.LinkEstimator -> Estimator.LinkEstimator;
+components new CtpAMQueueEntryP(AM_CTP_ROUTING) as SendControl;
+SendControl.AMPacket -> CtpActiveMessageC;
+SendControl.Send -> CtpAMQueueImplP.Send[unique(UQ_AMQUEUE_SEND)];
 
-  Router.CompareBit -> Estimator.CompareBit;
+components new CtpAMQueueImplP(NUM_CLIENTS);
+CtpAMQueueImplP.AMSend -> CtpActiveMessageC;
+CtpAMQueueImplP.AMPacket -> CtpActiveMessageC;
+CtpAMQueueImplP.Packet -> CtpActiveMessageC;
 
-  Router.AMPacket -> CtpActiveMessageC;
-  Router.BeaconTimer -> RoutingBeaconTimer;
-  Router.RouteTimer -> RouteUpdateTimer;
-  Router.CollectionDebug = CollectionDebug;
-  Forwarder.CollectionDebug = CollectionDebug;
-  Forwarder.CtpInfo -> Router;
-  Router.CtpCongestion -> Forwarder;
-  CtpInfo = Router;
+StdControl = Router;
+StdControl = Estimator;
+RootControl = Router;
+Router.BeaconSend -> Estimator.Send;
+Router.BeaconReceive -> Estimator.Receive;
+Router.LinkEstimator -> Estimator.LinkEstimator;
 
+Router.CompareBit -> Estimator.CompareBit;
+
+Router.AMPacket -> CtpActiveMessageC;
+Router.BeaconTimer -> RoutingBeaconTimer;
+Router.RouteTimer -> RouteUpdateTimer;
+Router.CollectionDebug = CollectionDebug;
+Forwarder.CollectionDebug = CollectionDebug;
+Forwarder.CtpInfo -> Router;
+Router.CtpCongestion -> Forwarder;
+CtpInfo = Router;
+
+components new TimerMilliC() as RetxmitTimer;
+Forwarder.RetxmitTimer -> RetxmitTimer;
+
+components RandomC;
+Router.Random -> RandomC;
+Forwarder.Random -> RandomC;
+
+Forwarder.SubSend -> AMSenderC;
+Forwarder.SubReceive -> CtpActiveMessageC.Receive[AM_CTP_DATA]; //AMReceiverC;  
+Forwarder.SubSnoop -> CtpActiveMessageC.Snoop[AM_CTP_DATA]; //AMSnooperC;
+
+Forwarder.SubPacket -> CtpActiveMessageC;
+Forwarder.RootControl -> Router;
+Forwarder.UnicastNameFreeRouting -> Router.Routing;
+Forwarder.PacketAcknowledgements -> CtpActiveMessageC;
+Forwarder.SubAMPacket -> CtpActiveMessageC;
+
+LinkEstimator = Estimator;
   
-  components new TimerMilliC() as RetxmitTimer;
-  Forwarder.RetxmitTimer -> RetxmitTimer;
+Estimator.Random -> RandomC;
 
-  components RandomC;
-  Router.Random -> RandomC;
-  Forwarder.Random -> RandomC;
+Estimator.AMSend -> SendControl;
+Estimator.SubReceive -> CtpActiveMessageC.Receive[AM_CTP_ROUTING]; //ReceiveControl;
 
-  Forwarder.SubSend -> AMSenderC;
-  Forwarder.SubReceive -> CtpActiveMessageC.Receive[AM_CTP_DATA]; //AMReceiverC;  
-  Forwarder.SubSnoop -> CtpActiveMessageC.Snoop[AM_CTP_DATA]; //AMSnooperC;
-
-  Forwarder.SubPacket -> CtpActiveMessageC;
-  Forwarder.RootControl -> Router;
-  Forwarder.UnicastNameFreeRouting -> Router.Routing;
-  Forwarder.PacketAcknowledgements -> CtpActiveMessageC;
-  Forwarder.SubAMPacket -> CtpActiveMessageC;
-
-  LinkEstimator = Estimator;
-  
-  Estimator.Random -> RandomC;
-
-  Estimator.AMSend -> SendControl;
-  Estimator.SubReceive -> CtpActiveMessageC.Receive[AM_CTP_ROUTING]; //ReceiveControl;
-
-  Estimator.SubPacket -> CtpActiveMessageC;
-  Estimator.SubAMPacket -> CtpActiveMessageC;
+Estimator.SubPacket -> CtpActiveMessageC;
+Estimator.SubAMPacket -> CtpActiveMessageC;
 
 MacLinkPacketMetadata = Estimator.MacLinkPacketMetadata;
 
-  //Estimator.LinkPacketMetadata -> CtpActiveMessageC;
 }
