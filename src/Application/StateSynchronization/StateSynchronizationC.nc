@@ -35,10 +35,10 @@
 
 #include <Fennec.h>
 
-generic configuration StateSynchronizationAppC() {
+generic configuration StateSynchronizationC() {
 provides interface SplitControl;
 
-uses interface StateSynchronizationAppParams;
+uses interface StateSynchronizationParams;
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
 uses interface Receive as NetworkSnoop;
@@ -49,29 +49,29 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 
-components new StateSynchronizationAppP();
-SplitControl = StateSynchronizationAppP;
-StateSynchronizationAppParams = StateSynchronizationAppP;
+components new StateSynchronizationP();
+SplitControl = StateSynchronizationP;
+StateSynchronizationParams = StateSynchronizationP;
 
-NetworkAMSend = StateSynchronizationAppP;
-NetworkReceive = StateSynchronizationAppP.NetworkReceive;
-NetworkSnoop = StateSynchronizationAppP.NetworkSnoop;
-NetworkAMPacket = StateSynchronizationAppP.NetworkAMPacket;
-NetworkPacket = StateSynchronizationAppP.NetworkPacket;
-NetworkPacketAcknowledgements = StateSynchronizationAppP.NetworkPacketAcknowledgements;
+NetworkAMSend = StateSynchronizationP;
+NetworkReceive = StateSynchronizationP.NetworkReceive;
+NetworkSnoop = StateSynchronizationP.NetworkSnoop;
+NetworkAMPacket = StateSynchronizationP.NetworkAMPacket;
+NetworkPacket = StateSynchronizationP.NetworkPacket;
+NetworkPacketAcknowledgements = StateSynchronizationP.NetworkPacketAcknowledgements;
 
 components CachesC;
-StateSynchronizationAppP.Fennec -> CachesC;
-StateSynchronizationAppP.FennecWarnings -> CachesC;
+StateSynchronizationP.Fennec -> CachesC;
+StateSynchronizationP.FennecWarnings -> CachesC;
 
 components RandomC;
-StateSynchronizationAppP.Random -> RandomC;
+StateSynchronizationP.Random -> RandomC;
 
 components LedsC;
-StateSynchronizationAppP.Leds -> LedsC;
+StateSynchronizationP.Leds -> LedsC;
 
 components new TimerMilliC() as Timer;
-StateSynchronizationAppP.Timer -> Timer;
+StateSynchronizationP.Timer -> Timer;
 
 }
 

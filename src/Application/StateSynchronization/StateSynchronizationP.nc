@@ -36,10 +36,10 @@
 #include <Fennec.h>
 #include "hashing.h"
 
-generic module StateSynchronizationAppP() @safe() {
+generic module StateSynchronizationP() @safe() {
 provides interface SplitControl;
 
-uses interface StateSynchronizationAppParams;
+uses interface StateSynchronizationParams;
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
 uses interface Receive as NetworkSnoop;
@@ -64,32 +64,32 @@ message_t confmsg;
 
 task void schedule_state_sync_msg() {
 	if (resend_confs == 0) {
-		dbg("StateSynchronization", "StateSynchronizationAppP scheduled_state_sync_msg - finished()");
+		dbg("StateSynchronization", "StateSynchronizationP scheduled_state_sync_msg - finished()");
 		return;
 	}
 
 	same_msg_counter = 0;
 	resend_confs--;
 	call Timer.startOneShot(call Random.rand16() % 
-		call StateSynchronizationAppParams.get_send_delay() + 1);
+		call StateSynchronizationParams.get_send_delay() + 1);
 }
 
 
 task void reset_sync() {
-	dbg("StateSynchronization", "StateSynchronizationAppP reset_sync");
-	resend_confs = call StateSynchronizationAppParams.get_resend();
+	dbg("StateSynchronization", "StateSynchronizationP reset_sync");
+	resend_confs = call StateSynchronizationParams.get_resend();
 	post schedule_state_sync_msg();
 }
 
 
 task void send_state_sync_msg() {
 	nx_struct FFControl *cu_msg;
-	dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg()");
+	dbg("StateSynchronization", "StateSynchronizationP send_state_sync_msg()");
 
 	cu_msg = (nx_struct FFControl*) 
 	call NetworkAMSend.getPayload(&confmsg, sizeof(nx_struct FFControl));
    
-	if (same_msg_counter > call StateSynchronizationAppParams.get_supress()) {
+	if (same_msg_counter > call StateSynchronizationParams.get_supress()) {
 		post schedule_state_sync_msg();
 		return;
 	}
@@ -113,12 +113,12 @@ task void send_state_sync_msg() {
 
 	if (call NetworkAMSend.send(BROADCAST, &confmsg, sizeof(nx_struct FFControl)) != SUCCESS) {
 		post schedule_state_sync_msg();
-		dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg() - FAIL");
+		dbg("StateSynchronization", "StateSynchronizationP send_state_sync_msg() - FAIL");
 //		dbgs(F_CONTROL_UNIT, 0, DBGS_SEND_CONTROL_MSG_FAILED, 
 //				call Fennec.getStateId(), call Fennec.getStateSeq());
 	} else {
 		busy_sending = TRUE;
-		dbg("StateSynchronization", "StateSynchronizationAppP send_state_sync_msg() - SUCCESS");
+		dbg("StateSynchronization", "StateSynchronizationP send_state_sync_msg() - SUCCESS");
 //		dbgs(F_CONTROL_UNIT, 0, DBGS_SEND_CONTROL_MSG, 
 //				call Fennec.getStateId(), call Fennec.getStateSeq());
 	}
@@ -127,7 +127,7 @@ task void send_state_sync_msg() {
 
 async event void FennecWarnings.detectWrongConfiguration() {
 //	dbgs(F_CONTROL_UNIT, 0, DBGS_RECEIVE_WRONG_CONF_MSG, 0, 0);
-	dbg("StateSynchronization", "StateSynchronizationAppP FennecWarnings.detectWrongConfiguration()");
+	dbg("StateSynchronization", "StateSynchronizationP FennecWarnings.detectWrongConfiguration()");
 	post reset_sync();
 }
 
@@ -136,7 +136,7 @@ async event void FennecWarnings.settingStateAndSeq() {
 }
 
 command error_t SplitControl.start() {
-	dbg("StateSynchronization", "StateSynchronizationAppP SplitControl.start()");
+	dbg("StateSynchronization", "StateSynchronizationP SplitControl.start()");
 	busy_sending = FALSE;
 	post reset_sync();
 	signal SplitControl.startDone(SUCCESS);
@@ -144,7 +144,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	dbg("StateSynchronization", "StateSynchronizationAppP SplitControl.stop()");
+	dbg("StateSynchronization", "StateSynchronizationP SplitControl.stop()");
 	call Timer.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -156,7 +156,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 						len - sizeof(cu_msg->crc))) {
 		goto done_receive;
 	}
-	dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
+	dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
 				msg, payload, len);
 
 	dbgs(F_CONTROL_UNIT, 0, DBGS_RECEIVE_CONTROL_MSG, cu_msg->seq, cu_msg->conf_id);
@@ -168,20 +168,20 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	// First time receives Configuration
 	if ( (call Fennec.getStateSeq() == CONFIGURATION_SEQ_UNKNOWN) && 
 		(cu_msg->seq != CONFIGURATION_SEQ_UNKNOWN )) {
-		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - first time");
+		dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive - first time");
 		goto reconfigure;
 	} 
 
 	/* Received configuration message with unknown sequence */
 	if ((cu_msg->seq == CONFIGURATION_SEQ_UNKNOWN) && 
 		(call Fennec.getStateSeq() != CONFIGURATION_SEQ_UNKNOWN)) {
-		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - msg with unknown seq");
+		dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive - msg with unknown seq");
 		goto reset;
 	}
 
 	/* Received configuration message with lower sequence */
 	if (cu_msg->seq < call Fennec.getStateSeq()) {
-		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - reset");
+		dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive - reset");
 		goto reset;
 	}
 
@@ -190,7 +190,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
       
 		/* Received same sequence with the same configuration id */
 		if (cu_msg->conf_id == call Fennec.getStateId()) {
-		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - same seq");
+		dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive - same seq");
 			same_msg_counter++;
 			goto done_receive;
 		}
@@ -198,15 +198,15 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 		/* there is an inconsistency in a network */
 		call Fennec.setStateAndSeq(call Fennec.getStateId(), 
 			call Fennec.getStateSeq() + ((call Random.rand16() % 
-			call StateSynchronizationAppParams.get_rand_seq_mod()) + 
-			call StateSynchronizationAppParams.get_rand_seq_offset()));
-		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - inconsistency");
+			call StateSynchronizationParams.get_rand_seq_mod()) + 
+			call StateSynchronizationParams.get_rand_seq_offset()));
+		dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive - inconsistency");
 		goto reset;
 	}
 
 	/* Received configuration message with larger sequence number */
 	if (cu_msg->seq > call Fennec.getStateSeq()) {
-		dbg("StateSynchronization", "StateSynchronizationAppP NetworkReceive.receive - reconfigure");
+		dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive - reconfigure");
 		goto reconfigure;
 	}
 
@@ -222,14 +222,14 @@ done_receive:
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("StateSynchronization", "StateSynchronizationAppP NetworkAMSend.sendDone(0x%1x, %d)",
+	dbg("StateSynchronization", "StateSynchronizationP NetworkAMSend.sendDone(0x%1x, %d)",
 			msg, error);
 	busy_sending = FALSE;
 	post schedule_state_sync_msg();
 }
 
 event void Timer.fired() {
-	dbg("StateSynchronization", "StateSynchronizationAppP Timer.fired()");
+	dbg("StateSynchronization", "StateSynchronizationP Timer.fired()");
 	if (busy_sending == TRUE) {
 		post schedule_state_sync_msg();
 	} else {

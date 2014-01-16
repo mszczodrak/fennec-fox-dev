@@ -6,9 +6,9 @@ use application cuApp $(FENNEC_FOX_LIB)/Application/StateSynchronization (
 		uint8_t send_delay = 10, uint8_t rand_seq_mod = 10,
 		uint8_t rand_seq_offset = 1)
 # Network
-use network cuNet $(FENNEC_FOX_LIB)/Network/cu ()
+use network cuNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 # MAC
-use mac cuMac $(FENNEC_FOX_LIB)/Mac/cu (uint16_t backoff=10, uint16_t min_backoff=10,
+use mac cuMac $(FENNEC_FOX_LIB)/Mac/cuMac (uint16_t backoff=10, uint16_t min_backoff=10,
         uint8_t ack=1, uint8_t cca=1, uint8_t crc=1)
 
 
