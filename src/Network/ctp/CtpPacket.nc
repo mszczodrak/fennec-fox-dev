@@ -63,9 +63,6 @@ interface CtpPacket {
   command uint8_t       getSequenceNumber(message_t* msg);
   command void          setSequenceNumber(message_t* msg, uint8_t seqno);
 
-  command uint8_t       getType(message_t* msg);
-  command void          setType(message_t* msg, uint8_t id);
-
   command bool          matchInstance(message_t* m1, message_t* m2);
   command bool          matchPacket(message_t* m1, message_t* m2);
 }

@@ -45,7 +45,4 @@ enum {
     AM_COLLECTION_DEBUG = 22,
 };
 
-typedef uint8_t collection_id_t;
-typedef nx_uint8_t nx_collection_id_t;
-
 #endif

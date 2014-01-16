@@ -45,9 +45,9 @@
 generic configuration CollectionC() {
 provides interface StdControl;
 provides interface Send[uint8_t client];
-provides interface Receive[collection_id_t id];
-provides interface Receive as Snoop[collection_id_t];
-provides interface Intercept[collection_id_t id];
+provides interface Receive;
+provides interface Receive as Snoop;
+provides interface Intercept;
 
 provides interface Packet;
 provides interface CollectionPacket;
@@ -57,7 +57,6 @@ provides interface CtpInfo;
 provides interface CtpCongestion;
 provides interface RootControl;    
 
-uses interface CollectionId[uint8_t client];
 uses interface CollectionDebug;
 }
 
@@ -78,7 +77,6 @@ implementation {
   CtpCongestion = CtpP;
   RootControl = CtpP;
 
-  CollectionId = CtpP;
   CollectionDebug = CtpP;
 }
 

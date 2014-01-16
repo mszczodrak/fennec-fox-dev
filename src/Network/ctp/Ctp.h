@@ -70,7 +70,6 @@ typedef nx_struct {
   nx_uint16_t         etx;
   nx_am_addr_t        origin;
   nx_uint8_t          originSeqNo;
-  nx_collection_id_t  type;
   nx_uint8_t (COUNT(0) data)[0]; // Deputy place-holder, field will probably be removed when we Deputize Ctp
 } ctp_data_header_t;
 

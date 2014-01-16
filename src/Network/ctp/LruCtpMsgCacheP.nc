@@ -54,7 +54,6 @@ implementation {
   typedef struct {
     am_addr_t origin;
     uint8_t seqno;
-    collection_id_t type;
     uint8_t thl;
   } ctp_packet_sig_t;
   
@@ -100,8 +99,7 @@ implementation {
       idx = (i + first) % size;
       if (call CtpPacket.getOrigin(m)         == cache[idx].origin &&
 	  call CtpPacket.getSequenceNumber(m) == cache[idx].seqno &&
-	  call CtpPacket.getThl(m)            == cache[idx].thl &&
-	  call CtpPacket.getType(m)           == cache[idx].type) {
+	  call CtpPacket.getThl(m)            == cache[idx].thl) {
 	break;
       }
     }
@@ -140,7 +138,6 @@ implementation {
         cache[(first + count) % size].origin = call CtpPacket.getOrigin(m);
 	cache[(first + count) % size].seqno  = call CtpPacket.getSequenceNumber(m);
 	cache[(first + count) % size].thl    = call CtpPacket.getThl(m);
-	cache[(first + count) % size].type   = call CtpPacket.getType(m);
         count++;
     }
 

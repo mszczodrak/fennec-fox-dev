@@ -32,7 +32,7 @@
 #include "Collection.h"
 
 generic configuration 
-CollectionSenderP(collection_id_t collectid, uint8_t clientid) {
+CollectionSenderP(uint8_t clientid) {
 provides interface Send;
 provides interface Packet;
 provides interface Receive as NetworkReceive;
@@ -46,7 +46,7 @@ components new CollectionC() as Collector;
 Send = Collector.Send[clientid];
 Packet = Collector.Packet;
 
-NetworkReceive = Collector.Receive[collectid];
-NetworkSnoop = Collector.Snoop[collectid];
+NetworkReceive = Collector.Receive;
+NetworkSnoop = Collector.Snoop;
 
 }

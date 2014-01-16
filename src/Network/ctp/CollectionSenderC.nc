@@ -40,7 +40,7 @@
 
 #include <Ctp.h>
 
-generic configuration CollectionSenderC(collection_id_t collectid) {
+generic configuration CollectionSenderC() {
 provides interface Send;
 provides interface Packet;
 provides interface Receive as NetworkReceive;
@@ -48,7 +48,7 @@ provides interface Receive as NetworkSnoop;
 
 }
 implementation {
-components new CollectionSenderP(collectid, unique(UQ_CTP_CLIENT));
+components new CollectionSenderP(unique(UQ_CTP_CLIENT));
 Send = CollectionSenderP;
 Packet = CollectionSenderP;
 NetworkReceive = CollectionSenderP.NetworkReceive;

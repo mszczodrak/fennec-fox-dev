@@ -43,9 +43,6 @@ interface CollectionPacket {
   command am_addr_t getOrigin(message_t* msg);
   command void setOrigin(message_t* msg, am_addr_t addr);
   
-  command collection_id_t getType(message_t* msg);
-  command void setType(message_t* msg, collection_id_t id);
-  
   command uint8_t getSequenceNumber(message_t* msg);
   command void setSequenceNumber(message_t* msg, uint8_t seqno);
 }

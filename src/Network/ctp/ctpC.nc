@@ -59,13 +59,6 @@ uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 implementation {
 
-enum {
-	AM_TESTNETWORKMSG = 0x05,
-	SAMPLE_RATE_KEY = 0x1,
-	CL_TEST = 0xee,
-	TEST_NETWORK_QUEUE_SIZE = 8,
-};
-
 components new ctpP();
 SplitControl = ctpP;
 ctpParams = ctpP;
@@ -79,7 +72,7 @@ ctpP.Leds -> LedsC;
 
 components CtpP;
 components CtpActiveMessageC;
-components new CollectionSenderC(CL_TEST);
+components new CollectionSenderC();
 
 NetworkReceive = CollectionSenderC.NetworkReceive;
 NetworkSnoop = CollectionSenderC.NetworkSnoop;

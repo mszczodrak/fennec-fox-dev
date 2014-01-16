@@ -78,9 +78,9 @@ configuration CtpP {
   provides {
     interface StdControl;
     interface Send[uint8_t client];
-    interface Receive[collection_id_t id];
-    interface Receive as Snoop[collection_id_t];
-    interface Intercept[collection_id_t id];
+    interface Receive;
+    interface Receive as Snoop;
+    interface Intercept;
 
     interface Packet;
     interface AMPacket;
@@ -93,7 +93,6 @@ configuration CtpP {
     interface RootControl;    
   }
 
-uses interface CollectionId[uint8_t client];
 uses interface CollectionDebug;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
@@ -123,7 +122,6 @@ Snoop = Forwarder.Snoop;
 Intercept = Forwarder;
 Packet = Forwarder;
 AMPacket = Forwarder;
-CollectionId = Forwarder;
 CollectionPacket = Forwarder;
 CtpPacket = Forwarder;
 CtpCongestion = Forwarder;

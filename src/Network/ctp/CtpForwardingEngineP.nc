@@ -108,9 +108,9 @@ generic module CtpForwardingEngineP() {
   provides {
     interface StdControl;
     interface Send[uint8_t client];
-    interface Receive[collection_id_t id];
-    interface Receive as Snoop[collection_id_t id];
-    interface Intercept[collection_id_t id];
+    interface Receive;
+    interface Receive as Snoop;
+    interface Intercept;
     interface Packet;
     interface AMPacket;
     interface CollectionPacket;
@@ -285,7 +285,6 @@ command error_t StdControl.stop() {
     hdr->origin = TOS_NODE_ID;
     hdr->am = AM_CTP_DATA;
     hdr->originSeqNo  = seqno++;
-    hdr->type = 0;
     hdr->thl = 0;
 
     if (clientPtrs[client] == NULL) {
@@ -404,7 +403,6 @@ task void sendTask() {
 
       if (call RootControl.isRoot()) {
 	/* Code path for roots: copy the packet and signal receive. */
-        collection_id_t collectid = getHeader(qe->msg)->type;
 	uint8_t* payload;
 	uint8_t payloadLength;
 
@@ -413,7 +411,7 @@ task void sendTask() {
 	payload = call Packet.getPayload(loopbackMsgPtr, call Packet.payloadLength(loopbackMsgPtr));
 	payloadLength =  call Packet.payloadLength(loopbackMsgPtr);
         dbg("Forwarder", "%s: I'm a root, so loopback and signal receive.\n", __FUNCTION__);
-        loopbackMsgPtr = signal Receive.receive[collectid](loopbackMsgPtr,
+        loopbackMsgPtr = signal Receive.receive(loopbackMsgPtr,
 							   payload,
 							   payloadLength);
         signal SubSend.sendDone(qe->msg, SUCCESS);
@@ -658,14 +656,11 @@ task void sendTask() {
    */ 
   event message_t* 
   SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    collection_id_t collectid;
     bool duplicate = FALSE;
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
     dbg("Network", "CTP CtpForwardEngine SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
-
-    collectid = call CtpPacket.getType(msg);
 
     // Update the THL here, since it has lived another hop, and so
     // that the root sees the correct THL.
@@ -710,13 +705,13 @@ task void sendTask() {
 					       call Packet.payloadLength(msg),
 						getHeader(msg)->origin);
       call SentCache.insert(msg);
-      return signal Receive.receive[collectid](msg, 
+      return signal Receive.receive(msg, 
 					       call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 					       call Packet.payloadLength(msg));
     // I'm on the routing path and Intercept indicates that I
     // should not forward the packet.
     } else { 
-	if (!signal Intercept.forward[collectid](msg, 
+	if (!signal Intercept.forward(msg, 
 						  call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 						  call Packet.payloadLength(msg))) {
           dbg("Network", "CTP ignore msg 0x%1x from %u", msg, getHeader(msg)->origin);
@@ -738,8 +733,7 @@ task void sendTask() {
       call CtpInfo.triggerRouteUpdate();
     }
 
-    return signal Snoop.receive[call CtpPacket.getType(msg)] 
-      (msg, payload + sizeof(ctp_data_header_t), 
+    return signal Snoop.receive(msg, payload + sizeof(ctp_data_header_t), 
        len - sizeof(ctp_data_header_t));
   }
   
@@ -788,21 +782,17 @@ task void sendTask() {
 
   // CollectionPacket ADT commands
   command am_addr_t       CollectionPacket.getOrigin(message_t* msg) {return getHeader(msg)->origin;}
-  command collection_id_t CollectionPacket.getType(message_t* msg) {return getHeader(msg)->type;}
   command uint8_t         CollectionPacket.getSequenceNumber(message_t* msg) {return getHeader(msg)->originSeqNo;}
   command void CollectionPacket.setOrigin(message_t* msg, am_addr_t addr) {getHeader(msg)->origin = addr;}
-  command void CollectionPacket.setType(message_t* msg, collection_id_t id) {getHeader(msg)->type = id;}
   command void CollectionPacket.setSequenceNumber(message_t* msg, uint8_t _seqno) {getHeader(msg)->originSeqNo = _seqno;}
 
   // CtpPacket ADT commands
-  command uint8_t       CtpPacket.getType(message_t* msg) {return getHeader(msg)->type;}
   command am_addr_t     CtpPacket.getOrigin(message_t* msg) {return getHeader(msg)->origin;}
   command uint16_t      CtpPacket.getEtx(message_t* msg) {return getHeader(msg)->etx;}
   command uint8_t       CtpPacket.getSequenceNumber(message_t* msg) {return getHeader(msg)->originSeqNo;}
   command uint8_t       CtpPacket.getThl(message_t* msg) {return getHeader(msg)->thl;}
   command void CtpPacket.setThl(message_t* msg, uint8_t thl) {getHeader(msg)->thl = thl;}
   command void CtpPacket.setOrigin(message_t* msg, am_addr_t addr) {getHeader(msg)->origin = addr;}
-  command void CtpPacket.setType(message_t* msg, uint8_t id) {getHeader(msg)->type = id;}
   command void CtpPacket.setEtx(message_t* msg, uint16_t e) {getHeader(msg)->etx = e;}
   command void CtpPacket.setSequenceNumber(message_t* msg, uint8_t _seqno) {getHeader(msg)->originSeqNo = _seqno;}
   command bool CtpPacket.option(message_t* msg, ctp_options_t opt) {
@@ -821,14 +811,12 @@ task void sendTask() {
   command bool CtpPacket.matchInstance(message_t* m1, message_t* m2) {
     return (call CtpPacket.getOrigin(m1) == call CtpPacket.getOrigin(m2) &&
 	    call CtpPacket.getSequenceNumber(m1) == call CtpPacket.getSequenceNumber(m2) &&
-	    call CtpPacket.getThl(m1) == call CtpPacket.getThl(m2) &&
-	    call CtpPacket.getType(m1) == call CtpPacket.getType(m2));
+	    call CtpPacket.getThl(m1) == call CtpPacket.getThl(m2));
   }
 
   command bool CtpPacket.matchPacket(message_t* m1, message_t* m2) {
     return (call CtpPacket.getOrigin(m1) == call CtpPacket.getOrigin(m2) &&
-	    call CtpPacket.getSequenceNumber(m1) == call CtpPacket.getSequenceNumber(m2) &&
-	    call CtpPacket.getType(m1) == call CtpPacket.getType(m2));
+	    call CtpPacket.getSequenceNumber(m1) == call CtpPacket.getSequenceNumber(m2));
   }
 
 
@@ -898,19 +886,19 @@ task void sendTask() {
   }
 
   default event bool
-  Intercept.forward[collection_id_t collectid](message_t* msg, void* payload, 
+  Intercept.forward(message_t* msg, void* payload, 
                                                uint8_t len) {
     return TRUE;
   }
 
   default event message_t *
-  Receive.receive[collection_id_t collectid](message_t *msg, void *payload,
+  Receive.receive(message_t *msg, void *payload,
                                              uint8_t len) {
     return msg;
   }
 
   default event message_t *
-  Snoop.receive[collection_id_t collectid](message_t *msg, void *payload,
+  Snoop.receive(message_t *msg, void *payload,
                                            uint8_t len) {
     return msg;
   }
