@@ -33,12 +33,12 @@
   */
 
 
-#include "BlinkApp.h"
+#include "Blink.h"
 
-generic configuration BlinkAppC() {
+generic configuration BlinkC() {
 provides interface SplitControl;
 
-uses interface BlinkAppParams;
+uses interface BlinkParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -49,21 +49,21 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new BlinkAppP();
-SplitControl = BlinkAppP;
+components new BlinkP();
+SplitControl = BlinkP;
 
-BlinkAppParams = BlinkAppP;
+BlinkParams = BlinkP;
 
-NetworkAMSend = BlinkAppP.NetworkAMSend;
-NetworkReceive = BlinkAppP.NetworkReceive;
-NetworkSnoop = BlinkAppP.NetworkSnoop;
-NetworkAMPacket = BlinkAppP.NetworkAMPacket;
-NetworkPacket = BlinkAppP.NetworkPacket;
-NetworkPacketAcknowledgements = BlinkAppP.NetworkPacketAcknowledgements;
+NetworkAMSend = BlinkP.NetworkAMSend;
+NetworkReceive = BlinkP.NetworkReceive;
+NetworkSnoop = BlinkP.NetworkSnoop;
+NetworkAMPacket = BlinkP.NetworkAMPacket;
+NetworkPacket = BlinkP.NetworkPacket;
+NetworkPacketAcknowledgements = BlinkP.NetworkPacketAcknowledgements;
 
 components LedsC;
-BlinkAppP.Leds -> LedsC;
+BlinkP.Leds -> LedsC;
 
 components new TimerMilliC() as Timer;
-BlinkAppP.Timer -> Timer;
+BlinkP.Timer -> Timer;
 }

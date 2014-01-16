@@ -34,16 +34,16 @@
 
 
 #include <Fennec.h>
-#include "cc2420xRadio.h"
+#include "cc2420x.h"
 
-module cc2420xRadioP @safe() {
+module cc2420xP @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface RadioBuffer;
 provides interface RadioSend;
 provides interface RadioState;
 
-uses interface cc2420xRadioParams;
+uses interface cc2420xParams;
 
 uses interface RadioState as SubRadioState;
 uses interface RadioReceive as SubRadioReceive;
@@ -153,7 +153,7 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "cc2420xRadio RadioBuffer.send(0x%1x)", msg, useCca);
+	dbg("Radio", "cc2420x RadioBuffer.send(0x%1x)", msg, useCca);
 	return call SubRadioSend.send(msg, useCca);
 }
 

@@ -34,14 +34,14 @@
 
 
 #include <Fennec.h>
-#include "cc2420Radio.h"
+#include "cc2420.h"
 
-module cc2420RadioP @safe() {
+module cc2420P @safe() {
 provides interface SplitControl;
 provides interface RadioState;
 
 uses interface Leds;
-uses interface cc2420RadioParams;
+uses interface cc2420Params;
 uses interface RadioConfig;
 uses interface StdControl as ReceiveControl;
 uses interface StdControl as TransmitControl;

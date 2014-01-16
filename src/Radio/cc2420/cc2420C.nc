@@ -26,25 +26,22 @@
  */
 
 /**
-  * Cape Fox radio driver
+  * cc2420 driver adapted from the TinyOS ActiveMessage stack for CC2420 and cc2420x
   *
   * @author: Marcin K Szczodrak
-  * @updated: 12/28/2013
+  * @updated: 01/03/2014
   */
 
 
-
-configuration capeRadioC {
+configuration cc2420C {
 provides interface SplitControl;
 provides interface RadioReceive;
 
-uses interface capeRadioParams;
-
+uses interface cc2420Params;
 provides interface Resource as RadioResource;
-
+provides interface RadioSend;
 provides interface RadioPacket;
 provides interface RadioBuffer;
-provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -55,34 +52,53 @@ provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
 
+
 }
 
 implementation {
 
-components capeRadioP;
-SplitControl = capeRadioP;
-RadioState = capeRadioP;
-capeRadioParams = capeRadioP;
-RadioReceive = capeRadioP.RadioReceive;
+components cc2420P;
+components cc2420ControlC;
+components cc2420DriverC;
+cc2420Params = cc2420DriverC.cc2420Params;
+RadioCCA = cc2420DriverC.RadioCCA;
 
-PacketTransmitPower = capeRadioP.PacketTransmitPower;
-PacketRSSI = capeRadioP.PacketRSSI;
-PacketTimeSync = capeRadioP.PacketTimeSync;
-PacketLinkQuality = capeRadioP.PacketLinkQuality;
-RadioLinkPacketMetadata = capeRadioP.RadioLinkPacketMetadata;
+cc2420P.RadioPower -> cc2420ControlC.RadioPower;
+cc2420P.RadioResource -> cc2420ControlC.RadioResource;
 
-RadioResource = capeRadioP.RadioResource;
+SplitControl = cc2420P;
+cc2420Params = cc2420P;
 
-RadioBuffer = capeRadioP.RadioBuffer;
-RadioPacket = capeRadioP.RadioPacket;
-RadioSend = capeRadioP.RadioSend;
+RadioResource = cc2420ControlC.RadioResource;
 
-components CapePacketModelC as CapePacketModelC;
-components CpmModelC;
+cc2420Params = cc2420ControlC;
 
-capeRadioP.AMControl -> CapePacketModelC;
-capeRadioP.Model -> CapePacketModelC.Packet;
+cc2420P.RadioConfig -> cc2420ControlC.RadioConfig;
 
-CapePacketModelC.GainRadioModel -> CpmModelC;
-RadioCCA = CapePacketModelC.RadioCCA;
+components cc2420ReceiveC;
+cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
+cc2420P.ReceiveControl -> cc2420ReceiveC.StdControl;
+
+RadioReceive = cc2420ReceiveC.RadioReceive;
+RadioBuffer = cc2420DriverC.RadioBuffer;
+RadioSend = cc2420DriverC.RadioSend;
+RadioPacket = cc2420DriverC.RadioPacket;
+cc2420P.TransmitControl -> cc2420DriverC.StdControl;
+
+cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
+
+components LedsC;
+cc2420P.Leds -> LedsC;
+
+
+RadioState = cc2420P.RadioState;
+RadioLinkPacketMetadata = cc2420DriverC.RadioLinkPacketMetadata;
+  
+PacketTransmitPower = cc2420DriverC.PacketTransmitPower;
+PacketRSSI = cc2420DriverC.PacketRSSI;
+PacketTimeSync = cc2420DriverC.PacketTimeSync;
+PacketLinkQuality = cc2420DriverC.PacketLinkQuality;
+
+cc2420ReceiveC.PacketTimeSync -> cc2420DriverC.PacketTimeSync;
+
 }

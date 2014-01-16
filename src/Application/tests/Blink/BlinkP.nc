@@ -34,10 +34,10 @@
 
 #include <Fennec.h>
 
-generic module BlinkAppP() {
+generic module BlinkP() {
 provides interface SplitControl;
 
-uses interface BlinkAppParams;
+uses interface BlinkParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -55,8 +55,8 @@ bool on;
 
 command error_t SplitControl.start() {
 	on = 0;
-	call Timer.startPeriodic(call BlinkAppParams.get_delay());
-	dbg("Application", "BlinkAppP SplitControl.start()");
+	call Timer.startPeriodic(call BlinkParams.get_delay());
+	dbg("Application", "BlinkP SplitControl.start()");
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -64,16 +64,16 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 	call Leds.set(0);
-	dbg("Application", "BlinkAppP SplitControl.stop()");
+	dbg("Application", "BlinkP SplitControl.stop()");
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 event void Timer.fired() {
 	dbg("Application", "Application Blink set LED to %d", 
-		call BlinkAppParams.get_led());
-	//dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkAppParams.get_led(), on);
-	on ? call Leds.set(0) : call Leds.set(call BlinkAppParams.get_led()) ;
+		call BlinkParams.get_led());
+	//dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkParams.get_led(), on);
+	on ? call Leds.set(0) : call Leds.set(call BlinkParams.get_led()) ;
 	on = !on;
 }
 

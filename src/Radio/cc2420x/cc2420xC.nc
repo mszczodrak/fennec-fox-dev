@@ -33,11 +33,11 @@
   */
 
 
-configuration cc2420xRadioC {
+configuration cc2420xC {
 provides interface SplitControl;
 provides interface RadioReceive;
 
-uses interface cc2420xRadioParams;
+uses interface cc2420xParams;
 
 provides interface Resource as RadioResource;
 
@@ -57,7 +57,7 @@ provides interface RadioCCA;
 
 implementation {
 
-components cc2420xRadioP;
+components cc2420xP;
 components CC2420XDriverLayerC;
 
 components new RadioAlarmC();
@@ -66,24 +66,24 @@ components new SoftwareAckLayerC();
 //components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
 //RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
-SplitControl = cc2420xRadioP;
-cc2420xRadioParams = cc2420xRadioP;
-RadioReceive = cc2420xRadioP.RadioReceive;
-RadioBuffer = cc2420xRadioP.RadioBuffer;
-RadioSend = cc2420xRadioP.RadioSend;
-RadioState = cc2420xRadioP.RadioState;
+SplitControl = cc2420xP;
+cc2420xParams = cc2420xP;
+RadioReceive = cc2420xP.RadioReceive;
+RadioBuffer = cc2420xP.RadioBuffer;
+RadioSend = cc2420xP.RadioSend;
+RadioState = cc2420xP.RadioState;
 
 RadioPacket = CC2420XDriverLayerC.RadioPacket;
-cc2420xRadioP.RadioPacket -> CC2420XDriverLayerC.RadioPacket;
-cc2420xRadioP.SubRadioSend -> AutoResourceAcquireLayerC;
-cc2420xRadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
-cc2420xRadioP.SubRadioState -> CC2420XDriverLayerC.RadioState;
+cc2420xP.RadioPacket -> CC2420XDriverLayerC.RadioPacket;
+cc2420xP.SubRadioSend -> AutoResourceAcquireLayerC;
+cc2420xP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
+cc2420xP.SubRadioState -> CC2420XDriverLayerC.RadioState;
 
 // -------- RadioAlarm
 
 RadioAlarmC.Alarm -> CC2420XDriverLayerC;
 
-cc2420xRadioParams = CC2420XDriverLayerC;
+cc2420xParams = CC2420XDriverLayerC;
 
 components new AutoResourceAcquireLayerC();
 AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
