@@ -136,9 +136,13 @@ Forwarder.MessagePool -> MessagePoolP;
 components new QueueC(fe_queue_entry_t*, QUEUE_SIZE) as SendQueueP;
 Forwarder.SendQueue -> SendQueueP;
 
-components new LruCtpMsgCacheC(CACHE_SIZE) as SentCacheP;
+components new LruCtpMsgCacheP(CACHE_SIZE) as SentCacheP;
 StdControl = SentCacheP;
 Forwarder.SentCache -> SentCacheP;
+
+components MainC;
+MainC.SoftwareInit -> SentCacheP;
+SentCacheP.CtpPacket -> Forwarder;
 
 components new TimerMilliC() as RoutingBeaconTimer;
 components new TimerMilliC() as RouteUpdateTimer;
