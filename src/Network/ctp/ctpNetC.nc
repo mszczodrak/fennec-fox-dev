@@ -36,7 +36,7 @@
 
 #include <Fennec.h>
 
-configuration ctpNetC {
+generic configuration ctpNetC() {
 provides interface SplitControl;
 
 uses interface ctpNetParams;
@@ -66,7 +66,7 @@ enum {
 	TEST_NETWORK_QUEUE_SIZE = 8,
 };
 
-components ctpNetP;
+components new ctpNetP();
 SplitControl = ctpNetP;
 ctpNetParams = ctpNetP;
 NetworkAMSend = ctpNetP;
@@ -79,11 +79,10 @@ ctpNetP.Leds -> LedsC;
 
 components CtpP;
 components CtpActiveMessageC;
-components CollectionC as Collector;
 components new CollectionSenderC(CL_TEST);
 
-NetworkReceive = Collector.Receive[CL_TEST];
-NetworkSnoop = Collector.Snoop[CL_TEST];
+NetworkReceive = CollectionSenderC.NetworkReceive;
+NetworkSnoop = CollectionSenderC.NetworkSnoop;
 
 MacAMSend = CtpActiveMessageC;
 MacReceive = CtpActiveMessageC.MacReceive;

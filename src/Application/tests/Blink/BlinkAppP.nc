@@ -34,7 +34,7 @@
 
 #include <Fennec.h>
 
-module BlinkAppP {
+generic module BlinkAppP() {
 provides interface SplitControl;
 
 uses interface BlinkAppParams;

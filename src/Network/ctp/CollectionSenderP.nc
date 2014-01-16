@@ -33,17 +33,22 @@
 
 generic configuration 
 CollectionSenderP(collection_id_t collectid, uint8_t clientid) {
-  provides {
-    interface Send;
-    interface Packet;
-  }
+provides interface Send;
+provides interface Packet;
+provides interface Receive as NetworkReceive;
+provides interface Receive as NetworkSnoop;
 }
 
 implementation {
-  components CollectionC as Collector;
-  components new CollectionIdP(collectid);
+
+components new CollectionC() as Collector;
+components new CollectionIdP(collectid);
   
-  Send = Collector.Send[clientid];
-  Packet = Collector.Packet;
-  Collector.CollectionId[clientid] -> CollectionIdP;
+Send = Collector.Send[clientid];
+Packet = Collector.Packet;
+Collector.CollectionId[clientid] -> CollectionIdP;
+
+NetworkReceive = Collector.Receive[collectid];
+NetworkSnoop = Collector.Snoop[collectid];
+
 }

@@ -29,7 +29,7 @@
 #include <Timer.h>
 #include "CounterApp.h"
 
-module CounterAppP {
+generic module CounterAppP() {
 provides interface SplitControl;
 
 uses interface CounterAppParams;

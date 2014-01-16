@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "ctpNet.h"
 
-module ctpNetP {
+generic module ctpNetP() {
 provides interface SplitControl;
 
 uses interface ctpNetParams;

@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "nullNet.h"
 
-module nullNetP {
+generic module nullNetP() {
 provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;

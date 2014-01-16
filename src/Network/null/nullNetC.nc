@@ -33,7 +33,7 @@
 
 #include <Fennec.h>
 
-configuration nullNetC {
+generic configuration nullNetC() {
 provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -55,7 +55,7 @@ uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 implementation {
 
-components nullNetP;
+components new nullNetP();
 SplitControl = nullNetP;
 nullNetParams = nullNetP;
 NetworkAMSend = nullNetP.NetworkAMSend;
