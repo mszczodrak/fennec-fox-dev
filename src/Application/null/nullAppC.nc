@@ -31,7 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-configuration nullAppC {
+generic configuration nullAppC() {
 provides interface SplitControl;
 
 uses interface nullAppParams;
@@ -45,7 +45,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components nullAppP;
+components new nullAppP();
 SplitControl = nullAppP;
 
 nullAppParams = nullAppP;

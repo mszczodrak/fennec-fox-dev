@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "nullApp.h"
 
-module nullAppP {
+generic module nullAppP() {
 provides interface SplitControl;
 
 uses interface nullAppParams;

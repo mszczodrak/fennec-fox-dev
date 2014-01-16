@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "timerMilliApp.h"
 
-module timerMilliAppP {
+generic module timerMilliAppP() {
 provides interface SplitControl;
 
 uses interface timerMilliAppParams;

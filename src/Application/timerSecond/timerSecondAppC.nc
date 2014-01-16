@@ -31,8 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-
-configuration timerSecondAppC {
+generic configuration timerSecondAppC() {
 provides interface SplitControl;
 
 uses interface timerSecondAppParams;
@@ -48,7 +47,7 @@ provides interface Event;
 }
 
 implementation {
-components timerSecondAppP;
+components new timerSecondAppP();
 SplitControl = timerSecondAppP;
 
 timerSecondAppParams = timerSecondAppP;

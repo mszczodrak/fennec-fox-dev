@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "timerSecondApp.h"
 
-module timerSecondAppP {
+generic module timerSecondAppP() {
 provides interface SplitControl;
 
 uses interface timerSecondAppParams;

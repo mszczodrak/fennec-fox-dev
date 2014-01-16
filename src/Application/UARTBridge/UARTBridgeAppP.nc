@@ -31,12 +31,10 @@
   * @author: Marcin K Szczodrak
   */
 
-
-
 #include <Fennec.h>
 #include "UARTBridgeApp.h"
 
-module UARTBridgeAppP {
+generic module UARTBridgeAppP() {
 provides interface SplitControl;
 
 uses interface UARTBridgeAppParams;

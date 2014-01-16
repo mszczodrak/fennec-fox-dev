@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "RssiApp.h"
 
-module RssiAppP {
+generic module RssiAppP() {
 provides interface SplitControl;
 
 uses interface RssiAppParams;

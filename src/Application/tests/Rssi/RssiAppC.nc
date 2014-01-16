@@ -33,7 +33,7 @@
   */
 
 
-configuration RssiAppC {
+geneirc configuration RssiAppC() {
 provides interface SplitControl;
 
 uses interface RssiAppParams;
@@ -47,7 +47,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components RssiAppP;
+components new RssiAppP();
 SplitControl = RssiAppP;
 
 RssiAppParams = RssiAppP;
