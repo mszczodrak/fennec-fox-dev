@@ -35,7 +35,7 @@
 
 #include <Fennec.h>
 
-configuration trickleNetC {
+generic configuration trickleNetC() {
 provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -56,7 +56,7 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 implementation {
 
-components trickleNetP;
+components new trickleNetP();
 SplitControl = trickleNetP;
 trickleNetParams = trickleNetP;
 NetworkAMSend = trickleNetP.NetworkAMSend;

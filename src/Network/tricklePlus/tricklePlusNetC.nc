@@ -35,7 +35,7 @@
 
 #include <Fennec.h>
 
-configuration tricklePlusNetC {
+generic configuration tricklePlusNetC() {
 provides interface Mgmt;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -56,7 +56,7 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 implementation {
 
-components tricklePlusNetP;
+components new tricklePlusNetP();
 Mgmt = tricklePlusNetP;
 tricklePlusNetParams = tricklePlusNetP;
 NetworkAMSend = tricklePlusNetP.NetworkAMSend;

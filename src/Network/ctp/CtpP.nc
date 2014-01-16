@@ -106,15 +106,10 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
-  enum {
-    CLIENT_COUNT = uniqueCount(UQ_CTP_CLIENT),
-    FORWARD_COUNT = 12,
-    TREE_ROUTING_TABLE_SIZE = 10,
-    QUEUE_SIZE = CLIENT_COUNT + FORWARD_COUNT,
-    CACHE_SIZE = 4,
-  };
-
 enum {
+	QUEUE_SIZE = 12,
+	TREE_ROUTING_TABLE_SIZE = 10,
+	CACHE_SIZE = 4,
 	NUM_CLIENTS = uniqueCount(UQ_AMQUEUE_SEND)
 };
 
@@ -145,8 +140,8 @@ MacAMPacket = CtpActiveMessageC.MacAMPacket;
 MacPacket = CtpActiveMessageC.MacPacket;
 MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
 
-components new PoolC(message_t, FORWARD_COUNT) as MessagePoolP;
-components new PoolC(fe_queue_entry_t, FORWARD_COUNT) as QEntryPoolP;
+components new PoolC(message_t, QUEUE_SIZE) as MessagePoolP;
+components new PoolC(fe_queue_entry_t, QUEUE_SIZE) as QEntryPoolP;
 Forwarder.QEntryPool -> QEntryPoolP;
 Forwarder.MessagePool -> MessagePoolP;
 

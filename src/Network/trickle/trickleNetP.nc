@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "trickleNet.h"
 
-module trickleNetP {
+generic module trickleNetP() {
 provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;

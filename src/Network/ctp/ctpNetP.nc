@@ -32,7 +32,6 @@
   * @updated: 01/18/2010
   */
 
-
 #include <Fennec.h>
 #include "ctpNet.h"
 
