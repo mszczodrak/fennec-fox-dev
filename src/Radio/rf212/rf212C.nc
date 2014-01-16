@@ -33,11 +33,11 @@
   */
 
 
-configuration rf212RadioC {
+configuration rf212C {
 provides interface SplitControl;
 provides interface RadioReceive;
 
-uses interface rf212RadioParams;
+uses interface rf212Params;
 
 provides interface Resource as RadioResource;
 
@@ -57,7 +57,7 @@ provides interface RadioCCA;
 
 implementation {
 
-components rf212RadioP;
+components rf212P;
 components RF212DriverLayerC;
 
 components new RadioAlarmC();
@@ -66,24 +66,24 @@ components new SoftwareAckLayerC();
 //components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
 //RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
-SplitControl = rf212RadioP;
-rf212RadioParams = rf212RadioP;
-RadioReceive = rf212RadioP.RadioReceive;
-RadioBuffer = rf212RadioP.RadioBuffer;
-RadioSend = rf212RadioP.RadioSend;
-RadioState = rf212RadioP.RadioState;
+SplitControl = rf212P;
+rf212Params = rf212P;
+RadioReceive = rf212P.RadioReceive;
+RadioBuffer = rf212P.RadioBuffer;
+RadioSend = rf212P.RadioSend;
+RadioState = rf212P.RadioState;
 
 RadioPacket = RF212DriverLayerC.RadioPacket;
-rf212RadioP.RadioPacket -> RF212DriverLayerC.RadioPacket;
-rf212RadioP.SubRadioSend -> AutoResourceAcquireLayerC;
-rf212RadioP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
-rf212RadioP.SubRadioState -> RF212DriverLayerC.RadioState;
+rf212P.RadioPacket -> RF212DriverLayerC.RadioPacket;
+rf212P.SubRadioSend -> AutoResourceAcquireLayerC;
+rf212P.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
+rf212P.SubRadioState -> RF212DriverLayerC.RadioState;
 
 // -------- RadioAlarm
 
 RadioAlarmC.Alarm -> RF212DriverLayerC;
 
-rf212RadioParams = RF212DriverLayerC;
+rf212Params = RF212DriverLayerC;
 
 components new AutoResourceAcquireLayerC();
 AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];

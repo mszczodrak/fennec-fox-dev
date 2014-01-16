@@ -100,7 +100,7 @@ uses interface GpioCapture as IRQ;
 uses interface BusyWait<TMicro, uint16_t>;
 uses interface LocalTime<TRadio>;
 uses interface RadioAlarm;
-uses interface rf212RadioParams;
+uses interface rf212Params;
 }
 
 implementation {
@@ -109,7 +109,7 @@ rf212_hdr_t* getHeader(message_t* msg) {
 	return (rf212_hdr_t*)msg->data;
 }
 
-void* getPayload(message_t* msg) {
+uint8_t* getPayload(message_t* msg) {
 	return ((void*)msg->data);
 }
 
@@ -415,10 +415,9 @@ command error_t RadioState.turnOn() {
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	uint16_t time;
 	uint32_t time32;
-	uint8_t* data;
+	nx_uint8_t* data;
 	uint8_t length;
 	uint8_t upload1;
-	uint8_t upload2;
 
 	if( cmd != CMD_NONE || state != STATE_RX_ON || radioIrq || ! isSpiAcquired() )
 		return EBUSY;
@@ -441,24 +440,14 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	// do something useful, just to wait a little
 	time32 = call LocalTime.get();
-	data = getPayload(msg);
+	data = msg->data;
 	length = getHeader(msg)->length;
 
-	if( call PacketTimeSync.isSet(msg) ) {	
-		// TODO - this is wrong
-		// the number of bytes before the embedded timestamp
-		upload1 = (((void*)msg) + (call RadioPacket.headerLength(msg) +
-	                call RadioPacket.payloadLength(msg)) - (void*)data);
+	// the number of bytes before the embedded timestamp
+	upload1 = length - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+	// the FCS is automatically generated (2 bytes)
 
-		// the FCS is automatically generated (2 bytes)
-		upload2 = length - 2 - upload1;
-
-		// make sure that we have enough space for the timestamp
-		RADIO_ASSERT( upload2 >= 4 && upload2 <= 127 );
-	} else {
-		upload1 = length - 2;
-		upload2 = 0;
-	}
+	printf("send len: %d   u1 %d   u2 %d\n", length, upload1, sizeof(timesync_radio_t));
 	RADIO_ASSERT( upload1 >= 1 && upload1 <= 127 );
 
 	// we have missed an incoming message in this short amount of time
@@ -501,18 +490,18 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	time32 += (int16_t)(time + TX_SFD_DELAY) - (int16_t)(time32);
 
-	if( upload2 != 0 ) {
-		uint32_t absolute = *(timesync_absolute_t*)data;
-		*(timesync_relative_t*)data = absolute - time32;
+	{
+	uint32_t absolute = *(timesync_absolute_t*)data;
+	*(timesync_relative_t*)data = absolute - time32;
 
-		// do not modify the data pointer so we can reset the timestamp
-		RADIO_ASSERT( upload1 == 0 );
-		do {
-			call FastSpiByte.splitReadWrite(data[upload1]);
-		}
-		while( ++upload1 != upload2 );
+	// do not modify the data pointer so we can reset the timestamp
+	RADIO_ASSERT( upload1 == 0 );
+	do {
+		call FastSpiByte.splitReadWrite(data[upload1]);
+	}
+	while( ++upload1 != sizeof(timesync_radio_t) );
 
-		*(timesync_absolute_t*)data = absolute;
+	*(timesync_absolute_t*)data = absolute;
 	}
 		
 	//dummy bytes for FCS. Otherwise we'll get an TRX_UR interrupt. It's strange though, the RF23x, doesn't need this
@@ -543,6 +532,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	// wait for the TRX_END interrupt
 	state = STATE_BUSY_TX_2_RX_ON;
 	cmd = CMD_TRANSMIT;
+	printfflush();
 
 	return SUCCESS;
 }
@@ -574,15 +564,17 @@ inline void downloadMessage() {
 	// read the length byte
 	length = call FastSpiByte.write(0);
 
+	printf("dM %d\n", length);
+
 	// if correct length
 	if( length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2 ) {
 		uint8_t read;
-		uint8_t* data;
+		nx_uint8_t* data;
 
 		// initiate the reading
 		call FastSpiByte.splitWrite(0);
 
-		data = getPayload(rxMsg);
+		data = rxMsg->data;
 		getHeader(rxMsg)->length = length;
 
 		// we do not store the CRC field

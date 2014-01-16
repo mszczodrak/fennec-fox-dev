@@ -88,7 +88,7 @@ provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface Alarm<TRadio, tradio_size>;
 
 uses interface RadioAlarm;
-uses interface rf212RadioParams;
+uses interface rf212Params;
 }
 
 implementation {
@@ -123,7 +123,7 @@ RF212DriverLayerP.RSTN -> HplRF212C.RSTN;
 RF212DriverLayerP.IRQ -> HplRF212C.IRQ;
 RF212DriverLayerP.BusyWait -> BusyWaitMicroC;
 
-rf212RadioParams = RF212DriverLayerP;
+rf212Params = RF212DriverLayerP;
 
 MainC.SoftwareInit -> RF212DriverLayerP.SoftwareInit;
 

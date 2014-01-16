@@ -33,16 +33,16 @@
   */
 
 #include <Fennec.h>
-#include "rf212Radio.h"
+#include "rf212.h"
 
-module rf212RadioP @safe() {
+module rf212P @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface RadioBuffer;
 provides interface RadioSend;
 provides interface RadioState;
 
-uses interface rf212RadioParams;
+uses interface rf212Params;
 
 uses interface RadioState as SubRadioState;
 uses interface RadioReceive as SubRadioReceive;
@@ -152,7 +152,7 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "rf212Radio RadioBuffer.send(0x%1x)", msg, useCca);
+	dbg("Radio", "rf212 RadioBuffer.send(0x%1x)", msg, useCca);
 	return call SubRadioSend.send(msg, useCca);
 }
 
