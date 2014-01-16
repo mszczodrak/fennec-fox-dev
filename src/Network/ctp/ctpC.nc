@@ -35,6 +35,7 @@
 
 
 #include <Fennec.h>
+#include <Ctp.h>
 
 generic configuration ctpC() {
 provides interface SplitControl;
@@ -72,10 +73,9 @@ ctpP.Leds -> LedsC;
 
 components CtpP;
 components CtpActiveMessageC;
-components new CollectionSenderC();
 
-NetworkReceive = CollectionSenderC.NetworkReceive;
-NetworkSnoop = CollectionSenderC.NetworkSnoop;
+NetworkReceive = CtpP.Receive;
+NetworkSnoop = CtpP.Snoop;
 
 MacAMSend = CtpActiveMessageC;
 MacReceive = CtpActiveMessageC.MacReceive;
@@ -86,7 +86,7 @@ MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
 
 ctpP.RoutingControl -> CtpP;
 ctpP.RootControl -> CtpP;
-ctpP.CtpSend -> CollectionSenderC.Send;
+ctpP.CtpSend -> CtpP.Send[unique(UQ_CTP_CLIENT)];
 ctpP.CtpPacket -> CtpP.Packet;
 ctpP.CtpPacketAcknowledgements -> CtpActiveMessageC.PacketAcknowledgements;
 
