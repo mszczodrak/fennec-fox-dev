@@ -109,10 +109,6 @@ rf212_hdr_t* getHeader(message_t* msg) {
 	return (rf212_hdr_t*)msg->data;
 }
 
-uint8_t* getPayload(message_t* msg) {
-	return ((void*)msg->data);
-}
-
 /*----------------- STATE -----------------*/
 
 norace uint8_t state;
@@ -418,6 +414,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	nx_uint8_t* data;
 	uint8_t length;
 	uint8_t upload1;
+	uint32_t absolute;
 
 	if( cmd != CMD_NONE || state != STATE_RX_ON || radioIrq || ! isSpiAcquired() )
 		return EBUSY;
@@ -447,8 +444,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	upload1 = length - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
 	// the FCS is automatically generated (2 bytes)
 
-	printf("send len: %d   u1 %d   u2 %d\n", length, upload1, sizeof(timesync_radio_t));
-	printf("sM %d %d %d\n\n", length, getHeader(msg)->src, getHeader(msg)->dest);
 	RADIO_ASSERT( upload1 >= 1 && upload1 <= 127 );
 
 	// we have missed an incoming message in this short amount of time
@@ -491,8 +486,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 	time32 += (int16_t)(time + TX_SFD_DELAY) - (int16_t)(time32);
 
-	{
-	uint32_t absolute = *(timesync_absolute_t*)data;
+	absolute = *(timesync_absolute_t*)data;
 	*(timesync_relative_t*)data = absolute - time32;
 
 	// do not modify the data pointer so we can reset the timestamp
@@ -503,7 +497,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	while( ++upload1 != sizeof(timesync_radio_t) );
 
 	*(timesync_absolute_t*)data = absolute;
-	}
 		
 	//dummy bytes for FCS. Otherwise we'll get an TRX_UR interrupt. It's strange though, the RF23x, doesn't need this
 	call FastSpiByte.splitReadWrite(0);
@@ -564,8 +557,6 @@ inline void downloadMessage() {
 
 	// read the length byte
 	length = call FastSpiByte.write(0);
-
-	printf("dM %d %d %d\n", length, getHeader(rxMsg)->src, getHeader(rxMsg)->dest);
 
 	// if correct length
 	if( length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2 ) {
