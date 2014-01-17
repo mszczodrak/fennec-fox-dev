@@ -76,7 +76,7 @@
 #include "DefaultLpl.h"
 #include "AM.h"
 
-module DefaultLplP {
+generic module DefaultLplP() {
 provides interface Send;
 provides interface Receive;
 provides interface SplitControl;

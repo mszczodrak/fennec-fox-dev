@@ -73,7 +73,7 @@
  
 #include "csmaca.h"
 
-module UniqueP @safe() {
+generic module UniqueP() @safe() {
 provides interface Send;
 provides interface Receive;
 provides interface Init;

@@ -38,7 +38,7 @@
 #include "csmaca.h"
 
 
-module csmacaP @safe() {
+generic module csmacaP() @safe() {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;

@@ -71,7 +71,7 @@
 
 #include "DefaultLpl.h"
 
-configuration DefaultLplC {
+generic configuration DefaultLplC() {
 provides interface Send;
 provides interface Receive;
 provides interface SplitControl;
@@ -94,7 +94,7 @@ uses interface PacketField<uint8_t> as PacketLinkQuality;
 }
 
 implementation {
-components DefaultLplP,
+components new DefaultLplP(),
       RandomC,
       new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,

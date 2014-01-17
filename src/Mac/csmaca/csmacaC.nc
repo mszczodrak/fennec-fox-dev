@@ -34,7 +34,7 @@
 
 #include "csmaca.h"
 
-configuration csmacaC {
+generic configuration csmacaC() {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
@@ -67,7 +67,7 @@ uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 implementation {
 
-components csmacaP;
+components new csmacaP();
 
 SplitControl = csmacaP;
 MacAMSend = csmacaP.MacAMSend;
@@ -85,14 +85,14 @@ RadioPacket = csmacaP.RadioPacket;
 
 RadioLinkPacketMetadata = csmacaP.RadioLinkPacketMetadata;
 
-components CSMATransmitC;
+components new CSMATransmitC();
 RadioResource = CSMATransmitC.RadioResource;
 RadioState = CSMATransmitC.RadioState;
 
-components DefaultLplC as LplC;
+components new DefaultLplC() as LplC;
 csmacaP.RadioControl -> LplC.SplitControl;
 
-components UniqueC;
+components new UniqueC();
 
 RadioPacket = UniqueC.RadioPacket;
 

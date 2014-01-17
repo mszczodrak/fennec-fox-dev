@@ -37,7 +37,7 @@
 #include "Fennec.h"
 #include "csmaca.h"
 
-module CSMATransmitP @safe() {
+generic module CSMATransmitP() @safe() {
 provides interface CSMATransmit;
 provides interface SplitControl;
 provides interface Send;
