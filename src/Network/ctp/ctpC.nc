@@ -75,7 +75,7 @@ enum {
 
 components new ctpP();
 components LedsC;
-components CtpActiveMessageC;
+components new CtpActiveMessageC();
 components new CtpForwardingEngineP() as Forwarder;
 
 
@@ -122,7 +122,7 @@ SentCacheP.CtpPacket -> Forwarder;
 
 components new TimerMilliC() as RoutingBeaconTimer;
 components new TimerMilliC() as RouteUpdateTimer;
-components LinkEstimatorP as Estimator;
+components new LinkEstimatorP() as Estimator;
 Forwarder.LinkEstimator -> Estimator;
 
 components new CtpRoutingEngineP(TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;
