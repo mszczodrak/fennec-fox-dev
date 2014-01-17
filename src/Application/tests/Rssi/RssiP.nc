@@ -64,6 +64,7 @@ task void reset_led_timer() {
 command error_t SplitControl.start() {
 	dbg("Application", "Rssi SplitControl.start()");
 	call SendTimer.startPeriodic(call RssiParams.get_delay());
+	memset(&packet, 0, sizeof(message_t));
 	post reset_led_timer();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -109,7 +110,6 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void SendTimer.fired() {
-	memset(&packet, 0, sizeof(message_t));
 	call NetworkAMSend.send(BROADCAST, &packet, 80);
 }
 
