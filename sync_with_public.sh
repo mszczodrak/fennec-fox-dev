@@ -11,10 +11,10 @@ rm -rf $PUB/$MAIN_FOLDER
 
 while read -r path
 do
-	echo "Name read from file - $path"
+	echo "Copying - $path"
 	cp -R  --parents $path $PUB
 done < "$PUBS"
 
 cd $PUB
-git add *
+#git add *
 
