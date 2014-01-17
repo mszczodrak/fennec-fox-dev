@@ -142,7 +142,6 @@ task void load_done() {
 async command error_t RadioBuffer.load(message_t* msg) {
 	rf212_hdr_t* header = (rf212_hdr_t*)(msg->data);
 	header->destpan = msg->conf;
-	m = msg;
 	signal RadioBuffer.loadDone(msg, SUCCESS);
 	return SUCCESS;
 }
@@ -161,6 +160,7 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	m = msg;
 	signal RadioSend.sendDone(msg, error);
 }
 

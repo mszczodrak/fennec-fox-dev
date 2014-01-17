@@ -183,17 +183,15 @@ event void RadioControl.stopDone(error_t err) {
 
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	null_mac_header_t* header;
-	metadata_t* metadata;
 
 	dbg("Mac", "nullMac MacAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
 	header = getHeader(msg);
-	metadata = (metadata_t*) msg->metadata;
-	call MacAMPacket.setGroup(msg, msg->conf);
 
 	getMetadata(msg)->crc = 0;
 	getMetadata(msg)->rssi = 0;
 	getMetadata(msg)->lqi = 0;
+	getMetadata(msg)->ack = 1;
 
 	if (len > call MacPacket.maxPayloadLength()) {
 		return ESIZE;
@@ -227,18 +225,12 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
 		( 1 << IEEE154_FCF_INTRAPAN ) );
 
-
-	metadata->ack = 1;
-	metadata->rssi = 0;
-	metadata->lqi = 0;
-
 	if ( m_state != S_STARTED ) {
 		return FAIL;
 	}
 
 
 	m_state = S_LOAD;
-	m_msg = m_msg;
 
 	call RadioBuffer.load(m_msg);
 	return SUCCESS;

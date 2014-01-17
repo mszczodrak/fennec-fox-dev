@@ -526,8 +526,6 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	// wait for the TRX_END interrupt
 	state = STATE_BUSY_TX_2_RX_ON;
 	cmd = CMD_TRANSMIT;
-	printfflush();
-
 	return SUCCESS;
 }
 
@@ -762,8 +760,6 @@ void serviceRadio() {
 			}
 			else if( cmd == CMD_RECEIVE )
 			{
-				printf("rec\n");
-				printfflush();
 				RADIO_ASSERT( state == STATE_RX_ON );
 
 				// the most likely place for clear channel (hope to avoid acks)
