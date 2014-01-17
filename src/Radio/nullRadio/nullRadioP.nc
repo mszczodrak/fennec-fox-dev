@@ -155,7 +155,10 @@ task void load_done() {
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
+	fennec_header_t *h = (fennec_header_t*)msg->data;
+	printf("s %d  d %d\n", h->src, h->dest);
 	dbg("Radio", "nullRadio RadioBuffer.load(0x%1x)", msg);
+	
 	m = msg;
 	post load_done();
 	return SUCCESS;

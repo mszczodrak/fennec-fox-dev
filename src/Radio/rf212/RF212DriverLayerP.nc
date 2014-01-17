@@ -771,6 +771,8 @@ void serviceRadio() {
 			}
 			else if( cmd == CMD_RECEIVE )
 			{
+				printf("rec\n");
+				printfflush();
 				RADIO_ASSERT( state == STATE_RX_ON );
 
 				// the most likely place for clear channel (hope to avoid acks)
@@ -832,8 +834,7 @@ void task_run() {
 /*----------------- RadioPacket -----------------*/
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	nx_struct rf212_radio_header_t *hdr = (nx_struct rf212_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct rf212_radio_header_t) - RF212_SIZEOF_CRC - sizeof(timesync_radio_t);
+	return sizeof(nx_struct rf212_radio_header_t);
 }
 
 
