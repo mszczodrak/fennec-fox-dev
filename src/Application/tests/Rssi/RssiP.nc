@@ -56,6 +56,7 @@ uses interface Timer<TMilli> as LedTimer;
 implementation {
 
 message_t packet;
+bool busy;
 
 task void reset_led_timer() {
 	call LedTimer.startOneShot(2 * call RssiParams.get_delay());
@@ -64,7 +65,7 @@ task void reset_led_timer() {
 command error_t SplitControl.start() {
 	dbg("Application", "Rssi SplitControl.start()");
 	call SendTimer.startPeriodic(call RssiParams.get_delay());
-	memset(&packet, 0, sizeof(message_t));
+	busy = FALSE;
 	post reset_led_timer();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -77,7 +78,7 @@ command error_t SplitControl.stop() {
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-
+	busy = FALSE;
 }
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -110,7 +111,10 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void SendTimer.fired() {
-	call NetworkAMSend.send(BROADCAST, &packet, 80);
+	if (!busy) {
+		busy = TRUE;
+		call NetworkAMSend.send(BROADCAST, &packet, 40);
+	}
 }
 
 event void LedTimer.fired() {

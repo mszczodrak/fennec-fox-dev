@@ -564,7 +564,7 @@ inline void downloadMessage() {
 	// read the length byte
 	length = call FastSpiByte.write(0);
 
-	printf("dM %d\n", length);
+	printf("dM %d %d %d\n", length, getHeader(rxMsg)->src, getHeader(rxMsg)->dest);
 
 	// if correct length
 	if( length >= 3 && length <= call RadioPacket.maxPayloadLength() + 2 ) {
@@ -612,8 +612,10 @@ inline void downloadMessage() {
 	cmd = CMD_NONE;
 
 	// signal only if it has passed the CRC check
-	if( crcValid )
+	if( crcValid ) {
+		getMetadata(rxMsg)->crc = 1;
 		rxMsg = signal RadioReceive.receive(rxMsg);
+	}
 }
 
 /*----------------- IRQ -----------------*/
