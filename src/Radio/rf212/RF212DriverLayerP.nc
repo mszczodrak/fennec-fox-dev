@@ -448,6 +448,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	// the FCS is automatically generated (2 bytes)
 
 	printf("send len: %d   u1 %d   u2 %d\n", length, upload1, sizeof(timesync_radio_t));
+	printf("sM %d %d %d\n\n", length, getHeader(msg)->src, getHeader(msg)->dest);
 	RADIO_ASSERT( upload1 >= 1 && upload1 <= 127 );
 
 	// we have missed an incoming message in this short amount of time
