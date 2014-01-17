@@ -38,9 +38,9 @@
  */
 
 #include <Fennec.h>
-#include "flushMac.h"
+#include "flush.h"
 
-generic module flushMacP() {
+generic module flushP() {
   provides interface Mgmt;
   provides interface Module;
   provides interface MacCall;

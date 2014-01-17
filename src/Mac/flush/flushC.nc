@@ -37,9 +37,9 @@
  * Date: 11/25/2011
  */
 
-#include "flushMac.h"
+#include "flush.h"
 
-generic configuration flushMacC() {
+generic configuration flushC() {
   provides interface Mgmt;
   provides interface Module;
   provides interface MacCall;
@@ -51,28 +51,28 @@ generic configuration flushMacC() {
 
 
 implementation {
-  components new flushMacP();
-  Mgmt = flushMacP;
-  Module = flushMacP;
-  MacCall = flushMacP;
-  MacSignal = flushMacP;
-  RadioCall = flushMacP;
-  RadioSignal = flushMacP;
+  components new flushP();
+  Mgmt = flushP;
+  Module = flushP;
+  MacCall = flushP;
+  MacSignal = flushP;
+  RadioCall = flushP;
+  RadioSignal = flushP;
 
   components AddressingC;
-  flushMacP.Addressing -> AddressingC.Addressing[F_MAC_ADDRESSING];
+  flushP.Addressing -> AddressingC.Addressing[F_MAC_ADDRESSING];
 
   components new TimerMilliC() as Timer0;
-  flushMacP.Timer0 -> Timer0;
+  flushP.Timer0 -> Timer0;
 
   components new TimerMilliC() as Timer1;
-  flushMacP.Timer1 -> Timer1;
+  flushP.Timer1 -> Timer1;
 
   components new QueueC(struct qe_msg, SIMPLECONTROL_QUEUE_LEN) as msgsQueue;
-  flushMacP.msgsQueue->msgsQueue;
+  flushP.msgsQueue->msgsQueue;
 
   components new QueueC(struct qe_msg, SIMPLECONTROL_QUEUE_LEN * 2) as unACKedQueue;
-  flushMacP.unACKedQueue->unACKedQueue;
+  flushP.unACKedQueue->unACKedQueue;
 
 }
 
