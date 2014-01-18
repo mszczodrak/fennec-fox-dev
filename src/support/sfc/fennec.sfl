@@ -27,8 +27,8 @@ use application randBeacon $(FENNEC_FOX_LIB)/Application/tests/RandomBeacon (
 
 use application rssi $(FENNEC_FOX_LIB)/Application/tests/Rssi (
 		uint16_t tx_delay = 200,
-		uint16_t threshold_1 = 105,
-		uint16_t threshold_2 = 90)
+		int8_t threshold_1 = -45,
+		int8_t threshold_2 = -30)
 
 use application testSerial $(FENNEC_FOX_LIB)/Application/tests/TestSerial ( 
 		uint8_t led=1,
