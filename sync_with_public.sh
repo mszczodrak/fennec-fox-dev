@@ -6,8 +6,13 @@ DEV_REPO=`pwd`
 PUB_REPO=`pwd`/../fennec-fox
 PUB_CODE=pubs
 
+cd $PUB_REPO
+git pull
+
 echo "Clean Repo"
 fennec clean
+
+cd $DEV_REPO
 
 echo "Delete all files from $PUB_REPO"
 rm -rf $PUB_REPO/*
