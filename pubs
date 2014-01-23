@@ -7,6 +7,7 @@ src/Makefile
 src/system
 src/support
 src/Serial
+src/Fennec
 src/Application/create.sh
 src/Application/nullApp
 src/Application/StateSynchronization
