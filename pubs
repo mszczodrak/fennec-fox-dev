@@ -7,6 +7,7 @@ src/Makefile
 src/system
 src/support
 src/Serial
+src/Fennec
 src/Application/create.sh
 src/Application/nullApp
 src/Application/StateSynchronization
@@ -33,3 +34,9 @@ src/Radio/cape
 src/Radio/cc2420
 src/Radio/cc2420x
 src/Radio/rf212
+src/sensors/ff*
+src/sensors/sensors.extra
+src/sensors/chips/adxl345
+src/sensors/chips/ms320_lp
+src/sensors/chips/phidget_adc
+src/sensors/chips/tmp102
