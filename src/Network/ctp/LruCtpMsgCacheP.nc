@@ -83,7 +83,7 @@ implementation {
     int i;
     dbg("Cache","Cache:");
     for (i = 0; i < count; i++) {
-      dbg_clear("Cache", " %04x %02x %02x %02x", cache[i].origin, cache[i].seqno, cache[i].type, cache[i].thl);
+      dbg_clear("Cache", " %04x %02x %02x", cache[i].origin, cache[i].seqno, cache[i].thl);
       if (i == first)
 	dbg_clear("Cache","*");
     } 
