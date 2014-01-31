@@ -7,6 +7,8 @@ use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
 
 use application bridge $(FENNEC_FOX_LIB)/Application/UARTBridge ()
 
+use application pbridge $(FENNEC_FOX_LIB)/Application/PrintfBridge ()
+
 use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
 		uint8_t led=1, 
 		uint16_t delay=1024 )
