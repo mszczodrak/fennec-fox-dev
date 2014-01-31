@@ -32,12 +32,12 @@
   */
 
 #include <Fennec.h>
-#include "UARTBridgeApp.h"
+#include "UARTBridge.h"
 
-generic module UARTBridgeAppP() {
+generic module UARTBridgeP() {
 provides interface SplitControl;
 
-uses interface UARTBridgeAppParams;
+uses interface UARTBridgeParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -102,13 +102,13 @@ task void send_serial_message() {
 
 
 command error_t SplitControl.start() {
-	dbg("Application", "UARTBridgeApp SplitControl.start()");
+	dbg("Application", "UARTBridge SplitControl.start()");
 	call SerialSplitControl.start();
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("Application", "UARTBridgeApp SplitControl.start()");
+	dbg("Application", "UARTBridge SplitControl.start()");
 	call SerialSplitControl.stop();
 	return SUCCESS;
 }

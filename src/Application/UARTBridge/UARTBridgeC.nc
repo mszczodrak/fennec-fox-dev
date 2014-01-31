@@ -31,12 +31,12 @@
   * @author: Marcin K Szczodrak
   */
 
-#include "UARTBridgeApp.h"
+#include "UARTBridge.h"
 
-generic configuration UARTBridgeAppC() {
+generic configuration UARTBridgeC() {
 provides interface SplitControl;
 
-uses interface UARTBridgeAppParams;
+uses interface UARTBridgeParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -47,32 +47,32 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new UARTBridgeAppP();
-SplitControl = UARTBridgeAppP;
+components new UARTBridgeP();
+SplitControl = UARTBridgeP;
 
-UARTBridgeAppParams = UARTBridgeAppP;
+UARTBridgeParams = UARTBridgeP;
 
-NetworkAMSend = UARTBridgeAppP.NetworkAMSend;
-NetworkReceive = UARTBridgeAppP.NetworkReceive;
-NetworkSnoop = UARTBridgeAppP.NetworkSnoop;
-NetworkAMPacket = UARTBridgeAppP.NetworkAMPacket;
-NetworkPacket = UARTBridgeAppP.NetworkPacket;
-NetworkPacketAcknowledgements = UARTBridgeAppP.NetworkPacketAcknowledgements;
+NetworkAMSend = UARTBridgeP.NetworkAMSend;
+NetworkReceive = UARTBridgeP.NetworkReceive;
+NetworkSnoop = UARTBridgeP.NetworkSnoop;
+NetworkAMPacket = UARTBridgeP.NetworkAMPacket;
+NetworkPacket = UARTBridgeP.NetworkPacket;
+NetworkPacketAcknowledgements = UARTBridgeP.NetworkPacketAcknowledgements;
 
 components LedsC;
-UARTBridgeAppP.Leds -> LedsC;
+UARTBridgeP.Leds -> LedsC;
 
 components SerialActiveMessageC;
 components new SerialAMSenderC(100);
 components new SerialAMReceiverC(100);
-UARTBridgeAppP.SerialAMSend -> SerialAMSenderC.AMSend;
-UARTBridgeAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-UARTBridgeAppP.SerialPacket -> SerialAMSenderC.Packet;
-UARTBridgeAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
-UARTBridgeAppP.SerialReceive -> SerialAMReceiverC.Receive;
+UARTBridgeP.SerialAMSend -> SerialAMSenderC.AMSend;
+UARTBridgeP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+UARTBridgeP.SerialPacket -> SerialAMSenderC.Packet;
+UARTBridgeP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+UARTBridgeP.SerialReceive -> SerialAMReceiverC.Receive;
 
 /* Creating a queue for sending messages over the serial interface */
 components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
-UARTBridgeAppP.SerialQueue -> SerialQueueC;
+UARTBridgeP.SerialQueue -> SerialQueueC;
 
 }
