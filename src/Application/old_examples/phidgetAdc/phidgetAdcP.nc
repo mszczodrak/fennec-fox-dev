@@ -26,12 +26,12 @@
  */
 
 #include <Fennec.h>
-#include "phidgetAdcApp.h"
+#include "phidgetAdc.h"
 
-module phidgetAdcAppP {
+generic module phidgetAdcP() {
 provides interface SplitControl;
 
-uses interface phidgetAdcAppParams ;
+uses interface phidgetAdcParams ;
 
 /* Network interfaces */
 uses interface AMSend as NetworkAMSend;
@@ -93,8 +93,8 @@ bool busy_serial;
 command error_t SplitControl.start() {
 	busy_serial = FALSE;
 	/* check if this node will be sending messages over the serial */
-	if ((TOS_NODE_ID == call phidgetAdcAppParams.get_destination()) || 
-	        (0 == call phidgetAdcAppParams.get_destination())) {
+	if ((TOS_NODE_ID == call phidgetAdcParams.get_destination()) || 
+	        (0 == call phidgetAdcParams.get_destination())) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
@@ -253,7 +253,7 @@ void prepare_network_message(uint8_t id) {
 	}
 
 	q.len = sensors[id].len;
-	q.addr = call phidgetAdcAppParams.get_destination();
+	q.addr = call phidgetAdcParams.get_destination();
 	q.msg = sensors[id].msg;
 
 	call NetworkQueue.enqueue(q);
@@ -325,19 +325,19 @@ task void setup_app() {
 	/* initialize sensors */
 	uint8_t i;
 
-	sensors[0].sample_count = call phidgetAdcAppParams.get_s1_sampleCount();
-	sensors[0].freq = call phidgetAdcAppParams.get_s1_freq();
+	sensors[0].sample_count = call phidgetAdcParams.get_s1_sampleCount();
+	sensors[0].freq = call phidgetAdcParams.get_s1_freq();
 	sensors[0].seqno = 0;
 	sensors[0].msg = NULL;
 	call Sensor_0_Ctrl.setRate(sensors[0].freq);
-	call Sensor_0_Setup.set_input_channel(call phidgetAdcAppParams.get_s1_inputChannel());
+	call Sensor_0_Setup.set_input_channel(call phidgetAdcParams.get_s1_inputChannel());
 
-	sensors[1].sample_count = call phidgetAdcAppParams.get_s2_sampleCount();
-	sensors[1].freq = call phidgetAdcAppParams.get_s2_freq();
+	sensors[1].sample_count = call phidgetAdcParams.get_s2_sampleCount();
+	sensors[1].freq = call phidgetAdcParams.get_s2_freq();
 	sensors[1].seqno = 0;
 	sensors[1].msg = NULL;
 	call Sensor_1_Ctrl.setRate(sensors[1].freq);
-	call Sensor_1_Setup.set_input_channel(call phidgetAdcAppParams.get_s2_inputChannel());
+	call Sensor_1_Setup.set_input_channel(call phidgetAdcParams.get_s2_inputChannel());
 
 	for (i=0; i < APP_MAX_NUMBER_OF_SENSORS; i++) {
 		clean_sensor_record(i);
