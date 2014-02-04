@@ -1,4 +1,6 @@
-fennec-fox-dev
-==============
+Fennec Fox - Embedded System Wireless Networks
 
-Fennec Fox Development Code
+
+* <a href="../../wiki">Documentation</a>
+* <a href="../../wiki/License">License</a>
+* <a href="../../wiki/Acknowledgments">Acknowledgments</a>
