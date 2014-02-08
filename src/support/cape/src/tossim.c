@@ -51,10 +51,10 @@
 
 
 #include <radio.c>
-#include <seh.c>
+//#include <seh.c>
 #include <SerialPacket.c>
 #include <sim_noise.h>
-#include <sim_irradiance.h>
+//#include <sim_irradiance.h>
 
 uint16_t TOS_NODE_ID = 1;
 
@@ -213,9 +213,9 @@ int Mote::generateNoise(int when) {
   return (int)sim_noise_generate(id(), when);
 }
 
-void Mote::addIrradianceTraceReading(double val) {
-  sim_irradiance_trace_add(id(), val);
-}
+//void Mote::addIrradianceTraceReading(double val) {
+//  sim_irradiance_trace_add(id(), val);
+//}
 
 Tossim::Tossim(nesc_app_t* n) {
   app = n;
@@ -296,9 +296,9 @@ Radio* Tossim::radio() {
   return new Radio();
 }
 
-SEH* Tossim::seh() {
-  return new SEH();
-}
+//SEH* Tossim::seh() {
+//  return new SEH();
+//}
 
 SerialPacket* Tossim::newSerialPacket() {
   return new SerialPacket();
