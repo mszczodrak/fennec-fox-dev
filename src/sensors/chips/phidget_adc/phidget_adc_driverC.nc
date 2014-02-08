@@ -44,8 +44,6 @@ provides interface Read<ff_sensor_data_t>;
 
 implementation {
 
-#ifndef TOSSIM
-
 components new phidget_adc_driverP();
 SensorCtrl = phidget_adc_driverP.SensorCtrl;
 SensorInfo = phidget_adc_driverP.SensorInfo;
@@ -65,14 +63,5 @@ phidget_adc_driverP.Timer -> Timer;
 components LedsC;
 phidget_adc_driverP.Leds -> LedsC;
 
-#else
-
-components new CapeAdcSensorC();
-SensorInfo = CapeAdcSensorC.SensorInfo;
-SensorCtrl = CapeAdcSensorC.SensorCtrl;
-Read = CapeAdcSensorC.Read;
-AdcSetup = CapeAdcSensorC.AdcSetup;
-
-#endif
 }
 
