@@ -1,4 +1,4 @@
-generic module CapeInputP() {
+module CapeInputP {
 provides interface Read<uint16_t> as Read16[uint8_t id];
 //provides interface Read<uint32_t> as Read32[uint8_t id];
 }
@@ -18,6 +18,6 @@ command error_t Read16.read[uint8_t id]() {
 	return SUCCESS;
 }
 
-
+default void event Read16.readDone[uint8_t id](error_t error, uint16_t val) {}
 
 }

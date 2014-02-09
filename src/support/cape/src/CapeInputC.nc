@@ -14,7 +14,7 @@ enum {
 	CAPE_INPUT_ID = unique(CAPE_INPUT_RESOURCE),
 };
 
-components new CapeInputP();
+components CapeInputP;
 Read16 = CapeInputP.Read16[CAPE_INPUT_ID];
 //Read32 = CapeInputP.Read32[CAPE_INPUT_ID];
 
