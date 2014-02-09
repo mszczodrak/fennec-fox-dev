@@ -23,6 +23,8 @@ use application dbgs $(FENNEC_FOX_LIB)/Application/tests/Dbgs ()
 
 use application printf $(FENNEC_FOX_LIB)/Application/tests/Printf ()
 
+use application readSensor $(FENNEC_FOX_LIB)/Application/tests/ReadSensor (uint16_t sampling_rate = 1024)
+
 use application randBeacon $(FENNEC_FOX_LIB)/Application/tests/RandomBeacon ( 
 		uint16_t delay,
 		uint16_t delay_scale)
