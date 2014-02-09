@@ -1,6 +1,6 @@
 #include "CapeInput.h"
 
-generic component CapeInputC() {
+generic configuration CapeInputC() {
 
 provides interface Resource;
 provides interface Read<uint16_t> as Read16;
@@ -15,11 +15,11 @@ enum {
 };
 
 components new CapeInputP();
-Read16 = CapeInputP.Read16[ID];
-//Read32 = CapeInputP.Read32[ID];
+Read16 = CapeInputP.Read16[CAPE_INPUT_ID];
+//Read32 = CapeInputP.Read32[CAPE_INPUT_ID];
 
 components new SimpleRoundRobinArbiterC(CAPE_INPUT_RESOURCE) as Arbiter;
-Resource = Arbiter.Resource[ID];
+Resource = Arbiter.Resource[CAPE_INPUT_ID];
 
 }
 

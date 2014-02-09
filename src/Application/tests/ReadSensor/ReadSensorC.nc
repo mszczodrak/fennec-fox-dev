@@ -61,11 +61,14 @@ components new TimerMilliC();
 ReadSensorP.Timer -> TimerMilliC;
 
 #ifndef TOSSIM
+
 components new DemoSensorC();
 ReadSensorP.Read -> DemoSensorC;
 
 #else
 
+components new CapeInputC();
+ReadSensorP.Read -> CapeInputC.Read16;
 
 #endif
 }
