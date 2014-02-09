@@ -56,4 +56,16 @@ NetworkSnoop = ReadSensorP.NetworkSnoop;
 NetworkAMPacket = ReadSensorP.NetworkAMPacket;
 NetworkPacket = ReadSensorP.NetworkPacket;
 NetworkPacketAcknowledgements = ReadSensorP.NetworkPacketAcknowledgements;
+
+components new TimerMilliC();
+ReadSensorP.Timer -> TimerMilliC;
+
+#ifndef TOSSIM
+components new DemoSensorC();
+ReadSensorP.Read -> DemoSensorC;
+
+#else
+
+
+#endif
 }

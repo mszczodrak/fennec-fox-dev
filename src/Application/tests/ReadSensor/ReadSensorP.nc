@@ -46,12 +46,17 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+
+uses interface Timer<TMilli> as Timer;
+
+uses interface Read<uint16_t> as Read;
 }
 
 implementation {
 
 command error_t SplitControl.start() {
 	dbg("Application", "ReadSensor SplitControl.start()");
+	call Timer.startPeriodic(call ReadSensorParams.get_sampling_rate());
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -70,6 +75,14 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
+}
+
+event void Timer.fired() {
+	call Read.read();
+}
+
+event void Read.readDone(error_t error, uint16_t val) {
+
 }
 
 }
