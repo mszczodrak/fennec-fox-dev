@@ -109,7 +109,7 @@ struct @exactlyonce { };
 
 #include <randomlib.c>
 #include <sim_noise.c>
-//#include <sim_irradiance.c>
+#include <sim_io.c>
 #include <sim_serial_packet.c>
 
 

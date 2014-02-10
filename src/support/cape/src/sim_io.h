@@ -1,5 +1,5 @@
-#ifndef SIM_IRRADIANCE_H
-#define SIM_IRRADIANCE_H
+#ifndef SIM_IO_H
+#define SIM_IO_H
 
 #include <stdio.h>
 
@@ -7,13 +7,15 @@
 extern "C" {
 #endif
 
-void sim_irradiance_init();
-void sim_irradiance_trace_add(uint16_t node_id, double val);
-double sim_irradiance_trace(uint16_t node_id);
+void sim_io_init();
+int sim_read_io(uint16_t node_id);
+int sim_write_io(uint16_t node_id, uint32_t val);
 
+int sim_add_read_io(uint16_t node_id, uint8_t size);
+int sim_add_write_io(uint16_t node_id, uint8_t size);
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif // SIM_IRRADIANCE_H
+#endif // SIM_IO_H

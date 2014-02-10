@@ -351,6 +351,9 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
+  int addReadIO(int io_size);
+  int addWriteIO(int io_size);
+
 };
 
 class Tossim {

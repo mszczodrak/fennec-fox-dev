@@ -5091,6 +5091,68 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Mote_addReadIO(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Mote *arg1 = (Mote *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Mote_addReadIO",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addReadIO" "', argument " "1"" of type '" "Mote *""'"); 
+  }
+  arg1 = reinterpret_cast< Mote * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addReadIO" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  result = (int)(arg1)->addReadIO(arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Mote_addWriteIO(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Mote *arg1 = (Mote *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Mote_addWriteIO",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addWriteIO" "', argument " "1"" of type '" "Mote *""'"); 
+  }
+  arg1 = reinterpret_cast< Mote * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addWriteIO" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  result = (int)(arg1)->addWriteIO(arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *Mote_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -5629,6 +5691,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Mote_addNoiseTraceReading", _wrap_Mote_addNoiseTraceReading, METH_VARARGS, NULL},
 	 { (char *)"Mote_createNoiseModel", _wrap_Mote_createNoiseModel, METH_VARARGS, NULL},
 	 { (char *)"Mote_generateNoise", _wrap_Mote_generateNoise, METH_VARARGS, NULL},
+	 { (char *)"Mote_addReadIO", _wrap_Mote_addReadIO, METH_VARARGS, NULL},
+	 { (char *)"Mote_addWriteIO", _wrap_Mote_addWriteIO, METH_VARARGS, NULL},
 	 { (char *)"Mote_swigregister", Mote_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Tossim", _wrap_new_Tossim, METH_VARARGS, NULL},
 	 { (char *)"delete_Tossim", _wrap_delete_Tossim, METH_VARARGS, NULL},
