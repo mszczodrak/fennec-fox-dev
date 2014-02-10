@@ -26,45 +26,34 @@
  */
 
 /**
-  * Fennec Fox Cape Read Input
+  * Fennec Fox Cape Write Output
   *
   * @author: Marcin K Szczodrak
   * @last_update: 02/10/2014
   */
 
+#include "CapeOutput.h"
 
-module CapeInputP {
-provides interface Read<uint16_t> as Read16[uint8_t id];
-provides interface Read<uint32_t> as Read32[uint8_t id];
+generic configuration CapeOutputC() {
+
+provides interface Resource;
+provides interface Write<uint16_t> as Write16;
+provides interface Write<uint32_t> as Write32;
+
 }
 
 implementation {
 
-norace uint8_t reader_id;
+enum {
+	CAPE_OUTPUT_ID = unique(CAPE_OUTPUT_RESOURCE),
+};
 
-task void do_read16() {
-	signal Read16.readDone[reader_id](SUCCESS, TOS_NODE_ID);
-}
+components CapeOutputP;
+Write16 = CapeOutputP.Write16[CAPE_OUTPUT_ID];
+Write32 = CapeOutputP.Write32[CAPE_OUTPUT_ID];
 
-task void do_read32() {
-	signal Read32.readDone[reader_id](SUCCESS, TOS_NODE_ID);
-}
-
-command error_t Read16.read[uint8_t id]() {
-	dbg("CapeInput", "CapeInput Read16.read[%u]()", id);
-	reader_id = id;	
-	post do_read16();
-	return SUCCESS;
-}
-
-command error_t Read32.read[uint8_t id]() {
-	dbg("CapeInput", "CapeInput Read32.read[%u]()", id);
-	reader_id = id;	
-	post do_read32();
-	return SUCCESS;
-}
-
-default void event Read16.readDone[uint8_t id](error_t error, uint16_t val) {}
-default void event Read32.readDone[uint8_t id](error_t error, uint32_t val) {}
+components new SimpleRoundRobinArbiterC(CAPE_OUTPUT_RESOURCE) as Arbiter;
+Resource = Arbiter.Resource[CAPE_OUTPUT_ID];
 
 }
+

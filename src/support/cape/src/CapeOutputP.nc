@@ -26,45 +26,45 @@
  */
 
 /**
-  * Fennec Fox Cape Read Input
+  * Fennec Fox Cape Write Output
   *
   * @author: Marcin K Szczodrak
   * @last_update: 02/10/2014
   */
 
 
-module CapeInputP {
-provides interface Read<uint16_t> as Read16[uint8_t id];
-provides interface Read<uint32_t> as Read32[uint8_t id];
+module CapeOutputP {
+provides interface Write<uint16_t> as Write16[uint8_t id];
+provides interface Write<uint32_t> as Write32[uint8_t id];
 }
 
 implementation {
 
-norace uint8_t reader_id;
+norace uint8_t writer_id;
 
-task void do_read16() {
-	signal Read16.readDone[reader_id](SUCCESS, TOS_NODE_ID);
+task void do_write16() {
+	signal Write16.writeDone[writer_id](SUCCESS);
 }
 
-task void do_read32() {
-	signal Read32.readDone[reader_id](SUCCESS, TOS_NODE_ID);
+task void do_write32() {
+	signal Write32.writeDone[writer_id](SUCCESS);
 }
 
-command error_t Read16.read[uint8_t id]() {
-	dbg("CapeInput", "CapeInput Read16.read[%u]()", id);
-	reader_id = id;	
-	post do_read16();
+command error_t Write16.write[uint8_t id](uint16_t val) {
+	dbg("CapeOutput", "CapeOutput Write16.read[%u](%u)", id, val);
+	writer_id = id;	
+	post do_write16();
 	return SUCCESS;
 }
 
-command error_t Read32.read[uint8_t id]() {
-	dbg("CapeInput", "CapeInput Read32.read[%u]()", id);
-	reader_id = id;	
-	post do_read32();
+command error_t Write32.read[uint8_t id](uint32_t val) {
+	dbg("CapeOutput", "CapeOutput Write32.read[%u](%u)", id, val);
+	writer_id = id;	
+	post do_write32();
 	return SUCCESS;
 }
 
-default void event Read16.readDone[uint8_t id](error_t error, uint16_t val) {}
-default void event Read32.readDone[uint8_t id](error_t error, uint32_t val) {}
+default void event Write16.readDone[uint8_t id](error_t error) {}
+default void event Write32.readDone[uint8_t id](error_t error) {}
 
 }
