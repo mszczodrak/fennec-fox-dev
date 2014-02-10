@@ -108,8 +108,8 @@ class Mote {
 
 //  void addIrradianceTraceReading(double val);
 
-  int addReadIO(int io_size);
-  int addWriteIO(int io_size);
+  int addReadIO(int io_size, int (*op) (uint16_t, uint32_t));
+  int addWriteIO(int io_size, int (*op) (uint16_t, uint32_t, int));
   
   Variable* getVariable(char* name);
   

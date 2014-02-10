@@ -46,6 +46,7 @@
 #include <memory.h>
 #include <tossim.h>
 
+
 enum {
   PRIMITIVE_INTEGER      = 0,
   PRIMITIVE_FLOAT   = 1,
@@ -241,6 +242,7 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 %include SerialForwarder.i
 %include Throttle.i
 
+
 #ifdef SWIGPYTHON
 %typemap(in) FILE * {
   if (!PyFile_Check($input)) {
@@ -351,8 +353,15 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
-  int addReadIO(int io_size);
-  int addWriteIO(int io_size);
+  int addReadIO(int io_size, int (*op) (uint16_t, uint32_t));
+  int addWriteIO(int io_size, int (*op) (uint16_t, uint32_t, int));
+ private:
+
+%callback("%s_cb");
+int read16(uint16_t, uint32_t);
+int write16(uint16_t, uint32_t);
+%nocallback;
+
 
 };
 

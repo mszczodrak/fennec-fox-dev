@@ -2958,9 +2958,11 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_Tossim swig_types[6]
 #define SWIGTYPE_p_Variable swig_types[7]
 #define SWIGTYPE_p_char swig_types[8]
-#define SWIGTYPE_p_nesc_app_t swig_types[9]
-static swig_type_info *swig_types[11];
-static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
+#define SWIGTYPE_p_f_uint16_t_uint32_t__int swig_types[9]
+#define SWIGTYPE_p_f_uint16_t_uint32_t_int__int swig_types[10]
+#define SWIGTYPE_p_nesc_app_t swig_types[11]
+static swig_type_info *swig_types[13];
+static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3059,6 +3061,7 @@ namespace swig {
 
 #include <memory.h>
 #include <tossim.h>
+
 
 enum {
   PRIMITIVE_INTEGER      = 0,
@@ -5095,15 +5098,17 @@ SWIGINTERN PyObject *_wrap_Mote_addReadIO(PyObject *SWIGUNUSEDPARM(self), PyObje
   PyObject *resultobj = 0;
   Mote *arg1 = (Mote *) 0 ;
   int arg2 ;
+  int (*arg3)(uint16_t,uint32_t) = (int (*)(uint16_t,uint32_t)) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:Mote_addReadIO",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Mote_addReadIO",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addReadIO" "', argument " "1"" of type '" "Mote *""'"); 
@@ -5114,7 +5119,13 @@ SWIGINTERN PyObject *_wrap_Mote_addReadIO(PyObject *SWIGUNUSEDPARM(self), PyObje
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addReadIO" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
-  result = (int)(arg1)->addReadIO(arg2);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj2, (void**)(&arg3), SWIGTYPE_p_f_uint16_t_uint32_t__int);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "Mote_addReadIO" "', argument " "3"" of type '" "int (*)(uint16_t,uint32_t)""'"); 
+    }
+  }
+  result = (int)(arg1)->addReadIO(arg2,arg3);
   resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
@@ -5126,15 +5137,17 @@ SWIGINTERN PyObject *_wrap_Mote_addWriteIO(PyObject *SWIGUNUSEDPARM(self), PyObj
   PyObject *resultobj = 0;
   Mote *arg1 = (Mote *) 0 ;
   int arg2 ;
+  int (*arg3)(uint16_t,uint32_t,int) = (int (*)(uint16_t,uint32_t,int)) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:Mote_addWriteIO",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Mote_addWriteIO",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addWriteIO" "', argument " "1"" of type '" "Mote *""'"); 
@@ -5145,7 +5158,13 @@ SWIGINTERN PyObject *_wrap_Mote_addWriteIO(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addWriteIO" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
-  result = (int)(arg1)->addWriteIO(arg2);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj2, (void**)(&arg3), SWIGTYPE_p_f_uint16_t_uint32_t_int__int);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "Mote_addWriteIO" "', argument " "3"" of type '" "int (*)(uint16_t,uint32_t,int)""'"); 
+    }
+  }
+  result = (int)(arg1)->addWriteIO(arg2,arg3);
   resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
@@ -5726,6 +5745,8 @@ static swig_type_info _swigt__p_Throttle = {"_p_Throttle", "Throttle *", 0, 0, (
 static swig_type_info _swigt__p_Tossim = {"_p_Tossim", "Tossim *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Variable = {"_p_Variable", "Variable *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_uint16_t_uint32_t__int = {"_p_f_uint16_t_uint32_t__int", "int (*)(uint16_t,uint32_t)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_uint16_t_uint32_t_int__int = {"_p_f_uint16_t_uint32_t_int__int", "int (*)(uint16_t,uint32_t,int)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_nesc_app_t = {"_p_nesc_app_t", "nesc_app_t *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
@@ -5738,6 +5759,8 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Tossim,
   &_swigt__p_Variable,
   &_swigt__p_char,
+  &_swigt__p_f_uint16_t_uint32_t__int,
+  &_swigt__p_f_uint16_t_uint32_t_int__int,
   &_swigt__p_nesc_app_t,
 };
 
@@ -5750,6 +5773,8 @@ static swig_cast_info _swigc__p_Throttle[] = {  {&_swigt__p_Throttle, 0, 0, 0},{
 static swig_cast_info _swigc__p_Tossim[] = {  {&_swigt__p_Tossim, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Variable[] = {  {&_swigt__p_Variable, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_uint16_t_uint32_t__int[] = {  {&_swigt__p_f_uint16_t_uint32_t__int, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_uint16_t_uint32_t_int__int[] = {  {&_swigt__p_f_uint16_t_uint32_t_int__int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_nesc_app_t[] = {  {&_swigt__p_nesc_app_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
@@ -5762,6 +5787,8 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Tossim,
   _swigc__p_Variable,
   _swigc__p_char,
+  _swigc__p_f_uint16_t_uint32_t__int,
+  _swigc__p_f_uint16_t_uint32_t_int__int,
   _swigc__p_nesc_app_t,
 };
 

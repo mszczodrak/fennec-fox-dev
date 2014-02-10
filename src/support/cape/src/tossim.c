@@ -211,28 +211,28 @@ void Mote::createNoiseModel() {
 }
 
 int Mote::generateNoise(int when) {
-  return (int)sim_noise_generate(id(), when);
+	return (int)sim_noise_generate(id(), when);
 }
 
 //void Mote::addIrradianceTraceReading(double val) {
 //  sim_irradiance_trace_add(id(), val);
 //}
 
-int Mote::addReadIO(int io_size) {
-	sim_add_read_io(id(), io_size);
+int Mote::addReadIO(int io_size, int (*op) (uint16_t, uint32_t)) {
+	sim_add_read_io(id(), io_size, op);
 }
 
-int Mote::addWriteIO(int io_size) {
-	sim_add_write_io(id(), io_size);
+int Mote::addWriteIO(int io_size, int (*op) (uint16_t, uint32_t, int)) {
+	sim_add_write_io(id(), io_size, op);
 }
 
 Tossim::Tossim(nesc_app_t* n) {
-  app = n;
-  init();
+	app = n;
+	init();
 }
 
 Tossim::~Tossim() {
-  sim_end();
+	sim_end();
 }
 
 void Tossim::init() {

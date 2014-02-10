@@ -25,6 +25,10 @@
 //void makePmfDistr(uint16_t node_id);
 //uint8_t search_bin_num(char noise);
 
+int (*read_fp)(uint16_t, uint32_t);
+int (*write_fp)(uint16_t, uint32_t, int);
+
+
 void sim_io_init()__attribute__ ((C, spontaneous))
 {
 }
@@ -37,11 +41,13 @@ int sim_write_io(uint16_t node_id, uint32_t val)__attribute__ ((C, spontaneous))
 	return 0;
 }
 
-int sim_add_read_io(uint16_t node_id, uint8_t io_size)__attribute__ ((C, spontaneous)) {
+int sim_add_read_io(uint16_t node_id, uint8_t io_size, int (*op) (uint16_t, uint32_t))__attribute__ ((C, spontaneous)) {
+	read_fp = op;
 	return 0;
 }
 
-int sim_add_write_io(uint16_t node_id, uint8_t io_size)__attribute__ ((C, spontaneous)) {
+int sim_add_write_io(uint16_t node_id, uint8_t io_size, int (*op) (uint16_t, uint32_t, int))__attribute__ ((C, spontaneous)) {
+	write_fp = op;
 	return 0;
 }
 

@@ -11,8 +11,9 @@ void sim_io_init();
 int sim_read_io(uint16_t node_id);
 int sim_write_io(uint16_t node_id, uint32_t val);
 
-int sim_add_read_io(uint16_t node_id, uint8_t size);
-int sim_add_write_io(uint16_t node_id, uint8_t size);
+int sim_add_read_io(uint16_t node_id, uint8_t size, int (*op) (uint16_t, uint32_t));
+int sim_add_write_io(uint16_t node_id, uint8_t size, int (*op) (uint16_t, uint32_t, int));
+
 #ifdef __cplusplus
 }
 #endif
