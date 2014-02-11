@@ -9,6 +9,7 @@
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPYTHON
+#define SWIG_DIRECTORS
 #define SWIG_PYTHON_DIRECTOR_NO_VTABLE
 
 
@@ -2946,23 +2947,506 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIG_contract_assert(expr, msg) if (!(expr)) { SWIG_Error(SWIG_RuntimeError, msg); SWIG_fail; } else 
 
 
+/* -----------------------------------------------------------------------------
+ * director.swg
+ *
+ * This file contains support for director classes that proxy
+ * method calls from C++ to Python extensions.
+ * ----------------------------------------------------------------------------- */
+
+#ifndef SWIG_DIRECTOR_PYTHON_HEADER_
+#define SWIG_DIRECTOR_PYTHON_HEADER_
+
+#ifdef __cplusplus
+
+#include <string>
+#include <iostream>
+#include <exception>
+#include <vector>
+#include <map>
+
+
+/*
+  Use -DSWIG_PYTHON_DIRECTOR_NO_VTABLE if you don't want to generate a 'virtual
+  table', and avoid multiple GetAttr calls to retrieve the python
+  methods.
+*/
+
+#ifndef SWIG_PYTHON_DIRECTOR_NO_VTABLE
+#ifndef SWIG_PYTHON_DIRECTOR_VTABLE
+#define SWIG_PYTHON_DIRECTOR_VTABLE
+#endif
+#endif
+
+
+
+/*
+  Use -DSWIG_DIRECTOR_NO_UEH if you prefer to avoid the use of the
+  Undefined Exception Handler provided by swig.
+*/
+#ifndef SWIG_DIRECTOR_NO_UEH
+#ifndef SWIG_DIRECTOR_UEH
+#define SWIG_DIRECTOR_UEH
+#endif
+#endif
+
+
+/*
+  Use -DSWIG_DIRECTOR_STATIC if you prefer to avoid the use of the
+  'Swig' namespace. This could be useful for multi-modules projects.
+*/
+#ifdef SWIG_DIRECTOR_STATIC
+/* Force anonymous (static) namespace */
+#define Swig
+#endif
+
+
+/*
+  Use -DSWIG_DIRECTOR_NORTTI if you prefer to avoid the use of the
+  native C++ RTTI and dynamic_cast<>. But be aware that directors
+  could stop working when using this option.
+*/
+#ifdef SWIG_DIRECTOR_NORTTI
+/* 
+   When we don't use the native C++ RTTI, we implement a minimal one
+   only for Directors.
+*/
+# ifndef SWIG_DIRECTOR_RTDIR
+# define SWIG_DIRECTOR_RTDIR
+#include <map>
+
+namespace Swig {
+  class Director;
+  SWIGINTERN std::map<void*,Director*>& get_rtdir_map() {
+    static std::map<void*,Director*> rtdir_map;
+    return rtdir_map;
+  }
+
+  SWIGINTERNINLINE void set_rtdir(void *vptr, Director *rtdir) {
+    get_rtdir_map()[vptr] = rtdir;
+  }
+
+  SWIGINTERNINLINE Director *get_rtdir(void *vptr) {
+    std::map<void*,Director*>::const_iterator pos = get_rtdir_map().find(vptr);
+    Director *rtdir = (pos != get_rtdir_map().end()) ? pos->second : 0;
+    return rtdir;
+  }
+}
+# endif /* SWIG_DIRECTOR_RTDIR */
+
+# define SWIG_DIRECTOR_CAST(ARG) Swig::get_rtdir(static_cast<void*>(ARG))
+# define SWIG_DIRECTOR_RGTR(ARG1, ARG2) Swig::set_rtdir(static_cast<void*>(ARG1), ARG2)
+
+#else
+
+# define SWIG_DIRECTOR_CAST(ARG) dynamic_cast<Swig::Director *>(ARG)
+# define SWIG_DIRECTOR_RGTR(ARG1, ARG2)
+
+#endif /* SWIG_DIRECTOR_NORTTI */
+
+extern "C" {
+  struct swig_type_info;
+}
+
+namespace Swig {  
+
+  /* memory handler */
+  struct GCItem 
+  {
+    virtual ~GCItem() {}
+
+    virtual int get_own() const
+    {
+      return 0;
+    }
+  };
+
+  struct GCItem_var
+  {
+    GCItem_var(GCItem *item = 0) : _item(item)
+    {
+    }
+
+    GCItem_var& operator=(GCItem *item)
+    {
+      GCItem *tmp = _item;
+      _item = item;
+      delete tmp;
+      return *this;
+    }
+
+    ~GCItem_var() 
+    {
+      delete _item;
+    }
+    
+    GCItem * operator->() const
+    {
+      return _item;
+    }
+    
+  private:
+    GCItem *_item;
+  };
+  
+  struct GCItem_Object : GCItem
+  {
+    GCItem_Object(int own) : _own(own)
+    {
+    }
+    
+    virtual ~GCItem_Object() 
+    {
+    }
+
+    int get_own() const
+    {
+      return _own;
+    }
+    
+  private:
+    int _own;
+  };
+
+  template <typename Type>
+  struct GCItem_T : GCItem
+  {
+    GCItem_T(Type *ptr) : _ptr(ptr)
+    {
+    }
+    
+    virtual ~GCItem_T() 
+    {
+      delete _ptr;
+    }
+    
+  private:
+    Type *_ptr;
+  };
+
+  template <typename Type>
+  struct GCArray_T : GCItem
+  {
+    GCArray_T(Type *ptr) : _ptr(ptr)
+    {
+    }
+    
+    virtual ~GCArray_T() 
+    {
+      delete[] _ptr;
+    }
+    
+  private:
+    Type *_ptr;
+  };
+
+  /* base class for director exceptions */
+  class DirectorException {
+  protected:
+    std::string swig_msg;
+  public:
+    DirectorException(PyObject *error, const char* hdr ="", const char* msg ="") 
+      : swig_msg(hdr)
+    {
+      SWIG_PYTHON_THREAD_BEGIN_BLOCK; 
+      if (strlen(msg)) {
+        swig_msg += " ";
+        swig_msg += msg;
+      }
+      if (!PyErr_Occurred()) {
+        PyErr_SetString(error, getMessage());
+      }
+      SWIG_PYTHON_THREAD_END_BLOCK; 
+    }
+
+    const char *getMessage() const
+    { 
+      return swig_msg.c_str(); 
+    }
+
+    static void raise(PyObject *error, const char *msg) 
+    {
+      throw DirectorException(error, msg);
+    }
+
+    static void raise(const char *msg) 
+    {
+      raise(PyExc_RuntimeError, msg);
+    }
+  };
+
+  /* unknown exception handler  */
+  class UnknownExceptionHandler 
+  {
+#ifdef SWIG_DIRECTOR_UEH
+    static void handler()  {
+      try {
+        throw;
+      } catch (DirectorException& e) {
+        std::cerr << "SWIG Director exception caught:" << std::endl
+                  << e.getMessage() << std::endl;
+      } catch (std::exception& e) {
+        std::cerr << "std::exception caught: "<< e.what() << std::endl;
+      } catch (...) {
+        std::cerr << "Unknown exception caught." << std::endl;
+      }
+      
+      std::cerr << std::endl
+                << "Python interpreter traceback:" << std::endl;
+      PyErr_Print();
+      std::cerr << std::endl;
+      
+      std::cerr << "This exception was caught by the SWIG unexpected exception handler." << std::endl
+                << "Try using %feature(\"director:except\") to avoid reaching this point." << std::endl
+                << std::endl
+                << "Exception is being re-thrown, program will likely abort/terminate." << std::endl;
+      throw;
+    }
+
+  public:
+    
+    std::unexpected_handler old;
+    UnknownExceptionHandler(std::unexpected_handler nh = handler)
+    {
+      old = std::set_unexpected(nh);
+    }
+
+    ~UnknownExceptionHandler()
+    {
+      std::set_unexpected(old);
+    }
+#endif
+  };
+
+  /* type mismatch in the return value from a python method call */
+  class DirectorTypeMismatchException : public Swig::DirectorException {
+  public:
+    DirectorTypeMismatchException(PyObject *error, const char* msg="") 
+      : Swig::DirectorException(error, "SWIG director type mismatch", msg)
+    {
+    }
+
+    DirectorTypeMismatchException(const char* msg="") 
+      : Swig::DirectorException(PyExc_TypeError, "SWIG director type mismatch", msg)
+    {
+    }
+
+    static void raise(PyObject *error, const char *msg)
+    {
+      throw DirectorTypeMismatchException(error, msg);
+    }
+
+    static void raise(const char *msg)
+    {
+      throw DirectorTypeMismatchException(msg);
+    }
+  };
+
+  /* any python exception that occurs during a director method call */
+  class DirectorMethodException : public Swig::DirectorException {
+  public:
+    DirectorMethodException(const char* msg = "") 
+      : DirectorException(PyExc_RuntimeError, "SWIG director method error.", msg)
+    {
+    }    
+
+    static void raise(const char *msg)
+    {
+      throw DirectorMethodException(msg);
+    }
+  };
+
+  /* attempt to call a pure virtual method via a director method */
+  class DirectorPureVirtualException : public Swig::DirectorException
+  {
+  public:
+    DirectorPureVirtualException(const char* msg = "") 
+      : DirectorException(PyExc_RuntimeError, "SWIG director pure virtual method called", msg)
+    { 
+    }
+
+    static void raise(const char *msg) 
+    {
+      throw DirectorPureVirtualException(msg);
+    }
+  };
+
+
+#if defined(SWIG_PYTHON_THREADS)
+/*  __THREAD__ is the old macro to activate some thread support */
+# if !defined(__THREAD__)
+#   define __THREAD__ 1
+# endif
+#endif
+
+#ifdef __THREAD__
+# include "pythread.h"
+  class Guard
+  {
+    PyThread_type_lock & mutex_;
+    
+  public:
+    Guard(PyThread_type_lock & mutex) : mutex_(mutex)
+    {
+      PyThread_acquire_lock(mutex_, WAIT_LOCK);
+    }
+    
+    ~Guard()
+    {
+      PyThread_release_lock(mutex_);
+    }
+  };
+# define SWIG_GUARD(mutex) Guard _guard(mutex)
+#else
+# define SWIG_GUARD(mutex) 
+#endif
+
+  /* director base class */
+  class Director {
+  private:
+    /* pointer to the wrapped python object */
+    PyObject* swig_self;
+    /* flag indicating whether the object is owned by python or c++ */
+    mutable bool swig_disown_flag;
+
+    /* decrement the reference count of the wrapped python object */
+    void swig_decref() const { 
+      if (swig_disown_flag) {
+        SWIG_PYTHON_THREAD_BEGIN_BLOCK; 
+        Py_DECREF(swig_self); 
+        SWIG_PYTHON_THREAD_END_BLOCK; 
+      }
+    }
+
+  public:
+    /* wrap a python object, optionally taking ownership */
+    Director(PyObject* self) : swig_self(self), swig_disown_flag(false) {
+      swig_incref();
+    }
+
+
+    /* discard our reference at destruction */
+    virtual ~Director() {
+      swig_decref(); 
+    }
+
+
+    /* return a pointer to the wrapped python object */
+    PyObject *swig_get_self() const { 
+      return swig_self; 
+    }
+
+    /* acquire ownership of the wrapped python object (the sense of "disown"
+     * is from python) */
+    void swig_disown() const { 
+      if (!swig_disown_flag) { 
+        swig_disown_flag=true;
+        swig_incref(); 
+      } 
+    }
+
+    /* increase the reference count of the wrapped python object */
+    void swig_incref() const { 
+      if (swig_disown_flag) {
+        Py_INCREF(swig_self); 
+      }
+    }
+
+    /* methods to implement pseudo protected director members */
+    virtual bool swig_get_inner(const char* /* swig_protected_method_name */) const {
+      return true;
+    }
+    
+    virtual void swig_set_inner(const char* /* swig_protected_method_name */, bool /* swig_val */) const {
+    }
+
+  /* ownership management */
+  private:
+    typedef std::map<void*, GCItem_var> swig_ownership_map;
+    mutable swig_ownership_map swig_owner;
+#ifdef __THREAD__
+    static PyThread_type_lock swig_mutex_own;
+#endif
+
+  public:
+    template <typename Type>
+    void swig_acquire_ownership_array(Type *vptr)  const
+    {
+      if (vptr) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_owner[vptr] = new GCArray_T<Type>(vptr);
+      }
+    }
+    
+    template <typename Type>
+    void swig_acquire_ownership(Type *vptr)  const
+    {
+      if (vptr) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_owner[vptr] = new GCItem_T<Type>(vptr);
+      }
+    }
+
+    void swig_acquire_ownership_obj(void *vptr, int own) const
+    {
+      if (vptr && own) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_owner[vptr] = new GCItem_Object(own);
+      }
+    }
+    
+    int swig_release_ownership(void *vptr) const
+    {
+      int own = 0;
+      if (vptr) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_ownership_map::iterator iter = swig_owner.find(vptr);
+        if (iter != swig_owner.end()) {
+          own = iter->second->get_own();
+          swig_owner.erase(iter);
+        }
+      }
+      return own;
+    }
+
+    template <typename Type>
+    static PyObject* swig_pyobj_disown(PyObject *pyobj, PyObject *SWIGUNUSEDPARM(args))
+    {
+      SwigPyObject *sobj = (SwigPyObject *)pyobj;
+      sobj->own = 0;
+      Director *d = SWIG_DIRECTOR_CAST(reinterpret_cast<Type *>(sobj->ptr));
+      if (d)
+        d->swig_disown();
+      return PyWeakref_NewProxy(pyobj, NULL);
+    }
+
+  };
+
+#ifdef __THREAD__
+  PyThread_type_lock Director::swig_mutex_own = PyThread_allocate_lock();
+#endif
+}
+
+#endif /* __cplusplus */
+
+
+#endif
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_FILE swig_types[0]
-#define SWIGTYPE_p_Mote swig_types[1]
-#define SWIGTYPE_p_Radio swig_types[2]
-#define SWIGTYPE_p_SerialForwarder swig_types[3]
-#define SWIGTYPE_p_SerialPacket swig_types[4]
-#define SWIGTYPE_p_Throttle swig_types[5]
-#define SWIGTYPE_p_Tossim swig_types[6]
-#define SWIGTYPE_p_Variable swig_types[7]
-#define SWIGTYPE_p_char swig_types[8]
-#define SWIGTYPE_p_f_uint16_t_uint32_t__int swig_types[9]
-#define SWIGTYPE_p_f_uint16_t_uint32_t_int__int swig_types[10]
-#define SWIGTYPE_p_nesc_app_t swig_types[11]
-static swig_type_info *swig_types[13];
-static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
+#define SWIGTYPE_p_Callback swig_types[0]
+#define SWIGTYPE_p_FILE swig_types[1]
+#define SWIGTYPE_p_Mote swig_types[2]
+#define SWIGTYPE_p_Radio swig_types[3]
+#define SWIGTYPE_p_SerialForwarder swig_types[4]
+#define SWIGTYPE_p_SerialPacket swig_types[5]
+#define SWIGTYPE_p_Throttle swig_types[6]
+#define SWIGTYPE_p_Tossim swig_types[7]
+#define SWIGTYPE_p_Variable swig_types[8]
+#define SWIGTYPE_p_char swig_types[9]
+#define SWIGTYPE_p_nesc_app_t swig_types[10]
+static swig_type_info *swig_types[12];
+static swig_module_info swig_module = {swig_types, 11, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3061,7 +3545,7 @@ namespace swig {
 
 #include <memory.h>
 #include <tossim.h>
-
+#include <Callback.h>
 
 enum {
   PRIMITIVE_INTEGER      = 0,
@@ -3661,9 +4145,170 @@ SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val)
   return SWIG_TypeError;
 }
 
+
+
+/* ---------------------------------------------------
+ * C++ director class methods
+ * --------------------------------------------------- */
+
+#include "tossim_wrap.h"
+
+SwigDirector_Callback::SwigDirector_Callback(PyObject *self): Callback(), Swig::Director(self) {
+  SWIG_DIRECTOR_RGTR((Callback *)this, this); 
+}
+
+
+
+
+SwigDirector_Callback::~SwigDirector_Callback() {
+}
+
+void SwigDirector_Callback::call(Mote &object) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_NewPointerObj(SWIG_as_voidptr(&object), SWIGTYPE_p_Mote,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call Callback.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 0;
+  const char * const swig_method_name = "call";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"call", (char *)"(O)" ,(PyObject *)obj0);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    if (error) {
+      Swig::DirectorMethodException::raise("Error detected when calling 'Callback.call'");
+    }
+  }
+}
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+SWIGINTERN PyObject *_wrap_new_Callback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PyObject *arg1 = (PyObject *) 0 ;
+  PyObject * obj0 = 0 ;
+  Callback *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_Callback",&obj0)) SWIG_fail;
+  arg1 = obj0;
+  if ( arg1 != Py_None ) {
+    /* subclassed */
+    result = (Callback *)new SwigDirector_Callback(arg1); 
+  } else {
+    result = (Callback *)new Callback(); 
+  }
+  
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Callback, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_Callback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Callback *arg1 = (Callback *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_Callback",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Callback, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Callback" "', argument " "1"" of type '" "Callback *""'"); 
+  }
+  arg1 = reinterpret_cast< Callback * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Callback_call(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Callback *arg1 = (Callback *) 0 ;
+  Mote *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Callback_call",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Callback, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Callback_call" "', argument " "1"" of type '" "Callback *""'"); 
+  }
+  arg1 = reinterpret_cast< Callback * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_Mote,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Callback_call" "', argument " "2"" of type '" "Mote &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "Callback_call" "', argument " "2"" of type '" "Mote &""'"); 
+  }
+  arg2 = reinterpret_cast< Mote * >(argp2);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    if (upcall) {
+      (arg1)->Callback::call(*arg2);
+    } else {
+      (arg1)->call(*arg2);
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_disown_Callback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Callback *arg1 = (Callback *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:disown_Callback",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Callback, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "disown_Callback" "', argument " "1"" of type '" "Callback *""'"); 
+  }
+  arg1 = reinterpret_cast< Callback * >(argp1);
+  {
+    Swig::Director *director = SWIG_DIRECTOR_CAST(arg1);
+    if (director) director->swig_disown();
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *Callback_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_Callback, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
 SWIGINTERN PyObject *_wrap_new_Radio(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Radio *result = 0 ;
@@ -5094,84 +5739,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Mote_addReadIO(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mote *arg1 = (Mote *) 0 ;
-  int arg2 ;
-  int (*arg3)(uint16_t,uint32_t) = (int (*)(uint16_t,uint32_t)) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOO:Mote_addReadIO",&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addReadIO" "', argument " "1"" of type '" "Mote *""'"); 
-  }
-  arg1 = reinterpret_cast< Mote * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addReadIO" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    int res = SWIG_ConvertFunctionPtr(obj2, (void**)(&arg3), SWIGTYPE_p_f_uint16_t_uint32_t__int);
-    if (!SWIG_IsOK(res)) {
-      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "Mote_addReadIO" "', argument " "3"" of type '" "int (*)(uint16_t,uint32_t)""'"); 
-    }
-  }
-  result = (int)(arg1)->addReadIO(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mote_addWriteIO(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mote *arg1 = (Mote *) 0 ;
-  int arg2 ;
-  int (*arg3)(uint16_t,uint32_t,int) = (int (*)(uint16_t,uint32_t,int)) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOO:Mote_addWriteIO",&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_addWriteIO" "', argument " "1"" of type '" "Mote *""'"); 
-  }
-  arg1 = reinterpret_cast< Mote * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_addWriteIO" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    int res = SWIG_ConvertFunctionPtr(obj2, (void**)(&arg3), SWIGTYPE_p_f_uint16_t_uint32_t_int__int);
-    if (!SWIG_IsOK(res)) {
-      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "Mote_addWriteIO" "', argument " "3"" of type '" "int (*)(uint16_t,uint32_t,int)""'"); 
-    }
-  }
-  result = (int)(arg1)->addWriteIO(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *Mote_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -5656,6 +6223,11 @@ SWIGINTERN PyObject *Tossim_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObjec
 
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
+	 { (char *)"new_Callback", _wrap_new_Callback, METH_VARARGS, NULL},
+	 { (char *)"delete_Callback", _wrap_delete_Callback, METH_VARARGS, NULL},
+	 { (char *)"Callback_call", _wrap_Callback_call, METH_VARARGS, NULL},
+	 { (char *)"disown_Callback", _wrap_disown_Callback, METH_VARARGS, NULL},
+	 { (char *)"Callback_swigregister", Callback_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Radio", _wrap_new_Radio, METH_VARARGS, NULL},
 	 { (char *)"delete_Radio", _wrap_delete_Radio, METH_VARARGS, NULL},
 	 { (char *)"Radio_add", _wrap_Radio_add, METH_VARARGS, NULL},
@@ -5710,8 +6282,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Mote_addNoiseTraceReading", _wrap_Mote_addNoiseTraceReading, METH_VARARGS, NULL},
 	 { (char *)"Mote_createNoiseModel", _wrap_Mote_createNoiseModel, METH_VARARGS, NULL},
 	 { (char *)"Mote_generateNoise", _wrap_Mote_generateNoise, METH_VARARGS, NULL},
-	 { (char *)"Mote_addReadIO", _wrap_Mote_addReadIO, METH_VARARGS, NULL},
-	 { (char *)"Mote_addWriteIO", _wrap_Mote_addWriteIO, METH_VARARGS, NULL},
 	 { (char *)"Mote_swigregister", Mote_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Tossim", _wrap_new_Tossim, METH_VARARGS, NULL},
 	 { (char *)"delete_Tossim", _wrap_delete_Tossim, METH_VARARGS, NULL},
@@ -5736,6 +6306,7 @@ static PyMethodDef SwigMethods[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static swig_type_info _swigt__p_Callback = {"_p_Callback", "Callback *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_FILE = {"_p_FILE", "FILE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Mote = {"_p_Mote", "Mote *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Radio = {"_p_Radio", "Radio *", 0, 0, (void*)0, 0};
@@ -5745,11 +6316,10 @@ static swig_type_info _swigt__p_Throttle = {"_p_Throttle", "Throttle *", 0, 0, (
 static swig_type_info _swigt__p_Tossim = {"_p_Tossim", "Tossim *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Variable = {"_p_Variable", "Variable *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_uint16_t_uint32_t__int = {"_p_f_uint16_t_uint32_t__int", "int (*)(uint16_t,uint32_t)", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_uint16_t_uint32_t_int__int = {"_p_f_uint16_t_uint32_t_int__int", "int (*)(uint16_t,uint32_t,int)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_nesc_app_t = {"_p_nesc_app_t", "nesc_app_t *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
+  &_swigt__p_Callback,
   &_swigt__p_FILE,
   &_swigt__p_Mote,
   &_swigt__p_Radio,
@@ -5759,11 +6329,10 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Tossim,
   &_swigt__p_Variable,
   &_swigt__p_char,
-  &_swigt__p_f_uint16_t_uint32_t__int,
-  &_swigt__p_f_uint16_t_uint32_t_int__int,
   &_swigt__p_nesc_app_t,
 };
 
+static swig_cast_info _swigc__p_Callback[] = {  {&_swigt__p_Callback, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_FILE[] = {  {&_swigt__p_FILE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mote[] = {  {&_swigt__p_Mote, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Radio[] = {  {&_swigt__p_Radio, 0, 0, 0},{0, 0, 0, 0}};
@@ -5773,11 +6342,10 @@ static swig_cast_info _swigc__p_Throttle[] = {  {&_swigt__p_Throttle, 0, 0, 0},{
 static swig_cast_info _swigc__p_Tossim[] = {  {&_swigt__p_Tossim, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Variable[] = {  {&_swigt__p_Variable, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_uint16_t_uint32_t__int[] = {  {&_swigt__p_f_uint16_t_uint32_t__int, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_uint16_t_uint32_t_int__int[] = {  {&_swigt__p_f_uint16_t_uint32_t_int__int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_nesc_app_t[] = {  {&_swigt__p_nesc_app_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
+  _swigc__p_Callback,
   _swigc__p_FILE,
   _swigc__p_Mote,
   _swigc__p_Radio,
@@ -5787,8 +6355,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Tossim,
   _swigc__p_Variable,
   _swigc__p_char,
-  _swigc__p_f_uint16_t_uint32_t__int,
-  _swigc__p_f_uint16_t_uint32_t_int__int,
   _swigc__p_nesc_app_t,
 };
 

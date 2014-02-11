@@ -84,6 +84,8 @@ class Variable {
   variable_string_t str;
 };
 
+class Callback;
+
 class Mote {
  public:
   Mote(nesc_app_t* app);
@@ -108,12 +110,16 @@ class Mote {
 
 //  void addIrradianceTraceReading(double val);
 
-  int addReadIO(int io_size, int (*op) (uint16_t, uint32_t));
-  int addWriteIO(int io_size, int (*op) (uint16_t, uint32_t, int));
+//  int addReadIO(int io_size, int (*op) (int, int));
+//  int addWriteIO(int io_size, int (*op) (int, int, int));
+
+  void setCallback(Callback &callback);
+  void call();
   
   Variable* getVariable(char* name);
   
  private:
+  Callback* callback_;
   unsigned long nodeID;
   nesc_app_t* app;
   struct hashtable* varTable;

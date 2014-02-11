@@ -67,6 +67,37 @@ except AttributeError:
     _newclass = 0
 
 
+try:
+    import weakref
+    weakref_proxy = weakref.proxy
+except:
+    weakref_proxy = lambda x: x
+
+
+class Callback(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Callback, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, Callback, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        if self.__class__ == Callback:
+            _self = None
+        else:
+            _self = self
+        this = _TOSSIM.new_Callback(_self, )
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _TOSSIM.delete_Callback
+    __del__ = lambda self : None;
+    def call(self, *args): return _TOSSIM.Callback_call(self, *args)
+    def __disown__(self):
+        self.this.disown()
+        _TOSSIM.disown_Callback(self)
+        return weakref_proxy(self)
+Callback_swigregister = _TOSSIM.Callback_swigregister
+Callback_swigregister(Callback)
+
 class Radio(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Radio, name, value)
@@ -191,8 +222,6 @@ class Mote(_object):
     def addNoiseTraceReading(self, *args): return _TOSSIM.Mote_addNoiseTraceReading(self, *args)
     def createNoiseModel(self): return _TOSSIM.Mote_createNoiseModel(self)
     def generateNoise(self, *args): return _TOSSIM.Mote_generateNoise(self, *args)
-    def addReadIO(self, *args): return _TOSSIM.Mote_addReadIO(self, *args)
-    def addWriteIO(self, *args): return _TOSSIM.Mote_addWriteIO(self, *args)
 Mote_swigregister = _TOSSIM.Mote_swigregister
 Mote_swigregister(Mote)
 

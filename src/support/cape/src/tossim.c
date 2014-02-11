@@ -39,7 +39,7 @@
 
 // $Id: tossim.c,v 1.7 2010-06-29 22:07:51 scipio Exp $
 
-
+#include <iostream>
 #include <stdint.h>
 #include <tossim.h>
 #include <sim_tossim.h>
@@ -56,6 +56,7 @@
 #include <sim_noise.h>
 #include <sim_io.h>
 //#include <sim_irradiance.h>
+#include "Callback.h"
 
 uint16_t TOS_NODE_ID = 1;
 
@@ -132,7 +133,7 @@ variable_string_t Variable::getData() {
   return str;
 }
 
-Mote::Mote(nesc_app_t* n) {
+Mote::Mote(nesc_app_t* n) : callback_(NULL) {
   app = n;
   varTable = create_hashtable(128, tossim_hash, tossim_hash_eq);
 }
@@ -218,13 +219,33 @@ int Mote::generateNoise(int when) {
 //  sim_irradiance_trace_add(id(), val);
 //}
 
-int Mote::addReadIO(int io_size, int (*op) (uint16_t, uint32_t)) {
+/*
+int Mote::addReadIO(int io_size, int (*op) (int, int)) {
 	sim_add_read_io(id(), io_size, op);
 }
 
-int Mote::addWriteIO(int io_size, int (*op) (uint16_t, uint32_t, int)) {
+int Mote::addWriteIO(int io_size, int (*op) (int, int, int)) {
 	sim_add_write_io(id(), io_size, op);
 }
+*/
+
+void Mote::setCallback(Callback &callback)
+{
+   callback_ = &callback;
+}
+
+void Mote::call()
+{
+   if ( ! callback_ )
+   {
+      std::cerr << "No callback is set.\n";
+   }
+   else
+   {
+      callback_->call(*this);
+   }
+}
+
 
 Tossim::Tossim(nesc_app_t* n) {
 	app = n;
