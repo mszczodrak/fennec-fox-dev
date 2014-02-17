@@ -48,6 +48,7 @@
 
 #include <sim_noise.h> //added by HyungJune Lee
 #include <sim_irradiance.h>
+#include <sim_io.h>
 
 static sim_time_t sim_ticks;
 static unsigned long current_node;
@@ -61,6 +62,7 @@ void sim_init() __attribute__ ((C, spontaneous)) {
   sim_log_commit_change();
   sim_noise_init(); //added by HyungJune Lee
   sim_irradiance_init();
+  sim_io_init();
 
   {
     struct timeval tv;

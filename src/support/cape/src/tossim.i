@@ -353,6 +353,8 @@ class Mote {
   int generateNoise(int when);
 
   void addIrradianceTraceReading(float val);
+  void writeInput(double val, int input_id);
+  double readOutput(int intput_id);
 };
 
 class Tossim {

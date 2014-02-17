@@ -55,6 +55,7 @@
 #include <SerialPacket.c>
 #include <sim_noise.h>
 #include <sim_irradiance.h>
+#include <sim_io.h>
 
 uint16_t TOS_NODE_ID = 1;
 
@@ -215,6 +216,14 @@ int Mote::generateNoise(int when) {
 
 void Mote::addIrradianceTraceReading(double val) {
   sim_irradiance_trace_add(id(), val);
+}
+
+void Mote::writeInput(double val, int input_id) {
+  sim_write_input(id(), val, input_id);
+}
+
+double Mote::readOutput(int input_id) {
+  return sim_read_output(id(), input_id);
 }
 
 Tossim::Tossim(nesc_app_t* n) {
