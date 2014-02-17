@@ -40,12 +40,11 @@
  * @date   Nov 22 2005
  */
 
-%module(directors="1") TOSSIM
+%module TOSSIM
 
 %{
 #include <memory.h>
 #include <tossim.h>
-#include <Callback.h>
 
 enum {
   PRIMITIVE_INTEGER      = 0,
@@ -237,30 +236,8 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 }
 %}
 
-%feature("director") Callback;
-%feature("nodirector") Mote;
-
-%feature("pythonprepend") Mote::setCallback(Callback&) %{
-   if len(args) == 1 and (not isinstance(args[0], Callback) and callable(args[0])):
-      class CallableWrapper(Callback):
-         def __init__(self, f):
-            super(CallableWrapper, self).__init__()
-            self.f_ = f
-         def call(self, obj):
-            self.f_(obj)
-
-      args = tuple([CallableWrapper(args[0])])
-      args[0].__disown__()
-   elif lens(args) == 1 and isinstance(args[0], Callback):
-      args[0].__disown__()
-
-
-%}
-
-%include "Callback.h"
-
-
 %include radio.i
+%include seh.i
 %include SerialPacket.i
 %include SerialForwarder.i
 %include Throttle.i
@@ -345,7 +322,6 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 }
 #endif
 
-
 class Variable {
  public:
   Variable(char* name, char* format, int array, int mote);
@@ -376,6 +352,7 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
+  void addIrradianceTraceReading(float val);
 };
 
 class Tossim {
@@ -400,6 +377,7 @@ class Tossim {
 
   bool runNextEvent();
   Radio* radio();
+  SEH* seh();
   SerialPacket* newSerialPacket();
 };
 

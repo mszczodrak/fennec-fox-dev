@@ -39,7 +39,7 @@
 
 // $Id: tossim.c,v 1.7 2010-06-29 22:07:51 scipio Exp $
 
-#include <iostream>
+
 #include <stdint.h>
 #include <tossim.h>
 #include <sim_tossim.h>
@@ -51,12 +51,10 @@
 
 
 #include <radio.c>
-//#include <seh.c>
+#include <seh.c>
 #include <SerialPacket.c>
 #include <sim_noise.h>
-#include <sim_io.h>
-//#include <sim_irradiance.h>
-#include "Callback.h"
+#include <sim_irradiance.h>
 
 uint16_t TOS_NODE_ID = 1;
 
@@ -133,7 +131,7 @@ variable_string_t Variable::getData() {
   return str;
 }
 
-Mote::Mote(nesc_app_t* n) : callback_(NULL) {
+Mote::Mote(nesc_app_t* n) {
   app = n;
   varTable = create_hashtable(128, tossim_hash, tossim_hash_eq);
 }
@@ -212,48 +210,20 @@ void Mote::createNoiseModel() {
 }
 
 int Mote::generateNoise(int when) {
-	return (int)sim_noise_generate(id(), when);
+  return (int)sim_noise_generate(id(), when);
 }
 
-//void Mote::addIrradianceTraceReading(double val) {
-//  sim_irradiance_trace_add(id(), val);
-//}
-
-/*
-int Mote::addReadIO(int io_size, int (*op) (int, int)) {
-	sim_add_read_io(id(), io_size, op);
+void Mote::addIrradianceTraceReading(double val) {
+  sim_irradiance_trace_add(id(), val);
 }
-
-int Mote::addWriteIO(int io_size, int (*op) (int, int, int)) {
-	sim_add_write_io(id(), io_size, op);
-}
-*/
-
-void Mote::setCallback(Callback &callback)
-{
-   callback_ = &callback;
-}
-
-void Mote::call()
-{
-   if ( ! callback_ )
-   {
-      std::cerr << "No callback is set.\n";
-   }
-   else
-   {
-      callback_->call(*this);
-   }
-}
-
 
 Tossim::Tossim(nesc_app_t* n) {
-	app = n;
-	init();
+  app = n;
+  init();
 }
 
 Tossim::~Tossim() {
-	sim_end();
+  sim_end();
 }
 
 void Tossim::init() {
@@ -326,9 +296,9 @@ Radio* Tossim::radio() {
   return new Radio();
 }
 
-//SEH* Tossim::seh() {
-//  return new SEH();
-//}
+SEH* Tossim::seh() {
+  return new SEH();
+}
 
 SerialPacket* Tossim::newSerialPacket() {
   return new SerialPacket();

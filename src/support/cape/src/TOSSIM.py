@@ -67,37 +67,6 @@ except AttributeError:
     _newclass = 0
 
 
-try:
-    import weakref
-    weakref_proxy = weakref.proxy
-except:
-    weakref_proxy = lambda x: x
-
-
-class Callback(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Callback, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Callback, name)
-    __repr__ = _swig_repr
-    def __init__(self): 
-        if self.__class__ == Callback:
-            _self = None
-        else:
-            _self = self
-        this = _TOSSIM.new_Callback(_self, )
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _TOSSIM.delete_Callback
-    __del__ = lambda self : None;
-    def call(self, *args): return _TOSSIM.Callback_call(self, *args)
-    def __disown__(self):
-        self.this.disown()
-        _TOSSIM.disown_Callback(self)
-        return weakref_proxy(self)
-Callback_swigregister = _TOSSIM.Callback_swigregister
-Callback_swigregister(Callback)
-
 class Radio(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Radio, name, value)
@@ -118,6 +87,25 @@ class Radio(_object):
     def setSensitivity(self, *args): return _TOSSIM.Radio_setSensitivity(self, *args)
 Radio_swigregister = _TOSSIM.Radio_swigregister
 Radio_swigregister(Radio)
+
+class SEH(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SEH, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, SEH, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _TOSSIM.new_SEH()
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _TOSSIM.delete_SEH
+    __del__ = lambda self : None;
+    def solarCellSize(self): return _TOSSIM.SEH_solarCellSize(self)
+    def solarCellEfficiency(self): return _TOSSIM.SEH_solarCellEfficiency(self)
+    def setSolarCellSize(self, *args): return _TOSSIM.SEH_setSolarCellSize(self, *args)
+    def setSolarCellEfficiency(self, *args): return _TOSSIM.SEH_setSolarCellEfficiency(self, *args)
+SEH_swigregister = _TOSSIM.SEH_swigregister
+SEH_swigregister(SEH)
 
 class SerialPacket(_object):
     __swig_setmethods__ = {}
@@ -222,6 +210,7 @@ class Mote(_object):
     def addNoiseTraceReading(self, *args): return _TOSSIM.Mote_addNoiseTraceReading(self, *args)
     def createNoiseModel(self): return _TOSSIM.Mote_createNoiseModel(self)
     def generateNoise(self, *args): return _TOSSIM.Mote_generateNoise(self, *args)
+    def addIrradianceTraceReading(self, *args): return _TOSSIM.Mote_addIrradianceTraceReading(self, *args)
 Mote_swigregister = _TOSSIM.Mote_swigregister
 Mote_swigregister(Mote)
 
@@ -250,6 +239,7 @@ class Tossim(_object):
     def randomSeed(self, *args): return _TOSSIM.Tossim_randomSeed(self, *args)
     def runNextEvent(self): return _TOSSIM.Tossim_runNextEvent(self)
     def radio(self): return _TOSSIM.Tossim_radio(self)
+    def seh(self): return _TOSSIM.Tossim_seh(self)
     def newSerialPacket(self): return _TOSSIM.Tossim_newSerialPacket(self)
 Tossim_swigregister = _TOSSIM.Tossim_swigregister
 Tossim_swigregister(Tossim)
