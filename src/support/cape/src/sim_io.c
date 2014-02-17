@@ -28,6 +28,8 @@ typedef struct sim_node_ios_t {
 void save_input(uint16_t node_id, double data_val, int input_id, double time_val);
 void save_output(uint16_t node_id, double data_val, int input_id, double time_val);
 void double_memory(sim_io_t *channel);
+double retrieve_output(uint16_t node_id, int input_id, double time_val);
+double retrieve_input(uint16_t node_id, int input_id, double time_val);
 
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
@@ -61,7 +63,7 @@ void sim_io_init()__attribute__ ((C, spontaneous))
  * call from Python interface
  */
 double sim_outside_read_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
-	return 0;
+	return retrieve_output(node_id, input_id, sim_time());
 }
 
 /* 
@@ -75,7 +77,7 @@ void sim_outside_write_input(uint16_t node_id, double val, int input_id)__attrib
  * call from Mote
  */
 double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
-	return 0;
+	return retrieve_input(node_id, input_id, sim_time());
 }
 
 /*
@@ -138,34 +140,15 @@ void save_output(uint16_t node_id, double data_val, int input_id, double time_va
 	ch->dataIndex++;
 }
 
+double retrieve_output(uint16_t node_id, int input_id, double time_val) {
 
-//char sim_real_noise(uint16_t node_id, uint32_t cur_t) {
-
-/*
-uint8_t search_bin_num(char noise)__attribute__ ((C, spontaneous))
-{
-  uint8_t bin;
-  if (noise > NOISE_MAX || noise < NOISE_MIN) {
-    noise = NOISE_MIN;
-  }
-  bin = (noise-NOISE_MIN)/NOISE_QUANTIZE_INTERVAL + 1;
-  return bin;
+	return 0;
 }
 
-char search_noise_from_bin_num(int i)__attribute__ ((C, spontaneous))
-{
-  char noise;
-  noise = NOISE_MIN + (i-1)*NOISE_QUANTIZE_INTERVAL;
-  return noise;
+
+double retrieve_input(uint16_t node_id, int input_id, double time_val) {
+
+	return 0;
 }
 
-static unsigned int sim_noise_hash(void *key) {
-  char *pt = (char *)key;
-  unsigned int hashVal = 0;
-  int i;
-  for (i=0; i< NOISE_HISTORY; i++) {
-    hashVal = pt[i] + (hashVal << 6) + (hashVal << 16) - hashVal;
-  }
-  return hashVal;
-}
-*/
+
