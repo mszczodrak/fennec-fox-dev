@@ -46,7 +46,6 @@
 #include <memory.h>
 #include <tos.h>
 #include <radio.h>
-#include <seh.h>
 #include <hashtable.h>
 #include <SerialPacket.h>
 #include <sim_serial_packet.h>
@@ -106,8 +105,6 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
-  void addIrradianceTraceReading(double val);
-
   void writeInput(double val, int input_id);
   double readOutput(int input_id);
   
@@ -142,8 +139,6 @@ class Tossim {
   bool runNextEvent();
 
   Radio* radio();
-
-  SEH* seh();
 
   SerialPacket* newSerialPacket();
 

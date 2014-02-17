@@ -237,7 +237,6 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 %}
 
 %include radio.i
-%include seh.i
 %include SerialPacket.i
 %include SerialForwarder.i
 %include Throttle.i
@@ -352,7 +351,6 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
-  void addIrradianceTraceReading(float val);
   void writeInput(double val, int input_id);
   double readOutput(int intput_id);
 };
@@ -379,7 +377,6 @@ class Tossim {
 
   bool runNextEvent();
   Radio* radio();
-  SEH* seh();
   SerialPacket* newSerialPacket();
 };
 

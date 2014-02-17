@@ -88,25 +88,6 @@ class Radio(_object):
 Radio_swigregister = _TOSSIM.Radio_swigregister
 Radio_swigregister(Radio)
 
-class SEH(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SEH, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, SEH, name)
-    __repr__ = _swig_repr
-    def __init__(self): 
-        this = _TOSSIM.new_SEH()
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _TOSSIM.delete_SEH
-    __del__ = lambda self : None;
-    def solarCellSize(self): return _TOSSIM.SEH_solarCellSize(self)
-    def solarCellEfficiency(self): return _TOSSIM.SEH_solarCellEfficiency(self)
-    def setSolarCellSize(self, *args): return _TOSSIM.SEH_setSolarCellSize(self, *args)
-    def setSolarCellEfficiency(self, *args): return _TOSSIM.SEH_setSolarCellEfficiency(self, *args)
-SEH_swigregister = _TOSSIM.SEH_swigregister
-SEH_swigregister(SEH)
-
 class SerialPacket(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, SerialPacket, name, value)
@@ -210,7 +191,6 @@ class Mote(_object):
     def addNoiseTraceReading(self, *args): return _TOSSIM.Mote_addNoiseTraceReading(self, *args)
     def createNoiseModel(self): return _TOSSIM.Mote_createNoiseModel(self)
     def generateNoise(self, *args): return _TOSSIM.Mote_generateNoise(self, *args)
-    def addIrradianceTraceReading(self, *args): return _TOSSIM.Mote_addIrradianceTraceReading(self, *args)
     def writeInput(self, *args): return _TOSSIM.Mote_writeInput(self, *args)
     def readOutput(self, *args): return _TOSSIM.Mote_readOutput(self, *args)
 Mote_swigregister = _TOSSIM.Mote_swigregister
@@ -241,7 +221,6 @@ class Tossim(_object):
     def randomSeed(self, *args): return _TOSSIM.Tossim_randomSeed(self, *args)
     def runNextEvent(self): return _TOSSIM.Tossim_runNextEvent(self)
     def radio(self): return _TOSSIM.Tossim_radio(self)
-    def seh(self): return _TOSSIM.Tossim_seh(self)
     def newSerialPacket(self): return _TOSSIM.Tossim_newSerialPacket(self)
 Tossim_swigregister = _TOSSIM.Tossim_swigregister
 Tossim_swigregister(Tossim)
