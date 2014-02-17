@@ -74,7 +74,7 @@ double retrieve_output(uint16_t node_id, int input_id, long long int time_val);
 double retrieve_input(uint16_t node_id, int input_id, long long int time_val);
 double simulateData(long long int time_val);
 void do_saving(sim_io_t *channel, double data_val, long long int time_val);
-
+double do_retrieve(sim_io_t *channel,  long long int time_val);
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
 
@@ -177,6 +177,7 @@ void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
 	if ((channel->ioData == NULL) || (channel->dataIndex == channel->dataLen)) {
 		double_memory(channel);
 	}
+	//printf("saving length %d\n", channel->dataLen);
 	channel->ioData[channel->dataIndex] = data_val;
 	channel->ioTime[channel->dataIndex] = time_val;
 	channel->dataIndex++;
@@ -184,34 +185,33 @@ void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
 
 void save_input(uint16_t node_id, double data_val, int input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
-	printf("save input 1 %d %f %d %llu\n", node_id, data_val, input_id, time_val);
+	//printf("save input 1 %d %f %d %llu\n", node_id, data_val, input_id, time_val);
 	do_saving(ch, data_val, time_val);
 }
 
 void save_output(uint16_t node_id, double data_val, int output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
-	printf("save input 1 %d %f %d %llu\n", node_id, data_val, output_id, time_val);
+	//printf("save input 1 %d %f %d %llu\n", node_id, data_val, output_id, time_val);
 	do_saving(ch, data_val, time_val);
 }
 
 double do_retrieve(sim_io_t *channel,  long long int time_val) {
 	if (channel->ioData == NULL) {
-		printf("it is null\n");
+		//printf("it is null\n");
 		return simulateData(time_val);
 	}
 	if (fabs(channel->ioTime[channel->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
-		printf("here\n");
+		//printf("here\n");
 		return channel->ioData[channel->dataIndex - 1];
 	} else {
 		int time_trace = channel->ioTime[channel->dataIndex - 1] - channel->ioTime[0]; 
 		int data_for_time = (int)time_val % time_trace;
 		int index_step = time_trace / channel->dataIndex;
 		int data_index = index_step * data_for_time;
-		printf("here n\n");
+		//printf("here n\n");
 		return channel->ioData[data_index];
 	}
 }
-
 
 double retrieve_output(uint16_t node_id, int output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
@@ -223,7 +223,6 @@ double retrieve_input(uint16_t node_id, int input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	return do_retrieve(ch, time_val);
 }
-
 
 double simulateData(long long int time_val) {
 	return sin(time_val);
