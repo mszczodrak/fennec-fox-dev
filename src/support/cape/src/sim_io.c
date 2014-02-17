@@ -74,15 +74,15 @@ void sim_outside_write_input(uint16_t node_id, double val, int input_id)__attrib
 /*
  * call from Mote
  */
-double sim_node_read_input(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
 	return 0;
 }
 
 /*
  * call from Mote
  */
-void sim_node_write_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
-
+void sim_node_write_output(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+	save_output(node_id, val, input_id, sim_time());
 }
 
 
