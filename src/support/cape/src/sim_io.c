@@ -190,8 +190,13 @@ double retrieve_output(uint16_t node_id, int output_id, double time_val) {
 	}
 	if (fabs(ch->ioTime[ch->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
 		return ch->ioData[ch->dataIndex - 1];
+	} else {
+		int time_trace = ch->ioTime[ch->dataIndex - 1] - ch->ioTime[0]; 
+		int data_for_time = (int)time_val % time_trace;
+		int index_step = time_trace / ch->dataIndex;
+		int data_index = index_step * data_for_time;
+		return ch->ioData[data_index];
 	}
-	return 0;
 }
 
 
@@ -201,10 +206,14 @@ double retrieve_input(uint16_t node_id, int input_id, double time_val) {
 		return simulateData(time_val);
 	}
 	if (fabs(ch->ioTime[ch->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
-
+		return ch->ioData[ch->dataIndex - 1];
+	} else {
+		int time_trace = ch->ioTime[ch->dataIndex - 1] - ch->ioTime[0]; 
+		int data_for_time = (int)time_val % time_trace;
+		int index_step = time_trace / ch->dataIndex;
+		int data_index = index_step * data_for_time;
+		return ch->ioData[data_index];
 	}
-
-	return 0;
 }
 
 
