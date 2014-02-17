@@ -8,26 +8,6 @@
 #include "hashtable.h"
 #include "sim_io.h"
 
-//Tal Debug, to count how often simulation hits the one match case
-//int numCase1 = 0;
-//int numCase2 = 0;
-//int numTotal = 0;
-//End Tal Debug
-
-//uint32_t FreqKeyNum = 0;
-
-//sim_noise_node_t noiseData[TOSSIM_MAX_NODES];
-
-//static unsigned int sim_noise_hash(void *key);
-//static int sim_noise_eq(void *key1, void *key2);
-
-//void makeNoiseModel(uint16_t node_id);
-//void makePmfDistr(uint16_t node_id);
-//uint8_t search_bin_num(char noise);
-
-//int (*read_fp)(uint16_t, uint32_t);
-//int (*write_fp)(uint16_t, uint32_t, int);
-
 #define MAX_SENSOR_INPUTS	4
 #define MAX_ACTUATOR_OUTPUTS	4
 #define MIN_IO_TRACE		8
@@ -41,8 +21,8 @@ typedef struct sim_io_t {
 } sim_io_t;
 
 typedef struct sim_node_ios_t {
-	sim_io_t inputs[MAX_SENSOR_INPUTS];
-	sim_io_t outputs[MAX_ACTUATOR_OUTPUTS];
+	sim_io_t input[MAX_SENSOR_INPUTS];
+	sim_io_t output[MAX_ACTUATOR_OUTPUTS];
 } sim_node_ios_t;
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
@@ -54,26 +34,19 @@ void sim_io_init()__attribute__ ((C, spontaneous))
 
 	for (i = 0; i < TOSSIM_MAX_NODES; i++) {
 		for(j = 0; j < MAX_SENSOR_INPUTS; j++) {	
-			node_ios[i].inputs[j].ioData = NULL;
-/*
-			node_ios[i].inputs[j].inputData = (double*)(malloc(sizeof(double) * MIN_IO_TRACE));
-			if (node_ios[i].inputs[j].inputData == NULL) {
-				printf("Malloc failed in sim_io_init()\n");
-				exit(1);
-			}
-*/
-			node_ios[i].inputs[j].ioTime = NULL;
-			node_ios[i].inputs[j].dataLen = 0;
-			node_ios[i].inputs[j].dataIndex = 0;
-			node_ios[i].inputs[j].lastData = 0;
+			node_ios[i].input[j].ioData = NULL;
+			node_ios[i].input[j].ioTime = NULL;
+			node_ios[i].input[j].dataLen = 0;
+			node_ios[i].input[j].dataIndex = 0;
+			node_ios[i].input[j].lastData = 0;
 			
 		}
 		for(j = 0; j < MAX_ACTUATOR_OUTPUTS; j++) {	
-			node_ios[i].outputs[j].ioData = NULL;
-			node_ios[i].outputs[j].ioTime = NULL;
-			node_ios[i].outputs[j].dataLen = 0;
-			node_ios[i].outputs[j].dataIndex = 0;
-			node_ios[i].outputs[j].lastData = 0;
+			node_ios[i].output[j].ioData = NULL;
+			node_ios[i].output[j].ioTime = NULL;
+			node_ios[i].output[j].dataLen = 0;
+			node_ios[i].output[j].dataIndex = 0;
+			node_ios[i].output[j].lastData = 0;
 		}
 	}
 }
@@ -85,6 +58,50 @@ double sim_read_output(uint16_t node_id, int input_id)__attribute__ ((C, spontan
 void sim_write_input(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
 	//return 0;
 }
+
+void double_memory(sim_io_t *channel) {
+	int new_size = channel->dataLen;
+	double *ioData = NULL;
+	double *ioTime = NULL;
+	if (new_size == 0) {
+		new_size = MIN_IO_TRACE;
+	} else {
+		new_size *= 2;
+	}
+
+	ioData = (double*)(malloc(sizeof(double) * new_size));
+	ioTime = (double*)(malloc(sizeof(double) * new_size));
+
+	if ((ioData == NULL) || (ioTime == NULL)) {
+		printf("Malloc failed in sim_io_init()\n");
+		exit(1);
+	}
+
+	memcpy(ioData, channel->ioData, sizeof(double) * channel->dataLen);
+	memcpy(ioTime, channel->ioTime, sizeof(double) * channel->dataLen);
+	free(channel->ioData);	
+	free(channel->ioTime);	
+	channel->ioData = ioData;
+	channel->ioTime = ioTime;
+	channel->dataLen = new_size;
+}
+
+
+void sim_save_input(uint16_t node_id, double val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
+	sim_io_t *ch = &node_ios[node_id].input[input_id];
+	if ((ch->ioData == NULL) || (ch->dataIndex == ch->dataLen)) {
+		double_memory(ch);
+	}
+
+
+}
+
+void sim_save_output(uint16_t node_id, double val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
+
+
+
+}
+
 
 //char sim_real_noise(uint16_t node_id, uint32_t cur_t) {
 
