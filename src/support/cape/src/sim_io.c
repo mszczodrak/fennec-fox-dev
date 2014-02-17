@@ -60,20 +60,35 @@ void sim_io_init()__attribute__ ((C, spontaneous))
 /* 
  * call from Python interface
  */
-double sim_read_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
+double sim_outside_read_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
 	return 0;
 }
 
 /* 
  * call from Python interface
  */
-void sim_write_input(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+void sim_outside_write_input(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
 	save_input(node_id, val, input_id, sim_time());
 }
 
+/*
+ * call from Mote
+ */
+double sim_node_read_input(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+	return 0;
+}
+
+/*
+ * call from Mote
+ */
+void sim_node_write_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
+
+}
 
 
-
+/*
+ * Utility functions
+ */
 void double_memory(sim_io_t *channel) {
 	int new_size = channel->dataLen;
 	double *ioData = NULL;
