@@ -88,19 +88,24 @@ void double_memory(sim_io_t *channel) {
 }
 
 
-void sim_save_input(uint16_t node_id, double val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
+void sim_save_input(uint16_t node_id, double data_val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	if ((ch->ioData == NULL) || (ch->dataIndex == ch->dataLen)) {
 		double_memory(ch);
 	}
-
-
+	ch->ioData[ch->dataIndex] = data_val;
+	ch->ioTime[ch->dataIndex] = time_val;
+	ch->dataIndex++;
 }
 
-void sim_save_output(uint16_t node_id, double val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
-
-
-
+void sim_save_output(uint16_t node_id, double data_val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
+	sim_io_t *ch = &node_ios[node_id].output[input_id];
+	if ((ch->ioData == NULL) || (ch->dataIndex == ch->dataLen)) {
+		double_memory(ch);
+	}
+	ch->ioData[ch->dataIndex] = data_val;
+	ch->ioTime[ch->dataIndex] = time_val;
+	ch->dataIndex++;
 }
 
 
