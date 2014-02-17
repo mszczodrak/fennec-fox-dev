@@ -1,3 +1,42 @@
+/*
+ * Copyright (c) 2014 Columbia University. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holder nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * Implementation Input/Output (Sensor/Actuator) channels
+ *
+ * @author Marcin Szczodrak
+ * @date   February 16 2014
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +50,7 @@
 #define MAX_SENSOR_INPUTS	4
 #define MAX_ACTUATOR_OUTPUTS	4
 #define MIN_IO_TRACE		8
+#define IO_TIME_ERROR		100
 
 typedef struct sim_io_t {
 	double* ioData;
@@ -20,16 +60,19 @@ typedef struct sim_io_t {
 	int lastData;
 } sim_io_t;
 
+
 typedef struct sim_node_ios_t {
 	sim_io_t input[MAX_SENSOR_INPUTS];
 	sim_io_t output[MAX_ACTUATOR_OUTPUTS];
 } sim_node_ios_t;
+
 
 void save_input(uint16_t node_id, double data_val, int input_id, double time_val);
 void save_output(uint16_t node_id, double data_val, int input_id, double time_val);
 void double_memory(sim_io_t *channel);
 double retrieve_output(uint16_t node_id, int input_id, double time_val);
 double retrieve_input(uint16_t node_id, int input_id, double time_val);
+double simulateData(double time_val);
 
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
@@ -130,8 +173,8 @@ void save_input(uint16_t node_id, double data_val, int input_id, double time_val
 	ch->dataIndex++;
 }
 
-void save_output(uint16_t node_id, double data_val, int input_id, double time_val) {
-	sim_io_t *ch = &node_ios[node_id].output[input_id];
+void save_output(uint16_t node_id, double data_val, int output_id, double time_val) {
+	sim_io_t *ch = &node_ios[node_id].output[output_id];
 	if ((ch->ioData == NULL) || (ch->dataIndex == ch->dataLen)) {
 		double_memory(ch);
 	}
@@ -140,15 +183,31 @@ void save_output(uint16_t node_id, double data_val, int input_id, double time_va
 	ch->dataIndex++;
 }
 
-double retrieve_output(uint16_t node_id, int input_id, double time_val) {
-
+double retrieve_output(uint16_t node_id, int output_id, double time_val) {
+	sim_io_t *ch = &node_ios[node_id].output[output_id];
+	if (ch->ioData == NULL) {
+		return simulateData(time_val);
+	}
+	if (fabs(ch->ioTime[ch->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
+		return ch->ioData[ch->dataIndex - 1];
+	}
 	return 0;
 }
 
 
 double retrieve_input(uint16_t node_id, int input_id, double time_val) {
+	sim_io_t *ch = &node_ios[node_id].input[input_id];
+	if (ch->ioData == NULL) {
+		return simulateData(time_val);
+	}
+	if (fabs(ch->ioTime[ch->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
+
+	}
 
 	return 0;
 }
 
 
+double simulateData(double time_val) {
+	return sin(time_val);
+}
