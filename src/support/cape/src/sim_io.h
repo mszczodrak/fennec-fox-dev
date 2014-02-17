@@ -2,6 +2,7 @@
 #define SIM_IO_H
 
 #include <stdio.h>
+#include "sim_io.h"
 
 #ifdef __cplusplus
 extern "C" {

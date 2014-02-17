@@ -28,9 +28,54 @@
 //int (*read_fp)(uint16_t, uint32_t);
 //int (*write_fp)(uint16_t, uint32_t, int);
 
+#define MAX_SENSOR_INPUTS	4
+#define MAX_ACTUATOR_OUTPUTS	4
+#define MIN_IO_TRACE		8
+
+typedef struct sim_io_t {
+	double* ioData;
+	double* ioTime; 
+	int dataLen;
+	int dataIndex;
+	int lastData;
+} sim_io_t;
+
+typedef struct sim_node_ios_t {
+	sim_io_t inputs[MAX_SENSOR_INPUTS];
+	sim_io_t outputs[MAX_ACTUATOR_OUTPUTS];
+} sim_node_ios_t;
+
+sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
+
 
 void sim_io_init()__attribute__ ((C, spontaneous))
 {
+	int i, j;
+
+	for (i = 0; i < TOSSIM_MAX_NODES; i++) {
+		for(j = 0; j < MAX_SENSOR_INPUTS; j++) {	
+			node_ios[i].inputs[j].ioData = NULL;
+/*
+			node_ios[i].inputs[j].inputData = (double*)(malloc(sizeof(double) * MIN_IO_TRACE));
+			if (node_ios[i].inputs[j].inputData == NULL) {
+				printf("Malloc failed in sim_io_init()\n");
+				exit(1);
+			}
+*/
+			node_ios[i].inputs[j].ioTime = NULL;
+			node_ios[i].inputs[j].dataLen = 0;
+			node_ios[i].inputs[j].dataIndex = 0;
+			node_ios[i].inputs[j].lastData = 0;
+			
+		}
+		for(j = 0; j < MAX_ACTUATOR_OUTPUTS; j++) {	
+			node_ios[i].outputs[j].ioData = NULL;
+			node_ios[i].outputs[j].ioTime = NULL;
+			node_ios[i].outputs[j].dataLen = 0;
+			node_ios[i].outputs[j].dataIndex = 0;
+			node_ios[i].outputs[j].lastData = 0;
+		}
+	}
 }
 
 double sim_read_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
