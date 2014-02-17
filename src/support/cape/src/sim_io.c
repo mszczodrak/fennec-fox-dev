@@ -194,42 +194,34 @@ void save_output(uint16_t node_id, double data_val, int output_id, long long int
 	do_saving(ch, data_val, time_val);
 }
 
+double do_retrieve(sim_io_t *channel,  long long int time_val) {
+	if (channel->ioData == NULL) {
+		printf("it is null\n");
+		return simulateData(time_val);
+	}
+	if (fabs(channel->ioTime[channel->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
+		printf("here\n");
+		return channel->ioData[channel->dataIndex - 1];
+	} else {
+		int time_trace = channel->ioTime[channel->dataIndex - 1] - channel->ioTime[0]; 
+		int data_for_time = (int)time_val % time_trace;
+		int index_step = time_trace / channel->dataIndex;
+		int data_index = index_step * data_for_time;
+		printf("here n\n");
+		return channel->ioData[data_index];
+	}
+}
 
 
 double retrieve_output(uint16_t node_id, int output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
-	if (ch->ioData == NULL) {
-		printf("it is null\n");
-		return simulateData(time_val);
-	}
-	if (fabs(ch->ioTime[ch->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
-		printf("here\n");
-		return ch->ioData[ch->dataIndex - 1];
-	} else {
-		int time_trace = ch->ioTime[ch->dataIndex - 1] - ch->ioTime[0]; 
-		int data_for_time = (int)time_val % time_trace;
-		int index_step = time_trace / ch->dataIndex;
-		int data_index = index_step * data_for_time;
-		printf("here n\n");
-		return ch->ioData[data_index];
-	}
+	return do_retrieve(ch, time_val);
 }
 
 
 double retrieve_input(uint16_t node_id, int input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
-	if (ch->ioData == NULL) {
-		return simulateData(time_val);
-	}
-	if (fabs(ch->ioTime[ch->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
-		return ch->ioData[ch->dataIndex - 1];
-	} else {
-		int time_trace = ch->ioTime[ch->dataIndex - 1] - ch->ioTime[0]; 
-		int data_for_time = (int)time_val % time_trace;
-		int index_step = time_trace / ch->dataIndex;
-		int data_index = index_step * data_for_time;
-		return ch->ioData[data_index];
-	}
+	return do_retrieve(ch, time_val);
 }
 
 
