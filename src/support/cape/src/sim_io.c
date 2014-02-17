@@ -63,6 +63,7 @@ void double_memory(sim_io_t *channel) {
 	int new_size = channel->dataLen;
 	double *ioData = NULL;
 	double *ioTime = NULL;
+
 	if (new_size == 0) {
 		new_size = MIN_IO_TRACE;
 	} else {
