@@ -351,8 +351,8 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
-  void writeInput(double val, int input_id);
-  double readOutput(int intput_id);
+  void writeInput(double val, int input_id, long long int time_val);
+  double readOutput(int intput_id, long long int time_val);
 };
 
 class Tossim {

@@ -212,12 +212,12 @@ int Mote::generateNoise(int when) {
   return (int)sim_noise_generate(id(), when);
 }
 
-void Mote::writeInput(double val, int input_id) {
-  sim_outside_write_input(id(), val, input_id);
+void Mote::writeInput(double val, int input_id, long long int time_val) {
+  sim_outside_write_input(id(), val, input_id, time_val);
 }
 
-double Mote::readOutput(int input_id) {
-  return sim_outside_read_output(id(), input_id);
+double Mote::readOutput(int input_id, long long int time_val) {
+  return sim_outside_read_output(id(), input_id, time_val);
 }
 
 Tossim::Tossim(nesc_app_t* n) {

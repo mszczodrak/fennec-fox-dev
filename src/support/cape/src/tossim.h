@@ -105,8 +105,8 @@ class Mote {
   void createNoiseModel();
   int generateNoise(int when);
 
-  void writeInput(double val, int input_id);
-  double readOutput(int input_id);
+  void writeInput(double val, int input_id, long long int time_val);
+  double readOutput(int input_id, long long int time_val);
   
   Variable* getVariable(char* name);
   

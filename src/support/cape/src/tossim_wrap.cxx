@@ -5096,17 +5096,21 @@ SWIGINTERN PyObject *_wrap_Mote_writeInput(PyObject *SWIGUNUSEDPARM(self), PyObj
   Mote *arg1 = (Mote *) 0 ;
   double arg2 ;
   int arg3 ;
+  long long arg4 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   double val2 ;
   int ecode2 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
+  long long val4 ;
+  int ecode4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:Mote_writeInput",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Mote_writeInput",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_writeInput" "', argument " "1"" of type '" "Mote *""'"); 
@@ -5122,7 +5126,12 @@ SWIGINTERN PyObject *_wrap_Mote_writeInput(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Mote_writeInput" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  (arg1)->writeInput(arg2,arg3);
+  ecode4 = SWIG_AsVal_long_SS_long(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Mote_writeInput" "', argument " "4"" of type '" "long long""'");
+  } 
+  arg4 = static_cast< long long >(val4);
+  (arg1)->writeInput(arg2,arg3,arg4);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -5134,15 +5143,19 @@ SWIGINTERN PyObject *_wrap_Mote_readOutput(PyObject *SWIGUNUSEDPARM(self), PyObj
   PyObject *resultobj = 0;
   Mote *arg1 = (Mote *) 0 ;
   int arg2 ;
+  long long arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
+  long long val3 ;
+  int ecode3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:Mote_readOutput",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Mote_readOutput",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mote, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mote_readOutput" "', argument " "1"" of type '" "Mote *""'"); 
@@ -5153,7 +5166,12 @@ SWIGINTERN PyObject *_wrap_Mote_readOutput(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mote_readOutput" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
-  result = (double)(arg1)->readOutput(arg2);
+  ecode3 = SWIG_AsVal_long_SS_long(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Mote_readOutput" "', argument " "3"" of type '" "long long""'");
+  } 
+  arg3 = static_cast< long long >(val3);
+  result = (double)(arg1)->readOutput(arg2,arg3);
   resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
