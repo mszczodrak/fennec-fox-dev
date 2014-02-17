@@ -25,6 +25,11 @@ typedef struct sim_node_ios_t {
 	sim_io_t output[MAX_ACTUATOR_OUTPUTS];
 } sim_node_ios_t;
 
+void save_input(uint16_t node_id, double data_val, int input_id, double time_val);
+void save_output(uint16_t node_id, double data_val, int input_id, double time_val);
+void double_memory(sim_io_t *channel);
+
+
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
 
 
@@ -51,13 +56,23 @@ void sim_io_init()__attribute__ ((C, spontaneous))
 	}
 }
 
+
+/* 
+ * call from Python interface
+ */
 double sim_read_output(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
 	return 0;
 }
 
+/* 
+ * call from Python interface
+ */
 void sim_write_input(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
-	//return 0;
+	save_input(node_id, val, input_id, sim_time());
 }
+
+
+
 
 void double_memory(sim_io_t *channel) {
 	int new_size = channel->dataLen;
@@ -88,7 +103,7 @@ void double_memory(sim_io_t *channel) {
 }
 
 
-void sim_save_input(uint16_t node_id, double data_val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
+void save_input(uint16_t node_id, double data_val, int input_id, double time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	if ((ch->ioData == NULL) || (ch->dataIndex == ch->dataLen)) {
 		double_memory(ch);
@@ -98,7 +113,7 @@ void sim_save_input(uint16_t node_id, double data_val, int input_id, double time
 	ch->dataIndex++;
 }
 
-void sim_save_output(uint16_t node_id, double data_val, int input_id, double time_val)__attribute__ ((C, spontaneous)) {
+void save_output(uint16_t node_id, double data_val, int input_id, double time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[input_id];
 	if ((ch->ioData == NULL) || (ch->dataIndex == ch->dataLen)) {
 		double_memory(ch);
