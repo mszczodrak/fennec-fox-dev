@@ -47,9 +47,9 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface Read<uint16_t> ReadHumidity;
-uses interface Read<uint16_t> ReadTemperature
-uses interface Read<uint16_t> ReadLight;
+uses interface Read<uint16_t> as ReadHumidity;
+uses interface Read<uint16_t> as ReadTemperature;
+uses interface Read<uint16_t> as ReadLight;
 
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
@@ -62,6 +62,7 @@ uint16_t temp;
 uint16_t light;
 
 task void report_measurements() {
+	call Leds.led1Toggle();
 	dbgs(F_APPLICATION, S_NONE, hum, temp, light);
 }
 
@@ -88,7 +89,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 	return msg;
 }
 
-void Timer.fired() {
+event void Timer.fired() {
 	call ReadHumidity.read();
 }
 
