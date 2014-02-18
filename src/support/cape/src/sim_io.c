@@ -170,21 +170,14 @@ void increase_memory(sim_io_t *channel, int new_size) {
 }
 
 void move_memory(sim_io_t *channel) {
-	void *sr1;
-	void *ds1;
-	int s1;
-	int s2;
 	int move_dist = channel->dataLen / 4;
 	channel->dataIndex -= move_dist;	
-	printf("move memory %d %d\n", move_dist, channel->dataLen);
 	sr1 = channel->ioData;
 	ds1 = channel->ioData + move_dist;
 	s1 = sizeof(double) * (move_dist);
 	s2 = sizeof(double) * (channel->dataLen);
-	printf("%lu %lu %d %d %d\n", sr1, ds1, s1, s2, channel->dataIndex);
 	memmove(channel->ioData, channel->ioData + move_dist, sizeof(double) * (channel->dataIndex));
 	memmove(channel->ioTime, channel->ioTime + move_dist, sizeof(long long int) * (channel->dataIndex));
-	printf("done %d %d\n", channel->dataIndex, channel->dataLen);
 }
 
 
