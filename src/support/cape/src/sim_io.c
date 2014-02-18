@@ -50,6 +50,7 @@
 #define MAX_SENSOR_INPUTS	4
 #define MAX_ACTUATOR_OUTPUTS	4
 #define MIN_IO_TRACE		8
+#define MAX_IO_TRACE		4096
 #define IO_TIME_ERROR		100
 
 typedef struct sim_io_t {
@@ -69,12 +70,15 @@ typedef struct sim_node_ios_t {
 
 void save_input(uint16_t node_id, double data_val, int input_id, long long int time_val);
 void save_output(uint16_t node_id, double data_val, int input_id, long long int time_val);
-void double_memory(sim_io_t *channel);
+void adjust_memory(sim_io_t *channel);
+void increase_memory(sim_io_t *channel, int new_size);
+void move_memory(sim_io_t *channel);
 double retrieve_output(uint16_t node_id, int input_id, long long int time_val);
 double retrieve_input(uint16_t node_id, int input_id, long long int time_val);
 double simulateData(long long int time_val);
 void do_saving(sim_io_t *channel, double data_val, long long int time_val);
 double do_retrieve(sim_io_t *channel,  long long int time_val);
+
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
 
@@ -145,19 +149,10 @@ void sim_node_write_output(uint16_t node_id, double val, int input_id)__attribut
 /*
  * Utility functions
  */
-void double_memory(sim_io_t *channel) {
-	int new_size = channel->dataLen;
-	double *ioData = NULL;
-	long long int *ioTime = NULL;
 
-	if (new_size == 0) {
-		new_size = MIN_IO_TRACE;
-	} else {
-		new_size *= 2;
-	}
-
-	ioData = (double*)(malloc(sizeof(double) * new_size));
-	ioTime = (long long int*)(malloc(sizeof(long long int) * new_size));
+void increase_memory(sim_io_t *channel, int new_size) {
+	double *ioData = (double*)(malloc(sizeof(double) * new_size));
+	long long int *ioTime = (long long int*)(malloc(sizeof(long long int) * new_size));
 
 	if ((ioData == NULL) || (ioTime == NULL)) {
 		printf("Malloc failed in sim_io_init()\n");
@@ -173,9 +168,27 @@ void double_memory(sim_io_t *channel) {
 	channel->dataLen = new_size;
 }
 
+void move_memory(sim_io_t *channel) {
+	channel->dataLen /= 4;
+	memmove(channel->ioData, channel->ioData + channel->dataLen, sizeof(double) * (MAX_IO_TRACE - channel->dataLen));
+	memmove(channel->ioTime, channel->ioTime + channel->dataLen, sizeof(long long int) * (MAX_IO_TRACE - channel->dataLen));
+	channel->dataIndex -= channel->dataLen;	
+}
+
+
+void adjust_memory(sim_io_t *channel) {
+	if (channel->dataLen == MAX_IO_TRACE) {
+		move_memory(channel);
+	} else if (channel->dataLen == 0) {
+		increase_memory(channel, MIN_IO_TRACE);
+	} else {
+		increase_memory(channel, channel->dataLen * 2);
+	}
+}
+
 void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
 	if ((channel->ioData == NULL) || (channel->dataIndex == channel->dataLen)) {
-		double_memory(channel);
+		adjust_memory(channel);
 	}
 	//printf("saving length %d\n", channel->dataLen);
 	channel->ioData[channel->dataIndex] = data_val;
