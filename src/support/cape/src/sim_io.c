@@ -111,7 +111,7 @@ void sim_io_init()__attribute__ ((C, spontaneous))
  * call from Python interface
  */
 double sim_outside_read_output(uint16_t node_id, int input_id, long long int time_val)__attribute__ ((C, spontaneous)) {
-	printf("hello\n");
+	//printf("hello\n");
 	if (time_val) {
 		return retrieve_output(node_id, input_id, time_val);
 	} else {
@@ -123,7 +123,7 @@ double sim_outside_read_output(uint16_t node_id, int input_id, long long int tim
  * call from Python interface
  */
 void sim_outside_write_input(uint16_t node_id, double data_val, int input_id, long long int time_val)__attribute__ ((C, spontaneous)) {
-	printf("wringing %f\n", data_val);
+	//printf("wringing %f\n", data_val);
 	if (time_val) {
 		save_input(node_id, data_val, input_id, time_val);
 	} else {
@@ -154,6 +154,7 @@ void increase_memory(sim_io_t *channel, int new_size) {
 	double *ioData = (double*)(malloc(sizeof(double) * new_size));
 	long long int *ioTime = (long long int*)(malloc(sizeof(long long int) * new_size));
 
+	printf("increase memory to %d\n", new_size);
 	if ((ioData == NULL) || (ioTime == NULL)) {
 		printf("Malloc failed in sim_io_init()\n");
 		exit(1);
@@ -169,14 +170,26 @@ void increase_memory(sim_io_t *channel, int new_size) {
 }
 
 void move_memory(sim_io_t *channel) {
-	channel->dataLen /= 4;
-	memmove(channel->ioData, channel->ioData + channel->dataLen, sizeof(double) * (MAX_IO_TRACE - channel->dataLen));
-	memmove(channel->ioTime, channel->ioTime + channel->dataLen, sizeof(long long int) * (MAX_IO_TRACE - channel->dataLen));
-	channel->dataIndex -= channel->dataLen;	
+	void *sr1;
+	void *ds1;
+	int s1;
+	int s2;
+	int move_dist = channel->dataLen / 4;
+	channel->dataIndex -= move_dist;	
+	printf("move memory %d %d\n", move_dist, channel->dataLen);
+	sr1 = channel->ioData;
+	ds1 = channel->ioData + move_dist;
+	s1 = sizeof(double) * (move_dist);
+	s2 = sizeof(double) * (channel->dataLen);
+	printf("%lu %lu %d %d %d\n", sr1, ds1, s1, s2, channel->dataIndex);
+	memmove(channel->ioData, channel->ioData + move_dist, sizeof(double) * (channel->dataIndex));
+	memmove(channel->ioTime, channel->ioTime + move_dist, sizeof(long long int) * (channel->dataIndex));
+	printf("done %d %d\n", channel->dataIndex, channel->dataLen);
 }
 
 
 void adjust_memory(sim_io_t *channel) {
+	printf("adjust memory\n");
 	if (channel->dataLen == MAX_IO_TRACE) {
 		move_memory(channel);
 	} else if (channel->dataLen == 0) {
@@ -187,13 +200,15 @@ void adjust_memory(sim_io_t *channel) {
 }
 
 void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
-	if ((channel->ioData == NULL) || (channel->dataIndex == channel->dataLen)) {
+//	printf("do saving %d %d\n", channel->dataIndex, channel->dataLen);
+	if ((channel->ioData == NULL) || (channel->dataIndex >= channel->dataLen)) {
 		adjust_memory(channel);
 	}
 	//printf("saving length %d\n", channel->dataLen);
 	channel->ioData[channel->dataIndex] = data_val;
 	channel->ioTime[channel->dataIndex] = time_val;
 	channel->dataIndex++;
+//	printf("do savings done\n");
 }
 
 void save_input(uint16_t node_id, double data_val, int input_id, long long int time_val) {
@@ -209,6 +224,7 @@ void save_output(uint16_t node_id, double data_val, int output_id, long long int
 }
 
 double do_retrieve(sim_io_t *channel,  long long int time_val) {
+//	printf("do retrieve\n");
 	if (channel->ioData == NULL) {
 		//printf("it is null\n");
 		return simulateData(time_val);
