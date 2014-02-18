@@ -172,17 +172,12 @@ void increase_memory(sim_io_t *channel, int new_size) {
 void move_memory(sim_io_t *channel) {
 	int move_dist = channel->dataLen / 4;
 	channel->dataIndex -= move_dist;	
-	sr1 = channel->ioData;
-	ds1 = channel->ioData + move_dist;
-	s1 = sizeof(double) * (move_dist);
-	s2 = sizeof(double) * (channel->dataLen);
 	memmove(channel->ioData, channel->ioData + move_dist, sizeof(double) * (channel->dataIndex));
 	memmove(channel->ioTime, channel->ioTime + move_dist, sizeof(long long int) * (channel->dataIndex));
 }
 
 
 void adjust_memory(sim_io_t *channel) {
-	printf("adjust memory\n");
 	if (channel->dataLen == MAX_IO_TRACE) {
 		move_memory(channel);
 	} else if (channel->dataLen == 0) {
@@ -193,15 +188,12 @@ void adjust_memory(sim_io_t *channel) {
 }
 
 void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
-//	printf("do saving %d %d\n", channel->dataIndex, channel->dataLen);
 	if ((channel->ioData == NULL) || (channel->dataIndex >= channel->dataLen)) {
 		adjust_memory(channel);
 	}
-	//printf("saving length %d\n", channel->dataLen);
 	channel->ioData[channel->dataIndex] = data_val;
 	channel->ioTime[channel->dataIndex] = time_val;
 	channel->dataIndex++;
-//	printf("do savings done\n");
 }
 
 void save_input(uint16_t node_id, double data_val, int input_id, long long int time_val) {
@@ -217,7 +209,6 @@ void save_output(uint16_t node_id, double data_val, int output_id, long long int
 }
 
 double do_retrieve(sim_io_t *channel,  long long int time_val) {
-//	printf("do retrieve\n");
 	if (channel->ioData == NULL) {
 		//printf("it is null\n");
 		return simulateData(time_val);
