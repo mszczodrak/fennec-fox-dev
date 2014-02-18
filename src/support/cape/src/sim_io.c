@@ -51,7 +51,7 @@
 #define MAX_ACTUATOR_OUTPUTS	4
 #define MIN_IO_TRACE		8
 #define MAX_IO_TRACE		4096
-#define IO_TIME_ERROR		100
+#define IO_TIME_ERROR		1000
 
 typedef struct sim_io_t {
 	double* ioData;
@@ -142,6 +142,7 @@ double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spo
  * call from Mote
  */
 void sim_node_write_output(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+	printf("Node id %d  Val %f  Input %d  Time %llu\n", node_id, val, input_id, sim_time());
 	save_output(node_id, val, input_id, sim_time());
 }
 
@@ -209,18 +210,18 @@ void save_output(uint16_t node_id, double data_val, int output_id, long long int
 
 double do_retrieve(sim_io_t *channel,  long long int time_val) {
 	if (channel->ioData == NULL) {
-		//printf("it is null\n");
 		return simulateData(time_val);
 	}
 	if (fabs(channel->ioTime[channel->dataIndex - 1] - time_val) < IO_TIME_ERROR) {
-		//printf("here\n");
 		return channel->ioData[channel->dataIndex - 1];
 	} else {
-		int time_trace = channel->ioTime[channel->dataIndex - 1] - channel->ioTime[0]; 
-		int data_for_time = (int)time_val % time_trace;
-		int index_step = time_trace / channel->dataIndex;
-		int data_index = index_step * data_for_time;
-		//printf("here n\n");
+		long long int time_trace = channel->ioTime[channel->dataIndex - 1] - channel->ioTime[0]; 
+		long long int data_for_time;
+		int data_index = 0;
+		if (time_trace) {
+			data_for_time = time_val % time_trace;
+			data_index = (data_for_time * channel->dataIndex) / time_trace;
+		}
 		return channel->ioData[data_index];
 	}
 }
