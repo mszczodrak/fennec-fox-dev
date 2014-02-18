@@ -154,7 +154,6 @@ void increase_memory(sim_io_t *channel, int new_size) {
 	double *ioData = (double*)(malloc(sizeof(double) * new_size));
 	long long int *ioTime = (long long int*)(malloc(sizeof(long long int) * new_size));
 
-	printf("increase memory to %d\n", new_size);
 	if ((ioData == NULL) || (ioTime == NULL)) {
 		printf("Malloc failed in sim_io_init()\n");
 		exit(1);

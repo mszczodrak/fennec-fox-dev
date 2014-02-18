@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Columbia University.
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,14 @@
  */
 
 /**
-  * Fennec Fox Cape Write Output
+  * Fennec Fox empty application driver
   *
   * @author: Marcin K Szczodrak
-  * @last_update: 02/10/2014
   */
 
 
-module CapeOutputP {
-provides interface Write<uint16_t> as Write16[uint8_t id];
-provides interface Write<uint32_t> as Write32[uint8_t id];
-}
+#ifndef __null_APP_H_
+#define __null_APP_H_
 
-implementation {
 
-norace uint8_t writer_id;
-
-task void do_write16() {
-	signal Write16.writeDone[writer_id](SUCCESS);
-}
-
-task void do_write32() {
-	signal Write32.writeDone[writer_id](SUCCESS);
-}
-
-command error_t Write16.write[uint8_t id](uint16_t val) {
-	dbg("CapeOutput", "CapeOutput Write16.read[%u](%u)", id, val);
-	writer_id = id;	
-	post do_write16();
-	return SUCCESS;
-}
-
-command error_t Write32.write[uint8_t id](uint32_t val) {
-	dbg("CapeOutput", "CapeOutput Write32.read[%u](%u)", id, val);
-	writer_id = id;	
-	post do_write32();
-	return SUCCESS;
-}
-
-default void event Write16.writeDone[uint8_t id](error_t error) {}
-default void event Write32.writeDone[uint8_t id](error_t error) {}
-
-}
+#endif

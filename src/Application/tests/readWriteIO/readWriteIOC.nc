@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Columbia University.
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,56 @@
  */
 
 /**
-  * Fennec Fox Cape Write Output
+  * Fennec Fox empty application driver
   *
   * @author: Marcin K Szczodrak
-  * @last_update: 02/10/2014
   */
 
+generic configuration readWriteIOC() {
+provides interface SplitControl;
 
-module CapeOutputP {
-provides interface Write<uint16_t> as Write16[uint8_t id];
-provides interface Write<uint32_t> as Write32[uint8_t id];
+uses interface readWriteIOParams;
+
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
+components new readWriteIOP();
+SplitControl = readWriteIOP;
 
-norace uint8_t writer_id;
+readWriteIOParams = readWriteIOP;
 
-task void do_write16() {
-	signal Write16.writeDone[writer_id](SUCCESS);
-}
+NetworkAMSend = readWriteIOP.NetworkAMSend;
+NetworkReceive = readWriteIOP.NetworkReceive;
+NetworkSnoop = readWriteIOP.NetworkSnoop;
+NetworkAMPacket = readWriteIOP.NetworkAMPacket;
+NetworkPacket = readWriteIOP.NetworkPacket;
+NetworkPacketAcknowledgements = readWriteIOP.NetworkPacketAcknowledgements;
 
-task void do_write32() {
-	signal Write32.writeDone[writer_id](SUCCESS);
-}
+components new TimerMilliC() as SensorTimerC;
+readWriteIOP.SensorTimer -> SensorTimerC;
 
-command error_t Write16.write[uint8_t id](uint16_t val) {
-	dbg("CapeOutput", "CapeOutput Write16.read[%u](%u)", id, val);
-	writer_id = id;	
-	post do_write16();
-	return SUCCESS;
-}
+components new TimerMilliC() as ActuatorTimerC;
+readWriteIOP.ActuatorTimer -> ActuatorTimerC;
 
-command error_t Write32.write[uint8_t id](uint32_t val) {
-	dbg("CapeOutput", "CapeOutput Write32.read[%u](%u)", id, val);
-	writer_id = id;	
-	post do_write32();
-	return SUCCESS;
-}
+#ifndef TOSSIM
 
-default void event Write16.writeDone[uint8_t id](error_t error) {}
-default void event Write32.writeDone[uint8_t id](error_t error) {}
+components new DemoSensorC();
+readWriteIOP.Read -> DemoSensorC;
+
+#else
+
+components new CapeInputC();
+readWriteIOP.Read -> CapeInputC.Read16;
+
+components new CapeOutputC();
+readWriteIOP.Write -> CapeOutputC.Write16;
+
+#endif
 
 }
