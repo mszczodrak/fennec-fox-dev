@@ -54,16 +54,17 @@ class Simulator():
 
 
 	def readActuatorOutput(self, node_id, val):
-		print node_id, val
+		pass
+		#print node_id, val
 
 
 	def writeSensorInput(self, sim_time):
 		sim_time_ms = sim_time * 1000
-		print sim_time_ms, self.traces[self.index]["t"]
+		#print sim_time_ms, self.traces[self.index]["t"]
 		while (sim_time_ms > self.traces[self.index]["t"]):
-			self.cape.writeIO(0, self.traces[self.index]["hum"], 0)
-			self.cape.writeIO(0, self.traces[self.index]["temp"], 1)
-			self.cape.writeIO(0, self.traces[self.index]["light"], 2)
+			self.cape.writeIO(self.traces[self.index]["node"], self.traces[self.index]["hum"], 0)
+			self.cape.writeIO(self.traces[self.index]["node"], self.traces[self.index]["temp"], 1)
+			self.cape.writeIO(self.traces[self.index]["node"], self.traces[self.index]["light"], 2)
 			self.index += 1
 		
 
@@ -77,7 +78,7 @@ class Simulator():
 			vals = [int(x) for x in l.split()]
 			d = {}
 			d["t"] = vals[0]
-			d["n"] = vals[1]
+			d["node"] = vals[1]
 			d["hum"] = vals[2]
 			d["temp"] = vals[3]
 			d["light"] = vals[4]

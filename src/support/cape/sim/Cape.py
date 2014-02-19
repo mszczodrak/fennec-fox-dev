@@ -69,7 +69,7 @@ class Cape():
 		self.__simulated_time = 0
 		self.__start_time = 0
 		self.__sf_port = 9002
-		self.__readFun = 0
+		self.__readFun = None
 
 	def setTopologyFile(self, topology):
 		self.__topology_file = topology
@@ -142,11 +142,17 @@ class Cape():
 
 
 	def __do_IO(self):
+		if self.__readFun == None:
+			return
+		
 		for node_id in range(self.__number_of_nodes):
 			node = self.__tossim.getNode(node_id)
 			# read Actuating Data from every mote
-			v = node.readOutput(0, 0)	
-			self.__readFun(node_id, v)	
+			v0 = node.readOutput(0, 0)	
+			v1 = node.readOutput(1, 0)	
+			v2 = node.readOutput(2, 0)	
+			v3 = node.readOutput(3, 0)	
+			self.__readFun(node_id, v0)	
 
 
 	def __runRealTimeSimulation(self):
