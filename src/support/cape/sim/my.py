@@ -9,4 +9,6 @@ if __name__ == "__main__":
 	sim.setup()
 	for dbg_channel in ["Application", "Network", "CapeInput"]:
 		sim.addDbg(dbg_channel)
-	sim.run()
+	for t in sim:
+		print t
+		pass

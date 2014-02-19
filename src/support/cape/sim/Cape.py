@@ -63,9 +63,11 @@ class Cape():
 		self.__output_file = ""
 		self.__number_of_nodes = 0
 		self.__run_id = 0
-		self.__simulation_time = sim_time
+		self.__simulation_end_time = sim_time
 		self.__topology = ""
 		self.__noise_file = noise
+		self.__simulated_time = 0
+		self.__start_time = 0
 		self.in_vals = 0
 		self.out_vals = 0
 
@@ -91,6 +93,7 @@ class Cape():
 			self.__throttle.initialize()
 
 		self.__run_id = self.__run_id + 1
+		self.__simulated_time = 0
 
 		self.__output_file = open("results/results_%d.txt" % (self.__run_id),"w")
 		self.__addNodesAndChannels()
@@ -141,24 +144,37 @@ class Cape():
 
 
 	def __runRealTimeSimulation(self):
-		sim_time = 0
 		while True:
 			self.do_IO()
 			#print self.__tossim.time()
 			self.__throttle.checkThrottle();
 			if sim_time == (int(self.__tossim.time()) / self.__tossim.ticksPerSecond()):
-				sim_time += self.__simulation_time / 25
+				sim_time += self.__simulation_end_time / 25
 			self.__tossim.runNextEvent()
 			self.__sf.process()
 
 
 	def __runFastSimulation(self):
 		sim_time = 0
-		while sim_time < self.__simulation_time:
+		while sim_time < self.__simulation_end_time:
 			self.do_IO()
 			if sim_time == (int(self.__tossim.time()) / self.__tossim.ticksPerSecond()):
-				sim_time += self.__simulation_time / 25
+				sim_time += self.__simulation_end_time / 25
 			self.__tossim.runNextEvent()
+
+
+	def __iter__(self):
+		return self
+
+
+	def next(self):
+		if (self.__tossim.time() / self.__tossim.ticksPerSecond()) >= \
+						self.__simulation_end_time:	
+			raise StopIteration
+		else:
+			self.do_IO()
+			self.__tossim.runNextEvent()
+			return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
 
 
 	def run(self):
