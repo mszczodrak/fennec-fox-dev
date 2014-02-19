@@ -43,7 +43,6 @@ import time
 sys.path.append(os.environ['FENNEC_FOX_LIB'])
 from TOSSIM import *
 
-
 class Cape():
 
 	def __init__(self, topology = "topos/4/linkgain.out", 
@@ -83,7 +82,6 @@ class Cape():
 		self.__sf = SerialForwarder(9002)
 		self.__throttle = Throttle(self.__tossim, 10)	
 		
-
 
 	def setup(self):
 		self.__tossim.randomSeed(int(time.time()))
