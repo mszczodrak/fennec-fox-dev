@@ -41,18 +41,16 @@ import sys
 class Simulator():
 	def __init__(self):
 		self.cape = Cape.Cape()
-		self.dbg_channels = ["Application", "Network"]
+		self.dbg_channels = ["Application", "Network", "CapeInput"]
 		self.cape.setTopologyFile("topos/4/linkgain.out")
 		self.cape.setNoiseFile("noise/casino.txt")
-		self.cape.setSimulationTime(200)
 		
+		self.cape.setRealTime()
+
 		self.cape.setup()
 		
 		for dbg_channel in self.dbg_channels:
 			self.cape.addDbg(dbg_channel)
-
-		self.traces = []
-		self.index = 0
 
 
 
@@ -69,4 +67,5 @@ if __name__ == "__main__":
 
 	sim = Simulator()
 	sim.run()
+
 

@@ -43,6 +43,10 @@ import time
 sys.path.append(os.environ['FENNEC_FOX_LIB'])
 from TOSSIM import *
 
+import signal
+
+
+
 class Cape():
 
 	def __init__(self, topology = "topos/4/linkgain.out", 
@@ -50,6 +54,8 @@ class Cape():
 				real_time = 0,
 				sim_time = 100):
 		self.__real_time = real_time
+
+		signal.signal(signal.SIGINT, self.__signal_handler)
 
 		if not os.path.isdir("./results"):
 			os.mkdir("./results")
@@ -70,6 +76,8 @@ class Cape():
 		self.__start_time = 0
 		self.__sf_port = 9002
 		self.__readFun = None
+		self.__stop = False
+
 
 	def setTopologyFile(self, topology):
 		self.__topology_file = topology
@@ -78,12 +86,17 @@ class Cape():
 	def setNoiseFile(self, noise):
 		self.__noise_file = noise
 
+
 	def setRealTime(self):
 		self.__real_time = 1
 		self.__sf = SerialForwarder(self.__sf_port)
-		self.__throttle = Throttle(self.__tossim, 10)	
-		
+		self.__throttle = Throttle(self.__tossim, 10)
 
+
+	def setSimulationTime(self, sim_time):
+		self.__simulation_end_time = sim_time
+	
+	
 	def setup(self):
 		self.__tossim.randomSeed(int(time.time()))
 		self.__tossim.init()
@@ -99,6 +112,10 @@ class Cape():
 		self.__loadNoiseToNodes()
 
 
+	def __signal_handler(self, sig, frame):
+		self.__stop = True
+
+
 	def __addNodesAndChannels(self):
 		temp_file = open(self.__topology_file, "r")
 		for line in temp_file.readlines():
@@ -110,7 +127,6 @@ class Cape():
 
 		self.__number_of_nodes = self.__number_of_nodes + 1
 		temp_file.close()    
-
 
 
 	def addDbg(self, channel):
@@ -128,6 +144,7 @@ class Cape():
 			m.createNoiseModel()
 			m.bootAtTime((self.__tossim.ticksPerSecond() / 50) * i + 43);
 
+
 	def writeIO(self, node_id, val, channel, sim_time = 0):
 		if node_id >= self.__number_of_nodes:
 			return 1
@@ -139,7 +156,6 @@ class Cape():
 	def readIOfun(self, fun):
 		self.__readFun = fun
 	
-
 
 	def __do_IO(self):
 		if self.__readFun == None:
@@ -156,15 +172,18 @@ class Cape():
 
 
 	def __runRealTimeSimulation(self):
-		self.__do_IO()
-		self.__throttle.checkThrottle();
-		self.__tossim.runNextEvent()
-		self.__sf.process()
-		return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
+		if self.__stop:
+			raise StopIteration
+		else:
+			self.__do_IO()
+			self.__throttle.checkThrottle();
+			self.__tossim.runNextEvent()
+			self.__sf.process()
+			return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
 
 
 	def __runFastSimulation(self):
-		if (self.__tossim.time() / self.__tossim.ticksPerSecond()) >= \
+		if self.__stop or (self.__tossim.time() / self.__tossim.ticksPerSecond()) >= \
 						self.__simulation_end_time:	
 			raise StopIteration
 		else:
