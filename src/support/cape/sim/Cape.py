@@ -50,24 +50,23 @@ class Cape():
 				noise = "noise/casino.txt", 
 				real_time = 0,
 				sim_time = 100):
-		self.enable_sf = 0
+		self.__real_time = real_time
 
 		if not os.path.isdir("./results"):
 			os.mkdir("./results")
 
-		self.s_tossim = Tossim([])
-		if (self.enable_sf):
-			self.s_sf = SerialForwarder(9002)
-			self.throttle = Throttle(self.s_tossim, 10)	
-		self.s_radio = self.s_tossim.radio()
-		self.__topology_file = "topos/4/linkgain.out"
+		self.__tossim = Tossim([])
+		if (self.__real_time):
+			self.__sf = SerialForwarder(9002)
+			self.__throttle = Throttle(self.__tossim, 10)	
+		self.__radio = self.__tossim.radio()
+		self.__topology_file = topology
 		self.__output_file = ""
 		self.__number_of_nodes = 0
 		self.__run_id = 0
-		self.s_max_boot_time = 5
-		self.s_simulation_time = 100 # Atleast 25 
+		self.__simulation_time = sim_time
 		self.__topology = ""
-		self.__noise_file = "noise/casino.txt"
+		self.__noise_file = noise
 		self.in_vals = 0
 		self.out_vals = 0
 
@@ -75,18 +74,27 @@ class Cape():
 	def setTopologyFile(self, topology):
 		self.__topology_file = topology
 
+
 	def setNoiseFile(self, noise):
 		self.__noise_file = noise
 
+	def setRealTime(self):
+		self.__real_time = 1
+		self.__sf = SerialForwarder(9002)
+		self.__throttle = Throttle(self.__tossim, 10)	
+		
+
+
 	def setup(self):
-		self.s_tossim.randomSeed(int(time.time()))
-		self.s_tossim.init()
-		if (self.enable_sf):
-			self.s_sf.process()
-			self.throttle.initialize()
+		self.__tossim.randomSeed(int(time.time()))
+		self.__tossim.init()
+		if (self.__real_time):
+			self.__sf.process()
+			self.__throttle.initialize()
 
 		self.__run_id = self.__run_id + 1
 
+		self.__output_file = open("results/results_%d.txt" % (self.__run_id),"w")
 		self.__addNodesAndChannels()
 		self.__loadNoiseToNodes()
 
@@ -98,38 +106,34 @@ class Cape():
 			if len(s) > 0:
 				if s[0] == "gain":
 					self.__number_of_nodes = max(int(s[1]), int(s[2]), self.__number_of_nodes)
-					self.s_radio.add(int(s[1]), int(s[2]), float(s[3]))
+					self.__radio.add(int(s[1]), int(s[2]), float(s[3]))
 
 		self.__number_of_nodes = self.__number_of_nodes + 1
 		temp_file.close()    
 
 
-	def addDbg(self, channel):
-		try:
-			self.__output_file = open("results/results_%d.txt" % (self.__run_id),"w")
-		except:
-			pass
 
-		self.s_tossim.addChannel(channel, self.__output_file)
+	def addDbg(self, channel):
+		self.__tossim.addChannel(channel, self.__output_file)
 
 
 	def __loadNoiseToNodes(self):
 		for i in range(self.__number_of_nodes):
-			m = self.s_tossim.getNode(i)
+			m = self.__tossim.getNode(i)
 
 			temp_file = open(self.__noise_file, "r")
 			for j in temp_file.readlines():
 				if len(j) > 0:
 					m.addNoiseTraceReading(int(j))
 			m.createNoiseModel()
-			m.bootAtTime((self.s_tossim.ticksPerSecond() / 50) * i + 43);
+			m.bootAtTime((self.__tossim.ticksPerSecond() / 50) * i + 43);
 
 
 	def do_IO(self):
-		time_is = self.s_tossim.time()
+		time_is = self.__tossim.time()
 		
-		for node_id in range(self.s_number_of_nodes):
-			node = self.s_tossim.getNode(node_id)
+		for node_id in range(self.__number_of_nodes):
+			node = self.__tossim.getNode(node_id)
 			# write Sensor Data into each mote
 			node.writeInput(self.in_vals, 0, 0)
 
@@ -138,48 +142,34 @@ class Cape():
 			self.in_vals = self.out_vals + 1
 
 
-	def runRealTimeSimulation(self):
+	def __runRealTimeSimulation(self):
 		sim_time = 0
 		while True:
 			self.do_IO()
-			#print self.s_tossim.time()
-			self.throttle.checkThrottle();
-			if sim_time == (int(self.s_tossim.time()) / self.s_tossim.ticksPerSecond()):
-				sim_time += self.s_simulation_time / 25
-			self.s_tossim.runNextEvent()
-			self.s_sf.process()
+			#print self.__tossim.time()
+			self.__throttle.checkThrottle();
+			if sim_time == (int(self.__tossim.time()) / self.__tossim.ticksPerSecond()):
+				sim_time += self.__simulation_time / 25
+			self.__tossim.runNextEvent()
+			self.__sf.process()
 
 
-	def runFastSimulation(self):
+	def __runFastSimulation(self):
 		sim_time = 0
-		while sim_time < self.s_simulation_time:
+		while sim_time < self.__simulation_time:
 			self.do_IO()
-			if sim_time == (int(self.s_tossim.time()) / self.s_tossim.ticksPerSecond()):
-				sim_time += self.s_simulation_time / 25
-			self.s_tossim.runNextEvent()
+			if sim_time == (int(self.__tossim.time()) / self.__tossim.ticksPerSecond()):
+				sim_time += self.__simulation_time / 25
+			self.__tossim.runNextEvent()
 
 
-	def runSingleSimulation(self):
-		if (self.enable_sf):
-			self.runRealTimeSimulation()
+	def run(self):
+		t = time.time()
+		if (self.__real_time):
+			self.__runRealTimeSimulation()
 		else:
-			self.runFastSimulation()
-
-
-if __name__ == "__main__":
-
-	how_many = int(sys.argv[1])
-
-	for i in range(how_many):
-		print "Run %d   "%(i,)
-		t = time.time()
-		s = Simulation()
-		s.addDbgChannels(i)
-		print "Time to prepare simulation: %d secs"%(time.time() - t)
-		print "Start SF Client"
-		#time.sleep(5)
-		print "Start Simulation"
-		t = time.time()
-		s.runSingleSimulation()
+			self.__runFastSimulation()
+		
 		print "Time to run simulation: %d secs"%(time.time() - t)
+
 
