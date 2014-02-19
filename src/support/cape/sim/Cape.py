@@ -69,7 +69,7 @@ class Cape():
 		self.__simulated_time = 0
 		self.__start_time = 0
 		self.__sf_port = 9002
-
+		self.__readFun = 0
 
 	def setTopologyFile(self, topology):
 		self.__topology_file = topology
@@ -128,18 +128,25 @@ class Cape():
 			m.createNoiseModel()
 			m.bootAtTime((self.__tossim.ticksPerSecond() / 50) * i + 43);
 
+	def writeIO(self, node_id, val, channel, sim_time = 0):
+		if node_id >= self.__number_of_nodes:
+			return 1
+
+		node = self.__tossim.getNode(node_id)
+		node.writeInput(val, channel, sim_time)
+	
+
+	def readIOfun(self, fun):
+		self.__readFun = fun
+	
+
 
 	def __do_IO(self):
-		time_is = self.__tossim.time()
-		
 		for node_id in range(self.__number_of_nodes):
 			node = self.__tossim.getNode(node_id)
-			# write Sensor Data into each mote
-			node.writeInput(self.in_vals, 0, 0)
-
 			# read Actuating Data from every mote
-			self.out_vals = node.readOutput(0, 0)	
-			self.in_vals = self.out_vals + 1
+			v = node.readOutput(0, 0)	
+			self.__readFun(node_id, v)	
 
 
 	def __runRealTimeSimulation(self):
