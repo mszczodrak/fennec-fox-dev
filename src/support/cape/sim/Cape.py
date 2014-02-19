@@ -68,8 +68,7 @@ class Cape():
 		self.__noise_file = noise
 		self.__simulated_time = 0
 		self.__start_time = 0
-		self.in_vals = 0
-		self.out_vals = 0
+		self.__sf_port = 9002
 
 
 	def setTopologyFile(self, topology):
@@ -81,7 +80,7 @@ class Cape():
 
 	def setRealTime(self):
 		self.__real_time = 1
-		self.__sf = SerialForwarder(9002)
+		self.__sf = SerialForwarder(self.__sf_port)
 		self.__throttle = Throttle(self.__tossim, 10)	
 		
 
@@ -130,7 +129,7 @@ class Cape():
 			m.bootAtTime((self.__tossim.ticksPerSecond() / 50) * i + 43);
 
 
-	def do_IO(self):
+	def __do_IO(self):
 		time_is = self.__tossim.time()
 		
 		for node_id in range(self.__number_of_nodes):
@@ -144,23 +143,21 @@ class Cape():
 
 
 	def __runRealTimeSimulation(self):
-		while True:
-			self.do_IO()
-			#print self.__tossim.time()
-			self.__throttle.checkThrottle();
-			if sim_time == (int(self.__tossim.time()) / self.__tossim.ticksPerSecond()):
-				sim_time += self.__simulation_end_time / 25
-			self.__tossim.runNextEvent()
-			self.__sf.process()
+		self.__do_IO()
+		self.__throttle.checkThrottle();
+		self.__tossim.runNextEvent()
+		self.__sf.process()
+		return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
 
 
 	def __runFastSimulation(self):
-		sim_time = 0
-		while sim_time < self.__simulation_end_time:
-			self.do_IO()
-			if sim_time == (int(self.__tossim.time()) / self.__tossim.ticksPerSecond()):
-				sim_time += self.__simulation_end_time / 25
+		if (self.__tossim.time() / self.__tossim.ticksPerSecond()) >= \
+						self.__simulation_end_time:	
+			raise StopIteration
+		else:
+			self.__do_IO()
 			self.__tossim.runNextEvent()
+			return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
 
 
 	def __iter__(self):
@@ -168,22 +165,10 @@ class Cape():
 
 
 	def next(self):
-		if (self.__tossim.time() / self.__tossim.ticksPerSecond()) >= \
-						self.__simulation_end_time:	
-			raise StopIteration
-		else:
-			self.do_IO()
-			self.__tossim.runNextEvent()
-			return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
-
-
-	def run(self):
-		t = time.time()
 		if (self.__real_time):
-			self.__runRealTimeSimulation()
+			return self.__runRealTimeSimulation()
 		else:
-			self.__runFastSimulation()
-		
-		print "Time to run simulation: %d secs"%(time.time() - t)
+			return self.__runFastSimulation()
+
 
 
