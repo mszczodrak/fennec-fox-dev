@@ -82,9 +82,6 @@ class Simulator():
 			d["temp"] = vals[3]
 			d["light"] = vals[4]
 			self.traces.append(d)
-			
-			
-
 
 
 	def run(self):

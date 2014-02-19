@@ -57,6 +57,14 @@ NetworkAMPacket = TelosbSensorsP.NetworkAMPacket;
 NetworkPacket = TelosbSensorsP.NetworkPacket;
 NetworkPacketAcknowledgements = TelosbSensorsP.NetworkPacketAcknowledgements;
 
+components new TimerMilliC();
+TelosbSensorsP.Timer -> TimerMilliC;
+
+components LedsC;
+TelosbSensorsP.Leds -> LedsC;
+
+#ifndef TOSSIM 
+
 components new SensirionSht11C();
 TelosbSensorsP.ReadHumidity -> SensirionSht11C.Humidity;
 TelosbSensorsP.ReadTemperature -> SensirionSht11C.Temperature;
@@ -64,10 +72,17 @@ TelosbSensorsP.ReadTemperature -> SensirionSht11C.Temperature;
 components new HamamatsuS10871TsrC();
 TelosbSensorsP.ReadLight -> HamamatsuS10871TsrC;
 
-components new TimerMilliC();
-TelosbSensorsP.Timer -> TimerMilliC;
+#else
 
-components LedsC;
-TelosbSensorsP.Leds -> LedsC;
+components new CapeInputC() as CapeHumidityC;
+TelosbSensorsP.ReadHumidity -> CapeHumidityC.Read16;
+
+components new CapeInputC() as CapeTemperatureC;
+TelosbSensorsP.ReadTemperature -> CapeTemperatureC.Read16;
+
+components new CapeInputC() as CapeLightC;
+TelosbSensorsP.ReadLight -> CapeLightC.Read16;
+
+#endif
 
 }

@@ -64,6 +64,8 @@ uint16_t light;
 task void report_measurements() {
 	call Leds.led1Toggle();
 	dbgs(F_APPLICATION, S_NONE, hum, temp, light);
+	dbg("Application", "TelosbSensors Humidity: %d, Temperature: %d, Light: %d",
+						hum, temp, light);
 }
 
 command error_t SplitControl.start() {
@@ -94,21 +96,21 @@ event void Timer.fired() {
 }
 
 event void ReadHumidity.readDone(error_t error, uint16_t val) {
-        dbg("Application", "Application TelosbSensors ReadHumidity.readDone(%u %u)",
+        dbg("Application", "Application TelosbSensors ReadHumidity.readDone(%d %d)",
                                                         error, val);
 	hum = val;
 	call ReadTemperature.read();
 }
 
 event void ReadTemperature.readDone(error_t error, uint16_t val) {
-        dbg("Application", "Application TelosbSensors ReadTemperature.readDone(%u %u)",
+        dbg("Application", "Application TelosbSensors ReadTemperature.readDone(%d %d)",
                                                         error, val);
 	temp = val;
 	call ReadLight.read();
 }
 
 event void ReadLight.readDone(error_t error, uint16_t val) {
-        dbg("Application", "Application TelosbSensors ReadLight.readDone(%u %u)",
+        dbg("Application", "Application TelosbSensors ReadLight.readDone(%d %d)",
                                                         error, val);
 	light = val;
 	post report_measurements();
