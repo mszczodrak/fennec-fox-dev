@@ -32,6 +32,7 @@
   * @last_update: 02/10/2014
   */
 
+#include "sim_io.h"
 
 module CapeInputP {
 provides interface Read<uint16_t> as Read16[uint8_t id];
@@ -41,13 +42,17 @@ provides interface Read<uint32_t> as Read32[uint8_t id];
 implementation {
 
 norace uint8_t reader_id;
+norace uint16_t read16;
+norace uint32_t read32;
 
 task void do_read16() {
-	signal Read16.readDone[reader_id](SUCCESS, TOS_NODE_ID);
+	read16 = sim_node_read_input(sim_node(), reader_id);
+	signal Read16.readDone[reader_id](SUCCESS, read16);
 }
 
 task void do_read32() {
-	signal Read32.readDone[reader_id](SUCCESS, TOS_NODE_ID);
+	read32 = sim_node_read_input(sim_node(), reader_id);
+	signal Read32.readDone[reader_id](SUCCESS, read32);
 }
 
 command error_t Read16.read[uint8_t id]() {

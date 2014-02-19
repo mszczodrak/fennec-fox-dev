@@ -42,19 +42,23 @@ provides interface Write<uint32_t> as Write32[uint8_t id];
 implementation {
 
 norace uint8_t writer_id;
+norace uint16_t write16;
+norace uint32_t write32;
 
 task void do_write16() {
+	sim_node_write_output(sim_node(), write16, writer_id);
 	signal Write16.writeDone[writer_id](SUCCESS);
 }
 
 task void do_write32() {
+	sim_node_write_output(sim_node(), write32, writer_id);
 	signal Write32.writeDone[writer_id](SUCCESS);
 }
 
 command error_t Write16.write[uint8_t id](uint16_t val) {
 	dbg("CapeOutput", "CapeOutput Write16.read[%u](%u)", id, val);
 	writer_id = id;	
-	sim_node_write_output(sim_node(), val, id);
+	write16 = val;
 	post do_write16();
 	return SUCCESS;
 }
@@ -62,7 +66,7 @@ command error_t Write16.write[uint8_t id](uint16_t val) {
 command error_t Write32.write[uint8_t id](uint32_t val) {
 	dbg("CapeOutput", "CapeOutput Write32.read[%u](%u)", id, val);
 	writer_id = id;	
-	sim_node_write_output(sim_node(), val, id);
+	write32 = val;
 	post do_write32();
 	return SUCCESS;
 }

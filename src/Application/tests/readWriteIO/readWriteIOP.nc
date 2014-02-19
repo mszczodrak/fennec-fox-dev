@@ -55,6 +55,9 @@ uses interface Write<uint16_t> as Write;
 
 implementation {
 
+uint16_t readData;
+uint16_t writeData;
+
 command error_t SplitControl.start() {
 	dbg("Application", "readWriteIO SplitControl.start()");
 	call SensorTimer.startPeriodic(call readWriteIOParams.get_sampling_rate());
@@ -88,13 +91,14 @@ event void SensorTimer.fired() {
 
 event void ActuatorTimer.fired() {
         dbg("Application", "Application ActuatorTimer.fired()");
-        call Write.write(14);
+	writeData = readData;
+        call Write.write(writeData);
 }
 
 event void Read.readDone(error_t error, uint16_t val) {
         dbg("Application", "Application ReadSensor Read.readDone(%u %u)",
                                                         error, val);
-
+	readData = val;
 }
 
 event void Write.writeDone(error_t error) {
