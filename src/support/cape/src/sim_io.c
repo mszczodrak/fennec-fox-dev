@@ -113,8 +113,20 @@ void sim_io_init()__attribute__ ((C, spontaneous))
 /* 
  * call from Python interface
  */
-double sim_outside_read_output(uint16_t node_id, int input_id, long long int time_val)__attribute__ ((C, spontaneous)) {
-	//printf("hello\n");
+double sim_outside_read_output(uint16_t node_id, int input_id, 
+				long long int time_val)
+				__attribute__ ((C, spontaneous)) {
+
+	if (node_id >= TOSSIM_MAX_NODES) {
+		printf("%s: Invalid node ID: %d. There are %d nodes.\n", 
+				__FUNCTION__, node_id, TOSSIM_MAX_NODES);
+		return 0;
+	}
+	if (input_id >= MAX_ACTUATOR_OUTPUTS) {
+		printf("%s: Invalid actuator #: %d. There are %d actuators.\n", 
+				__FUNCTION__, input_id, MAX_ACTUATOR_OUTPUTS);
+		return 0;
+	}
 	if (time_val) {
 		return retrieve_output(node_id, input_id, time_val);
 	} else {
@@ -125,8 +137,21 @@ double sim_outside_read_output(uint16_t node_id, int input_id, long long int tim
 /* 
  * call from Python interface
  */
-void sim_outside_write_input(uint16_t node_id, double data_val, int input_id, long long int time_val)__attribute__ ((C, spontaneous)) {
-	//printf("wringing %f\n", data_val);
+void sim_outside_write_input(uint16_t node_id, double data_val, 
+				int input_id, long long int time_val)
+				__attribute__ ((C, spontaneous)) {
+
+	if (node_id >= TOSSIM_MAX_NODES) {
+		printf("%s: Invalid node ID: %d. There are %d nodes.\n", 
+				__FUNCTION__, node_id, TOSSIM_MAX_NODES);
+		return;
+	}
+	if (input_id >= MAX_SENSOR_INPUTS) {
+		printf("%s: Invalid sensor #: %d. There are %d sensors.\n", 
+				__FUNCTION__, input_id, MAX_SENSOR_INPUTS);
+		return;
+	}
+
 	if (time_val) {
 		save_input(node_id, data_val, input_id, time_val);
 	} else {
@@ -138,6 +163,11 @@ void sim_outside_write_input(uint16_t node_id, double data_val, int input_id, lo
  * call from Mote
  */
 double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
+	if (input_id >= MAX_SENSOR_INPUTS) {
+		printf("%s: Invalid sensor #: %d. There are %d sensors.\n", 
+				__FUNCTION__, input_id, MAX_SENSOR_INPUTS);
+		return 0;
+	}
 	return retrieve_input(node_id, input_id, sim_time());
 }
 
@@ -145,6 +175,11 @@ double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spo
  * call from Mote
  */
 void sim_node_write_output(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+	if (input_id >= MAX_ACTUATOR_OUTPUTS) {
+		printf("%s: Invalid actuator #: %d. There are %d actuators.\n", 
+				__FUNCTION__, input_id, MAX_ACTUATOR_OUTPUTS);
+		return;
+	}
 	save_output(node_id, val, input_id, sim_time());
 }
 
