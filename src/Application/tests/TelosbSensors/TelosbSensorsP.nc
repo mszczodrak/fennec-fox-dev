@@ -145,12 +145,11 @@ event void SerialSplitControl.stopDone(error_t error) {
 }
 
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	dbg("Application", "Application TelosbSensors SerialReceive()");
+	return msg;
 }
 
 event void SerialAMSend.sendDone(message_t *msg, error_t error) {
-//        call SerialQueue.dequeue();
-//        busy_serial = FALSE;
-//        post send_serial_message();
 }
 
 }
