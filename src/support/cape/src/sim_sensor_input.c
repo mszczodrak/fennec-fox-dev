@@ -49,6 +49,7 @@
 
 #include "sim_sensor_input.h"
 #include "sim_tossim.h"
+#include "sensor_input_pkt.h"
 
 struct sim_sensor_client_list *sim_sensor_clients;
 int sim_sensor_server_socket;
@@ -85,7 +86,8 @@ void sim_sensor_pstatus(void) {
 }
 
 void sim_sensor_add_client(int fd) {
-	struct sim_sensor_client_list *c = (struct sim_sensor_client_list*)sim_sensor_xmalloc(sizeof(struct sim_sensor_client_list));
+	struct sim_sensor_client_list *c = (struct sim_sensor_client_list*)
+		sim_sensor_xmalloc(sizeof(struct sim_sensor_client_list));
 
 	c->next = sim_sensor_clients;
 	sim_sensor_clients = c;
@@ -94,6 +96,7 @@ void sim_sensor_add_client(int fd) {
 
 	c->fd = fd;
 }
+
 
 void sim_sensor_rem_client(struct sim_sensor_client_list **c) {
 	struct sim_sensor_client_list *dead = *c;
@@ -105,10 +108,12 @@ void sim_sensor_rem_client(struct sim_sensor_client_list **c) {
 	free(dead);
 }
 
+
 int sim_sensor_init_source(int fd) {
-	char *welcome = "Welcome to Testbed Sensor Input\n";
+	const char *welcome = "Welcome to Testbed Sensor Input\n";
 	return send(fd, welcome, strlen(welcome), 0);
 }
+
 
 void sim_sensor_new_client(int fd) {
 	fcntl(fd, F_SETFL, 0);
@@ -118,10 +123,47 @@ void sim_sensor_new_client(int fd) {
 		sim_sensor_add_client(fd);
 }
 
+
+void *sim_sensor_read_packet(int fd, int *len) {
+	unsigned char l;
+	void *packet = malloc(sizeof(struct sensor_input_pkt));
+	if (!packet) 
+		return NULL;
+
+	if (recv(fd, packet, sizeof(sensor_input_pkt), 0) == -1) {
+		free(packet);
+		return NULL;
+
+	}
+
+	*len = sizeof(sensor_input_pkt);
+	return packet;
+}
+
+
 void sim_sensor_check_clients(fd_set *fds) {
 	struct sim_sensor_client_list **c;
 
+	for (c = &sim_sensor_clients; *c; ) {
+		int isNext = 1;
+
+	if (FD_ISSET((*c)->fd, fds)) {
+		int len;
+		const void *packet = sim_sensor_read_packet((*c)->fd, &len);
+
+		if (packet) {
+			sim_sensor_forward_packet(packet, len);
+			free((void *)packet);
+		} else {
+			sim_sensor_rem_client(c);
+			isNext = 0;
+		}
+	}
+	if (isNext)
+		c = &(*c)->next;
+	}
 }
+
 
 void sim_sensor_wait_clients(fd_set *fds, int *maxfd) {
 	struct sim_sensor_client_list *c;
@@ -136,8 +178,6 @@ void sim_sensor_check_new_client(void) {
 	if (clientfd >= 0)
 		sim_sensor_new_client(clientfd);
 }
-
-
 
 
 void sim_sensor_open_socket(int port) {
@@ -160,9 +200,10 @@ void sim_sensor_open_socket(int port) {
 
 
 void sim_sensor_forward_packet(const void *packet, const int len) {
-
-
-
+	struct sensor_input_pkt *pkt = (struct sensor_input_pkt *)packet;
+	printf("receive a packet\n");
+	
+	free(pkt);
 }
 
 

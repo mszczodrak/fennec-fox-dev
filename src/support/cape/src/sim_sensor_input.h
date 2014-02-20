@@ -40,6 +40,7 @@
 #define SIM_SENSOR_INPUT_H
 
 #include <sys/types.h>
+#include "sensor_input_pkt.h"
 
 #ifdef __cplusplus
 extern "C" {
