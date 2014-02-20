@@ -39,4 +39,4 @@
 int sim_sensor_unix_check(const char *msg, int result);
 void sim_sensor_open_socket(int port);
 void sim_sensor_forward_packet(const void *packet, const int len);
-
+void sim_sensor_process();

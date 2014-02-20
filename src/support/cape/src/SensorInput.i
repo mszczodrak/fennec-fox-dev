@@ -46,10 +46,9 @@ class SensorInput {
 
         public:
 
-        SensorInput(const int port);
-        ~SensorInput();
+                SensorInput(const int port);
+                ~SensorInput();
 
-        void forwardPacket(const void *packet, const int len);
-        void openServerSocket(const int port);
-
-}
+                void process();
+                void forwardPacket(const void *packet, const int len);
+};

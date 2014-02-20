@@ -75,4 +75,8 @@ void sim_sensor_forward_packet(const void *packet, const int len) {
 
 }
 
+void sim_sensor_process() {
+
+}
+
 

@@ -237,6 +237,7 @@ PyObject* listFromArray(char* type, char* ptr, int len) {
 %}
 
 %include radio.i
+%include SensorInput.i
 %include SerialPacket.i
 %include SerialForwarder.i
 %include Throttle.i

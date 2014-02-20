@@ -64,6 +64,7 @@ class Cape():
 		if (self.__real_time):
 			self.__sf = SerialForwarder(9002)
 			self.__throttle = Throttle(self.__tossim, 10)	
+#			self.__sin = SensorInput(9003)
 		self.__radio = self.__tossim.radio()
 		self.__topology_file = topology
 		self.__output_file = ""
@@ -75,6 +76,7 @@ class Cape():
 		self.__simulated_time = 0
 		self.__start_time = 0
 		self.__sf_port = 9002
+		self.__sensor_port = 9003
 		self.__readFun = None
 		self.__stop = False
 
@@ -90,6 +92,7 @@ class Cape():
 	def setRealTime(self):
 		self.__real_time = 1
 		self.__sf = SerialForwarder(self.__sf_port)
+#		self.__sin = SensorInput(self.__sensor_port)
 		self.__throttle = Throttle(self.__tossim, 10)
 
 
@@ -102,6 +105,7 @@ class Cape():
 		self.__tossim.init()
 		if (self.__real_time):
 			self.__sf.process()
+#			self.__sin.process()
 			self.__throttle.initialize()
 
 		self.__run_id = self.__run_id + 1
@@ -179,6 +183,7 @@ class Cape():
 			self.__throttle.checkThrottle();
 			self.__tossim.runNextEvent()
 			self.__sf.process()
+#			self.__sin.process()
 			return (1.0 * self.__tossim.time() / self.__tossim.ticksPerSecond())
 
 
