@@ -39,6 +39,8 @@
 #ifndef SIM_SENSOR_INPUT_H
 #define SIM_SENSOR_INPUT_H
 
+#include <sys/types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

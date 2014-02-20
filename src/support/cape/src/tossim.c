@@ -52,10 +52,8 @@
 
 #include <radio.c>
 #include <SerialPacket.c>
-#include <SensorInput.c>
 #include <sim_noise.h>
 #include <sim_io.h>
-#include <sim_sensor_input.h>
 
 uint16_t TOS_NODE_ID = 1;
 
