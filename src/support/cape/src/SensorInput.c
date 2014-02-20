@@ -50,16 +50,16 @@ SensorInput::~SensorInput()
 
 void SensorInput::openServerSocket(const int port)
 {
-	sim_sensor_open_socket(port);
+//	sim_sensor_open_socket(port);
 }
 
 void SensorInput::forwardPacket(const void *packet, const int len)
 {
-	sim_sensor_forward_packet(packet, len);
+//	sim_sensor_forward_packet(packet, len);
 }
 
 void SensorInput::process()
 {
-	sim_sensor_process();
+//	sim_sensor_process();
 }
 
