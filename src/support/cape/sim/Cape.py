@@ -168,11 +168,10 @@ class Cape():
 		for node_id in range(self.__number_of_nodes):
 			node = self.__tossim.getNode(node_id)
 			# read Actuating Data from every mote
-			v0 = node.readOutput(0, 0)	
-			v1 = node.readOutput(1, 0)	
-			v2 = node.readOutput(2, 0)	
-			v3 = node.readOutput(3, 0)	
-			self.__readFun(node_id, v0)	
+			self.__readFun(node_id, node.readOutput(0, 0))	
+			self.__readFun(node_id, node.readOutput(1, 0))	
+			self.__readFun(node_id, node.readOutput(2, 0))	
+			self.__readFun(node_id, node.readOutput(3, 0))	
 
 
 	def __runRealTimeSimulation(self):
