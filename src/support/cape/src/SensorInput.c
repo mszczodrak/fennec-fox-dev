@@ -36,43 +36,25 @@
  * @last_updated   February 19 2014
  */
 
+#include "SensorInput.h"
+#include "sim_sensor_input.h"
 
-
-int sim_sensor_server_socket;
-
-int sim_sensor_unix_check(const char *msg, int result) {
-	if (result < 0) {
-		perror(msg);
-		exit(2);
-	}
-
-	return result;
+SensorInput::SensorInput(const int port)
+{
+	openServerSocket(port);
 }
 
-
-void sim_sensor_open_socket(int port) {
-	struct sockaddr_in me;
-	int opt;
-
-	sim_sensor_server_socket = sim_sensor_unix_check("socket", socket(AF_INET, SOCK_STREAM, 0));
-	sim_sensor_unix_check("socket", fcntl(sim_sensor_server_socket, F_SETFL, O_NONBLOCK));
-	memset(&me, 0, sizeof me);
-	me.sin_family = AF_INET;
-	me.sin_port = htons(port);
-
-	opt = 1;
-	sim_sensor_unix_check("setsockopt", setsockopt(sim_sensor_server_socket, SOL_SOCKET, SO_REUSEADDR,
-                                        (char *)&opt, sizeof(opt)));
-
-	sim_sensor_unix_check("bind", bind(sim_sensor_server_socket, (struct sockaddr *)&me, sizeof me));
-	sim_sensor_unix_check("listen", listen(sim_sensor_server_socket, 5));
+SensorInput::~SensorInput()
+{
 }
 
-
-void sim_sensor_forward_packet(const void *packet, const int len) {
-
-
-
+void SensorInput::openServerSocket(const in port)
+{
+	sim_sensor_open_socket(port);
 }
 
+void SensorInpurt::forwardPacket(const void *packet, const int len)
+{
+	sim_sensor_forward_packet(packet, len);
+}
 
