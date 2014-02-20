@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Columbia University. All rights reserved.
+ * Copyright (c) 2012 Columbia University. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@
  * Implementation Input/Output (Sensor/Actuator) channels
  *
  * @author Marcin Szczodrak
- * @date   February 16 2014
+ * @last_updated   February 16 2014
  */
 
 

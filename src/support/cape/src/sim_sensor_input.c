@@ -30,32 +30,41 @@
  */
 
 /**
- * Implementation Input/Output (Sensor/Actuator) channels
+ * Implementation of remote sensor data feeding
  *
  * @author Marcin Szczodrak
- * @last_updated   February 16 2014
+ * @last_updated   February 19 2014
  */
 
-#ifndef SIM_IO_H
-#define SIM_IO_H
 
-#include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+int sim_sensor_server_socket;
 
-void sim_io_init();
+int sim_sensor_unix_check(const char *msg, int result) {
+	if (result < 0) {
+		perror(msg);
+		exit(2);
+	}
 
-double sim_outside_read_output(uint16_t node_id, int input_id, long long int time_val);
-void sim_outside_write_input(uint16_t node_id, double data_val, int input_id, long long int time_val);
-
-double sim_node_read_input(uint16_t node_id, int input_id);
-void sim_node_write_output(uint16_t node_id, double val, int input_id);
-
-#ifdef __cplusplus
+	return result;
 }
-#endif
 
 
-#endif // SIM_IO_H
+void sim_sensor_open_socket(int port) {
+	struct sockaddr_in me;
+	int opt;
+
+	sim_sensor_server_socket = sim_sensor_unix_check("socket", socket(AF_INET, SOCK_STREAM, 0));
+	sim_sensor_unix_check("socket", fcntl(sim_sensor_server_socket, F_SETFL, O_NONBLOCK));
+	memset(&me, 0, sizeof me);
+	me.sin_family = AF_INET;
+	me.sin_port = htons(port);
+
+	opt = 1;
+	sim_sensor_unix_check("setsockopt", setsockopt(sim_sensor_server_socket, SOL_SOCKET, SO_REUSEADDR,
+                                        (char *)&opt, sizeof(opt)));
+
+	sim_sensor_unix_check("bind", bind(sim_sensor_server_socket, (struct sockaddr *)&me, sizeof me));
+	sim_sensor_unix_check("listen", listen(sim_sensor_server_socket, 5));
+}
+
