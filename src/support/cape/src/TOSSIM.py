@@ -132,6 +132,23 @@ class SerialForwarder(_object):
 SerialForwarder_swigregister = _TOSSIM.SerialForwarder_swigregister
 SerialForwarder_swigregister(SerialForwarder)
 
+class SensorInput(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SensorInput, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, SensorInput, name)
+    __repr__ = _swig_repr
+    def __init__(self, *args): 
+        this = _TOSSIM.new_SensorInput(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _TOSSIM.delete_SensorInput
+    __del__ = lambda self : None;
+    def process(self): return _TOSSIM.SensorInput_process(self)
+    def forwardPacket(self, *args): return _TOSSIM.SensorInput_forwardPacket(self, *args)
+SensorInput_swigregister = _TOSSIM.SensorInput_swigregister
+SensorInput_swigregister(SensorInput)
+
 class Throttle(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Throttle, name, value)

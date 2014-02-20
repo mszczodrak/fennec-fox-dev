@@ -36,7 +36,19 @@
  * @last_updated   February 19 2014
  */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <signal.h>
 
+#include "sim_sensor_input.h"
+#include "sim_tossim.h"
 
 int sim_sensor_server_socket;
 
@@ -75,8 +87,38 @@ void sim_sensor_forward_packet(const void *packet, const int len) {
 
 }
 
+
+void sim_sf_fd_wait(fd_set *fds, int *maxfd, int fd) {
+	if (fd > *maxfd)
+		*maxfd = fd;
+	FD_SET(fd, fds);
+}
+
+
 void sim_sensor_process() {
 
+/*
+	fd_set rfds;
+	int maxfd = -1;
+	struct timeval zero;
+	int ret;
+
+	zero.tv_sec = zero.tv_usec = 0;
+
+	FD_ZERO(&rfds);
+        sim_sensor_fd_wait(&rfds, &maxfd, sim_sf_server_socket);
+        sim_sensor_wait_clients(&rfds, &maxfd);
+
+        ret = select(maxfd + 1, &rfds, NULL, NULL, &zero);
+        if (ret >= 0)
+        {
+            if (FD_ISSET(sim_sf_server_socket, &rfds))
+                sim_sf_check_new_client();
+
+            sim_sensor_check_clients(&rfds);
+        }
+
+*/
 }
 
 

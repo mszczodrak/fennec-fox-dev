@@ -36,7 +36,20 @@
  * @last_updated   February 19 2014
  */
 
+#ifndef SIM_SENSOR_INPUT_H
+#define SIM_SENSOR_INPUT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int sim_sensor_unix_check(const char *msg, int result);
 void sim_sensor_open_socket(int port);
 void sim_sensor_forward_packet(const void *packet, const int len);
 void sim_sensor_process();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

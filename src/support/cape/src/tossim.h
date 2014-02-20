@@ -49,6 +49,8 @@
 #include <hashtable.h>
 #include <SerialPacket.h>
 #include <sim_serial_packet.h>
+#include <SensorInput.h>
+#include <sim_sensor_input.h>
 
 
 typedef struct variable_string {

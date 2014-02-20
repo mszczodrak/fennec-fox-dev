@@ -110,6 +110,7 @@ struct @exactlyonce { };
 #include <sim_noise.c>
 #include <sim_io.c>
 #include <sim_serial_packet.c>
+#include <sim_sensor_input.c>
 
 
 #endif

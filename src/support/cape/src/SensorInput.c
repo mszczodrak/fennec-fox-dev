@@ -48,7 +48,7 @@ SensorInput::~SensorInput()
 {
 }
 
-void SensorInput::openServerSocket(const in port)
+void SensorInput::openServerSocket(const int port)
 {
 	sim_sensor_open_socket(port);
 }

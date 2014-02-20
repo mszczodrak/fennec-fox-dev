@@ -2952,15 +2952,16 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_FILE swig_types[0]
 #define SWIGTYPE_p_Mote swig_types[1]
 #define SWIGTYPE_p_Radio swig_types[2]
-#define SWIGTYPE_p_SerialForwarder swig_types[3]
-#define SWIGTYPE_p_SerialPacket swig_types[4]
-#define SWIGTYPE_p_Throttle swig_types[5]
-#define SWIGTYPE_p_Tossim swig_types[6]
-#define SWIGTYPE_p_Variable swig_types[7]
-#define SWIGTYPE_p_char swig_types[8]
-#define SWIGTYPE_p_nesc_app_t swig_types[9]
-static swig_type_info *swig_types[11];
-static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
+#define SWIGTYPE_p_SensorInput swig_types[3]
+#define SWIGTYPE_p_SerialForwarder swig_types[4]
+#define SWIGTYPE_p_SerialPacket swig_types[5]
+#define SWIGTYPE_p_Throttle swig_types[6]
+#define SWIGTYPE_p_Tossim swig_types[7]
+#define SWIGTYPE_p_Variable swig_types[8]
+#define SWIGTYPE_p_char swig_types[9]
+#define SWIGTYPE_p_nesc_app_t swig_types[10]
+static swig_type_info *swig_types[12];
+static swig_module_info swig_module = {swig_types, 11, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3576,6 +3577,9 @@ SWIG_AsVal_long_SS_long (PyObject *obj, long long *val)
 
 
 #include <SerialForwarder.h>
+
+
+#include <SensorInput.h>
 
 
 #include <Throttle.h>
@@ -4435,6 +4439,114 @@ SWIGINTERN PyObject *SerialForwarder_swigregister(PyObject *SWIGUNUSEDPARM(self)
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
   SWIG_TypeNewClientData(SWIGTYPE_p_SerialForwarder, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_SensorInput(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  SensorInput *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_SensorInput",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_SensorInput" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  result = (SensorInput *)new SensorInput(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SensorInput, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_SensorInput(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SensorInput *arg1 = (SensorInput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_SensorInput",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SensorInput, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_SensorInput" "', argument " "1"" of type '" "SensorInput *""'"); 
+  }
+  arg1 = reinterpret_cast< SensorInput * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SensorInput_process(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SensorInput *arg1 = (SensorInput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SensorInput_process",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SensorInput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SensorInput_process" "', argument " "1"" of type '" "SensorInput *""'"); 
+  }
+  arg1 = reinterpret_cast< SensorInput * >(argp1);
+  (arg1)->process();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SensorInput_forwardPacket(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SensorInput *arg1 = (SensorInput *) 0 ;
+  void *arg2 = (void *) 0 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:SensorInput_forwardPacket",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SensorInput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SensorInput_forwardPacket" "', argument " "1"" of type '" "SensorInput *""'"); 
+  }
+  arg1 = reinterpret_cast< SensorInput * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1,SWIG_as_voidptrptr(&arg2), 0, 0);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "SensorInput_forwardPacket" "', argument " "2"" of type '" "void const *""'"); 
+  }
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "SensorInput_forwardPacket" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  (arg1)->forwardPacket((void const *)arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *SensorInput_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_SensorInput, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
 }
 
@@ -5692,6 +5804,11 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"SerialForwarder_dispatchPacket", _wrap_SerialForwarder_dispatchPacket, METH_VARARGS, NULL},
 	 { (char *)"SerialForwarder_forwardPacket", _wrap_SerialForwarder_forwardPacket, METH_VARARGS, NULL},
 	 { (char *)"SerialForwarder_swigregister", SerialForwarder_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_SensorInput", _wrap_new_SensorInput, METH_VARARGS, NULL},
+	 { (char *)"delete_SensorInput", _wrap_delete_SensorInput, METH_VARARGS, NULL},
+	 { (char *)"SensorInput_process", _wrap_SensorInput_process, METH_VARARGS, NULL},
+	 { (char *)"SensorInput_forwardPacket", _wrap_SensorInput_forwardPacket, METH_VARARGS, NULL},
+	 { (char *)"SensorInput_swigregister", SensorInput_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Throttle", _wrap_new_Throttle, METH_VARARGS, NULL},
 	 { (char *)"delete_Throttle", _wrap_delete_Throttle, METH_VARARGS, NULL},
 	 { (char *)"Throttle_initialize", _wrap_Throttle_initialize, METH_VARARGS, NULL},
@@ -5746,6 +5863,7 @@ static PyMethodDef SwigMethods[] = {
 static swig_type_info _swigt__p_FILE = {"_p_FILE", "FILE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Mote = {"_p_Mote", "Mote *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Radio = {"_p_Radio", "Radio *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_SensorInput = {"_p_SensorInput", "SensorInput *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_SerialForwarder = {"_p_SerialForwarder", "SerialForwarder *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_SerialPacket = {"_p_SerialPacket", "SerialPacket *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Throttle = {"_p_Throttle", "Throttle *", 0, 0, (void*)0, 0};
@@ -5758,6 +5876,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_FILE,
   &_swigt__p_Mote,
   &_swigt__p_Radio,
+  &_swigt__p_SensorInput,
   &_swigt__p_SerialForwarder,
   &_swigt__p_SerialPacket,
   &_swigt__p_Throttle,
@@ -5770,6 +5889,7 @@ static swig_type_info *swig_type_initial[] = {
 static swig_cast_info _swigc__p_FILE[] = {  {&_swigt__p_FILE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mote[] = {  {&_swigt__p_Mote, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Radio[] = {  {&_swigt__p_Radio, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_SensorInput[] = {  {&_swigt__p_SensorInput, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_SerialForwarder[] = {  {&_swigt__p_SerialForwarder, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_SerialPacket[] = {  {&_swigt__p_SerialPacket, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Throttle[] = {  {&_swigt__p_Throttle, 0, 0, 0},{0, 0, 0, 0}};
@@ -5782,6 +5902,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_FILE,
   _swigc__p_Mote,
   _swigc__p_Radio,
+  _swigc__p_SensorInput,
   _swigc__p_SerialForwarder,
   _swigc__p_SerialPacket,
   _swigc__p_Throttle,
