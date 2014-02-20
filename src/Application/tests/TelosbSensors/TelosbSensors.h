@@ -26,14 +26,22 @@
  */
 
 /**
-  * Fennec Fox empty application driver
+  * Fennec Fox TelosB Sensors Application
   *
   * @author: Marcin K Szczodrak
+  * @updated: 02/04/2014
   */
 
 
-#ifndef __null_APP_H_
-#define __null_APP_H_
+#ifndef __TELOSBSENSORS_APP_H_
+#define __TELOSBSENSORS_APP_H_
 
+typedef nx_struct telosb_sensors {
+	nx_uint32_t seq;
+	nx_uint16_t src;
+	nx_uint16_t hum;
+	nx_uint16_t temp;
+	nx_uint16_t light;
+} telosb_sensors_t;
 
 #endif

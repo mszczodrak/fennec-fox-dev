@@ -26,9 +26,10 @@
  */
 
 /**
-  * Fennec Fox empty application driver
+  * Fennec Fox TelosB Sensors Application
   *
   * @author: Marcin K Szczodrak
+  * @updated: 02/04/2014
   */
 
 generic configuration TelosbSensorsC() {
@@ -56,6 +57,15 @@ NetworkSnoop = TelosbSensorsP.NetworkSnoop;
 NetworkAMPacket = TelosbSensorsP.NetworkAMPacket;
 NetworkPacket = TelosbSensorsP.NetworkPacket;
 NetworkPacketAcknowledgements = TelosbSensorsP.NetworkPacketAcknowledgements;
+
+components SerialActiveMessageC;
+components new SerialAMSenderC(100);
+components new SerialAMReceiverC(100);
+TelosbSensorsP.SerialAMSend -> SerialAMSenderC.AMSend;
+TelosbSensorsP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+TelosbSensorsP.SerialPacket -> SerialAMSenderC.Packet;
+TelosbSensorsP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+TelosbSensorsP.SerialReceive -> SerialAMReceiverC.Receive;
 
 components new TimerMilliC();
 TelosbSensorsP.Timer -> TimerMilliC;

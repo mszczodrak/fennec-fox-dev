@@ -28,7 +28,9 @@ use application rwIO $(FENNEC_FOX_LIB)/Application/tests/readWriteIO (
 		uint16_t sampling_rate = 1024,
 		uint16_t actuating_rate = 2048)
 
-use application telosSens $(FENNEC_FOX_LIB)/Application/tests/TelosbSensors (uint16_t sampling_rate = 1024)
+use application telosSens $(FENNEC_FOX_LIB)/Application/tests/TelosbSensors (
+		uint16_t dest = 0,
+		uint16_t sampling_rate = 1024)
 
 use application randBeacon $(FENNEC_FOX_LIB)/Application/tests/RandomBeacon ( 
 		uint16_t delay,

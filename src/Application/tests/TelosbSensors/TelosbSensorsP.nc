@@ -29,6 +29,7 @@
   * Fennec Fox empty application driver
   *
   * @author: Marcin K Szczodrak
+  * @updated: 02/04/2014
   */
 
 
@@ -47,6 +48,13 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
+/* Serial Interfaces */
+uses interface AMSend as SerialAMSend;
+uses interface AMPacket as SerialAMPacket;
+uses interface Packet as SerialPacket;
+uses interface Receive as SerialReceive;
+uses interface SplitControl as SerialSplitControl;
+
 uses interface Read<uint16_t> as ReadHumidity;
 uses interface Read<uint16_t> as ReadTemperature;
 uses interface Read<uint16_t> as ReadLight;
@@ -57,18 +65,29 @@ uses interface Leds;
 
 implementation {
 
-uint16_t hum;
-uint16_t temp;
-uint16_t light;
+telosb_sensors_t *data = NULL;
+message_t packet;
+uint16_t dest;
 
 task void report_measurements() {
 	call Leds.led1Toggle();
-	dbgs(F_APPLICATION, S_NONE, hum, temp, light);
-	dbg("Application", "TelosbSensors Humidity: %d, Temperature: %d, Light: %d",
-						hum, temp, light);
+	dbgs(F_APPLICATION, S_NONE, data->hum, data->temp, data->light);
+
+	if (call NetworkAMSend.send(dest, &packet,
+			sizeof(telosb_sensors_t)) != SUCCESS) {
+		signal NetworkAMSend.sendDone(&packet, FAIL);
+	}
 }
 
 command error_t SplitControl.start() {
+	data = (telosb_sensors_t*)call NetworkAMSend.getPayload(&packet, sizeof(telosb_sensors_t));
+	data->seq = 0;
+	data->src = TOS_NODE_ID;
+	if (call TelosbSensorsParams.get_dest()) {
+		dest = call TelosbSensorsParams.get_dest();
+	} else {
+		dest = TOS_NODE_ID;
+	}
 	dbg("Application", "TelosbSensors SplitControl.start()");
 	call Timer.startPeriodic(call TelosbSensorsParams.get_sampling_rate());
 	signal SplitControl.startDone(SUCCESS);
@@ -84,6 +103,9 @@ command error_t SplitControl.stop() {
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	telosb_sensors_t *d = (telosb_sensors_t*)payload;
+	dbg("Application", "TelosbSensors Humidity: %d, Temperature: %d, Light: %d",
+					d->hum, d->temp, d->light);
 	return msg;
 }
 
@@ -98,21 +120,37 @@ event void Timer.fired() {
 event void ReadHumidity.readDone(error_t error, uint16_t val) {
         dbg("Application", "Application TelosbSensors ReadHumidity.readDone(%d %d)",
                                                         error, val);
-	hum = val;
+	data->hum = val;
 	call ReadTemperature.read();
 }
 
 event void ReadTemperature.readDone(error_t error, uint16_t val) {
         dbg("Application", "Application TelosbSensors ReadTemperature.readDone(%d %d)",
                                                         error, val);
-	temp = val;
+	data->temp = val;
 	call ReadLight.read();
 }
 
 event void ReadLight.readDone(error_t error, uint16_t val) {
         dbg("Application", "Application TelosbSensors ReadLight.readDone(%d %d)",
                                                         error, val);
-	light = val;
+	data->light = val;
 	post report_measurements();
 }
+
+event void SerialSplitControl.startDone(error_t error) {
+}
+
+event void SerialSplitControl.stopDone(error_t error) {
+}
+
+event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
+}
+
+event void SerialAMSend.sendDone(message_t *msg, error_t error) {
+//        call SerialQueue.dequeue();
+//        busy_serial = FALSE;
+//        post send_serial_message();
+}
+
 }
