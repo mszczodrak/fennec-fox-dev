@@ -50,7 +50,9 @@
 #include "sim_sensor_input.h"
 #include "sim_tossim.h"
 
+struct sim_sensor_client_list *sim_sensor_clients;
 int sim_sensor_server_socket;
+int sim_sensor_num_clients;
 
 int sim_sensor_unix_check(const char *msg, int result) {
 	if (result < 0) {
@@ -60,6 +62,82 @@ int sim_sensor_unix_check(const char *msg, int result) {
 
 	return result;
 }
+
+void *sim_sensor_xmalloc(size_t s) {
+	void *p = malloc(s);
+
+	if (!p) {
+		fprintf(stderr, "out of memory\n");
+		exit(2);
+	}
+	return p;
+}
+
+void sim_sensor_fd_wait(fd_set *fds, int *maxfd, int fd) {
+	if (fd > *maxfd)
+		*maxfd = fd;
+	FD_SET(fd, fds);
+}
+
+
+void sim_sensor_pstatus(void) {
+	printf("clients %d\n", sim_sensor_num_clients);
+}
+
+void sim_sensor_add_client(int fd) {
+	struct sim_sensor_client_list *c = (struct sim_sensor_client_list*)sim_sensor_xmalloc(sizeof(struct sim_sensor_client_list));
+
+	c->next = sim_sensor_clients;
+	sim_sensor_clients = c;
+	sim_sensor_num_clients++;
+	sim_sensor_pstatus();
+
+	c->fd = fd;
+}
+
+void sim_sensor_rem_client(struct sim_sensor_client_list **c) {
+	struct sim_sensor_client_list *dead = *c;
+
+	*c = dead->next;
+	sim_sensor_num_clients--;
+	sim_sensor_pstatus();
+	close(dead->fd);
+	free(dead);
+}
+
+int sim_sensor_init_source(int fd) {
+	char *welcome = "Welcome to Testbed Sensor Input\n";
+	return send(fd, welcome, strlen(welcome), 0);
+}
+
+void sim_sensor_new_client(int fd) {
+	fcntl(fd, F_SETFL, 0);
+	if (sim_sensor_init_source(fd) < 0)
+		close(fd);
+	else
+		sim_sensor_add_client(fd);
+}
+
+void sim_sensor_check_clients(fd_set *fds) {
+	struct sim_sensor_client_list **c;
+
+}
+
+void sim_sensor_wait_clients(fd_set *fds, int *maxfd) {
+	struct sim_sensor_client_list *c;
+
+	for (c = sim_sensor_clients; c; c = c->next)
+		sim_sensor_fd_wait(fds, maxfd, c->fd);
+}
+
+void sim_sensor_check_new_client(void) {
+	int clientfd = accept(sim_sensor_server_socket, NULL, NULL);
+
+	if (clientfd >= 0)
+		sim_sensor_new_client(clientfd);
+}
+
+
 
 
 void sim_sensor_open_socket(int port) {
@@ -88,16 +166,10 @@ void sim_sensor_forward_packet(const void *packet, const int len) {
 }
 
 
-void sim_sf_fd_wait(fd_set *fds, int *maxfd, int fd) {
-	if (fd > *maxfd)
-		*maxfd = fd;
-	FD_SET(fd, fds);
-}
+
 
 
 void sim_sensor_process() {
-
-/*
 	fd_set rfds;
 	int maxfd = -1;
 	struct timeval zero;
@@ -106,19 +178,16 @@ void sim_sensor_process() {
 	zero.tv_sec = zero.tv_usec = 0;
 
 	FD_ZERO(&rfds);
-        sim_sensor_fd_wait(&rfds, &maxfd, sim_sf_server_socket);
-        sim_sensor_wait_clients(&rfds, &maxfd);
+	sim_sensor_fd_wait(&rfds, &maxfd, sim_sensor_server_socket);
+	sim_sensor_wait_clients(&rfds, &maxfd);
 
-        ret = select(maxfd + 1, &rfds, NULL, NULL, &zero);
-        if (ret >= 0)
-        {
-            if (FD_ISSET(sim_sf_server_socket, &rfds))
-                sim_sf_check_new_client();
+	ret = select(maxfd + 1, &rfds, NULL, NULL, &zero);
+	if (ret >= 0) {
+		if (FD_ISSET(sim_sensor_server_socket, &rfds))
+			sim_sensor_check_new_client();
 
-            sim_sensor_check_clients(&rfds);
-        }
-
-*/
+		sim_sensor_check_clients(&rfds);
+	}
 }
 
 

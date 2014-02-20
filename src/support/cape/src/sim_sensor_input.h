@@ -45,6 +45,12 @@
 extern "C" {
 #endif
 
+struct sim_sensor_client_list {
+	struct sim_sensor_client_list *next;
+	int fd;
+};
+
+
 int sim_sensor_unix_check(const char *msg, int result);
 void sim_sensor_open_socket(int port);
 void sim_sensor_forward_packet(const void *packet, const int len);
