@@ -88,7 +88,7 @@ command error_t SplitControl.start() {
 	} else {
 		dest = TOS_NODE_ID;
 	}
-	dbg("Application", "TelosbSensors SplitControl.start()");
+	dbg("Application", "TelosbSensors SplitControl.start() width dest: %d", dest);
 	call Timer.startPeriodic(call TelosbSensorsParams.get_sampling_rate());
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;

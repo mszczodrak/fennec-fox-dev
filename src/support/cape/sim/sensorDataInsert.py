@@ -67,12 +67,16 @@ class RemoteSensorInsert():
 		self.__run = True
 		while(self.__run):
 			for node_id in range(self.number_of_sensors):
-				msg_si = pack("!HHL", node_id, 0, self.hum)
-				self.sock.send(msg_si)
-				msg_si = pack("!HHL", node_id, 1, self.temp)
-				self.sock.send(msg_si)
-				msg_si = pack("!HHL", node_id, 2, self.light)
-				self.sock.send(msg_si)
+				try: 
+					msg_si = pack("!HHL", node_id, 0, self.hum)
+					self.sock.send(msg_si)
+					msg_si = pack("!HHL", node_id, 1, self.temp)
+					self.sock.send(msg_si)
+					msg_si = pack("!HHL", node_id, 2, self.light)
+					self.sock.send(msg_si)
+				except:
+					self.__run = False
+				
 			time.sleep(self.sleep_time)
 			self.__updateSensorValue()
 
