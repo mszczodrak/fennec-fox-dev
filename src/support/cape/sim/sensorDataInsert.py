@@ -46,7 +46,7 @@ import math
 class RemoteSensorInsert():
 	def __init__(self, ip_address, ip_port):
 		self.ip_address = ip_address
-		self.ip_port = ip_port
+		self.ip_port = int(ip_port)
 		self.sock = socket(AF_INET, SOCK_STREAM)
 		self.sock.connect((self.ip_address, self.ip_port))
 		signal.signal(signal.SIGINT, self.__signal_handler)
@@ -78,9 +78,10 @@ class RemoteSensorInsert():
 
 
 	def __updateSensorValue(self):
-		self.hum = math.abs(4 * math.sin(time.time() / 2))
-		self.temp = math.abs(16 * math.sin(time.time() * 2))	
-		self.light = math.abs(32 * math.sin(time.time()))		
+		self.hum = math.fabs(4 * math.sin(time.time() / 2))
+		self.temp = math.fabs(16 * math.sin(time.time() * 2))	
+		self.light = math.fabs(32 * math.sin(time.time()))		
+		print "Humidity: %d  Temp: %d  Light: %d" % (self.hum, self.temp, self.light) 
 
 
 	def __signal_handler(self, sig, frame):

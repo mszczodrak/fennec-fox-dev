@@ -111,7 +111,7 @@ void sim_sensor_rem_client(struct sim_sensor_client_list **c) {
 
 
 int sim_sensor_init_source(int fd) {
-	const char *welcome = "Welcome to Testbed Sensor Input\n\n"
+	const char *welcome = "\n\n\t\tWelcome to Testbed Sensor Input\n\n"
 		"The server accepts the following packets:\n\n"
 		"struct sensor_input_pkt {\n"
 		"\tuint16_t node_id;\n"
@@ -207,9 +207,9 @@ void sim_sensor_open_socket(int port) {
 void sim_sensor_forward_packet(const void *packet, const int len) {
 	struct sensor_input_pkt *pkt = (struct sensor_input_pkt *)packet;
 	//printf("receive a packet\n");
-	//printf("rec node: %d\n", ntohs(pkt->node_id));
-	//printf("rec sensor: %d\n", ntohs(pkt->sensor_id));
-	//printf("rec val: %d\n", ntohl(pkt->value));
+	printf("\nrec node: %d\n", ntohs(pkt->node_id));
+	printf("rec sensor: %d\n", ntohs(pkt->sensor_id));
+	printf("rec val: %d\n\n", ntohl(pkt->value));
 
 	sim_outside_write_input(ntohs(pkt->node_id), ntohl(pkt->value), 
 						ntohs(pkt->sensor_id), 0);

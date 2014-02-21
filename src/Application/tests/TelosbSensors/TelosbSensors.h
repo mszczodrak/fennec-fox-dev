@@ -44,4 +44,9 @@ typedef nx_struct telosb_sensors {
 	nx_uint16_t light;
 } telosb_sensors_t;
 
+enum {
+        AM_TELOSB_SENSORS = 100,
+};
+
+
 #endif
