@@ -15,7 +15,7 @@ print msg		# Should say something like "Welcome to Testbed Sensor Input"
 
 m = pack('!HHL', 1, 2, 3)
 
-s.send(a)
+s.send(m)
 
 #print "Message from server : " + msg
  
