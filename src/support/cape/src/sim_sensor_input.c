@@ -133,7 +133,6 @@ void *sim_sensor_read_packet(int fd, int *len) {
 	if (recv(fd, packet, sizeof(sensor_input_pkt), 0) == -1) {
 		free(packet);
 		return NULL;
-
 	}
 
 	*len = sizeof(sensor_input_pkt);
@@ -147,20 +146,20 @@ void sim_sensor_check_clients(fd_set *fds) {
 	for (c = &sim_sensor_clients; *c; ) {
 		int isNext = 1;
 
-	if (FD_ISSET((*c)->fd, fds)) {
-		int len;
-		const void *packet = sim_sensor_read_packet((*c)->fd, &len);
+		if (FD_ISSET((*c)->fd, fds)) {
+			int len;
+			const void *packet = sim_sensor_read_packet((*c)->fd, &len);
 
-		if (packet) {
-			sim_sensor_forward_packet(packet, len);
-			free((void *)packet);
-		} else {
-			sim_sensor_rem_client(c);
-			isNext = 0;
+			if (packet) {
+				sim_sensor_forward_packet(packet, len);
+				free((void *)packet);
+			} else {
+				sim_sensor_rem_client(c);
+				isNext = 0;
+			}
 		}
-	}
-	if (isNext)
-		c = &(*c)->next;
+		if (isNext)
+			c = &(*c)->next;
 	}
 }
 
@@ -202,8 +201,11 @@ void sim_sensor_open_socket(int port) {
 void sim_sensor_forward_packet(const void *packet, const int len) {
 	struct sensor_input_pkt *pkt = (struct sensor_input_pkt *)packet;
 	printf("receive a packet\n");
+	printf("rec node: %d\n", ntohs(pkt->node_id));
+	printf("rec sensor: %d\n", ntohs(pkt->sensor_id));
+	printf("rec val: %d\n", ntohl(pkt->value));
 	
-	free(pkt);
+//	free(pkt);
 }
 
 
