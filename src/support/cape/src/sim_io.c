@@ -54,7 +54,7 @@
 #define IO_TIME_STEP_ERROR	1.6
 
 typedef struct sim_io_t {
-	double* ioData;
+	uint32_t* ioData;
 	long long int* ioTime; 
 	int dataLen;
 	int dataIndex;
@@ -69,16 +69,16 @@ typedef struct sim_node_ios_t {
 } sim_node_ios_t;
 
 
-void save_input(uint16_t node_id, double data_val, int input_id, long long int time_val);
-void save_output(uint16_t node_id, double data_val, int input_id, long long int time_val);
+void save_input(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val);
+void save_output(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val);
 void adjust_memory(sim_io_t *channel);
 void increase_memory(sim_io_t *channel, int new_size);
 void move_memory(sim_io_t *channel);
-double retrieve_output(uint16_t node_id, int input_id, long long int time_val);
-double retrieve_input(uint16_t node_id, int input_id, long long int time_val);
-double simulateData(long long int time_val);
-void do_saving(sim_io_t *channel, double data_val, long long int time_val);
-double do_retrieve(sim_io_t *channel,  long long int time_val);
+uint32_t retrieve_output(uint16_t node_id, int input_id, long long int time_val);
+uint32_t retrieve_input(uint16_t node_id, int input_id, long long int time_val);
+uint32_t simulateData(long long int time_val);
+void do_saving(sim_io_t *channel, uint32_t data_val, long long int time_val);
+uint32_t do_retrieve(sim_io_t *channel,  long long int time_val);
 
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
@@ -113,7 +113,7 @@ void sim_io_init()__attribute__ ((C, spontaneous))
 /* 
  * call from Python interface
  */
-double sim_outside_read_output(uint16_t node_id, int input_id, 
+uint32_t sim_outside_read_output(uint16_t node_id, int input_id, 
 				long long int time_val)
 				__attribute__ ((C, spontaneous)) {
 
@@ -137,7 +137,7 @@ double sim_outside_read_output(uint16_t node_id, int input_id,
 /* 
  * call from Python interface
  */
-void sim_outside_write_input(uint16_t node_id, double data_val, 
+void sim_outside_write_input(uint16_t node_id, uint32_t data_val, 
 				int input_id, long long int time_val)
 				__attribute__ ((C, spontaneous)) {
 
@@ -162,7 +162,7 @@ void sim_outside_write_input(uint16_t node_id, double data_val,
 /*
  * call from Mote
  */
-double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
+uint32_t sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
 	if (input_id >= MAX_SENSOR_INPUTS) {
 		printf("%s: Invalid sensor #: %d. There are %d sensors.\n", 
 				__FUNCTION__, input_id, MAX_SENSOR_INPUTS);
@@ -174,7 +174,7 @@ double sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spo
 /*
  * call from Mote
  */
-void sim_node_write_output(uint16_t node_id, double val, int input_id)__attribute__ ((C, spontaneous)) {
+void sim_node_write_output(uint16_t node_id, uint32_t val, int input_id)__attribute__ ((C, spontaneous)) {
 	if (input_id >= MAX_ACTUATOR_OUTPUTS) {
 		printf("%s: Invalid actuator #: %d. There are %d actuators.\n", 
 				__FUNCTION__, input_id, MAX_ACTUATOR_OUTPUTS);
@@ -189,7 +189,7 @@ void sim_node_write_output(uint16_t node_id, double val, int input_id)__attribut
  */
 
 void increase_memory(sim_io_t *channel, int new_size) {
-	double *ioData = (double*)(malloc(sizeof(double) * new_size));
+	uint32_t *ioData = (uint32_t*)(malloc(sizeof(uint32_t) * new_size));
 	long long int *ioTime = (long long int*)(malloc(sizeof(long long int) * new_size));
 
 	if ((ioData == NULL) || (ioTime == NULL)) {
@@ -197,7 +197,7 @@ void increase_memory(sim_io_t *channel, int new_size) {
 		exit(1);
 	}
 
-	memcpy(ioData, channel->ioData, sizeof(double) * channel->dataLen);
+	memcpy(ioData, channel->ioData, sizeof(uint32_t) * channel->dataLen);
 	memcpy(ioTime, channel->ioTime, sizeof(long long int) * channel->dataLen);
 	free(channel->ioData);	
 	free(channel->ioTime);	
@@ -209,7 +209,7 @@ void increase_memory(sim_io_t *channel, int new_size) {
 void move_memory(sim_io_t *channel) {
 	int move_dist = channel->dataLen / 4;
 	channel->dataIndex -= move_dist;	
-	memmove(channel->ioData, channel->ioData + move_dist, sizeof(double) * (channel->dataIndex));
+	memmove(channel->ioData, channel->ioData + move_dist, sizeof(uint32_t) * (channel->dataIndex));
 	memmove(channel->ioTime, channel->ioTime + move_dist, sizeof(long long int) * (channel->dataIndex));
 }
 
@@ -224,7 +224,7 @@ void adjust_memory(sim_io_t *channel) {
 	}
 }
 
-void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
+void do_saving(sim_io_t *channel, uint32_t data_val, long long int time_val) {
 	if ((channel->ioData == NULL) || (channel->dataIndex >= channel->dataLen)) {
 		adjust_memory(channel);
 	}
@@ -234,17 +234,17 @@ void do_saving(sim_io_t *channel, double data_val, long long int time_val) {
 	channel->dataIndex++;
 }
 
-void save_input(uint16_t node_id, double data_val, int input_id, long long int time_val) {
+void save_input(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	do_saving(ch, data_val, time_val);
 }
 
-void save_output(uint16_t node_id, double data_val, int output_id, long long int time_val) {
+void save_output(uint16_t node_id, uint32_t data_val, int output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
 	do_saving(ch, data_val, time_val);
 }
 
-double do_retrieve(sim_io_t *channel,  long long int time_val) {
+uint32_t do_retrieve(sim_io_t *channel,  long long int time_val) {
 	if (channel->ioData == NULL) {
 		return simulateData(time_val);
 	} else if (channel->dataIndex == 1) {
@@ -259,17 +259,17 @@ double do_retrieve(sim_io_t *channel,  long long int time_val) {
 	}
 }
 
-double retrieve_output(uint16_t node_id, int output_id, long long int time_val) {
+uint32_t retrieve_output(uint16_t node_id, int output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
 	return do_retrieve(ch, time_val);
 }
 
 
-double retrieve_input(uint16_t node_id, int input_id, long long int time_val) {
+uint32_t retrieve_input(uint16_t node_id, int input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	return do_retrieve(ch, time_val);
 }
 
-double simulateData(long long int time_val) {
+uint32_t simulateData(long long int time_val) {
 	return sin(time_val);
 }

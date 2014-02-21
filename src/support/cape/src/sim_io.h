@@ -47,11 +47,11 @@ extern "C" {
 
 void sim_io_init();
 
-double sim_outside_read_output(uint16_t node_id, int input_id, long long int time_val);
-void sim_outside_write_input(uint16_t node_id, double data_val, int input_id, long long int time_val);
+uint32_t sim_outside_read_output(uint16_t node_id, int input_id, long long int time_val);
+void sim_outside_write_input(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val);
 
-double sim_node_read_input(uint16_t node_id, int input_id);
-void sim_node_write_output(uint16_t node_id, double val, int input_id);
+uint32_t sim_node_read_input(uint16_t node_id, int input_id);
+void sim_node_write_output(uint16_t node_id, uint32_t val, int input_id);
 
 #ifdef __cplusplus
 }
