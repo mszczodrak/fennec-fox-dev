@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2014 Columbia University. All rights reserved.
+# Copyright (c) 2012 Columbia University. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@
 # Example of Cape Simulation instantiation
 #
 # @author Marcin Szczodrak
-# @date   February 16 2014
+# @date   March 12 2013
 
 import Cape 
 import sys
