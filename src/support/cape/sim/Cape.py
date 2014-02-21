@@ -45,8 +45,6 @@ from TOSSIM import *
 
 import signal
 
-
-
 class Cape():
 
 	def __init__(self, topology = "topos/4/linkgain.out", 

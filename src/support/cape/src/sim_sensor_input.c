@@ -111,7 +111,12 @@ void sim_sensor_rem_client(struct sim_sensor_client_list **c) {
 
 
 int sim_sensor_init_source(int fd) {
-	const char *welcome = "Welcome to Testbed Sensor Input\n";
+	const char *welcome = "Welcome to Testbed Sensor Input\n\n"
+		"The server accepts the following packets:\n\n"
+		"struct sensor_input_pkt {\n"
+		"\tuint16_t node_id;\n"
+		"\tuint16_t sensor_id;\n"
+		"\tuint32_t value;\n};\n\n";
 	return send(fd, welcome, strlen(welcome), 0);
 }
 
