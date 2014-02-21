@@ -66,23 +66,35 @@ uses interface Leds;
 implementation {
 
 telosb_sensors_t *data = NULL;
-message_t packet;
+void *serial_data = NULL;
+message_t network_packet;
+message_t serial_packet;
 uint16_t dest;
 
 task void report_measurements() {
 	call Leds.led1Toggle();
 	dbgs(F_APPLICATION, S_NONE, data->hum, data->temp, data->light);
 
-	if (call NetworkAMSend.send(dest, &packet,
+	if (call NetworkAMSend.send(dest, &network_packet,
 			sizeof(telosb_sensors_t)) != SUCCESS) {
-		signal NetworkAMSend.sendDone(&packet, FAIL);
+		signal NetworkAMSend.sendDone(&network_packet, FAIL);
+	}
+}
+
+task void send_serial_message() {
+	if (call SerialAMSend.send(BROADCAST, &serial_packet, sizeof(telosb_sensors_t)) != SUCCESS) {
+		signal SerialAMSend.sendDone(&serial_packet, FAIL);
 	}
 }
 
 command error_t SplitControl.start() {
-	data = (telosb_sensors_t*)call NetworkAMSend.getPayload(&packet, sizeof(telosb_sensors_t));
+	data = (telosb_sensors_t*)call NetworkAMSend.getPayload(&network_packet,
+							sizeof(telosb_sensors_t));
 	data->seq = 0;
 	data->src = TOS_NODE_ID;
+
+	serial_data = (void*) call SerialAMSend.getPayload(&serial_packet,
+							sizeof(telosb_sensors_t));
 	if (call TelosbSensorsParams.get_dest()) {
 		dest = call TelosbSensorsParams.get_dest();
 	} else {
@@ -106,6 +118,11 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	telosb_sensors_t *d = (telosb_sensors_t*)payload;
 	dbg("Application", "TelosbSensors Humidity: %d, Temperature: %d, Light: %d",
 					d->hum, d->temp, d->light);
+
+	memcpy(serial_data, payload, len);
+
+	post send_serial_message();
+
 	return msg;
 }
 
