@@ -69,13 +69,13 @@ typedef struct sim_node_ios_t {
 } sim_node_ios_t;
 
 
-void save_input(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val);
-void save_output(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val);
+void save_input(uint16_t node_id, uint32_t data_val, uint8_t input_id, long long int time_val);
+void save_output(uint16_t node_id, uint32_t data_val, uint8_t output_id, long long int time_val);
 void adjust_memory(sim_io_t *channel);
 void increase_memory(sim_io_t *channel, int new_size);
 void move_memory(sim_io_t *channel);
-uint32_t retrieve_output(uint16_t node_id, int input_id, long long int time_val);
-uint32_t retrieve_input(uint16_t node_id, int input_id, long long int time_val);
+uint32_t retrieve_output(uint16_t node_id, uint8_t output_id, long long int time_val);
+uint32_t retrieve_input(uint16_t node_id, uint8_t input_id, long long int time_val);
 uint32_t simulateData(long long int time_val);
 void do_saving(sim_io_t *channel, uint32_t data_val, long long int time_val);
 uint32_t do_retrieve(sim_io_t *channel,  long long int time_val);
@@ -113,7 +113,7 @@ void sim_io_init()__attribute__ ((C, spontaneous))
 /* 
  * call from Python interface
  */
-uint32_t sim_outside_read_output(uint16_t node_id, int input_id, 
+uint32_t sim_outside_read_output(uint16_t node_id, uint8_t input_id, 
 				long long int time_val)
 				__attribute__ ((C, spontaneous)) {
 
@@ -138,7 +138,7 @@ uint32_t sim_outside_read_output(uint16_t node_id, int input_id,
  * call from Python interface
  */
 void sim_outside_write_input(uint16_t node_id, uint32_t data_val, 
-				int input_id, long long int time_val)
+				uint8_t input_id, long long int time_val)
 				__attribute__ ((C, spontaneous)) {
 
 	if (node_id >= TOSSIM_MAX_NODES) {
@@ -162,7 +162,7 @@ void sim_outside_write_input(uint16_t node_id, uint32_t data_val,
 /*
  * call from Mote
  */
-uint32_t sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, spontaneous)) {
+uint32_t sim_node_read_input(uint16_t node_id, uint8_t input_id)__attribute__ ((C, spontaneous)) {
 	if (input_id >= MAX_SENSOR_INPUTS) {
 		printf("%s: Invalid sensor #: %d. There are %d sensors.\n", 
 				__FUNCTION__, input_id, MAX_SENSOR_INPUTS);
@@ -174,7 +174,7 @@ uint32_t sim_node_read_input(uint16_t node_id, int input_id)__attribute__ ((C, s
 /*
  * call from Mote
  */
-void sim_node_write_output(uint16_t node_id, uint32_t val, int input_id)__attribute__ ((C, spontaneous)) {
+void sim_node_write_output(uint16_t node_id, uint32_t val, uint8_t input_id)__attribute__ ((C, spontaneous)) {
 	if (input_id >= MAX_ACTUATOR_OUTPUTS) {
 		printf("%s: Invalid actuator #: %d. There are %d actuators.\n", 
 				__FUNCTION__, input_id, MAX_ACTUATOR_OUTPUTS);
@@ -234,12 +234,12 @@ void do_saving(sim_io_t *channel, uint32_t data_val, long long int time_val) {
 	channel->dataIndex++;
 }
 
-void save_input(uint16_t node_id, uint32_t data_val, int input_id, long long int time_val) {
+void save_input(uint16_t node_id, uint32_t data_val, uint8_t input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	do_saving(ch, data_val, time_val);
 }
 
-void save_output(uint16_t node_id, uint32_t data_val, int output_id, long long int time_val) {
+void save_output(uint16_t node_id, uint32_t data_val, uint8_t output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
 	do_saving(ch, data_val, time_val);
 }
@@ -259,13 +259,13 @@ uint32_t do_retrieve(sim_io_t *channel,  long long int time_val) {
 	}
 }
 
-uint32_t retrieve_output(uint16_t node_id, int output_id, long long int time_val) {
+uint32_t retrieve_output(uint16_t node_id, uint8_t output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
 	return do_retrieve(ch, time_val);
 }
 
 
-uint32_t retrieve_input(uint16_t node_id, int input_id, long long int time_val) {
+uint32_t retrieve_input(uint16_t node_id, uint8_t input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
 	return do_retrieve(ch, time_val);
 }
