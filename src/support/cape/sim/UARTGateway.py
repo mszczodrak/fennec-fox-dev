@@ -68,5 +68,8 @@ if __name__ == "__main__":
 		sf_port = sys.argv[2]
 
 	g = UARTGateway(sf_ip, sf_port)
-	g.run()
+	try:
+		g.run()
+	except KeyboardInterrupt:
+		pass
 
