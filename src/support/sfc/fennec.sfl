@@ -3,7 +3,7 @@
 
 # Applications Modules
 
-use application nullApp $(FENNEC_FOX_LIB)/Application/null ()
+use application nullApp $(FENNEC_FOX_LIB)/Application/nullApp ()
 
 use application bridge $(FENNEC_FOX_LIB)/Application/UARTBridge ()
 

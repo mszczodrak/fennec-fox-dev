@@ -24,14 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox nullRadio module
   *
   * @author: Marcin K Szczodrak
   */
-
-
 #include <Fennec.h>
 #include "nullRadio.h"
 
@@ -175,21 +172,21 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 
 async command uint8_t RadioPacket.maxPayloadLength() {
 	dbg("Radio", "nullRadio RadioBuffer.maxPayloadLength()");
-	return NULL_MAX_MESSAGE_SIZE - sizeof(nx_struct null_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
+	return nullRadio_MAX_MESSAGE_SIZE - sizeof(nx_struct nullRadio_header_t) - nullRadio_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	return sizeof(nx_struct null_radio_header_t);
+	return sizeof(nx_struct nullRadio_header_t);
 }
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
-	nx_struct null_radio_header_t *hdr = (nx_struct null_radio_header_t*)(msg->data);
-	return hdr->length - sizeof(nx_struct null_radio_header_t) - NULL_SIZEOF_CRC - sizeof(timesync_radio_t);
+	nx_struct nullRadio_header_t *hdr = (nx_struct nullRadio_header_t*)(msg->data);
+	return hdr->length - sizeof(nx_struct nullRadio_header_t) - nullRadio_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
-	nx_struct null_radio_header_t *hdr = (nx_struct null_radio_header_t*)(msg->data);
-	hdr->length = length + sizeof(nx_struct null_radio_header_t) + NULL_SIZEOF_CRC + sizeof(timesync_radio_t);
+	nx_struct nullRadio_header_t *hdr = (nx_struct nullRadio_header_t*)(msg->data);
+	hdr->length = length + sizeof(nx_struct nullRadio_header_t) + nullRadio_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.metadataLength(message_t* msg) {
