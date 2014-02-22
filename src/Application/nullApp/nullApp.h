@@ -32,8 +32,8 @@
   */
 
 
-#ifndef __null_APP_H_
-#define __null_APP_H_
+#ifndef __nullApp_H_
+#define __nullApp_H_
 
 
 #endif
