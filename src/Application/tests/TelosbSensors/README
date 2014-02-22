@@ -1,10 +1,18 @@
-Null Application Module
+TelosbSensor Application Module
 Author: Marcin Szczodrak
 
-An example of an empty application layer module.
-The null application connects to all Fennec Fox
-interfaces to make it compatible with the network stack.
+A simple application for TelosB platform.
+Periodically, the application collects sensor measuremenets (humidity, 
+temperature, light) and sends them to some TelosB motes.
 
-The null application is an empty template for more
-advanced applications.
+A mote that receives a network packet is sensor measurements
+sends the application's sensor measurements over the UART.
+
+This application module takes two parameters:
+uint16_t dest - is the address of the mote to which the sensor
+		measurements should be send to
+		default value: 0
+uint16_t sampling_rate - is the millisecond delay between consecutive
+		rounds of sensors' sampling
+		default value: 1024
 

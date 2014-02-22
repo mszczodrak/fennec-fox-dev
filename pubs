@@ -20,6 +20,7 @@ src/Application/tests/Printf
 src/Application/tests/RandomBeacon
 src/Application/tests/Rssi
 src/Application/tests/TestSerial
+src/Application/tests/TelosbSensors
 src/Application/tests/Throughput
 src/Network/create.sh
 src/Network/nullNet

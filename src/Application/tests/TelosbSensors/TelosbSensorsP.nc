@@ -65,6 +65,16 @@ uses interface Leds;
 
 implementation {
 
+/* TelosbSensors app
+ * Takes two parameters:
+ * uint16_t dest : the address of the mote to which the sensor
+ *			measurements should be send to
+ *			default value: 0
+ * uint16_t sampling_rate : the millisecond delay between consecutive
+ *			rounds of sensors' sampling
+ *			default value: 1024
+ */
+
 telosb_sensors_t *data = NULL;
 void *serial_data = NULL;
 message_t network_packet;
