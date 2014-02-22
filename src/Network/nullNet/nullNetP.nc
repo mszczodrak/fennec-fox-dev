@@ -24,14 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
-  * Fennec Fox empty network driver
+  * Fennec Fox nullNet network module
   *
   * @author: Marcin K Szczodrak
   */
-
-
 #include <Fennec.h>
 #include "nullNet.h"
 
@@ -77,13 +74,13 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 		signal NetworkAMSend.sendDone(msg, SUCCESS);
 		signal MacReceive.receive(msg, 
 		call NetworkAMSend.getPayload(msg, len + 
-				sizeof(nx_struct null_net_header)), 
-		len + sizeof(nx_struct null_net_header));
+				sizeof(nx_struct nullNet_header)), 
+		len + sizeof(nx_struct nullNet_header));
 		return SUCCESS;
 	}
 
 	return call MacAMSend.send(addr, msg, len + 
-		sizeof(nx_struct null_net_header));
+		sizeof(nx_struct nullNet_header));
 }
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
@@ -94,15 +91,15 @@ command error_t NetworkAMSend.cancel(message_t* msg) {
 command uint8_t NetworkAMSend.maxPayloadLength() {
 	dbg("Network", "nullNetP NetworkAMSend.maxPayloadLength()");
 	return (call MacAMSend.maxPayloadLength() - 
-		sizeof(nx_struct null_net_header));
+		sizeof(nx_struct nullNet_header));
 }
 
 command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr; 
 	dbg("Network", "nullNetP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
 	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
-				len + sizeof(nx_struct null_net_header));
-	return (void*) (ptr + sizeof(nx_struct null_net_header));
+				len + sizeof(nx_struct nullNet_header));
+	return (void*) (ptr + sizeof(nx_struct nullNet_header));
 }
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
@@ -113,21 +110,21 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
 	dbg("Network", "nullNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
-			ptr + sizeof(nx_struct null_net_header), 
-			len - sizeof(nx_struct null_net_header));
+			ptr + sizeof(nx_struct nullNet_header), 
+			len - sizeof(nx_struct nullNet_header));
 	return signal NetworkReceive.receive(msg, 
-			ptr + sizeof(nx_struct null_net_header), 
-			len - sizeof(nx_struct null_net_header));
+			ptr + sizeof(nx_struct nullNet_header), 
+			len - sizeof(nx_struct nullNet_header));
 }
 
 event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
 	dbg("Network", "nullNetP NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
-			ptr + sizeof(nx_struct null_net_header), 
-			len - sizeof(nx_struct null_net_header));
+			ptr + sizeof(nx_struct nullNet_header), 
+			len - sizeof(nx_struct nullNet_header));
 	return signal NetworkSnoop.receive(msg, 
-			ptr + sizeof(nx_struct null_net_header), 
-			len - sizeof(nx_struct null_net_header));
+			ptr + sizeof(nx_struct nullNet_header), 
+			len - sizeof(nx_struct nullNet_header));
 }
 
 command am_addr_t NetworkAMPacket.address() {

@@ -24,18 +24,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
-  * Fennec Fox empty network driver
+  * Fennec Fox nullNet network module
   *
   * @author: Marcin K Szczodrak
   */
+#ifndef __nullNet_H_
+#define __nullNet_H_
 
-
-#ifndef __null_NET_H_
-#define __null_NET_H_
-
-nx_struct null_net_header {
+nx_struct nullNet_header {
 };
 
 #endif
