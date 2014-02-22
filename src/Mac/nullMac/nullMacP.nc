@@ -24,13 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
-  * Fennec Fox empty MAC layer.
+  * Fennec Fox nullMac MAC module
   *
   * @author: Marcin K Szczodrak
   */
-
 #include <Fennec.h>
 #include "nullMac.h"
 
@@ -86,8 +84,8 @@ norace uint8_t m_state = S_STOPPED;
 
 error_t sendErr = SUCCESS;
 
-norace message_t receiveQueueData[NULL_MAC_RECEIVE_QUEUE_SIZE];
-norace message_t* receiveQueue[NULL_MAC_RECEIVE_QUEUE_SIZE];
+norace message_t receiveQueueData[nullMac_RECEIVE_QUEUE_SIZE];
+norace message_t* receiveQueue[nullMac_RECEIVE_QUEUE_SIZE];
 
 norace uint8_t receiveQueueHead;
 norace uint8_t receiveQueueSize;
@@ -99,7 +97,7 @@ task void sendDone_task();
 
 task void startDone_task() {
 	uint8_t i;
-	for(i = 0; i < NULL_MAC_RECEIVE_QUEUE_SIZE; ++i) {
+	for(i = 0; i < nullMac_RECEIVE_QUEUE_SIZE; ++i) {
 		receiveQueue[i] = receiveQueueData + i;
 	}
 
@@ -116,9 +114,9 @@ void shutdown() {
 	post stopDone_task();
 }
 
-null_mac_header_t* getHeader(message_t *m) {
+nullMac_header_t* getHeader(message_t *m) {
 	uint8_t *p = (uint8_t*)(m->data);
-	return (null_mac_header_t*)(p + call RadioPacket.headerLength(m));
+	return (nullMac_header_t*)(p + call RadioPacket.headerLength(m));
 }
 
 error_t SplitControl_start() {
@@ -182,7 +180,7 @@ event void RadioControl.stopDone(error_t err) {
 
 
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	null_mac_header_t* header;
+	nullMac_header_t* header;
 
 	dbg("Mac", "nullMac MacAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
@@ -253,13 +251,13 @@ command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
 
 /***************** PacketAcknowledgement Commands ****************/
 async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
-	null_mac_header_t* header = getHeader(p_msg);
+	nullMac_header_t* header = getHeader(p_msg);
 	header->fcf |= 1 << IEEE154_FCF_ACK_REQ;
 	return SUCCESS;
 }
 
 async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
-	null_mac_header_t* header = getHeader(p_msg);
+	nullMac_header_t* header = getHeader(p_msg);
 	header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	return SUCCESS;
 }
@@ -338,21 +336,21 @@ command void MacPacket.clear(message_t* msg) {
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
-	return call RadioPacket.payloadLength(msg) - sizeof(null_mac_header_t);
+	return call RadioPacket.payloadLength(msg) - sizeof(nullMac_header_t);
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	call RadioPacket.setPayloadLength(msg, len + sizeof(null_mac_header_t));
+	call RadioPacket.setPayloadLength(msg, len + sizeof(nullMac_header_t));
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
-	return call RadioPacket.maxPayloadLength() - sizeof(null_mac_header_t);
+	return call RadioPacket.maxPayloadLength() - sizeof(nullMac_header_t);
 }
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 	if (len <= call MacPacket.maxPayloadLength()) {
 		uint8_t *p = (uint8_t*) getHeader(msg);
-		return (p + sizeof(null_mac_header_t));
+		return (p + sizeof(nullMac_header_t));
 	} else {
 		return NULL;
 	}
@@ -382,8 +380,8 @@ task void deliverTask() {
 
 		msg = receiveQueue[receiveQueueHead];
 		p = (uint8_t*)(msg->data);
-		p += (call RadioPacket.headerLength(msg) + sizeof(null_mac_header_t));
-		len = (call RadioPacket.payloadLength(msg) - sizeof(null_mac_header_t));
+		p += (call RadioPacket.headerLength(msg) + sizeof(nullMac_header_t));
+		len = (call RadioPacket.payloadLength(msg) - sizeof(nullMac_header_t));
 	}
 
 	if (call MacAMPacket.isForMe(msg)) {
@@ -397,7 +395,7 @@ task void deliverTask() {
 	atomic {
 		call RadioPacket.clear(msg);
 		receiveQueue[receiveQueueHead] = msg;
-		if( ++receiveQueueHead >= NULL_MAC_RECEIVE_QUEUE_SIZE )
+		if( ++receiveQueueHead >= nullMac_RECEIVE_QUEUE_SIZE )
 			receiveQueueHead = 0;
 
 		--receiveQueueSize;
@@ -416,12 +414,12 @@ async event message_t* RadioReceive.receive(message_t* msg) {
 
 	dbg("Mac", "nullMac RadioReceive.receive(0x%1x)", msg);
 	atomic {
-		if( receiveQueueSize >= NULL_MAC_RECEIVE_QUEUE_SIZE ) {
+		if( receiveQueueSize >= nullMac_RECEIVE_QUEUE_SIZE ) {
 			m = msg;
 		} else {
 			uint8_t idx = receiveQueueHead + receiveQueueSize;
-			if( idx >= NULL_MAC_RECEIVE_QUEUE_SIZE )
-				idx -= NULL_MAC_RECEIVE_QUEUE_SIZE;
+			if( idx >= nullMac_RECEIVE_QUEUE_SIZE )
+				idx -= nullMac_RECEIVE_QUEUE_SIZE;
 
 			m = receiveQueue[idx];
 			receiveQueue[idx] = msg;
@@ -434,7 +432,7 @@ async event message_t* RadioReceive.receive(message_t* msg) {
 }
 
 async event bool RadioReceive.header(message_t* msg) {
-	return receiveQueueSize < NULL_MAC_RECEIVE_QUEUE_SIZE;
+	return receiveQueueSize < nullMac_RECEIVE_QUEUE_SIZE;
 	//return TRUE;
 }
 
