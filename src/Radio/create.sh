@@ -75,7 +75,7 @@ echo "Looks like SUCCESS"
 echo
 echo -n "Don't forget to add the following line to "
 echo -n $FENNEC_FOX_LIB
-echo "/src/support/sfc/fennec.sfl"
+echo "/support/sfc/fennec.sfl"
 echo
 echo -n "use "
 echo -n " <layer>"
