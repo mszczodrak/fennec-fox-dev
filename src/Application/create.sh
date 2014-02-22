@@ -26,11 +26,13 @@ fi
 cp -R $BASE_EXAMPLE $NEW_MODULE
 cd $NEW_MODULE
 
-
 sed "s/$BASE_EXAMPLE/$NEW_MODULE/g" $OLD_C > $NEW_C
 sed "s/$BASE_EXAMPLE/$NEW_MODULE/g" $OLD_P > $NEW_P
 sed "s/$BASE_EXAMPLE/$NEW_MODULE/g" $OLD_H > $NEW_H
-
+sed -i "/^[ ]*\*\|^\/\*/ d" $NEW_C
+sed -i "/^[ ]*\*\|^\/\*/ d" $NEW_P
+sed -i "/^[ ]*\*\|^\/\*/ d" $NEW_H
+echo "$NEW_MODULE Fennec Fox module" > README
 
 rm $BASE_EXAMPLE*
 
