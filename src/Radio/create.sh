@@ -81,5 +81,6 @@ echo -n "use "
 echo -n " <layer>"
 echo -n " <give_it_a_name> "
 echo -n $PWD/
-echo $NEW_MODULE
+echo -n $NEW_MODULE
+echo "()"
 
