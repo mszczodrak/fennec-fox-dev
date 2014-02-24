@@ -136,7 +136,7 @@ void *sim_sensor_read_packet(int fd, int *len) {
 	if (!packet) 
 		return NULL;
 
-	if (recv(fd, packet, sizeof(sensor_input_pkt), 0) == -1) {
+	if (recv(fd, packet, sizeof(sensor_input_pkt), 0) != sizeof(struct sensor_input_pkt)) {
 		free(packet);
 		return NULL;
 	}
