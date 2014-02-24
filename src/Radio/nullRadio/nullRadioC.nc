@@ -24,14 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox nullRadio module
   *
   * @author: Marcin K Szczodrak
   */
-
-
 configuration nullRadioC {
 provides interface SplitControl;
 provides interface Resource as RadioResource;
@@ -74,7 +71,5 @@ PacketTransmitPower = nullRadioP.PacketTransmitPower;
 PacketRSSI = nullRadioP.PacketRSSI;
 PacketTimeSync = nullRadioP.PacketTimeSync;
 PacketLinkQuality = nullRadioP.PacketLinkQuality;
-
-
 
 }

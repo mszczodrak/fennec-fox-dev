@@ -24,14 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
 /**
-  * Fennec Fox empty MAC layer.
+  * Fennec Fox nullMac MAC module
   *
   * @author: Marcin K Szczodrak
   */
-
 #include "nullMac.h"
 
 generic configuration nullMacC() {

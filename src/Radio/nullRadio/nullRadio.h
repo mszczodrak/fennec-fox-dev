@@ -24,35 +24,26 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
-  * Fennec Fox empty radio driver
+  * Fennec Fox nullRadio module
   *
   * @author: Marcin K Szczodrak
   */
-
-
-
-#ifndef __H_null_RADIO__
-#define __H_null_RADIO___
+#ifndef __nullRadio_H__
+#define __nullRadio_H___
 
 #define timesync_radio_t uint32_t
 
-enum {
-        null_MIN_MESSAGE_SIZE        	= 5,
-        null_MAX_MESSAGE_SIZE        	= 127,
-};
-
-nx_struct null_radio_header_t {
+nx_struct nullRadio_header_t {
         nxle_uint8_t length;
 };
 
 enum {
-        NULL_MIN_MESSAGE_SIZE         = 10,
-        NULL_MAX_MESSAGE_SIZE         = 128,
-        NULL_MAX_FAILED_LOADS         = 3,
-        NULL_FOOTER                   = 2,
-        NULL_SIZEOF_CRC               = 2,
+        nullRadio_MIN_MESSAGE_SIZE         = 10,
+        nullRadio_MAX_MESSAGE_SIZE         = 128,
+        nullRadio_MAX_FAILED_LOADS         = 3,
+        nullRadio_FOOTER                   = 2,
+        nullRadio_SIZEOF_CRC               = 2,
 };
 
 

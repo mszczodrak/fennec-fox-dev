@@ -136,7 +136,7 @@ void *sim_sensor_read_packet(int fd, int *len) {
 	if (!packet) 
 		return NULL;
 
-	if (recv(fd, packet, sizeof(sensor_input_pkt), 0) == -1) {
+	if (recv(fd, packet, sizeof(sensor_input_pkt), 0) != sizeof(struct sensor_input_pkt)) {
 		free(packet);
 		return NULL;
 	}
@@ -206,10 +206,8 @@ void sim_sensor_open_socket(int port) {
 
 void sim_sensor_forward_packet(const void *packet, const int len) {
 	struct sensor_input_pkt *pkt = (struct sensor_input_pkt *)packet;
-	//printf("receive a packet\n");
-	printf("\nrec node: %d\n", ntohs(pkt->node_id));
-	printf("rec sensor: %d\n", ntohs(pkt->sensor_id));
-	printf("rec val: %d\n\n", ntohl(pkt->value));
+	printf("\ngot node: %d  sensor: %d  value: %d\n", ntohs(pkt->node_id), 
+				ntohs(pkt->sensor_id), ntohl(pkt->value));
 
 	sim_outside_write_input(ntohs(pkt->node_id), ntohl(pkt->value), 
 						ntohs(pkt->sensor_id), 0);

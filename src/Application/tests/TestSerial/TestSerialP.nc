@@ -33,12 +33,12 @@
   */
 
 #include <Fennec.h>
-#include "TestSerialApp.h"
+#include "TestSerial.h"
 
-generic module TestSerialAppP() {
+generic module TestSerialP() {
 provides interface SplitControl;
 
-uses interface TestSerialAppParams;
+uses interface TestSerialParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -71,8 +71,8 @@ command error_t SplitControl.start() {
 	on = 0;
 	busy_serial = FALSE;
 	seq = 0;
-	dbg("Application", "TestSerialApp SplitControl.start()");
-	call Timer.startPeriodic(call TestSerialAppParams.get_delay());
+	dbg("Application", "TestSerial SplitControl.start()");
+	call Timer.startPeriodic(call TestSerialParams.get_delay());
 	call SerialSplitControl.start();
         signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -81,7 +81,7 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
         call Timer.stop();
         call Leds.set(0);
-	dbg("Application", "TestSerialApp SplitControl.start()");
+	dbg("Application", "TestSerial SplitControl.start()");
 	//call SerialSplitControl.stop();
         signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -91,7 +91,7 @@ event void Timer.fired() {
 	uint32_t* p = (uint32_t*) call SerialAMSend.getPayload(&packet,
                         sizeof(uint32_t));
 
-	dbg("Application", "TestSerialApp Timer.fired() - sending seqquence %d", seq);
+	dbg("Application", "TestSerial Timer.fired() - sending seqquence %d", seq);
 
 	*p = seq++;
 
@@ -99,7 +99,7 @@ event void Timer.fired() {
         if (call SerialAMSend.send(BROADCAST, &packet, sizeof(uint32_t)) != SUCCESS) {
                 signal SerialAMSend.sendDone(&packet, FAIL);
         } else {
-        	on ? call Leds.set(0) : call Leds.set(call TestSerialAppParams.get_led()) ;
+        	on ? call Leds.set(0) : call Leds.set(call TestSerialParams.get_led()) ;
 	        on = !on;
                 busy_serial = TRUE;
         }
@@ -117,11 +117,11 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void SerialSplitControl.startDone(error_t error) {
-	dbg("Application", "TestSerialApp SerialSplitControl.startDone(%d)", error);
+	dbg("Application", "TestSerial SerialSplitControl.startDone(%d)", error);
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
-	dbg("Application", "TestSerialApp SerialSplitControl.stopDone(%d)", error);
+	dbg("Application", "TestSerial SerialSplitControl.stopDone(%d)", error);
 }
 
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
