@@ -87,13 +87,16 @@ task void report_measurements() {
 
 	if (call NetworkAMSend.send(dest, &network_packet,
 			sizeof(telosb_sensors_t)) != SUCCESS) {
+		call Leds.led0On();
 		signal NetworkAMSend.sendDone(&network_packet, FAIL);
 	}
 }
 
 task void send_serial_message() {
+	call Leds.led2Toggle();
 	if (call SerialAMSend.send(BROADCAST, &serial_packet, sizeof(telosb_sensors_t)) != SUCCESS) {
 		signal SerialAMSend.sendDone(&serial_packet, FAIL);
+		call Leds.led0On();
 	}
 }
 
@@ -102,6 +105,8 @@ command error_t SplitControl.start() {
 							sizeof(telosb_sensors_t));
 	data->seq = 0;
 	data->src = TOS_NODE_ID;
+
+	call SerialSplitControl.start();
 
 	serial_data = (void*) call SerialAMSend.getPayload(&serial_packet,
 							sizeof(telosb_sensors_t));
