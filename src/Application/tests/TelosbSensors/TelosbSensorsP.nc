@@ -115,9 +115,11 @@ command error_t SplitControl.stop() {
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+#ifdef TOSSIM
 	telosb_sensors_t *d = (telosb_sensors_t*)payload;
 	dbg("Application", "TelosbSensors Humidity: %d, Temperature: %d, Light: %d",
 					d->hum, d->temp, d->light);
+#endif
 
 	memcpy(serial_data, payload, len);
 
