@@ -32,46 +32,8 @@
   * @updated: 01/03/2014
   */
 
-generic configuration TestSerialAppC() {
-provides interface SplitControl;
-
-uses interface TestSerialAppParams;
-
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-}
-
-implementation {
-components new TestSerialAppP();
-SplitControl = TestSerialAppP;
-
-TestSerialAppParams = TestSerialAppP;
-
-NetworkAMSend = TestSerialAppP.NetworkAMSend;
-NetworkReceive = TestSerialAppP.NetworkReceive;
-NetworkSnoop = TestSerialAppP.NetworkSnoop;
-NetworkAMPacket = TestSerialAppP.NetworkAMPacket;
-NetworkPacket = TestSerialAppP.NetworkPacket;
-NetworkPacketAcknowledgements = TestSerialAppP.NetworkPacketAcknowledgements;
-
-components LedsC;
-TestSerialAppP.Leds -> LedsC;
-
-components new TimerMilliC() as Timer;
-TestSerialAppP.Timer -> Timer;
+#ifndef __TestSerial_H_
+#define __TestSerial_H_
 
 
-components SerialActiveMessageC;
-components new SerialAMSenderC(100);
-components new SerialAMReceiverC(100);
-TestSerialAppP.SerialAMSend -> SerialAMSenderC.AMSend;
-TestSerialAppP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-TestSerialAppP.SerialPacket -> SerialAMSenderC.Packet;
-TestSerialAppP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
-TestSerialAppP.SerialReceive -> SerialAMReceiverC.Receive;
-
-}
+#endif
