@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2013, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,12 +33,12 @@
   */
 
 #include <Fennec.h>
-#include "maxTestApp.h"
+#include "maxTest.h"
 
-generic module maxTestAppP() {
+generic module maxTestP() {
 provides interface Mgmt;
 
-uses interface maxTestAppParams;
+uses interface maxTestParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -70,9 +70,9 @@ task void send_msg() {
 	
 	if (call NetworkAMSend.send(BROADCAST, &packet, 
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
-		dbg("Application", "maxTestApp send_msg() - cannot send");
+		dbg("Application", "maxTest send_msg() - cannot send");
 	} else {
-//		dbg("Application", "maxTestApp send_msg() - max_value %d", max_value);
+//		dbg("Application", "maxTest send_msg() - max_value %d", max_value);
 		send_busy = TRUE;
 		call Leds.set(max_value);
 	}
@@ -80,17 +80,17 @@ task void send_msg() {
 
 
 command error_t Mgmt.start() {
-	dbg("Application", "maxTestApp Mgmt.start()");
-	max_value = call maxTestAppParams.get_val();
+	dbg("Application", "maxTest Mgmt.start()");
+	max_value = call maxTestParams.get_val();
 	if (max_value == 0) {
 		max_value = call Random.rand32();
 	}
-	dbg("Application", "maxTestApp Mgmt.start() max_value is %d", max_value);
+	dbg("Application", "maxTest Mgmt.start() max_value is %d", max_value);
 
 	send_busy = FALSE;
 
-	if (call maxTestAppParams.get_delay() > 0) {
-		call Timer.startPeriodic(call maxTestAppParams.get_delay());
+	if (call maxTestParams.get_delay() > 0) {
+		call Timer.startPeriodic(call maxTestParams.get_delay());
 	}
 
 	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, (uint16_t) (max_value >> 16), 
@@ -103,7 +103,7 @@ command error_t Mgmt.start() {
 
 
 command error_t Mgmt.stop() {
-	dbg("Application", "maxTestApp Mgmt.start()");
+	dbg("Application", "maxTest Mgmt.start()");
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -118,7 +118,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	nx_struct maxMsg *in_msg = (nx_struct maxMsg*) payload;
 	if (in_msg->max_value > max_value) {
 		max_value = in_msg->max_value;
-		dbg("Application", "maxTestApp NetworkReceive.receive() - got new max: %d", max_value);
+		dbg("Application", "maxTest NetworkReceive.receive() - got new max: %d", max_value);
 		post send_msg();
 		dbgs(F_APPLICATION, S_RECEIVING, 0, (uint16_t) (max_value >> 16), 
 							(uint16_t) (max_value & 0x0000FFFFuL) );
@@ -137,7 +137,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void Timer.fired() {
-	dbg("Application", "maxTestApp Timer.fired() max_value is %d", max_value);
+	dbg("Application", "maxTest Timer.fired() max_value is %d", max_value);
 	dbgs(F_APPLICATION, S_INIT, 0, (uint16_t) (max_value >> 16), 
 							(uint16_t) (max_value & 0x0000FFFFuL) );
 	if (!send_busy) {

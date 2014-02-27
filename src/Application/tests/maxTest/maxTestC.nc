@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2013, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,14 +32,38 @@
   * @updated: 01/03/2014
   */
 
+generic configuration maxTestC() {
+provides interface Mgmt;
 
-#ifndef __maxTest_APP_H_
-#define __maxTest_APP_H_
+uses interface maxTestParams;
 
-nx_struct maxMsg {
-	nx_uint32_t max_value;
-};
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+}
 
+implementation {
+components new maxTestP();
+Mgmt = maxTestP;
 
+maxTestParams = maxTestP;
 
-#endif
+NetworkAMSend = maxTestP.NetworkAMSend;
+NetworkReceive = maxTestP.NetworkReceive;
+NetworkSnoop = maxTestP.NetworkSnoop;
+NetworkAMPacket = maxTestP.NetworkAMPacket;
+NetworkPacket = maxTestP.NetworkPacket;
+NetworkPacketAcknowledgements = maxTestP.NetworkPacketAcknowledgements;
+
+components RandomC;
+maxTestP.Random -> RandomC;
+
+components LedsC;
+maxTestP.Leds -> LedsC;
+
+components new TimerMilliC();
+maxTestP.Timer -> TimerMilliC;
+}
