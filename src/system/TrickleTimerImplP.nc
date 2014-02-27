@@ -61,7 +61,7 @@ uses interface BitVector as Changed;
 uses interface Random;
 uses interface Leds;
 
-uses interface trickleParams;
+uses interface TrickleTimerParams;
 }
 implementation {
 
@@ -80,7 +80,7 @@ void generateTime(uint8_t id);
 command error_t Init.init() {
 	int i;
 	for (i = 0; i < count; i++) {
-		trickles[i].period = call trickleParams.get_high();
+		trickles[i].period = call TrickleTimerParams.get_high();
 		trickles[i].count = 0;
 		trickles[i].time = 0;
 		trickles[i].remainder = 0;
@@ -116,7 +116,7 @@ command error_t TrickleTimer.start[uint8_t id]() {
  */
 command void TrickleTimer.stop[uint8_t id]() {
 	trickles[id].time = 0;
-	trickles[id].period = call trickleParams.get_high();
+	trickles[id].period = call TrickleTimerParams.get_high();
 	adjustTimer();
 	dbg("Trickle", "Stopping trickle timer %hhu @ %s\n", id, sim_time_string());
 }
@@ -126,7 +126,7 @@ command void TrickleTimer.stop[uint8_t id]() {
  * then a new interval (of length L) begins immediately.
  */
 command void TrickleTimer.reset[uint8_t id]() {
-	trickles[id].period = call trickleParams.get_low();
+	trickles[id].period = call TrickleTimerParams.get_low();
 	trickles[id].count = 0;
 	if (trickles[id].time != 0) {
 		dbg("Trickle", "Resetting running trickle timer %hhu @ %s\n", id, sim_time_string());
@@ -180,7 +180,7 @@ event void Timer.fired() {
       if (remaining != 0) {
 	remaining -= dt;
 	if (remaining == 0) {
-	  if (trickles[i].count < call trickleParams.get_k()) {
+	  if (trickles[i].count < call TrickleTimerParams.get_k()) {
 	    atomic {
 	      dbg("Trickle", "Trickle: mark timer %hhi as pending\n", i);
 	      call Pending.set(i);
@@ -269,22 +269,22 @@ event void Timer.fired() {
     
     if (trickles[id].time != 0) {
       trickles[id].period *= 2;
-      if (trickles[id].period > call trickleParams.get_high()) {
-	trickles[id].period = call trickleParams.get_high();
+      if (trickles[id].period > call TrickleTimerParams.get_high()) {
+	trickles[id].period = call TrickleTimerParams.get_high();
       }
     }
     
     trickles[id].time = trickles[id].remainder;
     
     newTime = trickles[id].period;
-    newTime = newTime << (call trickleParams.get_scale() - 1);
+    newTime = newTime << (call TrickleTimerParams.get_scale() - 1);
 
-    rval = call Random.rand16() % (trickles[id].period << (call trickleParams.get_scale() - 1));
+    rval = call Random.rand16() % (trickles[id].period << (call TrickleTimerParams.get_scale() - 1));
     newTime += rval;
     
-    trickles[id].remainder = (((uint32_t)trickles[id].period) << call trickleParams.get_scale()) - newTime;
+    trickles[id].remainder = (((uint32_t)trickles[id].period) << call TrickleTimerParams.get_scale()) - newTime;
     trickles[id].time += newTime;
-    dbg("Trickle,TrickleTimes", "Generated time for %hhu with period %hu (%u) is %u (%i + %hu)\n", id, trickles[id].period, (uint32_t)trickles[id].period << call trickleParams.get_scale(), trickles[id].time, (trickles[id].period << (call trickleParams.get_scale() - 1)), rval);
+    dbg("Trickle,TrickleTimes", "Generated time for %hhu with period %hu (%u) is %u (%i + %hu)\n", id, trickles[id].period, (uint32_t)trickles[id].period << call TrickleTimerParams.get_scale(), trickles[id].time, (trickles[id].period << (call TrickleTimerParams.get_scale() - 1)), rval);
   }
 
  default event void TrickleTimer.fired[uint8_t id]() {

@@ -53,7 +53,7 @@ generic configuration TrickleTimerMilliC(uint16_t low,
 					 uint8_t k,
 					 uint8_t count) {
 provides interface TrickleTimer[uint8_t];
-uses interface trickleParams;
+uses interface TrickleTimerParams;
 }
 implementation {
 
@@ -72,7 +72,7 @@ TrickleTimerImplP.Pending -> PendingVector;
 TrickleTimerImplP.Leds -> LedsC;
 MainC.SoftwareInit -> TrickleTimerImplP;
 
-trickleParams = TrickleTimerImplP;
+TrickleTimerParams = TrickleTimerImplP;
 }
 
   

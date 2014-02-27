@@ -56,6 +56,7 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface TrickleTimer[uint16_t key];
+provides interface TrickleTimerParams;
 }
 
 implementation {
@@ -307,6 +308,38 @@ async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 
 event void TrickleTimer.fired[ uint16_t key ]() {
 	post send_message();
+}
+
+command uint16_t TrickleTimerParams.get_low() {
+	return call trickleParams.get_low();
+}
+
+command error_t TrickleTimerParams.set_low(uint16_t new_low) {
+	return call trickleParams.set_low(new_low);
+}
+
+command uint16_t TrickleTimerParams.get_high() {
+	return call trickleParams.get_high();
+}
+
+command error_t TrickleTimerParams.set_high(uint16_t new_high) {
+	return call trickleParams.set_high(new_high);
+}
+
+command uint8_t TrickleTimerParams.get_k() {
+	return call trickleParams.get_k();
+}
+
+command error_t TrickleTimerParams.set_k(uint8_t new_k) {
+	return call trickleParams.set_k(new_k);
+}
+
+command uint8_t TrickleTimerParams.get_scale() {
+	return call trickleParams.get_scale();
+}
+
+command error_t TrickleTimerParams.set_scale(uint8_t new_scale) {
+	return call trickleParams.set_scale(new_scale);
 }
 
 

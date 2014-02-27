@@ -78,6 +78,6 @@ MacLinkPacketMetadata = trickleP.MacLinkPacketMetadata;
 components new TrickleTimerMilliC(1, 1024, 1, 1);
 trickleP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
 
-trickleParams = TrickleTimerMilliC;
+TrickleTimerMilliC -> trickleP.TrickleTimerParams;
 
 }

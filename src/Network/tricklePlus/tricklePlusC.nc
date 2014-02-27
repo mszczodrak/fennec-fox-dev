@@ -35,7 +35,7 @@
 
 #include <Fennec.h>
 
-generic configuration tricklePlusNetC() {
+generic configuration tricklePlusC() {
 provides interface Mgmt;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -44,7 +44,7 @@ provides interface AMPacket as NetworkAMPacket;
 provides interface Packet as NetworkPacket;
 provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface tricklePlusNetParams;
+uses interface tricklePlusParams;
 
 uses interface AMSend as MacAMSend;
 uses interface Receive as MacReceive;
@@ -56,26 +56,26 @@ uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 
 implementation {
 
-components new tricklePlusNetP();
-Mgmt = tricklePlusNetP;
-tricklePlusNetParams = tricklePlusNetP;
-NetworkAMSend = tricklePlusNetP.NetworkAMSend;
-NetworkReceive = tricklePlusNetP.NetworkReceive;
-NetworkSnoop = tricklePlusNetP.NetworkSnoop;
-NetworkAMPacket = tricklePlusNetP.NetworkAMPacket;
-NetworkPacket = tricklePlusNetP.NetworkPacket;
-NetworkPacketAcknowledgements = tricklePlusNetP.NetworkPacketAcknowledgements;
+components new tricklePlusP();
+Mgmt = tricklePlusP;
+tricklePlusParams = tricklePlusP;
+NetworkAMSend = tricklePlusP.NetworkAMSend;
+NetworkReceive = tricklePlusP.NetworkReceive;
+NetworkSnoop = tricklePlusP.NetworkSnoop;
+NetworkAMPacket = tricklePlusP.NetworkAMPacket;
+NetworkPacket = tricklePlusP.NetworkPacket;
+NetworkPacketAcknowledgements = tricklePlusP.NetworkPacketAcknowledgements;
 
-MacAMSend = tricklePlusNetP;
-MacReceive = tricklePlusNetP.MacReceive;
-MacSnoop = tricklePlusNetP.MacSnoop;
-MacAMPacket = tricklePlusNetP.MacAMPacket;
-MacPacket = tricklePlusNetP.MacPacket;
-MacPacketAcknowledgements = tricklePlusNetP.MacPacketAcknowledgements;
+MacAMSend = tricklePlusP;
+MacReceive = tricklePlusP.MacReceive;
+MacSnoop = tricklePlusP.MacSnoop;
+MacAMPacket = tricklePlusP.MacAMPacket;
+MacPacket = tricklePlusP.MacPacket;
+MacPacketAcknowledgements = tricklePlusP.MacPacketAcknowledgements;
 
 components new TrickleTimerMilliC(1, 1024, 1, 1);
-tricklePlusNetP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
+tricklePlusP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
 
-tricklePlusNetParams = TrickleTimerMilliC;
+tricklePlusParams = TrickleTimerMilliC;
 
 }

@@ -34,9 +34,9 @@
 
 
 #include <Fennec.h>
-#include "tricklePlusNet.h"
+#include "tricklePlus.h"
 
-module tricklePlusNetP {
+module tricklePlusP {
 provides interface Mgmt;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -45,7 +45,7 @@ provides interface AMPacket as NetworkAMPacket;
 provides interface Packet as NetworkPacket;
 provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface tricklePlusNetParams;
+uses interface tricklePlusParams;
 
 uses interface AMSend as MacAMSend;
 uses interface Receive as MacReceive;
@@ -73,9 +73,9 @@ void *app_payload = NULL;
 
 task void send_message() {
 	nx_struct tricklePlus_net_header *header;
-	dbg("Network", "tricklePlusNetP send_message");
+	dbg("Network", "tricklePlusP send_message");
 	if (tx_busy == TRUE) {
-		dbg("Network", "tricklePlusNetP send_message -> tx_busy == TRUE");
+		dbg("Network", "tricklePlusP send_message -> tx_busy == TRUE");
 		return;
 	}
 
@@ -83,7 +83,7 @@ task void send_message() {
 		call MacAMSend.getPayload(&data_msg, data_len + sizeof(nx_struct tricklePlus_net_header));
 
 	if (header == NULL) {
-		dbg("Network", "tricklePlusNetP send_message -> header == NULL");
+		dbg("Network", "tricklePlusP send_message -> header == NULL");
 		return;
 	}
 
@@ -93,13 +93,13 @@ task void send_message() {
 		tx_busy = TRUE;
 		return;
 	}
-	dbg("Network", "tricklePlusNetP send_message MacAMSend.send(%d, 0x%1x, %d) != SUCCESS",
+	dbg("Network", "tricklePlusP send_message MacAMSend.send(%d, 0x%1x, %d) != SUCCESS",
 			BROADCAST, &data_msg, data_len + sizeof(nx_struct tricklePlus_net_header));
 }
 
 
 command error_t Mgmt.start() {
-	dbg("Network", "tricklePlusNetP Mgmt.start()");
+	dbg("Network", "tricklePlusP Mgmt.start()");
 	tx_busy = FALSE;
 	app_data = NULL;
 	data_len = 0;
@@ -111,7 +111,7 @@ command error_t Mgmt.start() {
 
 
 command error_t Mgmt.stop() {
-	dbg("Network", "tricklePlusNetP Mgmt.stop()");
+	dbg("Network", "tricklePlusP Mgmt.stop()");
 	call TrickleTimer.stop[TRICKLE_ID]();
 	signal Mgmt.stopDone(SUCCESS);
 	return SUCCESS;
@@ -119,7 +119,7 @@ command error_t Mgmt.stop() {
 
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	dbg("Network", "tricklePlusNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
+	dbg("Network", "tricklePlusP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
 	memcpy(&data_msg, msg, sizeof(message_t));
 	data_len = len + sizeof(nx_struct tricklePlus_net_header);
@@ -139,13 +139,13 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
-	dbg("Network", "tricklePlusNetP NetworkAMSend.cancel(0x%1x)", msg);
+	dbg("Network", "tricklePlusP NetworkAMSend.cancel(0x%1x)", msg);
 	return call MacAMSend.cancel(msg);
 }
 
 
 command uint8_t NetworkAMSend.maxPayloadLength() {
-	dbg("Network", "tricklePlusNetP NetworkAMSend.maxPayloadLength()");
+	dbg("Network", "tricklePlusP NetworkAMSend.maxPayloadLength()");
 	return (call MacAMSend.maxPayloadLength() - 
 		sizeof(nx_struct tricklePlus_net_header));
 }
@@ -153,7 +153,7 @@ command uint8_t NetworkAMSend.maxPayloadLength() {
 
 command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr; 
-	dbg("Network", "tricklePlusNetP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
+	dbg("Network", "tricklePlusP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
 	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
 				len + sizeof(nx_struct tricklePlus_net_header));
 
@@ -165,7 +165,7 @@ command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Network", "tricklePlusNetP NetworkAMSend.sendDone(0x%1x, %d )", msg, error);
+	dbg("Network", "tricklePlusP NetworkAMSend.sendDone(0x%1x, %d )", msg, error);
 	tx_busy = FALSE;
 	if (app_data != NULL) {
 		signal NetworkAMSend.sendDone(app_data, error);
@@ -178,7 +178,7 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	nx_struct tricklePlus_net_header *header = (nx_struct tricklePlus_net_header*) payload;
 	uint8_t *ptr = (uint8_t*) payload;
 
-	dbg("Network", "tricklePlusNetP receive_data(0x%1x, 0x%1x, %d )", msg, payload, len);
+	dbg("Network", "tricklePlusP receive_data(0x%1x, 0x%1x, %d )", msg, payload, len);
 
 	if (seqno == DISSEMINATION_SEQNO_UNKNOWN &&
 		header->seq != DISSEMINATION_SEQNO_UNKNOWN) {
@@ -213,7 +213,7 @@ snoop:
 		len - sizeof(nx_struct tricklePlus_net_header));
 
 receive:
-	dbg("Network", "tricklePlusNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+	dbg("Network", "tricklePlusP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
 		ptr + sizeof(nx_struct tricklePlus_net_header), 
 		len - sizeof(nx_struct tricklePlus_net_header));
 
@@ -232,7 +232,7 @@ alert:
 
 event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "tricklePlusNetP NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
+	dbg("Network", "tricklePlusP NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct tricklePlus_net_header), 
 			len - sizeof(nx_struct tricklePlus_net_header));
 	return signal NetworkSnoop.receive(msg, 
