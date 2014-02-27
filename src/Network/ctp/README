@@ -1,15 +1,18 @@
 CTP (Collection Tree Protocol) Network Module:
 Author: Marcin Szczodrak
 
-This is an adaptation of the existing CTP protocol in TinyOS 
+This is an adaptation of the existing CTP protocol code in TinyOS 
 into the Fennec Fox protocol stack.
 
 CTP creates a tree network topology. All motes send their
 messages to the root of the network tree. 
 
 This network module takes one parameter:
-uint16_t root = is the address of the mote in the network
+uint16_t root - is the address of the mote in the network
 		that is the root of the routing tree. This
 		root will collect messages from all the motes
 		in the network.
 		default value: none
+
+Additional Information:
+Omprakash Gnawali, Rodrigo Fonseca, Kyle Jamieson, David Moss, and Philip Levis. 2009. Collection tree protocol. In Proceedings of the 7th ACM Conference on Embedded Networked Sensor Systems (SenSys '09). ACM, New York, NY, USA, 1-14. DOI=10.1145/1644038.1644040 http://doi.acm.org/10.1145/1644038.1644040
