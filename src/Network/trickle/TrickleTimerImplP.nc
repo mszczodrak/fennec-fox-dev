@@ -61,117 +61,117 @@ uses interface BitVector as Changed;
 uses interface Random;
 uses interface Leds;
 
-uses interface trickleNetParams;
+uses interface trickleParams;
 }
 implementation {
 
-  typedef struct {
-    uint16_t period;
-    uint32_t time;
-    uint32_t remainder;
-    uint8_t count;
-  } trickle_t;
+typedef struct {
+	uint16_t period;
+	uint32_t time;
+	uint32_t remainder;
+	uint8_t count;
+} trickle_t;
 
-  trickle_t trickles[count];
+trickle_t trickles[count];
+ 
+void adjustTimer();
+void generateTime(uint8_t id);
   
-  void adjustTimer();
-  void generateTime(uint8_t id);
-  
-  command error_t Init.init() {
-    int i;
-    for (i = 0; i < count; i++) {
-      trickles[i].period = call trickleNetParams.get_high();
-      trickles[i].count = 0;
-      trickles[i].time = 0;
-      trickles[i].remainder = 0;
-    }
-    atomic {
-      call Pending.clearAll();
-      call Changed.clearAll();
-    }
-    return SUCCESS;
-  }
-
-  /**
-   * Start a trickle timer. Reset the counter to 0.
-   */
-  command error_t TrickleTimer.start[uint8_t id]() {
-    if (trickles[id].time != 0) {
-      return EBUSY;
-    }
-    trickles[id].time = 0;
-    trickles[id].remainder = 0;
-    trickles[id].count = 0;
-    generateTime(id);
-    atomic {
-      call Changed.set(id);
-    }
-    adjustTimer();
-    dbg("Trickle", "Starting trickle timer %hhu @ %s\n", id, sim_time_string());
-    return SUCCESS;
-  }
-
-  /**
-   * Stop the trickle timer. This call sets the timer period to H.
-   */
-  command void TrickleTimer.stop[uint8_t id]() {
-    trickles[id].time = 0;
-    trickles[id].period = call trickleNetParams.get_high();
-    adjustTimer();
-    dbg("Trickle", "Stopping trickle timer %hhu @ %s\n", id, sim_time_string());
-  }
-
-  /**
-   * Reset the timer period to L. If called while the timer is running,
-   * then a new interval (of length L) begins immediately.
-   */
-  command void TrickleTimer.reset[uint8_t id]() {
-    trickles[id].period = call trickleNetParams.get_low();
-    trickles[id].count = 0;
-    if (trickles[id].time != 0) {
-      dbg("Trickle", "Resetting running trickle timer %hhu @ %s\n", id, sim_time_string());
-      atomic {
-	call Changed.set(id);
-      }
-      trickles[id].time = 0;
-      trickles[id].remainder = 0;
-      generateTime(id);
-      adjustTimer();
-    } else {
-      dbg("Trickle", "Resetting  trickle timer %hhu @ %s\n", id, sim_time_string());
-    }
-  }
-
-  /**
-   * Increment the counter C. When an interval ends, C is set to 0.
-   */
-  command void TrickleTimer.incrementCounter[uint8_t id]() {
-    trickles[id].count++;
-  }
-
-  task void timerTask() {
-    uint8_t i;
-    for (i = 0; i < count; i++) {
-      bool fire = FALSE;
-      atomic {
-	if (call Pending.get(i)) {
-	  call Pending.clear(i);
-	  fire = TRUE;
+command error_t Init.init() {
+	int i;
+	for (i = 0; i < count; i++) {
+		trickles[i].period = call trickleParams.get_high();
+		trickles[i].count = 0;
+		trickles[i].time = 0;
+		trickles[i].remainder = 0;
 	}
-      }
-      if (fire) {
-	dbg("Trickle", "Firing trickle timer %hhu @ %s\n", i, sim_time_string());
-	signal TrickleTimer.fired[i]();
-	post timerTask();
-	return;
-      }
-    }
-  }
+	atomic {
+		call Pending.clearAll();
+		call Changed.clearAll();
+	}
+	return SUCCESS;
+}
+
+/**
+ * Start a trickle timer. Reset the counter to 0.
+ */
+command error_t TrickleTimer.start[uint8_t id]() {
+	if (trickles[id].time != 0) {
+		return EBUSY;
+	}
+	trickles[id].time = 0;
+	trickles[id].remainder = 0;
+	trickles[id].count = 0;
+	generateTime(id);
+	atomic {
+		call Changed.set(id);
+	}
+	adjustTimer();
+	dbg("Trickle", "Starting trickle timer %hhu @ %s\n", id, sim_time_string());
+	return SUCCESS;
+}
+
+/**
+ * Stop the trickle timer. This call sets the timer period to H.
+ */
+command void TrickleTimer.stop[uint8_t id]() {
+	trickles[id].time = 0;
+	trickles[id].period = call trickleParams.get_high();
+	adjustTimer();
+	dbg("Trickle", "Stopping trickle timer %hhu @ %s\n", id, sim_time_string());
+}
+
+/**
+ * Reset the timer period to L. If called while the timer is running,
+ * then a new interval (of length L) begins immediately.
+ */
+command void TrickleTimer.reset[uint8_t id]() {
+	trickles[id].period = call trickleParams.get_low();
+	trickles[id].count = 0;
+	if (trickles[id].time != 0) {
+		dbg("Trickle", "Resetting running trickle timer %hhu @ %s\n", id, sim_time_string());
+		atomic {
+			call Changed.set(id);
+		}
+		trickles[id].time = 0;
+		trickles[id].remainder = 0;
+		generateTime(id);
+		adjustTimer();
+	} else {
+		dbg("Trickle", "Resetting  trickle timer %hhu @ %s\n", id, sim_time_string());
+	}
+}
+
+/**
+ * Increment the counter C. When an interval ends, C is set to 0.
+ */
+command void TrickleTimer.incrementCounter[uint8_t id]() {
+	trickles[id].count++;
+}
+
+task void timerTask() {
+	uint8_t i;
+	for (i = 0; i < count; i++) {
+		bool fire = FALSE;
+		atomic {
+			if (call Pending.get(i)) {
+				call Pending.clear(i);
+				fire = TRUE;
+			}
+		}
+		if (fire) {
+			dbg("Trickle", "Firing trickle timer %hhu @ %s\n", i, sim_time_string());
+			signal TrickleTimer.fired[i]();
+			post timerTask();
+			return;
+		}
+	}
+}
   
-  /**
-   * The trickle timer has fired. Signaled if C &gt; K.
-   */
-  event void Timer.fired() {
+/**
+ * The trickle timer has fired. Signaled if C &gt; K.
+ */
+event void Timer.fired() {
     uint8_t i;
     uint32_t dt = call Timer.getdt();
     dbg("Trickle", "Trickle Sub-timer fired\n");
@@ -180,7 +180,7 @@ implementation {
       if (remaining != 0) {
 	remaining -= dt;
 	if (remaining == 0) {
-	  if (trickles[i].count < call trickleNetParams.get_k()) {
+	  if (trickles[i].count < call trickleParams.get_k()) {
 	    atomic {
 	      dbg("Trickle", "Trickle: mark timer %hhi as pending\n", i);
 	      call Pending.set(i);
@@ -269,22 +269,22 @@ implementation {
     
     if (trickles[id].time != 0) {
       trickles[id].period *= 2;
-      if (trickles[id].period > call trickleNetParams.get_high()) {
-	trickles[id].period = call trickleNetParams.get_high();
+      if (trickles[id].period > call trickleParams.get_high()) {
+	trickles[id].period = call trickleParams.get_high();
       }
     }
     
     trickles[id].time = trickles[id].remainder;
     
     newTime = trickles[id].period;
-    newTime = newTime << (call trickleNetParams.get_scale() - 1);
+    newTime = newTime << (call trickleParams.get_scale() - 1);
 
-    rval = call Random.rand16() % (trickles[id].period << (call trickleNetParams.get_scale() - 1));
+    rval = call Random.rand16() % (trickles[id].period << (call trickleParams.get_scale() - 1));
     newTime += rval;
     
-    trickles[id].remainder = (((uint32_t)trickles[id].period) << call trickleNetParams.get_scale()) - newTime;
+    trickles[id].remainder = (((uint32_t)trickles[id].period) << call trickleParams.get_scale()) - newTime;
     trickles[id].time += newTime;
-    dbg("Trickle,TrickleTimes", "Generated time for %hhu with period %hu (%u) is %u (%i + %hu)\n", id, trickles[id].period, (uint32_t)trickles[id].period << call trickleNetParams.get_scale(), trickles[id].time, (trickles[id].period << (call trickleNetParams.get_scale() - 1)), rval);
+    dbg("Trickle,TrickleTimes", "Generated time for %hhu with period %hu (%u) is %u (%i + %hu)\n", id, trickles[id].period, (uint32_t)trickles[id].period << call trickleParams.get_scale(), trickles[id].time, (trickles[id].period << (call trickleParams.get_scale() - 1)), rval);
   }
 
  default event void TrickleTimer.fired[uint8_t id]() {

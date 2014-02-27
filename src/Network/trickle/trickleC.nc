@@ -35,7 +35,7 @@
 
 #include <Fennec.h>
 
-generic configuration trickleNetC() {
+generic configuration trickleC() {
 provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -44,7 +44,7 @@ provides interface AMPacket as NetworkAMPacket;
 provides interface Packet as NetworkPacket;
 provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface trickleNetParams;
+uses interface trickleParams;
 
 uses interface AMSend as MacAMSend;
 uses interface Receive as MacReceive;
@@ -52,30 +52,32 @@ uses interface Receive as MacSnoop;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
 
 implementation {
 
-components new trickleNetP();
-SplitControl = trickleNetP;
-trickleNetParams = trickleNetP;
-NetworkAMSend = trickleNetP.NetworkAMSend;
-NetworkReceive = trickleNetP.NetworkReceive;
-NetworkSnoop = trickleNetP.NetworkSnoop;
-NetworkAMPacket = trickleNetP.NetworkAMPacket;
-NetworkPacket = trickleNetP.NetworkPacket;
-NetworkPacketAcknowledgements = trickleNetP.NetworkPacketAcknowledgements;
+components new trickleP();
+SplitControl = trickleP;
+trickleParams = trickleP;
+NetworkAMSend = trickleP.NetworkAMSend;
+NetworkReceive = trickleP.NetworkReceive;
+NetworkSnoop = trickleP.NetworkSnoop;
+NetworkAMPacket = trickleP.NetworkAMPacket;
+NetworkPacket = trickleP.NetworkPacket;
+NetworkPacketAcknowledgements = trickleP.NetworkPacketAcknowledgements;
 
-MacAMSend = trickleNetP;
-MacReceive = trickleNetP.MacReceive;
-MacSnoop = trickleNetP.MacSnoop;
-MacAMPacket = trickleNetP.MacAMPacket;
-MacPacket = trickleNetP.MacPacket;
-MacPacketAcknowledgements = trickleNetP.MacPacketAcknowledgements;
+MacAMSend = trickleP;
+MacReceive = trickleP.MacReceive;
+MacSnoop = trickleP.MacSnoop;
+MacAMPacket = trickleP.MacAMPacket;
+MacPacket = trickleP.MacPacket;
+MacPacketAcknowledgements = trickleP.MacPacketAcknowledgements;
+MacLinkPacketMetadata = trickleP.MacLinkPacketMetadata;
 
 components new TrickleTimerMilliC(1, 1024, 1, 1);
-trickleNetP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
+trickleP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
 
-trickleNetParams = TrickleTimerMilliC;
+trickleParams = TrickleTimerMilliC;
 
 }
