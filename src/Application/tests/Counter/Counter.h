@@ -40,16 +40,16 @@
 #include <AM.h>
 
 enum {
- AM_TESTNETWORKMSG = 0x05,
- SAMPLE_RATE_KEY = 0x1,
- CL_TEST = 0xee,
- TEST_NETWORK_QUEUE_SIZE = 8,
+	AM_TESTNETWORKMSG = 0x05,
+	SAMPLE_RATE_KEY = 0x1,
+	CL_TEST = 0xee,
+	TEST_NETWORK_QUEUE_SIZE = 8,
 };
 
 typedef nx_struct CounterMsg {
-  nx_am_addr_t source;
-  nx_uint16_t seqno;
-  nx_uint8_t data[COUNTER_DATA_LENGTH];
+	nx_am_addr_t source;
+	nx_uint16_t seqno;
+	nx_uint8_t data[COUNTER_DATA_LENGTH];
 } CounterMsg;
 
 #endif
