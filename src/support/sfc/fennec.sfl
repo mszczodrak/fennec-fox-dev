@@ -73,6 +73,14 @@ use network trickle $(FENNEC_FOX_LIB)/Network/trickle (
 		uint8_t k = 1,
 		uint8_t scale = 10)
 
+
+use network tricklePlus $(FENNEC_FOX_LIB)/Network/tricklePlus (
+		uint16_t low = 1,
+		uint16_t high = 1024,
+		uint8_t k = 1,
+		uint8_t scale = 10)
+
+
 use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 
 # MAC Modules

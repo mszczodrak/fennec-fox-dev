@@ -33,7 +33,7 @@
   */
 
 generic configuration maxTestC() {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface maxTestParams;
 
@@ -47,7 +47,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 components new maxTestP();
-Mgmt = maxTestP;
+SplitControl = maxTestP;
 
 maxTestParams = maxTestP;
 

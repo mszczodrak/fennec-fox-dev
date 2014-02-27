@@ -36,7 +36,7 @@
 #include "maxTest.h"
 
 generic module maxTestP() {
-provides interface Mgmt;
+provides interface SplitControl;
 
 uses interface maxTestParams;
 
@@ -79,10 +79,10 @@ task void send_msg() {
 }
 
 
-command error_t Mgmt.start() {
-	dbg("Application", "maxTest Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Application", "maxTest SplitControl.start()");
 	max_value = call maxTestParams.get_val();
-	dbg("Application", "maxTest Mgmt.start() max_value is %d", max_value);
+	dbg("Application", "maxTest SplitControl.start() max_value is %d", max_value);
 
 	send_busy = FALSE;
 
@@ -93,15 +93,15 @@ command error_t Mgmt.start() {
 	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, (uint16_t) (max_value >> 16), 
 							(uint16_t) (max_value & 0x0000FFFFuL) );
 
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	post send_msg();
 	return SUCCESS;
 }
 
 
-command error_t Mgmt.stop() {
-	dbg("Application", "maxTest Mgmt.start()");
-	signal Mgmt.stopDone(SUCCESS);
+command error_t SplitControl.stop() {
+	dbg("Application", "maxTest SplitControl.start()");
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
