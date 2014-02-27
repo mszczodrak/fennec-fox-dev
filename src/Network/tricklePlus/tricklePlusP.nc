@@ -36,8 +36,8 @@
 #include <Fennec.h>
 #include "tricklePlus.h"
 
-module tricklePlusP {
-provides interface Mgmt;
+generic module tricklePlusP() {
+provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
 provides interface Receive as NetworkSnoop;
@@ -53,8 +53,10 @@ uses interface Receive as MacSnoop;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface TrickleTimer[uint16_t key];
+provides interface TrickleTimerParams;
 }
 
 implementation {
@@ -65,9 +67,6 @@ uint8_t data_len;
 bool tx_busy = FALSE;
 message_t *app_data = NULL;
 nxle_uint32_t seqno;
-
-/* Trickle Plus - remember the content of the message */
-void *app_payload = NULL;
 
 #define DISSEMINATION_SEQNO_UNKNOWN 0
 
@@ -98,22 +97,22 @@ task void send_message() {
 }
 
 
-command error_t Mgmt.start() {
-	dbg("Network", "tricklePlusP Mgmt.start()");
+command error_t SplitControl.start() {
+	dbg("Network", "tricklePlusP SplitControl.start()");
 	tx_busy = FALSE;
 	app_data = NULL;
 	data_len = 0;
 	seqno = DISSEMINATION_SEQNO_UNKNOWN;
 	call TrickleTimer.start[TRICKLE_ID]();
-	signal Mgmt.startDone(SUCCESS);
+	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 
-command error_t Mgmt.stop() {
-	dbg("Network", "tricklePlusP Mgmt.stop()");
+command error_t SplitControl.stop() {
+	dbg("Network", "tricklePlusP SplitControl.stop()");
 	call TrickleTimer.stop[TRICKLE_ID]();
-	signal Mgmt.stopDone(SUCCESS);
+	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
@@ -126,11 +125,11 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 	app_data = msg;
 
 	/* Increment the counter and append the local node ID. */
-//	seqno = seqno >> 16;
+	seqno = seqno >> 16;
 	seqno++;
 	if ( seqno == 0 ) { seqno++; }
-//	seqno = seqno << 16;
-//	seqno += TOS_NODE_ID;
+	seqno = seqno << 16;
+	seqno += TOS_NODE_ID;
 
 	call TrickleTimer.reset[TRICKLE_ID]();
 	post send_message();
@@ -156,10 +155,6 @@ command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 	dbg("Network", "tricklePlusP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
 	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
 				len + sizeof(nx_struct tricklePlus_net_header));
-
-	/* Trickle Plus - memorize the content of the message */
-	app_payload = (void*) (ptr + sizeof(nx_struct tricklePlus_net_header));
-
 	return (void*) (ptr + sizeof(nx_struct tricklePlus_net_header));
 }
 
@@ -183,6 +178,7 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	if (seqno == DISSEMINATION_SEQNO_UNKNOWN &&
 		header->seq != DISSEMINATION_SEQNO_UNKNOWN) {
 		goto receive;
+
 	}
 
 	if (header->seq == DISSEMINATION_SEQNO_UNKNOWN &&
@@ -191,13 +187,9 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		goto snoop;
 	}
 
-	/* Trickle Plus - check message content */
-	if ((data_len != len) || !memcmp(payload, app_payload, len)) {
-		goto alert;
-	} 
-
 	if ((int32_t)(header->seq - seqno) > 0) {
 		goto receive;
+
 
 	} else if ( (int32_t)(header->seq - seqno) == 0) {
 		call TrickleTimer.incrementCounter[TRICKLE_ID]();
@@ -222,8 +214,6 @@ receive:
 	seqno = header->seq;
 	call TrickleTimer.reset[ TRICKLE_ID ]();
 
-/* Trickle Plus - alert app when content disagrees */
-alert:
 	return signal NetworkReceive.receive(msg, 
 		ptr + sizeof(nx_struct tricklePlus_net_header), 
 		len - sizeof(nx_struct tricklePlus_net_header));
@@ -318,6 +308,38 @@ async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 
 event void TrickleTimer.fired[ uint16_t key ]() {
 	post send_message();
+}
+
+command uint16_t TrickleTimerParams.get_low() {
+	return call tricklePlusParams.get_low();
+}
+
+command error_t TrickleTimerParams.set_low(uint16_t new_low) {
+	return call tricklePlusParams.set_low(new_low);
+}
+
+command uint16_t TrickleTimerParams.get_high() {
+	return call tricklePlusParams.get_high();
+}
+
+command error_t TrickleTimerParams.set_high(uint16_t new_high) {
+	return call tricklePlusParams.set_high(new_high);
+}
+
+command uint8_t TrickleTimerParams.get_k() {
+	return call tricklePlusParams.get_k();
+}
+
+command error_t TrickleTimerParams.set_k(uint8_t new_k) {
+	return call tricklePlusParams.set_k(new_k);
+}
+
+command uint8_t TrickleTimerParams.get_scale() {
+	return call tricklePlusParams.get_scale();
+}
+
+command error_t TrickleTimerParams.set_scale(uint8_t new_scale) {
+	return call tricklePlusParams.set_scale(new_scale);
 }
 
 

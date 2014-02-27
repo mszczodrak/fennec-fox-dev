@@ -36,7 +36,7 @@
 #include <Fennec.h>
 
 generic configuration tricklePlusC() {
-provides interface Mgmt;
+provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
 provides interface Receive as NetworkSnoop;
@@ -52,12 +52,13 @@ uses interface Receive as MacSnoop;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 }
 
 implementation {
 
 components new tricklePlusP();
-Mgmt = tricklePlusP;
+SplitControl = tricklePlusP;
 tricklePlusParams = tricklePlusP;
 NetworkAMSend = tricklePlusP.NetworkAMSend;
 NetworkReceive = tricklePlusP.NetworkReceive;
@@ -72,10 +73,11 @@ MacSnoop = tricklePlusP.MacSnoop;
 MacAMPacket = tricklePlusP.MacAMPacket;
 MacPacket = tricklePlusP.MacPacket;
 MacPacketAcknowledgements = tricklePlusP.MacPacketAcknowledgements;
+MacLinkPacketMetadata = tricklePlusP.MacLinkPacketMetadata;
 
 components new TrickleTimerMilliC(1, 1024, 1, 1);
 tricklePlusP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
 
-tricklePlusParams = TrickleTimerMilliC;
+TrickleTimerMilliC -> tricklePlusP.TrickleTimerParams;
 
 }
