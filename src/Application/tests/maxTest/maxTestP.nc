@@ -82,9 +82,6 @@ task void send_msg() {
 command error_t Mgmt.start() {
 	dbg("Application", "maxTest Mgmt.start()");
 	max_value = call maxTestParams.get_val();
-	if (max_value == 0) {
-		max_value = call Random.rand32();
-	}
 	dbg("Application", "maxTest Mgmt.start() max_value is %d", max_value);
 
 	send_busy = FALSE;
@@ -137,6 +134,9 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void Timer.fired() {
+	if (call maxTestParams.get_val() != 0) {
+		max_value = call Random.rand32();
+	}
 	dbg("Application", "maxTest Timer.fired() max_value is %d", max_value);
 	dbgs(F_APPLICATION, S_INIT, 0, (uint16_t) (max_value >> 16), 
 							(uint16_t) (max_value & 0x0000FFFFuL) );
