@@ -1,10 +1,30 @@
-Null Application Module
+maxTest Application Module
 Author: Marcin Szczodrak
 
-An example of an empty application layer module.
-The null application connects to all Fennec Fox
-interfaces to make it compatible with the network stack.
+maxTest is a simple testing application. Periodically, this application
+sends a message with a value and it waits to lean which of all the nodes
+in the network sent a message with maximum value. When the application receives
+a message from other motes, it compares the message's value with its own. 
+If the value is lower that the motes local value, it sends its value to
+the network; if the value is higher, then it saves the value and sends
+another message with the value.
 
-The null application is an empty template for more
-advanced applications.
+Each mote sends a message with the following data structure:
+
+nx_struct maxMsg {
+        nx_uint32_t max_value;
+};
+
+
+The application module takes two parameters:
+
+uint32_t val - the value that a mote should send to the network.
+		If the value is 0, at the beginning of every period
+		the application generates a new random value.
+		default value: 0	
+uint32_t delay - time delay in ms, when all the motes in the network
+		periodically try to find a maximum value
+		default value: 0
+
+
 

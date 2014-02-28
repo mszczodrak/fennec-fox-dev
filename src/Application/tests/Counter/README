@@ -2,7 +2,7 @@ Counter Application Module
 Author: Marcin Szczodrak
 
 Counter is a simple testing application. Periodically, this application
-periodically sends a messages from a source node to a destination node.
+sends a messages from a source node to a destination node.
 When the source node address is set to BROADCAST (0xFFFF), then every 
 node in the network sends messages to the destination. 
 The application sends messages every delay * scale milliseconds.
