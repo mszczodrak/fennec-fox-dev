@@ -47,8 +47,13 @@ class RemoteSensorInsert():
 	def __init__(self, ip_address, ip_port):
 		self.ip_address = ip_address
 		self.ip_port = int(ip_port)
-		self.sock = socket(AF_INET, SOCK_STREAM)
-		self.sock.connect((self.ip_address, self.ip_port))
+		try:
+			self.sock = socket(AF_INET, SOCK_STREAM)
+			self.sock.connect((self.ip_address, self.ip_port))
+		except:
+			print "Failed to connect to %s:%d" % (self.ip_address, self.ip_port)
+			sys.exit(1)
+
 		signal.signal(signal.SIGINT, self.__signal_handler)
 
 		self.number_of_sensors = 4
