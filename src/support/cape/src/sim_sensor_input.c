@@ -206,7 +206,7 @@ void sim_sensor_open_socket(int port) {
 
 void sim_sensor_forward_packet(const void *packet, const int len) {
 	struct sensor_input_pkt *pkt = (struct sensor_input_pkt *)packet;
-	printf("\ngot node: %d  sensor: %d  value: %d\n", ntohs(pkt->node_id), 
+	printf("mote (%d) sensor: %d set to value: %d\n", ntohs(pkt->node_id), 
 				ntohs(pkt->sensor_id), ntohl(pkt->value));
 
 	sim_outside_write_input(ntohs(pkt->node_id), ntohl(pkt->value), 

@@ -52,6 +52,7 @@
 #define MIN_IO_TRACE		8
 #define MAX_IO_TRACE		4096
 #define IO_TIME_STEP_ERROR	1.6
+#define SIN_AMPLITUDE		10000
 
 typedef struct sim_io_t {
 	uint32_t* ioData;
@@ -76,9 +77,9 @@ void increase_memory(sim_io_t *channel, int new_size);
 void move_memory(sim_io_t *channel);
 uint32_t retrieve_output(uint16_t node_id, uint8_t output_id, long long int time_val);
 uint32_t retrieve_input(uint16_t node_id, uint8_t input_id, long long int time_val);
-uint32_t simulateData(long long int time_val);
+uint32_t simulateData(uint16_t node_id, uint8_t io_id, long long int time_val);
 void do_saving(sim_io_t *channel, uint32_t data_val, long long int time_val);
-uint32_t do_retrieve(sim_io_t *channel,  long long int time_val);
+uint32_t do_retrieve(uint16_t node_id, uint8_t io_id, sim_io_t *channel,  long long int time_val);
 
 
 sim_node_ios_t node_ios[TOSSIM_MAX_NODES]; 
@@ -244,9 +245,9 @@ void save_output(uint16_t node_id, uint32_t data_val, uint8_t output_id, long lo
 	do_saving(ch, data_val, time_val);
 }
 
-uint32_t do_retrieve(sim_io_t *channel,  long long int time_val) {
+uint32_t do_retrieve(uint16_t node_id, uint8_t io_id, sim_io_t *channel,  long long int time_val) {
 	if (channel->ioData == NULL) {
-		return simulateData(time_val);
+		return simulateData(node_id, io_id, time_val);
 	} else if (channel->dataIndex == 1) {
 		return channel->ioData[0];
 	} else if (fabs(channel->ioTime[channel->dataIndex - 1] - time_val) < (IO_TIME_STEP_ERROR * channel->timeStep)) {
@@ -261,15 +262,15 @@ uint32_t do_retrieve(sim_io_t *channel,  long long int time_val) {
 
 uint32_t retrieve_output(uint16_t node_id, uint8_t output_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
-	return do_retrieve(ch, time_val);
+	return do_retrieve(node_id, output_id, ch, time_val);
 }
 
 
 uint32_t retrieve_input(uint16_t node_id, uint8_t input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
-	return do_retrieve(ch, time_val);
+	return do_retrieve(node_id, input_id, ch, time_val);
 }
 
-uint32_t simulateData(long long int time_val) {
-	return sin(time_val);
+uint32_t simulateData(uint16_t node_id, uint8_t io_id, long long int time_val) {
+	return (io_id + 1) * SIN_AMPLITUDE * sin(time_val * (node_id + 1));
 }
