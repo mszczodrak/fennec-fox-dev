@@ -107,14 +107,32 @@ Z1SensorsP.ResourceAdc7 -> ReadAdc7;
 
 #else
 
-components new CapeInputC() as CapeHumidityC;
-Z1SensorsP.ReadHumidity -> CapeHumidityC.Read16;
-
 components new CapeInputC() as CapeTemperatureC;
 Z1SensorsP.ReadTemperature -> CapeTemperatureC.Read16;
 
-components new CapeInputC() as CapeLightC;
-Z1SensorsP.ReadLight -> CapeLightC.Read16;
+components new CapeInputC() as CapeBetteryC;
+Z1SensorsP.ReadBattery -> CapeBatteryC.Read16;
+
+components new CapeInputC() as CapeAccelXC;
+Z1SensorsP.ReadXaxis -> CapeAccelXC.Read16;
+
+components new CapeInputC() as CapeAccelYC;
+Z1SensorsP.ReadYaxis -> CapeAccelYC.Read16;
+
+components new CapeInputC() as CapeAccelZC;
+Z1SensorsP.ReadZaxis -> CapeAccelZC.Read16;
+
+components new CapeInputC() as CapeAdc0C;
+Z1SensorsP.ReadAdc0 -> CapeAdc0C.Read16;
+
+components new CapeInputC() as CapeAdc1C;
+Z1SensorsP.ReadAdc1 -> CapeAdc1C.Read16;
+
+components new CapeInputC() as CapeAdc3C;
+Z1SensorsP.ReadAdc3 -> CapeAdc3C.Read16;
+
+components new CapeInputC() as CapeAdc7C;
+Z1SensorsP.ReadAdc7 -> CapeAdc7C.Read16;
 
 #endif
 
