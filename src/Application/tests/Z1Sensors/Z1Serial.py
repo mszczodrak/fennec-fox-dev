@@ -50,8 +50,13 @@ from tinyos.packet.Serial import Serial
 class Z1Serial:
 	def __init__(self, uart):
 		self.mif = MoteIF.MoteIF()
-		self.tos_source = self.mif.addSource(uart)
-		self.mif.addListener(self, Z1Msg.Z1Msg)
+		try:
+			self.tos_source = self.mif.addSource(uart)
+			self.mif.addListener(self, Z1Msg.Z1Msg)
+		except:
+			print "Failed to connect to %s" % (uart)
+			sys.exit(1)
+
 
 	def receive(self, src, msg):
 		if msg.get_amType() == Z1Msg.AM_TYPE:

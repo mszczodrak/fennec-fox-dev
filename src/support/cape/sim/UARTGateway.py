@@ -55,8 +55,12 @@ class UARTGateway:
 		self.ip_address = ip_address
 		self.ip_port = ip_port
 		self.mif = MoteIF.MoteIF()
-		self.tos_source = self.mif.addSource("sf@%s:%s" % (self.ip_address, ip_port))
-		self.mif.addListener(self, TelosbMsg.TelosbMsg)
+		try:
+			self.tos_source = self.mif.addSource("sf@%s:%s" % (self.ip_address, ip_port))
+			self.mif.addListener(self, TelosbMsg.TelosbMsg)
+		except:
+			print "Failed to connect to %s:%d" % (self.ip_address, self.ip_port)
+			sys.exit(1)
 
 
 	def receive(self, src, msg):
