@@ -47,8 +47,8 @@
 #include "ff_structs.h"
 #include "ff_flags.h"
 #include "ff_states.h"
-#include "ff_sensor_type.h"
-#include "ff_sensor_ids.h"
+//#include "ff_sensor_type.h"
+//#include "ff_sensor_ids.h"
 #include "ff_functions.h"
 #include "ff_consts.h"
 

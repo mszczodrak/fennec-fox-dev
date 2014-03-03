@@ -37,8 +37,8 @@
 #define FF_STRUCTURES_H
 
 #include "ff_consts.h"
-#include "ff_sensor_ids.h"
-#include "ff_sensor_type.h"
+//#include "ff_sensor_ids.h"
+//#include "ff_sensor_type.h"
 
 typedef uint16_t state_t;
 typedef uint16_t conf_t;
@@ -65,6 +65,7 @@ typedef union message_header {
 } message_header_t;
 
 
+/*
 typedef struct ff_sensor_conf {
 	uint32_t sensitivity;
 	uint32_t rate;
@@ -87,6 +88,7 @@ typedef struct ff_sensor_client {
 	uint32_t rate;
 	uint32_t signaling;
 } ff_sensor_client_t;
+*/
 
 struct state {
         uint8_t 		state_id;
