@@ -35,7 +35,6 @@
 #include <Fennec.h>
 #include "Z1Sensors.h"
 
-
 generic module Z1SensorsP() {
 provides interface SplitControl;
 
@@ -57,14 +56,17 @@ uses interface SplitControl as SerialSplitControl;
 
 uses interface Read<uint16_t> as ReadTemperature;
 
-uses interface Msp430Adc12SingleChannel as ReadAdc0;
-uses interface Resource as ResourceAdc0;
-uses interface Msp430Adc12SingleChannel as ReadAdc1;
-uses interface Resource as ResourceAdc1;
-uses interface Msp430Adc12SingleChannel as ReadAdc3;
-uses interface Resource as ResourceAdc3;
-uses interface Msp430Adc12SingleChannel as ReadAdc7;
-uses interface Resource as ResourceAdc7;
+uses interface Read<uint16_t> as ReadAdc0;
+uses interface Read<uint16_t> as ReadAdc1;
+uses interface Read<uint16_t> as ReadAdc3;
+uses interface Read<uint16_t> as ReadAdc7;
+
+#ifndef TOSSIM
+provides interface AdcConfigure<const msp430adc12_channel_config_t*> as ReadAdc0Configure;
+provides interface AdcConfigure<const msp430adc12_channel_config_t*> as ReadAdc1Configure;
+provides interface AdcConfigure<const msp430adc12_channel_config_t*> as ReadAdc3Configure;
+provides interface AdcConfigure<const msp430adc12_channel_config_t*> as ReadAdc7Configure;
+#endif
 
 uses interface Read<uint16_t> as ReadXaxis;  
 uses interface Read<uint16_t> as ReadYaxis;  
@@ -123,7 +125,10 @@ command error_t SplitControl.start() {
 	data->src = TOS_NODE_ID;
 
 	call SerialSplitControl.start();
+
+#ifndef TOSSIM
 	call AccelSplitControl.start();
+#endif
 
 	serial_data = (void*) call SerialAMSend.getPayload(&serial_packet,
                                                         sizeof(z1_sensors_t));
@@ -174,59 +179,31 @@ event void ReadTemperature.readDone(error_t error, uint16_t val) {
 	dbg("Application", "Application Z1Sensors ReadTemperature.readDone(%d %d)",
 							error, val);
 	data->temp = val;
-	call ResourceAdc0.request();
+	call ReadAdc0.read();
 }
 
-event void ResourceAdc0.granted() {
-	call ReadAdc0.configureSingle(&adc_config_0);
-	call ReadAdc0.getData();
-}
-
-async event error_t ReadAdc0.singleDataReady(uint16_t val) {
+event void ReadAdc0.readDone( error_t result, uint16_t val ) {
 	dbg("Application", "Application Z1Sensors ReadAdc0.singleDataReady(%d)", val);
 	data->adc[0] = val;
-	call ResourceAdc0.release();
-	call ResourceAdc1.request();
-	return 0;
+	call ReadAdc1.read();
 }
 
-event void ResourceAdc1.granted() {
-	call ReadAdc1.configureSingle(&adc_config_1);
-	call ReadAdc1.getData();
-}
-
-async event error_t ReadAdc1.singleDataReady(uint16_t val) {
+event void ReadAdc1.readDone( error_t result, uint16_t val ) {
 	dbg("Application", "Application Z1Sensors ReadAdc1.singleDataReady(%d)", val);
 	data->adc[1] = val;
-	call ResourceAdc1.release();
-	call ResourceAdc3.request();
-	return 0;
+	call ReadAdc3.read();
 }
 
-event void ResourceAdc3.granted() {
-	call ReadAdc3.configureSingle(&adc_config_3);
-	call ReadAdc3.getData();
-}
-
-async event error_t ReadAdc3.singleDataReady(uint16_t val) {
+event void ReadAdc3.readDone( error_t result, uint16_t val ) {
 	dbg("Application", "Application Z1Sensors ReadAdc3.singleDataReady(%d)", val);
 	data->adc[2] = val;
-	call ResourceAdc3.release();
-	call ResourceAdc7.request();
-	return 0;
+	call ReadAdc7.read();
 }
 
-event void ResourceAdc7.granted() {
-	call ReadAdc7.configureSingle(&adc_config_7);
-	call ReadAdc7.getData();
-}
-
-async event error_t ReadAdc7.singleDataReady(uint16_t val) {
+event void ReadAdc7.readDone( error_t result, uint16_t val ) {
 	dbg("Application", "Application Z1Sensors ReadAdc7.singleDataReady(%d)", val);
 	data->adc[3] = val;
-	call ResourceAdc7.release();
 	call ReadXaxis.read();
-	return 0;
 }
 
 event void ReadXaxis.readDone(error_t error, uint16_t val) {
@@ -257,6 +234,24 @@ event void ReadBattery.readDone(error_t error, uint16_t val) {
 	post report_measurements();
 }
 
+#ifndef TOSSIM
+async command const msp430adc12_channel_config_t* ReadAdc0Configure.getConfiguration() {
+	return &adc_config_0;
+}
+
+async command const msp430adc12_channel_config_t* ReadAdc1Configure.getConfiguration() {
+	return &adc_config_1;
+}
+
+async command const msp430adc12_channel_config_t* ReadAdc3Configure.getConfiguration() {
+	return &adc_config_3;
+}
+
+async command const msp430adc12_channel_config_t* ReadAdc7Configure.getConfiguration() {
+	return &adc_config_7;
+}
+#endif
+
 event void SerialSplitControl.startDone(error_t error) {
 }
 
@@ -268,25 +263,6 @@ event void AccelSplitControl.startDone(error_t err) {
 
 event void AccelSplitControl.stopDone(error_t err) {
 }
-
-async event uint16_t *ReadAdc0.multipleDataReady(uint16_t *buf, uint16_t num){
-	return NULL;
-}
-
-async event uint16_t *ReadAdc1.multipleDataReady(uint16_t *buf, uint16_t num){
-	return NULL;
-}
-
-async event uint16_t *ReadAdc3.multipleDataReady(uint16_t *buf, uint16_t num){
-	return NULL;
-}
-
-async event uint16_t *ReadAdc7.multipleDataReady(uint16_t *buf, uint16_t num){
-	return NULL;
-}
-
-
-
 
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	dbg("Application", "Application Z1Sensors SerialReceive()");

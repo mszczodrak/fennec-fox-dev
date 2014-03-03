@@ -32,7 +32,10 @@
   * @updated: 03/02/2014
   */
 
+
+#ifndef TOSSIM
 #include "Z1SensorsAdc.h"
+#endif
 
 generic configuration Z1SensorsC() {
 provides interface SplitControl;
@@ -89,28 +92,28 @@ Z1SensorsP.ReadYaxis -> ADXL345C.Y;
 Z1SensorsP.ReadZaxis -> ADXL345C.Z;
 Z1SensorsP.AccelSplitControl -> ADXL345C.SplitControl;
 
-components new Msp430Adc12ClientC() as ReadAdc0;
-Z1SensorsP.ReadAdc0 -> ReadAdc0;
-Z1SensorsP.ResourceAdc0 -> ReadAdc0;
+components new AdcReadClientC() as ReadAdc0C;
+ReadAdc0C.AdcConfigure -> Z1SensorsP.ReadAdc0Configure;
+Z1SensorsP.ReadAdc0 -> ReadAdc0C;
 
-components new Msp430Adc12ClientC() as ReadAdc1;
-Z1SensorsP.ReadAdc1 -> ReadAdc1;
-Z1SensorsP.ResourceAdc1 -> ReadAdc1;
+components new AdcReadClientC() as ReadAdc1C;
+ReadAdc1C.AdcConfigure -> Z1SensorsP.ReadAdc1Configure;
+Z1SensorsP.ReadAdc1 -> ReadAdc1C;
 
-components new Msp430Adc12ClientC() as ReadAdc3;
-Z1SensorsP.ReadAdc3 -> ReadAdc3;
-Z1SensorsP.ResourceAdc3 -> ReadAdc3;
+components new AdcReadClientC() as ReadAdc3C;
+ReadAdc3C.AdcConfigure -> Z1SensorsP.ReadAdc3Configure;
+Z1SensorsP.ReadAdc3 -> ReadAdc3C;
 
-components new Msp430Adc12ClientC() as ReadAdc7;
-Z1SensorsP.ReadAdc7 -> ReadAdc7;
-Z1SensorsP.ResourceAdc7 -> ReadAdc7;
+components new AdcReadClientC() as ReadAdc7C;
+ReadAdc7C.AdcConfigure -> Z1SensorsP.ReadAdc7Configure;
+Z1SensorsP.ReadAdc7 -> ReadAdc7C;
 
 #else
 
 components new CapeInputC() as CapeTemperatureC;
 Z1SensorsP.ReadTemperature -> CapeTemperatureC.Read16;
 
-components new CapeInputC() as CapeBetteryC;
+components new CapeInputC() as CapeBatteryC;
 Z1SensorsP.ReadBattery -> CapeBatteryC.Read16;
 
 components new CapeInputC() as CapeAccelXC;
