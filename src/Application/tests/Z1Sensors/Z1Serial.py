@@ -61,13 +61,9 @@ class Z1Serial:
 	def receive(self, src, msg):
 		if msg.get_amType() == Z1Msg.AM_TYPE:
 			print msg
-	                src = msg.get_src()
-	                seq = msg.get_seq()
-        	        hum = msg.get_hum()
-        	        temp = msg.get_temp()
-        	        light = msg.get_light()
-
-			print time.time(), src, seq, hum, temp, light
+	                #src = msg.get_src()
+	                #seq = msg.get_seq()
+        	        #temp = msg.get_temp()
 
 		#sys.stdout.flush()
 

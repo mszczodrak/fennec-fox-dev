@@ -184,6 +184,7 @@ event void ResourceAdc0.granted() {
 async event error_t ReadAdc0.singleDataReady(uint16_t val) {
 	dbg("Application", "Application Z1Sensors ReadAdc0.singleDataReady(%d)", val);
 	data->adc[0] = val;
+	call ResourceAdc0.release();
 	call ResourceAdc1.request();
 	return 0;
 }
@@ -196,6 +197,7 @@ event void ResourceAdc1.granted() {
 async event error_t ReadAdc1.singleDataReady(uint16_t val) {
 	dbg("Application", "Application Z1Sensors ReadAdc1.singleDataReady(%d)", val);
 	data->adc[1] = val;
+	call ResourceAdc1.release();
 	call ResourceAdc3.request();
 	return 0;
 }
@@ -208,6 +210,7 @@ event void ResourceAdc3.granted() {
 async event error_t ReadAdc3.singleDataReady(uint16_t val) {
 	dbg("Application", "Application Z1Sensors ReadAdc3.singleDataReady(%d)", val);
 	data->adc[2] = val;
+	call ResourceAdc3.release();
 	call ResourceAdc7.request();
 	return 0;
 }
@@ -220,6 +223,7 @@ event void ResourceAdc7.granted() {
 async event error_t ReadAdc7.singleDataReady(uint16_t val) {
 	dbg("Application", "Application Z1Sensors ReadAdc7.singleDataReady(%d)", val);
 	data->adc[7] = val;
+	call ResourceAdc7.release();
 	call ReadXaxis.read();
 	return 0;
 }
