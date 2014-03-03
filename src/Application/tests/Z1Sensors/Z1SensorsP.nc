@@ -166,6 +166,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void Timer.fired() {
+	data->seq++;
 	call ReadTemperature.read();
 }
 
@@ -222,7 +223,7 @@ event void ResourceAdc7.granted() {
 
 async event error_t ReadAdc7.singleDataReady(uint16_t val) {
 	dbg("Application", "Application Z1Sensors ReadAdc7.singleDataReady(%d)", val);
-	data->adc[7] = val;
+	data->adc[3] = val;
 	call ResourceAdc7.release();
 	call ReadXaxis.read();
 	return 0;
