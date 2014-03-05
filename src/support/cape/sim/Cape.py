@@ -59,7 +59,6 @@ class Cape():
 			os.mkdir("./results")
 
 		self.__tossim = Tossim([])
-		if (self.__real_time):
 		self.__radio = self.__tossim.radio()
 		self.__topology_file = topology
 		self.__output_file = ""
