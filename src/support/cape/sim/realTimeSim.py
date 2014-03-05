@@ -45,7 +45,8 @@ class Simulator():
 		self.dbg_channels = ["Application"]
 		self.cape.setTopologyFile("topos/4/linkgain.out")
 		self.cape.setNoiseFile("noise/casino.txt")
-		
+
+		self.cape.setSerialPort(9003)		
 		self.cape.setRealTime()
 
 		self.cape.setup()

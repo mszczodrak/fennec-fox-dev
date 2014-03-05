@@ -83,6 +83,14 @@ class Cape():
 		self.__noise_file = noise
 
 
+	def setSerialPort(self, port):
+		self.__sf_port = int(port)
+
+
+	def setSensorPort(self, port):
+		self.__sensor_port = int(port)
+
+
 	def setRealTime(self):
 		self.__real_time = 1
 		self.__sf = SerialForwarder(self.__sf_port)
@@ -92,20 +100,12 @@ class Cape():
 
 	def setSimulationTime(self, sim_time):
 		self.__simulation_end_time = sim_time
-
-	def setSerialPort(self, port):
-		self.__sf_port = port
-
-	def setSensorPort(self, port):
-		self.__sensor_port = port
-
+	
+	
 	def setup(self):
 		self.__tossim.randomSeed(int(time.time()))
 		self.__tossim.init()
 		if (self.__real_time):
-			self.__sf = SerialForwarder(self.__sf_port)
-			self.__throttle = Throttle(self.__tossim, 10)	
-			self.__sin = SensorInput(self.__sensor_port)
 			self.__sf.process()
 			self.__sin.process()
 			self.__throttle.initialize()
