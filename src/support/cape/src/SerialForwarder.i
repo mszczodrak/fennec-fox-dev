@@ -52,5 +52,6 @@ class SerialForwarder {
         void process ();
         void dispatchPacket(const void *packet, const int len);
         void forwardPacket(const void *packet, const int len);
+        void close ();
 
 };

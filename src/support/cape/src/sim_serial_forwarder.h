@@ -55,6 +55,7 @@ void sim_sf_forward_packet(const void *packet, int len);
 void sim_sf_dispatch_packet(const void *packet, int len);
 void sim_sf_open_server_socket(int port);
 void sim_sf_process ();
+void sim_sf_close();
 
 int sim_sf_unix_check(const char *msg, int result);
 void *sim_sf_xmalloc(size_t s);

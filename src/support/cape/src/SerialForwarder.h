@@ -51,6 +51,7 @@ class SerialForwarder {
     void dispatchPacket(const void *packet, const int len);
     void forwardPacket(const void *packet, const int len);
     void openServerSocket(const int port);
+    void close ();
 
 };
 #endif   // ----- #ifndef _SERIALFORWARDER_H_  ----- 

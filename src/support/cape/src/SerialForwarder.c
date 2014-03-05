@@ -64,7 +64,12 @@ void SerialForwarder::forwardPacket(const void *packet, const int len)
     sim_sf_forward_packet(packet, len);
 }
 
-void SerialForwarder::process ()
+void SerialForwarder::process()
 {
     sim_sf_process();
+}
+
+void SerialForwarder::close()
+{
+    sim_sf_close();
 }

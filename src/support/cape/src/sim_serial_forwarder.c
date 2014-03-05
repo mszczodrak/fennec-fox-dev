@@ -397,3 +397,8 @@ int sim_sf_write_packet(int fd, const void *packet, int len)
   return 0;
 }
 
+void sim_sf_close()
+{
+	close(sim_sf_server_socket);
+
+}
