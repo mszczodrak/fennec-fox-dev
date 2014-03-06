@@ -43,7 +43,7 @@ import struct
 
 #sys.path.append('./tinyos_sdk_python')
 
-import TelosbMsg
+import Z1Msg
 
 from tinyos.message import *
 from tinyos.message.Message import *
@@ -57,7 +57,7 @@ class UARTGateway:
 		self.mif = MoteIF.MoteIF()
 		try:
 			self.tos_source = self.mif.addSource("sf@%s:%s" % (self.ip_address, ip_port))
-			self.mif.addListener(self, TelosbMsg.TelosbMsg)
+			self.mif.addListener(self, Z1Msg.Z1Msg)
 		except:
 			print "Failed to connect to %s:%d" % (self.ip_address, self.ip_port)
 			sys.exit(1)
@@ -65,21 +65,16 @@ class UARTGateway:
 
 	def receive(self, src, msg):
 		print msg
-		if msg.get_amType() == TelosbMsg.AM_TYPE:
-	                src = msg.get_src()
-	                seq = msg.get_seq()
-        	        hum = msg.get_hum()
-        	        temp = msg.get_temp()
-        	        light = msg.get_light()
-
-			print time.time(), src, seq, hum, temp, light
-			#m = TelosbMsg.TelosbMsg(msg.dataGet())
+		if msg.get_amType() == Z1Msg.AM_TYPE:
+			pass
+	                #src = msg.get_src()
+			#m = Z1Msg.Z1Msg(msg.dataGet())
 
 		#sys.stdout.flush()
 
 	def send(self):
 		pass
-		#smsg = TelosbMsg.TelosbMsg()
+		#smsg = Z1Msg.Z1Msg()
 		#smsg.set_rx_timestamp(time.time())
 		#self.mif.sendMsg(self.tos_source, 0xFFFF,
 		#smsg.get_amType(), 0, smsg)
