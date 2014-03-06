@@ -1,1 +1,19 @@
-Z1Sensors Fennec Fox module
+Z1Sensor Application Module
+Author: Marcin Szczodrak
+
+A simple application for Z1 platform.
+Periodically, the application collects sensor measuremenets (temperature, 
+3D acceleration, battery status, and measurements from all 4 ADCs) 
+and sends them to some gateway/sink mote.
+
+A mote that receives a network packet is sensor measurements
+sends the application's sensor measurements over the UART.
+
+This application module takes two parameters:
+uint16_t dest - is the address of the mote to which the sensor
+		measurements should be send to
+		default value: 0
+uint16_t sampling_rate - is the millisecond delay between consecutive
+		rounds of sensors' sampling
+		default value: 1024
+

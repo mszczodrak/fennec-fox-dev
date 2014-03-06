@@ -3,7 +3,7 @@ Author: Marcin Szczodrak
 
 A simple application for TelosB platform.
 Periodically, the application collects sensor measuremenets (humidity, 
-temperature, light) and sends them to some TelosB motes.
+temperature, light) and sends them to some gateway/sink mote.
 
 A mote that receives a network packet is sensor measurements
 sends the application's sensor measurements over the UART.
