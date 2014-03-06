@@ -47,8 +47,8 @@
 #include "hashtable.h"
 #include "sim_io.h"
 
-#define MAX_SENSOR_INPUTS	4
-#define MAX_ACTUATOR_OUTPUTS	4
+#define MAX_SENSOR_INPUTS	10
+#define MAX_ACTUATOR_OUTPUTS	10
 #define MIN_IO_TRACE		8
 #define MAX_IO_TRACE		4096
 #define IO_TIME_STEP_ERROR	1.6
