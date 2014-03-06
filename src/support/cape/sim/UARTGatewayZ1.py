@@ -81,7 +81,7 @@ class UARTGateway:
 
 	def run(self):
 		while 1:
-			pass
+			time.sleep(1)
 
 
 if __name__ == "__main__":
