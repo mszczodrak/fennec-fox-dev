@@ -1,4 +1,4 @@
-# Time Mote_ID Temperature Motion CO2
+# Time(sec) Mote_ID Temperature Motion CO2
 1 0 373 2560 909
 1 4 370 2617 923
 1 5 363 2698 966

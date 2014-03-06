@@ -110,32 +110,41 @@ Z1SensorsP.ReadAdc7 -> ReadAdc7C;
 
 #else
 
+/* Sensor Number 0 */
 components new CapeInputC() as CapeTemperatureC;
 Z1SensorsP.ReadTemperature -> CapeTemperatureC.Read16;
 
-components new CapeInputC() as CapeBatteryC;
-Z1SensorsP.ReadBattery -> CapeBatteryC.Read16;
-
-components new CapeInputC() as CapeAccelXC;
-Z1SensorsP.ReadXaxis -> CapeAccelXC.Read16;
-
-components new CapeInputC() as CapeAccelYC;
-Z1SensorsP.ReadYaxis -> CapeAccelYC.Read16;
-
-components new CapeInputC() as CapeAccelZC;
-Z1SensorsP.ReadZaxis -> CapeAccelZC.Read16;
-
+/* Sensor Number 1 */
 components new CapeInputC() as CapeAdc0C;
 Z1SensorsP.ReadAdc0 -> CapeAdc0C.Read16;
 
+/* Sensor Number 2 */
+components new CapeInputC() as CapeAdc7C;
+Z1SensorsP.ReadAdc7 -> CapeAdc7C.Read16;
+
+/* Sensor Number 3 */
 components new CapeInputC() as CapeAdc1C;
 Z1SensorsP.ReadAdc1 -> CapeAdc1C.Read16;
 
+/* Sensor Number 4 */
 components new CapeInputC() as CapeAdc3C;
 Z1SensorsP.ReadAdc3 -> CapeAdc3C.Read16;
 
-components new CapeInputC() as CapeAdc7C;
-Z1SensorsP.ReadAdc7 -> CapeAdc7C.Read16;
+/* Sensor Number 5 */
+components new CapeInputC() as CapeBatteryC;
+Z1SensorsP.ReadBattery -> CapeBatteryC.Read16;
+
+/* Sensor Number 6 */
+components new CapeInputC() as CapeAccelXC;
+Z1SensorsP.ReadXaxis -> CapeAccelXC.Read16;
+
+/* Sensor Number 7 */
+components new CapeInputC() as CapeAccelYC;
+Z1SensorsP.ReadYaxis -> CapeAccelYC.Read16;
+
+/* Sensor Number 8 */
+components new CapeInputC() as CapeAccelZC;
+Z1SensorsP.ReadZaxis -> CapeAccelZC.Read16;
 
 #endif
 

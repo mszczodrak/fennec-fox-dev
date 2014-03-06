@@ -84,12 +84,15 @@ TelosbSensorsP.ReadLight -> HamamatsuS10871TsrC;
 
 #else
 
+/* Sensor Number 0 */
 components new CapeInputC() as CapeHumidityC;
 TelosbSensorsP.ReadHumidity -> CapeHumidityC.Read16;
 
+/* Sensor Number 1 */
 components new CapeInputC() as CapeTemperatureC;
 TelosbSensorsP.ReadTemperature -> CapeTemperatureC.Read16;
 
+/* Sensor Number 2 */
 components new CapeInputC() as CapeLightC;
 TelosbSensorsP.ReadLight -> CapeLightC.Read16;
 
