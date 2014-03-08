@@ -51,8 +51,10 @@
 #define MAX_ACTUATOR_OUTPUTS	10
 #define MIN_IO_TRACE		8
 #define MAX_IO_TRACE		4096
-#define IO_TIME_STEP_ERROR	1.6
+#define IO_TIME_STEP_ERROR	2.6
 #define SIN_AMPLITUDE		10000
+
+#define imax( a, b ) ( ((a) > (b)) ? (a) : (b) )
 
 typedef struct sim_io_t {
 	uint32_t* ioData;
@@ -231,7 +233,7 @@ void do_saving(sim_io_t *channel, uint32_t data_val, long long int time_val) {
 	}
 	channel->ioData[channel->dataIndex] = data_val;
 	channel->ioTime[channel->dataIndex] = time_val;
-	channel->timeStep = (channel->ioTime[channel->dataIndex] - channel->ioTime[0]);
+	channel->timeStep = (channel->ioTime[channel->dataIndex] - channel->ioTime[imax(0, channel->dataIndex - 1)]);
 	channel->dataIndex++;
 }
 
@@ -247,15 +249,19 @@ void save_output(uint16_t node_id, uint32_t data_val, uint8_t output_id, long lo
 
 uint32_t do_retrieve(uint16_t node_id, uint8_t io_id, sim_io_t *channel,  long long int time_val) {
 	if (channel->ioData == NULL) {
+		//printf("mote (%d) sensor: %d Return simulated\n", node_id, io_id);
 		return simulateData(node_id, io_id, time_val);
 	} else if (channel->dataIndex == 1) {
+		//printf("mote (%d) sensor: %d Only one data\n", node_id, io_id);
 		return channel->ioData[0];
 	} else if (fabs(channel->ioTime[channel->dataIndex - 1] - time_val) < (IO_TIME_STEP_ERROR * channel->timeStep)) {
+		//printf("mote (%d) sensor: %d return last one %d\n", node_id, io_id, channel->ioData[channel->dataIndex - 1]);
 		return channel->ioData[channel->dataIndex - 1];
 	} else {
 		long long int time_trace = channel->ioTime[channel->dataIndex - 1] - channel->ioTime[0]; 
 		long long int data_for_time = time_val % time_trace;
 		int data_index = (data_for_time * channel->dataIndex) / time_trace;
+		//printf("mote (%d) sensor: %d wrap around\n", node_id, io_id);
 		return channel->ioData[data_index];
 	}
 }
@@ -264,7 +270,6 @@ uint32_t retrieve_output(uint16_t node_id, uint8_t output_id, long long int time
 	sim_io_t *ch = &node_ios[node_id].output[output_id];
 	return do_retrieve(node_id, output_id, ch, time_val);
 }
-
 
 uint32_t retrieve_input(uint16_t node_id, uint8_t input_id, long long int time_val) {
 	sim_io_t *ch = &node_ios[node_id].input[input_id];
