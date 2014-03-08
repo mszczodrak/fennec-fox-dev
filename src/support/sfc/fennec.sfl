@@ -58,6 +58,8 @@ use application maxTest $(FENNEC_FOX_LIB)/Application/tests/maxTest (
 		uint32_t val = 0,
 		uint32_t delay = 0 )
 
+use application buttonLed $(FENNEC_FOX_LIB)/Application/tests/ButtonToLed ()
+
 use application StateSync $(FENNEC_FOX_LIB)/Application/StateSynchronization (
 		uint8_t resend = 6,
 		uint8_t supress = 1, 

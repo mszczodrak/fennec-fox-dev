@@ -32,10 +32,12 @@
   * @updated: 03/07/2014
   */
 
-#define BUTTON_WAIT_TIME        1024
-
 #ifndef __ButtonToLed_H_
 #define __ButtonToLed_H_
+
+#include <UserButton.h>
+
+#define BUTTON_WAIT_TIME        1024
 
 typedef nx_struct ButtonToLedMsg {
         nx_uint8_t counter;

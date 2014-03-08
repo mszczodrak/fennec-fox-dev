@@ -47,8 +47,8 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface LedsC;
-uses interface uses interface Timer<TMilli>;
+uses interface Leds;
+uses interface Timer<TMilli>;
 uses interface Get<button_state_t>;
 uses interface Notify<button_state_t>;
 
