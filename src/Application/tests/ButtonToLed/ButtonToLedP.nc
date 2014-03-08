@@ -58,6 +58,7 @@ implementation {
 
 uint8_t counter;
 message_t packet;
+bool turn_off = FALSE;
 
 task void send_message() {
 
@@ -86,7 +87,8 @@ task void send_message() {
 
 command error_t SplitControl.start() {
 	dbg("Application", "ButtonToLed SplitControl.start()");
-	counter++;
+	counter = 0;
+	turn_off = FALSE;
 	call Notify.enable();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -106,6 +108,8 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	call Leds.set(c->counter);
 	dbg("Application", "ButtonToLed event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
 	dbg("Application", "ButtonToLed receive counter: %d", c->counter);
+	turn_off = TRUE;
+	call Timer.startOneShot(LED_TURNOFF_TIME);
 	return msg;
 }
 
@@ -114,11 +118,19 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 }
 
 event void Timer.fired() {
-	post send_message();
+	if (turn_off == TRUE) {
+		turn_off = FALSE;
+		call Leds.set(0);
+	} else {
+		turn_off = TRUE;
+		call Timer.startOneShot(LED_TURNOFF_TIME);
+		post send_message();
+	}
 }
 
 event void Notify.notify( button_state_t state ) {
 	if ( state == BUTTON_PRESSED ) {
+		turn_off = FALSE;
 		counter++;
 		call Timer.startOneShot(BUTTON_WAIT_TIME);
 	}

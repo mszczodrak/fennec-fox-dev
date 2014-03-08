@@ -37,7 +37,8 @@
 
 #include <UserButton.h>
 
-#define BUTTON_WAIT_TIME        1024
+#define BUTTON_WAIT_TIME	1000
+#define LED_TURNOFF_TIME	5000
 
 typedef nx_struct ButtonToLedMsg {
         nx_uint8_t counter;
