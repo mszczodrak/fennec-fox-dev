@@ -84,8 +84,6 @@ task void start_done() {
 	state_transitioning = FALSE;
 }
 
-
-
 uint16_t get_conf_id_in_state(module_t module_id) {
 	uint8_t i;
 	conf_t conf_id;
