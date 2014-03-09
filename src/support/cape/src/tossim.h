@@ -106,7 +106,7 @@ class Mote {
   int generateNoise(int when);
 
   void writeInput(double val, int input_id, long long int time_val);
-  double readOutput(int input_id, long long int time_val);
+  uint32_t readOutput(int input_id, long long int time_val);
   
   Variable* getVariable(char* name);
   

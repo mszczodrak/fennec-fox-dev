@@ -216,7 +216,7 @@ void Mote::writeInput(double val, int input_id, long long int time_val) {
   sim_outside_write_input(id(), val, input_id, time_val);
 }
 
-double Mote::readOutput(int input_id, long long int time_val) {
+uint32_t Mote::readOutput(int input_id, long long int time_val) {
   return sim_outside_read_output(id(), input_id, time_val);
 }
 
