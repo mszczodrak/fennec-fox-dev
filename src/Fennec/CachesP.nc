@@ -38,7 +38,7 @@
 module CachesP @safe() {
 provides interface Fennec;
 provides interface SimpleStart;
-provides interface FennecWarnings;
+provides interface FennecState;
 uses interface SplitControl;
 }
 
@@ -58,8 +58,8 @@ task void check_event() {
 	dbg("Caches", "CachesP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == call Fennec.getStateId()) && (policies[i].event_mask == event_mask)) {
-			signal FennecWarnings.settingStateAndSeq();
 			call Fennec.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
+			signal FennecState.resend();
 			return;
 		}
 	}
@@ -251,15 +251,13 @@ async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t t
 async command error_t Fennec.checkPacket(message_t *msg) {
 	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
 		dbg("Caches", "CachesP Fennec.checPacket(0x%1x) - FAIL", msg);
-		signal FennecWarnings.detectWrongConfiguration();
+		signal FennecState.resend();
 		return FAIL;
 	} 
 	return SUCCESS;
 }
 
-default async event void FennecWarnings.detectWrongConfiguration() {}
-
-default async event void FennecWarnings.settingStateAndSeq() {}
+default async event void FennecState.resend() {}
 
 }
 

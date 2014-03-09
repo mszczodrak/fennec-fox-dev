@@ -129,16 +129,6 @@ struct event_module_conf {
 	conf_t 		conf_id;
 };
 
-nx_struct FFControl {
-	/* source of the of the configuration - variable based on Addressing */
-	nx_uint16_t crc;
-	nx_uint16_t seq;            /* sequence number of the configuration */
-//  nx_uint8_t vnet_id;         /* virtual network id */
-	nx_uint16_t conf_id;
-//  nx_uint8_t accepts;         /* number of new additional accepting configurations */
-  /* array of new accepts */
-};
-
 struct stack_configuration {
 	uint16_t conf_id;
 	uint8_t application;

@@ -34,6 +34,7 @@
 
 
 #include <Fennec.h>
+#include "StateSynchronization.h"
 
 generic configuration StateSynchronizationC() {
 provides interface SplitControl;
@@ -62,7 +63,7 @@ NetworkPacketAcknowledgements = StateSynchronizationP.NetworkPacketAcknowledgeme
 
 components CachesC;
 StateSynchronizationP.Fennec -> CachesC;
-StateSynchronizationP.FennecWarnings -> CachesC;
+StateSynchronizationP.FennecState -> CachesC;
 
 components RandomC;
 StateSynchronizationP.Random -> RandomC;

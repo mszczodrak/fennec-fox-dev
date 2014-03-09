@@ -36,7 +36,7 @@
 configuration CachesC {
 provides interface SimpleStart;
 provides interface Fennec;
-provides interface FennecWarnings;
+provides interface FennecState;
 }
 
 implementation {
@@ -44,7 +44,7 @@ implementation {
 components CachesP;
 SimpleStart = CachesP;
 Fennec = CachesP;
-FennecWarnings = CachesP;
+FennecState = CachesP;
 
 components NetworkSchedulerC;
 CachesP.SplitControl -> NetworkSchedulerC;

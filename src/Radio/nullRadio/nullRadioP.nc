@@ -216,7 +216,7 @@ async command error_t RadioResource.release() {
 }
 
 async command bool RadioLinkPacketMetadata.highChannelQuality(message_t* msg) {
-       //      return call PacketLinkQuality.get(msg) > 105;
+	return call PacketLinkQuality.get(msg) > 105;
 }
 
 
