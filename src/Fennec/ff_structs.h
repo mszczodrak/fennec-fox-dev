@@ -37,8 +37,6 @@
 #define FF_STRUCTURES_H
 
 #include "ff_consts.h"
-//#include "ff_sensor_ids.h"
-//#include "ff_sensor_type.h"
 
 typedef uint16_t state_t;
 typedef uint16_t conf_t;
@@ -46,7 +44,7 @@ typedef uint16_t module_t;
 typedef uint16_t layer_t;
 typedef uint16_t event_t;
 
-
+/*
 typedef nx_struct fennec_header_t {
 	nxle_uint8_t length;
 	nxle_uint16_t fcf;
@@ -55,7 +53,7 @@ typedef nx_struct fennec_header_t {
 	nxle_uint16_t dest;
 	nxle_uint16_t src;
 } fennec_header_t;
-
+*/
 
 #include <Serial.h>
 
@@ -64,31 +62,6 @@ typedef union message_header {
   serial_header_t serial;
 } message_header_t;
 
-
-/*
-typedef struct ff_sensor_conf {
-	uint32_t sensitivity;
-	uint32_t rate;
-	uint8_t signaling;
-	uint8_t channel;
-} ff_sensor_conf_t;
-
-typedef struct ff_sensor_data {
-	uint8_t size;
-	uint32_t seq;
-	void *raw;
-	void *calibrated;
-	sensor_type_t type;
-	sensor_id_t id;
-} ff_sensor_data_t;
-
-typedef struct ff_sensor_client {
-	uint8_t id;
-	uint8_t read;
-	uint32_t rate;
-	uint32_t signaling;
-} ff_sensor_client_t;
-*/
 
 struct state {
         uint8_t 		state_id;
@@ -156,19 +129,6 @@ struct default_params {
 	int 	radio_default_size;
 };
 
-
-struct configuration_cache {
-	uint8_t *app;
-	uint32_t app_len;
-	uint8_t *net;
-	uint32_t net_len;
-	uint8_t *qoi;
-	uint32_t qoi_len;
-	uint8_t *mac;
-	uint32_t mac_len;
-	uint8_t *radio;
-	uint32_t radio_len;
-};
 
 struct fennec_policy {
 	uint16_t  src_conf;
