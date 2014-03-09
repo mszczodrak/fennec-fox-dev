@@ -34,7 +34,6 @@
 
 
 #include <Fennec.h>
-#include "hashing.h"
 
 generic module StateSynchronizationP() @safe() {
 provides interface SplitControl;
