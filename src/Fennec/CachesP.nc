@@ -40,6 +40,8 @@ provides interface Fennec;
 provides interface SimpleStart;
 provides interface FennecState;
 uses interface SplitControl;
+
+uses interface Random;
 }
 
 implementation {
@@ -158,22 +160,37 @@ command struct state* Fennec.getStateRecord() {
 	return &states[call Fennec.getStateId()];
 }
 
-command error_t Fennec.setStateAndSeq(state_t state_id, uint16_t seq) {
-	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", state_id, seq);
+command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
+	dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
-		dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d) - EBUSY", state_id, seq);
+		dbg("Caches", "CachesP Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
 		return EBUSY;	
 	}
-	/* check if this is only sequence change */
-	if (state_id == call Fennec.getStateId()) {
-		current_seq = seq;
+
+	if (new_seq < current_seq) {
+		signal FennecState.resend();
 		return SUCCESS;
 	}
-	next_state = state_id;
-	next_seq = seq;
-	state_transitioning = TRUE;
-	post stop_state();
+
+	if (new_seq > current_seq) {
+		if (new_state == current_state) {
+			current_seq = new_seq;
+			signal FennecState.resend();
+		} else {
+			next_state = new_state;
+			next_seq = new_seq;
+			state_transitioning = TRUE;
+			post stop_state();
+		}
+		return SUCCESS;
+	}
+
+	if ((new_state != current_state) && (new_seq == current_seq)) {
+		current_seq += (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
+		signal FennecState.resend();
+	}
+
 	return SUCCESS;
 }
 

@@ -49,4 +49,7 @@ FennecState = CachesP;
 components NetworkSchedulerC;
 CachesP.SplitControl -> NetworkSchedulerC;
 
+components RandomC;
+CachesP.Random -> RandomC;
+
 }
