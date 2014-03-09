@@ -66,9 +66,7 @@ uint8_t data_len;
 
 bool tx_busy = FALSE;
 message_t *app_data = NULL;
-nxle_uint32_t seqno;
-
-#define DISSEMINATION_SEQNO_UNKNOWN 0
+nx_uint32_t seqno;
 
 task void send_message() {
 	nx_struct trickle_net_header *header;
@@ -102,7 +100,7 @@ command error_t SplitControl.start() {
 	tx_busy = FALSE;
 	app_data = NULL;
 	data_len = 0;
-	seqno = DISSEMINATION_SEQNO_UNKNOWN;
+	seqno = 0;
 	call TrickleTimer.start[TRICKLE_ID]();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -175,36 +173,20 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	dbg("Network", "trickleP receive_data(0x%1x, 0x%1x, %d )", msg, payload, len);
 
-	if (seqno == DISSEMINATION_SEQNO_UNKNOWN &&
-		header->seq != DISSEMINATION_SEQNO_UNKNOWN) {
-		goto receive;
-
-	}
-
-	if (header->seq == DISSEMINATION_SEQNO_UNKNOWN &&
-		seqno != DISSEMINATION_SEQNO_UNKNOWN) {
+	if ((int32_t)(header->seq - seqno) < 0) {
 		call TrickleTimer.reset[TRICKLE_ID]();
-		goto snoop;
+		return msg;
+
 	}
 
-	if ((int32_t)(header->seq - seqno) > 0) {
-		goto receive;
-
-
-	} else if ( (int32_t)(header->seq - seqno) == 0) {
+	if ( (int32_t)(header->seq - seqno) == 0) {
 		call TrickleTimer.incrementCounter[TRICKLE_ID]();
-	} else {
-		/* Trickle source code is not sure what to do about it */
-		/* Immediate send */
-		post send_message();
+		return signal NetworkSnoop.receive(msg, 
+			ptr + sizeof(nx_struct trickle_net_header), 
+			len - sizeof(nx_struct trickle_net_header));
+
 	}
 
-snoop:
-	return signal NetworkSnoop.receive(msg, 
-		ptr + sizeof(nx_struct trickle_net_header), 
-		len - sizeof(nx_struct trickle_net_header));
-
-receive:
 	dbg("Network", "trickleP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
 		ptr + sizeof(nx_struct trickle_net_header), 
 		len - sizeof(nx_struct trickle_net_header));
