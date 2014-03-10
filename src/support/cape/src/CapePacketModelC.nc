@@ -163,17 +163,17 @@ event bool GainRadioModel.shouldAck(message_t* msg) {
 	}
 }
 
-async command error_t RadioCCA.request() {
-        //if (call PacketIndicator.isReceiving()) {
-//                signal RadioCCA.done(EBUSY);
-//                return EBUSY;
-        //}
-
+task void checkCCA() {
 	if (call GainRadioModel.clearChannel()) {
 		signal RadioCCA.done(SUCCESS);
-		return SUCCESS;
+	} else {
+		signal RadioCCA.done(EBUSY);
 	}
-	return EBUSY;
+}
+
+async command error_t RadioCCA.request() {
+	post checkCCA();
+	return SUCCESS;
 }
 
  

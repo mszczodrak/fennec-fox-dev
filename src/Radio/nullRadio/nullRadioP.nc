@@ -32,7 +32,7 @@
 #include <Fennec.h>
 #include "nullRadio.h"
 
-module nullRadioP @safe() {
+generic module nullRadioP() @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface Resource as RadioResource;

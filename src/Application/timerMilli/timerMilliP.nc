@@ -32,8 +32,68 @@
   */
 
 
-#ifndef __timerSecond_APP_H_
-#define __timerSecond_APP_H_
+#include <Fennec.h>
+#include "timerMilli.h"
+
+generic module timerMilliP() {
+provides interface SplitControl;
+
+uses interface timerMilliParams;
+
+uses interface AMSend as NetworkAMSend;
+uses interface Receive as NetworkReceive;
+uses interface Receive as NetworkSnoop;
+uses interface AMPacket as NetworkAMPacket;
+uses interface Packet as NetworkPacket;
+uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+
+uses interface Timer<TMilli>;
+provides interface Event;
+}
+
+implementation {
+
+/** Available Parameters
+	uint32_t delay = 1000,
+	uint16_t src = 0
+*/
 
 
-#endif
+command error_t SplitControl.start() {
+	dbg("Application", "timerMilli SplitControl.start()");
+	dbg("Application", "timerMilli src: %d", call timerMilliParams.get_src());
+
+	if ((call timerMilliParams.get_src() == BROADCAST) || 
+		(call timerMilliParams.get_src() == TOS_NODE_ID)) {
+		dbg("Application", "timerMilli will fire in %d ms", call timerMilliParams.get_delay());
+		call Timer.startOneShot(call timerMilliParams.get_delay());
+
+	}
+	signal SplitControl.startDone(SUCCESS);
+	return SUCCESS;
+}
+
+command error_t SplitControl.stop() {
+	call Timer.stop();
+	dbg("Application", "timerMilli SplitControl.stop()");
+	signal SplitControl.stopDone(SUCCESS);
+	return SUCCESS;
+}
+
+
+event void Timer.fired() {
+	dbg("Application", "timerMilli signal Event.occured(TRUE)");
+	signal Event.occured(TRUE);
+}
+
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+
+event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+}

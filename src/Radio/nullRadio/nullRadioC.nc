@@ -29,7 +29,7 @@
   *
   * @author: Marcin K Szczodrak
   */
-configuration nullRadioC {
+generic configuration nullRadioC() {
 provides interface SplitControl;
 provides interface Resource as RadioResource;
 
@@ -52,7 +52,7 @@ uses interface nullRadioParams;
 
 implementation {
 
-components nullRadioP;
+components new nullRadioP();
 SplitControl = nullRadioP;
 nullRadioParams = nullRadioP;
 RadioReceive = nullRadioP.RadioReceive;

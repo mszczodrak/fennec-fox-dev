@@ -32,70 +32,8 @@
   */
 
 
-#include <Fennec.h>
-#include "timerSecondApp.h"
-
-generic module timerSecondAppP() {
-provides interface SplitControl;
-
-uses interface timerSecondAppParams;
-
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-
-uses interface Timer<TMilli>;
-provides interface Event;
-}
-
-implementation {
-
-/** Available Parameters
-	uint32_t delay = 1000,
-	uint16_t src = 0
-*/
+#ifndef __timerMilli_H_
+#define __timerMilli_H_
 
 
-command error_t SplitControl.start() {
-	dbg("Application", "timerSecondApp SplitControl.start()");
-	if ((call timerSecondAppParams.get_src() == BROADCAST) || 
-		(call timerSecondAppParams.get_src() == TOS_NODE_ID)) {
-
-		call Timer.startPeriodic(call timerSecondAppParams.get_delay());
-
-	}
-
-	signal SplitControl.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t SplitControl.stop() {
-	call Timer.stop();
-	dbg("Application", "timerSecondApp SplitControl.start()");
-	signal SplitControl.stopDone(SUCCESS);
-	return SUCCESS;
-}
-
-
-event void Timer.fired() {
-	signal Event.occured(TRUE);
-}
-
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
-
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	return msg;
-}
-
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	return msg;
-}
-
-event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {
-}
-
-
-}
+#endif

@@ -32,9 +32,7 @@
   * @updated: 12/28/2013
   */
 
-
-
-configuration capeC {
+generic configuration capeC() {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -59,7 +57,7 @@ provides interface RadioCCA;
 
 implementation {
 
-components capeP;
+components new capeP();
 SplitControl = capeP;
 RadioState = capeP;
 capeParams = capeP;

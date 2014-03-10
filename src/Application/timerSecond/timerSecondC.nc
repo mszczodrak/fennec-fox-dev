@@ -31,14 +31,10 @@
   * @author: Marcin K Szczodrak
   */
 
-
-#include <Fennec.h>
-#include "timerMilliApp.h"
-
-generic module timerMilliAppP() {
+generic configuration timerSecondC() {
 provides interface SplitControl;
 
-uses interface timerMilliAppParams;
+uses interface timerSecondParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -47,53 +43,25 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface Timer<TMilli>;
 provides interface Event;
 }
 
 implementation {
+components new timerSecondP();
+SplitControl = timerSecondP;
 
-/** Available Parameters
-	uint32_t delay = 1000,
-	uint16_t src = 0
-*/
+timerSecondParams = timerSecondP;
 
+NetworkAMSend = timerSecondP.NetworkAMSend;
+NetworkReceive = timerSecondP.NetworkReceive;
+NetworkSnoop = timerSecondP.NetworkSnoop;
+NetworkAMPacket = timerSecondP.NetworkAMPacket;
+NetworkPacket = timerSecondP.NetworkPacket;
+NetworkPacketAcknowledgements = timerSecondP.NetworkPacketAcknowledgements;
+NetworkStatus = timerSecondP.NetworkStatus;
 
-command error_t SplitControl.start() {
-	dbg("Application", "timerMilliApp SplitControl.start()");
-	dbg("Application", "timerMilliApp src: %d", call timerMilliAppParams.get_src());
+Event = timerSecondP;
 
-	if ((call timerMilliAppParams.get_src() == BROADCAST) || 
-		(call timerMilliAppParams.get_src() == TOS_NODE_ID)) {
-		dbg("Application", "timerMilliApp will fire in %d ms", call timerMilliAppParams.get_delay());
-		call Timer.startOneShot(call timerMilliAppParams.get_delay());
-
-	}
-	signal SplitControl.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t SplitControl.stop() {
-	call Timer.stop();
-	dbg("Application", "timerMilliApp SplitControl.stop()");
-	signal SplitControl.stopDone(SUCCESS);
-	return SUCCESS;
-}
-
-
-event void Timer.fired() {
-	dbg("Application", "timerMilliApp signal Event.occured(TRUE)");
-	signal Event.occured(TRUE);
-}
-
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
-
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	return msg;
-}
-
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	return msg;
-}
-
+components new TimerMilliC();
+timerSecondP.Timer -> TimerMilliC;
 }

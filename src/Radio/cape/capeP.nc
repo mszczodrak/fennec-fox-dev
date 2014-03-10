@@ -37,7 +37,7 @@
 #include <Fennec.h>
 #include "cape.h"
 
-module capeP @safe() {
+generic module capeP() @safe() {
 
 provides interface SplitControl;
 provides interface RadioState;
@@ -300,15 +300,10 @@ sim_event_t* allocate_deliver_event(int node, message_t* msg, sim_time_t t) {
 	return evt;
 }
 
-void active_message_deliver(int node, message_t* msg, sim_time_t t) @C() @spontaneous() {
+void active_message_deliver(int node, message_t* msg, sim_time_t t) @spontaneous() {
 	sim_event_t* evt = allocate_deliver_event(node, msg, t);
 	sim_queue_insert(evt);
 }
-
-
-
-
-
 
 
 /* Radio Packet */

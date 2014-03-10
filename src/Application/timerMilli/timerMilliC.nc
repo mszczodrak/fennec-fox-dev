@@ -31,10 +31,10 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration timerSecondAppC() {
+generic configuration timerMilliC() {
 provides interface SplitControl;
 
-uses interface timerSecondAppParams;
+uses interface timerMilliParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -47,21 +47,20 @@ provides interface Event;
 }
 
 implementation {
-components new timerSecondAppP();
-SplitControl = timerSecondAppP;
+components new timerMilliP();
+SplitControl = timerMilliP;
 
-timerSecondAppParams = timerSecondAppP;
+timerMilliParams = timerMilliP;
 
-NetworkAMSend = timerSecondAppP.NetworkAMSend;
-NetworkReceive = timerSecondAppP.NetworkReceive;
-NetworkSnoop = timerSecondAppP.NetworkSnoop;
-NetworkAMPacket = timerSecondAppP.NetworkAMPacket;
-NetworkPacket = timerSecondAppP.NetworkPacket;
-NetworkPacketAcknowledgements = timerSecondAppP.NetworkPacketAcknowledgements;
-NetworkStatus = timerSecondAppP.NetworkStatus;
+NetworkAMSend = timerMilliP.NetworkAMSend;
+NetworkReceive = timerMilliP.NetworkReceive;
+NetworkSnoop = timerMilliP.NetworkSnoop;
+NetworkAMPacket = timerMilliP.NetworkAMPacket;
+NetworkPacket = timerMilliP.NetworkPacket;
+NetworkPacketAcknowledgements = timerMilliP.NetworkPacketAcknowledgements;
 
-Event = timerSecondAppP;
+Event = timerMilliP;
 
 components new TimerMilliC();
-timerSecondAppP.Timer -> TimerMilliC;
+timerMilliP.Timer -> TimerMilliC;
 }

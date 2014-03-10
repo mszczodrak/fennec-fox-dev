@@ -32,8 +32,8 @@
   */
 
 
-#ifndef __timerMilli_APP_H_
-#define __timerMilli_APP_H_
+#ifndef __timerSecond_H_
+#define __timerSecond_H_
 
 
 #endif
