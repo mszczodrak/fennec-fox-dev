@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "cc2420x.h"
 
-generic module cc2420xP() @safe() {
+generic module cc2420xP(uint8_t process_id) @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface RadioBuffer;

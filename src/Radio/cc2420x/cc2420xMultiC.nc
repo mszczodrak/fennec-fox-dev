@@ -33,16 +33,12 @@
   */
 
 
-generic configuration cc2420xC(uint8_t process_id) {
-provides interface SplitControl;
+configuration cc2420xMultiC {
 provides interface RadioReceive;
-
-uses interface cc2420xParams;
 
 provides interface Resource as RadioResource;
 
 provides interface RadioPacket;
-provides interface RadioBuffer;
 provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
@@ -57,29 +53,41 @@ provides interface RadioCCA;
 
 implementation {
 
-components new cc2420xP(process_id);
-components cc2420xMultiC;
+components CC2420XDriverLayerC;
+components new RadioAlarmC();
+components new SoftwareAckLayerC();
 
-SplitControl = cc2420xP;
-cc2420xParams = cc2420xP;
-RadioReceive = cc2420xP.RadioReceive;
-RadioBuffer = cc2420xP.RadioBuffer;
-RadioSend = cc2420xP.RadioSend;
-RadioState = cc2420xP.RadioState;
+//components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
+//RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
-RadioPacket = cc2420xMultiC.RadioPacket;
-cc2420xP.RadioPacket -> cc2420xMultiC.RadioPacket;
-cc2420xP.SubRadioSend -> cc2420xMultiC.RadioSend;
-cc2420xP.SubRadioReceive -> cc2420xMultiC.RadioReceive;
-cc2420xP.SubRadioState -> cc2420xMultiC.RadioState;
+RadioPacket = CC2420XDriverLayerC.RadioPacket;
+RadioSend = AutoResourceAcquireLayerC;
+RadioReceive = SoftwareAckLayerC.RadioReceive;
+RadioState = CC2420XDriverLayerC.RadioState;
 
-RadioResource = cc2420xMultiC.RadioResource;
+// -------- RadioAlarm
 
-PacketTransmitPower = cc2420xMultiC.PacketTransmitPower;
-PacketLinkQuality = cc2420xMultiC.PacketLinkQuality;
-PacketRSSI = cc2420xMultiC.PacketRSSI;
-RadioLinkPacketMetadata = cc2420xMultiC;
-PacketTimeSync = cc2420xMultiC.PacketTimeSync;
-RadioCCA = cc2420xMultiC.RadioCCA;
+RadioAlarmC.Alarm -> CC2420XDriverLayerC;
+
+components new AutoResourceAcquireLayerC();
+AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+AutoResourceAcquireLayerC -> SoftwareAckLayerC.RadioSend; 
+
+components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
+RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
+
+SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
+SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
+SoftwareAckLayerC.RadioPacket -> CC2420XDriverLayerC.RadioPacket;
+
+PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;
+PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
+PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
+RadioLinkPacketMetadata = CC2420XDriverLayerC;
+PacketTimeSync = CC2420XDriverLayerC.PacketTimeSync;
+RadioCCA = CC2420XDriverLayerC.RadioCCA;
+
+CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
 }
