@@ -33,7 +33,7 @@
   */
 
 
-configuration cc2420xC {
+generic configuration cc2420xC() {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -57,7 +57,7 @@ provides interface RadioCCA;
 
 implementation {
 
-components cc2420xP;
+components new cc2420xP();
 components CC2420XDriverLayerC;
 
 components new RadioAlarmC();
