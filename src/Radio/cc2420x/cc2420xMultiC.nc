@@ -39,7 +39,7 @@ provides interface RadioReceive[uint8_t process_id];
 provides interface Resource as RadioResource;
 
 provides interface RadioPacket;
-provides interface RadioSend;
+provides interface RadioSend[uint8_t process_id];
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -62,10 +62,12 @@ components new SoftwareAckLayerC();
 //RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
 RadioPacket = CC2420XDriverLayerC.RadioPacket;
-RadioSend = AutoResourceAcquireLayerC;
+//RadioSend = AutoResourceAcquireLayerC;
 
+RadioSend = cc2420xMultiP.RadioSend;
 RadioReceive = cc2420xMultiP.RadioReceive;
 cc2420xMultiP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
+cc2420xMultiP.SubRadioSend -> AutoResourceAcquireLayerC;
 
 RadioState = CC2420XDriverLayerC.RadioState;
 

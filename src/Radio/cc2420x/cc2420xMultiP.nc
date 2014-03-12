@@ -34,22 +34,48 @@
 
 module cc2420xMultiP {
 provides interface RadioReceive[uint8_t process_id];
+provides interface RadioSend[uint8_t process_id];
+
 uses interface RadioReceive as SubRadioReceive;
+uses interface RadioSend as SubRadioSend;
 }
 
 implementation {
 
+norace uint8_t last_proc_id;
+
+async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool useCca) {
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+	header->destpan = process_id;
+	msg->conf = header->destpan;
+	return call SubRadioSend.send(msg, useCca);
+}
+
+
 async event bool SubRadioReceive.header(message_t* msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	msg->conf = header->destpan;
+	last_proc_id = header->dest;
 	return signal RadioReceive.header[msg->conf](msg);
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	msg->conf = header->destpan;
+	last_proc_id = header->dest;
 	return signal RadioReceive.receive[msg->conf](msg);
 }
+
+async event void SubRadioSend.ready() {
+        signal RadioSend.ready[last_proc_id]();
+}
+
+async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+	last_proc_id = header->dest;
+	return signal RadioSend.sendDone[header->destpan](msg, error);
+}
+
 
 default async event bool RadioReceive.header[uint8_t process_id](message_t* msg) {
 	return FALSE;
@@ -58,6 +84,16 @@ default async event bool RadioReceive.header[uint8_t process_id](message_t* msg)
 default async event message_t * RadioReceive.receive[uint8_t process_id](message_t* msg) {
 	return msg;
 }
+
+default async event void RadioSend.sendDone[uint8_t process_id](message_t* msg, error_t error) {
+
+}
+
+default async event void RadioSend.ready[uint8_t process_id]() {
+
+}
+
+
 
 
 }

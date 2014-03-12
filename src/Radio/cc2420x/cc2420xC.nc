@@ -69,7 +69,7 @@ RadioState = cc2420xP.RadioState;
 
 RadioPacket = cc2420xMultiC.RadioPacket;
 cc2420xP.RadioPacket -> cc2420xMultiC.RadioPacket;
-cc2420xP.SubRadioSend -> cc2420xMultiC.RadioSend;
+cc2420xP.SubRadioSend -> cc2420xMultiC.RadioSend[process_id];
 cc2420xP.SubRadioReceive -> cc2420xMultiC.RadioReceive[process_id];
 cc2420xP.SubRadioState -> cc2420xMultiC.RadioState;
 
