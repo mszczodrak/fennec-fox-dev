@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2013, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,42 @@
   * Fennec Fox nullRadio module
   *
   * @author: Marcin K Szczodrak
+  * @updated: 03/07/2014
   */
 
-generic configuration nullRadioC(uint8_t process_id) {
-provides interface SplitControl;
-provides interface Resource as RadioResource;
-
-provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
-provides interface RadioReceive;
-
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint32_t> as PacketTimeSync;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
-
-provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
-
-uses interface nullRadioParams;
+module nullRadioMultiP {
+provides interface SplitControl[uint8_t process_id];
 }
 
 implementation {
 
-components new nullRadioP(process_id);
-SplitControl = nullRadioP;
-nullRadioParams = nullRadioP;
-RadioReceive = nullRadioP.RadioReceive;
+uint8_t proc_id;
 
-RadioResource = nullRadioP.RadioResource;
+task void startDone() {
+	signal SplitControl.startDone[proc_id](SUCCESS);
+}
 
-RadioBuffer = nullRadioP.RadioBuffer;
-RadioPacket = nullRadioP.RadioPacket;
-RadioSend = nullRadioP.RadioSend;
+task void stopDone() {
+	signal SplitControl.stopDone[proc_id](SUCCESS);
+}
 
-RadioState = nullRadioP.RadioState;
-RadioLinkPacketMetadata = nullRadioP.RadioLinkPacketMetadata;
-RadioCCA = nullRadioP.RadioCCA;
+command error_t SplitControl.start[uint8_t process_id]() {
+	proc_id = process_id;
+	post startDone();
+	return SUCCESS;
+}
 
-PacketTransmitPower = nullRadioP.PacketTransmitPower;
-PacketRSSI = nullRadioP.PacketRSSI;
-PacketTimeSync = nullRadioP.PacketTimeSync;
-PacketLinkQuality = nullRadioP.PacketLinkQuality;
 
-components nullRadioMultiC;
-nullRadioP.SubSplitControl -> nullRadioMultiC.SplitControl[process_id];
+command error_t SplitControl.stop[uint8_t process_id]() {
+	proc_id = process_id;
+	post stopDone();
+	return SUCCESS;
+}
+
+default event void SplitControl.startDone[uint8_t process_id](error_t err) {
+}
+
+default event void SplitControl.stopDone[uint8_t process_id](error_t err) {
+}
 
 }

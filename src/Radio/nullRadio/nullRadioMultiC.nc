@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2013, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,15 @@
   * Fennec Fox nullRadio module
   *
   * @author: Marcin K Szczodrak
+  * @updated: 03/07/2014
   */
 
-generic configuration nullRadioC(uint8_t process_id) {
-provides interface SplitControl;
-provides interface Resource as RadioResource;
 
-provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
-provides interface RadioReceive;
-
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint32_t> as PacketTimeSync;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
-
-provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
-
-uses interface nullRadioParams;
+configuration nullRadioMultiC {
+provides interface SplitControl[uint8_t process_id];
 }
 
 implementation {
-
-components new nullRadioP(process_id);
-SplitControl = nullRadioP;
-nullRadioParams = nullRadioP;
-RadioReceive = nullRadioP.RadioReceive;
-
-RadioResource = nullRadioP.RadioResource;
-
-RadioBuffer = nullRadioP.RadioBuffer;
-RadioPacket = nullRadioP.RadioPacket;
-RadioSend = nullRadioP.RadioSend;
-
-RadioState = nullRadioP.RadioState;
-RadioLinkPacketMetadata = nullRadioP.RadioLinkPacketMetadata;
-RadioCCA = nullRadioP.RadioCCA;
-
-PacketTransmitPower = nullRadioP.PacketTransmitPower;
-PacketRSSI = nullRadioP.PacketRSSI;
-PacketTimeSync = nullRadioP.PacketTimeSync;
-PacketLinkQuality = nullRadioP.PacketLinkQuality;
-
-components nullRadioMultiC;
-nullRadioP.SubSplitControl -> nullRadioMultiC.SplitControl[process_id];
-
+components nullRadioMultiP;
+SplitControl = nullRadioMultiP;
 }

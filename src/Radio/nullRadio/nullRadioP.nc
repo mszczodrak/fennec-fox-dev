@@ -52,6 +52,8 @@ provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
 
+uses interface SplitControl as SubSplitControl;
+
 }
 
 implementation {
@@ -290,6 +292,11 @@ async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
 }
 
 
+event void SubSplitControl.startDone(error_t err) {
+}
+
+event void SubSplitControl.stopDone(error_t err) {
+}
 
 
 }
