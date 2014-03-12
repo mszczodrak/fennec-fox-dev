@@ -57,6 +57,11 @@ provides interface RadioCCA;
 
 implementation {
 
+enum {
+	CLIENT_ID = unique("cape_client_count"),
+
+};
+
 components new capeP();
 SplitControl = capeP;
 RadioState = capeP;
@@ -81,6 +86,6 @@ components CpmModelC;
 capeP.AMControl -> CapePacketModelC;
 capeP.Model -> CapePacketModelC.Packet;
 
-CapePacketModelC.GainRadioModel -> CpmModelC;
+CapePacketModelC.GainRadioModel -> CpmModelC.GainRadioModel[CLIENT_ID];
 RadioCCA = CapePacketModelC.RadioCCA;
 }
