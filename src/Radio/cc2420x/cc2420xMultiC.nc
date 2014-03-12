@@ -34,7 +34,7 @@
 
 
 configuration cc2420xMultiC {
-provides interface RadioReceive;
+provides interface RadioReceive[uint8_t process_id];
 
 provides interface Resource as RadioResource;
 
@@ -53,6 +53,7 @@ provides interface RadioCCA;
 
 implementation {
 
+components cc2420xMultiP;
 components CC2420XDriverLayerC;
 components new RadioAlarmC();
 components new SoftwareAckLayerC();
@@ -62,7 +63,10 @@ components new SoftwareAckLayerC();
 
 RadioPacket = CC2420XDriverLayerC.RadioPacket;
 RadioSend = AutoResourceAcquireLayerC;
-RadioReceive = SoftwareAckLayerC.RadioReceive;
+
+RadioReceive = cc2420xMultiP.RadioReceive;
+cc2420xMultiP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
+
 RadioState = CC2420XDriverLayerC.RadioState;
 
 // -------- RadioAlarm

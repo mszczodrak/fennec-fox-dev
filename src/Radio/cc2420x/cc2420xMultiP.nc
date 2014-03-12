@@ -32,54 +32,32 @@
   * @updated: 01/05/2014
   */
 
-
-generic configuration cc2420xC(uint8_t process_id) {
-provides interface SplitControl;
-provides interface RadioReceive;
-
-uses interface cc2420xParams;
-
-provides interface Resource as RadioResource;
-
-provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
-
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint32_t> as PacketTimeSync;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
-
-provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
+module cc2420xMultiP {
+provides interface RadioReceive[uint8_t process_id];
+uses interface RadioReceive as SubRadioReceive;
 }
 
 implementation {
 
-components new cc2420xP(process_id);
-components cc2420xMultiC;
+async event bool SubRadioReceive.header(message_t* msg) {
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+	msg->conf = header->destpan;
+	return signal RadioReceive.header[msg->conf](msg);
+}
 
-SplitControl = cc2420xP;
-cc2420xParams = cc2420xP;
-RadioReceive = cc2420xP.RadioReceive;
-RadioBuffer = cc2420xP.RadioBuffer;
-RadioSend = cc2420xP.RadioSend;
-RadioState = cc2420xP.RadioState;
+async event message_t *SubRadioReceive.receive(message_t* msg) {
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+	msg->conf = header->destpan;
+	return signal RadioReceive.receive[msg->conf](msg);
+}
 
-RadioPacket = cc2420xMultiC.RadioPacket;
-cc2420xP.RadioPacket -> cc2420xMultiC.RadioPacket;
-cc2420xP.SubRadioSend -> cc2420xMultiC.RadioSend;
-cc2420xP.SubRadioReceive -> cc2420xMultiC.RadioReceive[process_id];
-cc2420xP.SubRadioState -> cc2420xMultiC.RadioState;
+default async event bool RadioReceive.header[uint8_t process_id](message_t* msg) {
+	return FALSE;
+}
 
-RadioResource = cc2420xMultiC.RadioResource;
+default async event message_t * RadioReceive.receive[uint8_t process_id](message_t* msg) {
+	return msg;
+}
 
-PacketTransmitPower = cc2420xMultiC.PacketTransmitPower;
-PacketLinkQuality = cc2420xMultiC.PacketLinkQuality;
-PacketRSSI = cc2420xMultiC.PacketRSSI;
-RadioLinkPacketMetadata = cc2420xMultiC;
-PacketTimeSync = cc2420xMultiC.PacketTimeSync;
-RadioCCA = cc2420xMultiC.RadioCCA;
 
 }
