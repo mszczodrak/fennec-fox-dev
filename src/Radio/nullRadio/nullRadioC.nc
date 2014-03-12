@@ -29,7 +29,8 @@
   *
   * @author: Marcin K Szczodrak
   */
-generic configuration nullRadioC() {
+
+generic configuration nullRadioC(uint8_t process_id) {
 provides interface SplitControl;
 provides interface Resource as RadioResource;
 
@@ -52,7 +53,7 @@ uses interface nullRadioParams;
 
 implementation {
 
-components new nullRadioP();
+components new nullRadioP(process_id);
 SplitControl = nullRadioP;
 nullRadioParams = nullRadioP;
 RadioReceive = nullRadioP.RadioReceive;

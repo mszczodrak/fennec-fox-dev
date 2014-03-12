@@ -32,7 +32,7 @@
   * @updated: 12/28/2013
   */
 
-generic configuration capeC() {
+generic configuration capeC(uint8_t process_id) {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -57,12 +57,7 @@ provides interface RadioCCA;
 
 implementation {
 
-enum {
-	CLIENT_ID = unique("cape_client_count"),
-
-};
-
-components new capeP();
+components new capeP(process_id);
 SplitControl = capeP;
 RadioState = capeP;
 capeParams = capeP;
@@ -80,12 +75,10 @@ RadioBuffer = capeP.RadioBuffer;
 RadioPacket = capeP.RadioPacket;
 RadioSend = capeP.RadioSend;
 
-components CapePacketModelC as CapePacketModelC;
-components CpmModelC;
+components capeMultiC;
 
-capeP.AMControl -> CapePacketModelC;
-capeP.Model -> CapePacketModelC.Packet;
+capeP.AMControl -> capeMultiC.SplitControl[process_id];
+capeP.Model -> capeMultiC.Packet[process_id];
+RadioCCA = capeMultiC.RadioCCA;
 
-CapePacketModelC.GainRadioModel -> CpmModelC.GainRadioModel[CLIENT_ID];
-RadioCCA = CapePacketModelC.RadioCCA;
 }

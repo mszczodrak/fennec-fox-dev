@@ -37,7 +37,7 @@
 #include <Fennec.h>
 #include "cape.h"
 
-generic module capeP() @safe() {
+generic module capeP(uint8_t process_id) @safe() {
 
 provides interface SplitControl;
 provides interface RadioState;

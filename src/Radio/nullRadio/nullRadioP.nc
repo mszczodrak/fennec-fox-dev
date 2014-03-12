@@ -29,10 +29,11 @@
   *
   * @author: Marcin K Szczodrak
   */
+
 #include <Fennec.h>
 #include "nullRadio.h"
 
-generic module nullRadioP() @safe() {
+generic module nullRadioP(uint8_t process_id) @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface Resource as RadioResource;
