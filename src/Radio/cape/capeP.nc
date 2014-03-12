@@ -79,6 +79,7 @@ task void start_done() {
         if (err == SUCCESS) {
                 cape_radio_state = S_STARTED;
         }
+	dbg("Radio", "cape signal RadioState.done()");
 	signal RadioState.done();
 	if (sc == TRUE) {
 		dbg("Radio", "cape signal SplitControl.startDone(%d)", err);
@@ -141,7 +142,7 @@ command error_t RadioState.standby() {
 
 command error_t RadioState.turnOn() {
 	auto_ack = TRUE;
-	dbg("Radio", "cape SplitControl.start()");
+	dbg("Radio", "cape RadioState.turnOn()");
 	call AMControl.start();
 
         err = SUCCESS;
@@ -163,7 +164,7 @@ event void AMControl.stopDone(error_t error) {
 }
 
 command error_t RadioState.turnOff() {
-	dbg("Radio", "cape SplitControl.stop()");
+	dbg("Radio", "cape RadioState.turnOff()");
 	call AMControl.stop();
 
         err = SUCCESS;
@@ -185,12 +186,14 @@ command error_t RadioState.turnOff() {
 
 command error_t SplitControl.start() {
 	sc = TRUE;
+	dbg("Radio", "cape SplitControl.start()");
 	return call RadioState.turnOn();
 }
 
 
 command error_t SplitControl.stop() {
 	sc = TRUE;
+	dbg("Radio", "cape SplitControl.stop()");
 	return call RadioState.turnOff();
 }
 
