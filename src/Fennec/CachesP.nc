@@ -264,11 +264,13 @@ async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t t
 }
 
 async command error_t Fennec.checkPacket(message_t *msg) {
+/*
 	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
 		dbg("Caches", "CachesP Fennec.checPacket(0x%1x) - FAIL", msg);
 		signal FennecState.resend();
 		return FAIL;
 	} 
+*/
 	return SUCCESS;
 }
 

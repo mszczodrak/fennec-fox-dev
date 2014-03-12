@@ -164,7 +164,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	header = (csmaca_header_t*)call SubSend.getPayload( msg, len );
 
-	call MacAMPacket.setGroup(msg, msg->conf);
+	//call MacAMPacket.setGroup(msg, msg->conf);
 
 	getMetadata(msg)->crc = 0;
 	getMetadata(msg)->rssi = 0;

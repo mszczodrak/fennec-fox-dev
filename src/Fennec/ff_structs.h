@@ -92,7 +92,7 @@ typedef nx_struct message_t {
 	nx_uint8_t header[sizeof(message_header_t)];
 	nx_uint8_t data[FENNEC_MSG_DATA_LEN];
 	nx_uint8_t metadata[sizeof(metadata_t)];
-	nx_uint16_t conf;
+//	nx_uint16_t conf;
 } message_t;
 
 

@@ -47,23 +47,23 @@ norace uint8_t last_proc_id;
 async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool useCca) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	header->destpan = process_id;
-	msg->conf = header->destpan;
+	//msg->conf = header->destpan;
 	return call SubRadioSend.send(msg, useCca);
 }
 
 
 async event bool SubRadioReceive.header(message_t* msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	msg->conf = header->destpan;
+	//msg->conf = header->destpan;
 	last_proc_id = header->dest;
-	return signal RadioReceive.header[msg->conf](msg);
+	return signal RadioReceive.header[header->destpan](msg);
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	msg->conf = header->destpan;
 	last_proc_id = header->dest;
-	return signal RadioReceive.receive[msg->conf](msg);
+	//msg->conf = header->destpan;
+	return signal RadioReceive.receive[header->destpan](msg);
 }
 
 async event void SubRadioSend.ready() {
@@ -92,8 +92,6 @@ default async event void RadioSend.sendDone[uint8_t process_id](message_t* msg, 
 default async event void RadioSend.ready[uint8_t process_id]() {
 
 }
-
-
 
 
 }

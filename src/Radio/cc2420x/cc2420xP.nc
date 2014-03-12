@@ -141,8 +141,6 @@ task void load_done() {
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	header->destpan = msg->conf;
 	m = msg;
 	signal RadioBuffer.loadDone(msg, SUCCESS);
 	return SUCCESS;
@@ -167,15 +165,11 @@ async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
 
 
 async event bool SubRadioReceive.header(message_t* msg) {
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	msg->conf = header->destpan;
 	return signal RadioReceive.header(msg);
 }
 
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	msg->conf = header->destpan;
 	return signal RadioReceive.receive(msg);
 }
 
