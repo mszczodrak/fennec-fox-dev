@@ -95,7 +95,6 @@ uses interface GpioInterrupt as FifopInterrupt;
 
 uses interface RadioAlarm;
 uses interface Leds;
-uses interface cc2420xParams;
 }
 
 implementation {
@@ -376,8 +375,9 @@ command error_t SoftwareInit.init() {
 	// start up voltage regulator
     	call VREN.set();
     	call BusyWait.wait( 600 ); // .6ms VR startup time
-	txPower = call cc2420xParams.get_power();
-	channel = call cc2420xParams.get_channel();
+
+	txPower = CC2420_DEF_RFPOWER;
+	channel = CC2420_DEF_CHANNEL;
     		
     	// do a reset
 	call RSTN.clr();

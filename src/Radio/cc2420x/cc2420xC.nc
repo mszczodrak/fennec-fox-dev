@@ -33,7 +33,7 @@
   */
 
 
-generic configuration cc2420xC() {
+generic configuration cc2420xC(uint8_t process_id) {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -83,8 +83,6 @@ cc2420xP.SubRadioState -> CC2420XDriverLayerC.RadioState;
 
 RadioAlarmC.Alarm -> CC2420XDriverLayerC;
 
-cc2420xParams = CC2420XDriverLayerC;
-
 components new AutoResourceAcquireLayerC();
 AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 AutoResourceAcquireLayerC -> SoftwareAckLayerC.RadioSend; 
@@ -93,8 +91,8 @@ components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
 RadioResource = SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
 
 SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend;
-SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive;
+SoftwareAckLayerC.SubSend -> CC2420XDriverLayerC.RadioSend[process_id];
+SoftwareAckLayerC.SubReceive -> CC2420XDriverLayerC.RadioReceive[process_id];
 SoftwareAckLayerC.RadioPacket -> CC2420XDriverLayerC.RadioPacket;
 
 PacketTransmitPower = CC2420XDriverLayerC.PacketTransmitPower;

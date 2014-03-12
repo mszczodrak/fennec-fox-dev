@@ -75,7 +75,6 @@ provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface Alarm<TRadio, tradio_size>;
 
 uses interface RadioAlarm;
-uses interface cc2420xParams;
 }
 
 implementation {
@@ -87,8 +86,6 @@ components CC2420XDriverLayerP as DriverLayerP,
 
 MainC.SoftwareInit -> DriverLayerP.SoftwareInit;
 MainC.SoftwareInit -> HplC.Init;
-
-cc2420xParams = DriverLayerP;
 
 RadioState = DriverLayerP;
 RadioSend = DriverLayerP;
