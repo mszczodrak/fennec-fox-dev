@@ -64,6 +64,7 @@ task void set_params() {
 }
 
 task void start_done() {
+	printf("start_done\n");
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	}
@@ -84,6 +85,7 @@ task void finish_starting_radio() {
 }
 
 task void stop_done() {
+	printf("stop_done\n");
 	if (err == SUCCESS) {
 		state = S_STOPPED;
 	}
@@ -97,17 +99,20 @@ task void stop_done() {
 command error_t SplitControl.start() {
 	sc = TRUE;
 	post set_params();
+	printf("starting radio\n");
 	return call RadioState.turnOn();
 }
 
 
 command error_t SplitControl.stop() {
 	sc = TRUE;
+	printf("Stopping radio\n");
 	return call RadioState.turnOff();
 }
 
 command error_t RadioState.turnOff() {
 	err = SUCCESS;
+	printf("Radio turned off\n");
 
 	if (state == S_STOPPED) {
 		post stop_done();
@@ -131,6 +136,7 @@ command error_t RadioState.standby() {
 
 
 command error_t RadioState.turnOn() {
+	printf("Radio turned on\n");
 	err = SUCCESS;
 
 	if (state == S_STARTED) {
