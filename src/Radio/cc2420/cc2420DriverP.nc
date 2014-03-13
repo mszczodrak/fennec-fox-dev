@@ -30,7 +30,7 @@
  */
 
 /**
- /* @author Jonathan Hui <jhui@archrock.com>
+ * @author Jonathan Hui <jhui@archrock.com>
  * @author David Moss
  * @author Jung Il Choi Initial SACK implementation
  * @author JeongGil Ko
