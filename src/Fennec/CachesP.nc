@@ -54,6 +54,7 @@ norace event_t event_mask;
 norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
+norace conf_t systemProcessId = UNKNOWN;
 
 task void check_event() {
 	uint8_t i;
@@ -121,6 +122,7 @@ event_t get_event_id(module_t module_id, conf_t conf_id) {
 command void SimpleStart.start() {
 	event_mask = 0;
 	current_seq = 0;
+	systemProcessId = UNKNOWN;
 	current_state = active_state;
 	next_state = call Fennec.getStateId();
 	next_seq = call Fennec.getStateSeq();
@@ -263,18 +265,30 @@ async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t t
 	return call Fennec.getModuleId(call Fennec.getConfId(from_module_id), to_layer_id);
 }
 
-async command error_t Fennec.checkPacket(message_t *msg) {
-/*
-	if (msg->conf >= NUMBER_OF_CONFIGURATIONS) {
-		dbg("Caches", "CachesP Fennec.checPacket(0x%1x) - FAIL", msg);
-		signal FennecState.resend();
-		return FAIL;
-	} 
-*/
-	return SUCCESS;
+command void Fennec.systemProcessId(conf_t process_id) {
+	systemProcessId = process_id;
 }
 
 default async event void FennecState.resend() {}
+
+bool validProcessId(uint8_t process_id) @C() {
+	struct state *this_state = &states[call Fennec.getStateId()];
+	uint8_t i;
+
+	if (process_id == systemProcessId) {
+		return SUCCESS;
+	}
+
+	for(i = 0; i < this_state->num_confs; i++) {
+		if (this_state->conf_list[i] == process_id) {
+			//printf("success %d %d\n", this_state->conf_list[i], process_id);
+			return SUCCESS;
+		}
+	}
+	/* we should report it */
+	signal FennecState.resend();
+	return FAIL;
+}
 
 }
 

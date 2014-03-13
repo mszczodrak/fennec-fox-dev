@@ -8,5 +8,5 @@ interface Fennec {
 	async command module_t getModuleId(conf_t conf, layer_t layer);
 	async command conf_t getConfId(module_t module_id);
 	async command module_t getNextModuleId(module_t from_module_id, uint8_t to_layer_id);
-	async command error_t checkPacket(message_t *msg);
+	command void systemProcessId(conf_t process_id);
 }

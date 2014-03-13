@@ -47,15 +47,12 @@ norace uint8_t last_proc_id;
 uint8_t getProcessId(message_t *msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	last_proc_id = header->destpan;
-	printf("rec for %d\n", header->destpan);
-	printfflush();
 	return header->destpan;
 }
 
 void setProcessId(message_t *msg, uint8_t process_id) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	last_proc_id = process_id;
-	printf("send %d %d\n", process_id, header->destpan);
 	header->destpan = process_id;
 }
 
@@ -65,7 +62,10 @@ async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool us
 }
 
 async event bool SubRadioReceive.header(message_t* msg) {
-	return signal RadioReceive.header[getProcessId(msg)](msg);
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioReceive.header[getProcessId(msg)](msg);
+	}
+	return FAIL;
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
