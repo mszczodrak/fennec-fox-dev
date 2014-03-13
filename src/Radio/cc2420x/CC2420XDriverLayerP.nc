@@ -883,8 +883,8 @@ void task_run() {
 			if ( status.tx_underflow == 1) {
 				RADIO_ASSERT(FALSE);
 				// flush tx fifo
-				strobe(CC2420X_SFLUSHTX);
 				signal RadioSend.sendDone(txMsg, FAIL);
+				strobe(CC2420X_SFLUSHTX);
 			} else {
 				signal RadioSend.sendDone(txMsg, SUCCESS);
 			}						

@@ -281,13 +281,16 @@ bool validProcessId(uint8_t process_id) @C() {
 
 	for(i = 0; i < this_state->num_confs; i++) {
 		if (this_state->conf_list[i] == process_id) {
-			//printf("success %d %d\n", this_state->conf_list[i], process_id);
-			return SUCCESS;
+			printf("success %d %d\n", this_state->conf_list[i], process_id);
+			return TRUE;
 		}
 	}
 	/* we should report it */
 	signal FennecState.resend();
-	return FAIL;
+	
+	printf("did not match\n");
+
+	return FALSE;
 }
 
 }
