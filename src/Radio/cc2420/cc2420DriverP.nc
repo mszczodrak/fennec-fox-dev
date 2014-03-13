@@ -91,6 +91,7 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface RadioSend;
 provides interface RadioBuffer;
 provides interface RadioPacket;
+provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
 provides interface cc2420DriverParams;
@@ -123,6 +124,10 @@ uses interface CC2420Receive;
 uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 uses interface ReceiveIndicator as PacketIndicator;
+uses interface RadioPower;
+uses interface Resource as RadioResource;
+uses interface StdControl as ReceiveControl;
+uses interface RadioConfig;
 }
 
 implementation {
@@ -149,6 +154,7 @@ norace uint8_t param_tx_crc;
 /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
 norace bool abortSpiRelease;
 
+
 // This specifies how many jiffies the stack should wait after a
 // TXACTIVE to receive an SFD interrupt before assuming something is
 // wrong and aborting the send. There seems to be a condition
@@ -156,6 +162,29 @@ norace bool abortSpiRelease;
 enum {
 	CC2420_ABORT_PERIOD = 320
 };
+
+norace uint8_t state = S_STOPPED;
+norace error_t err;
+
+task void start_done() {
+	state = S_STARTED;
+	signal RadioState.done();
+}
+
+
+task void finish_starting_radio() {
+        if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
+        if (call RadioResource.release() != SUCCESS) err = FAIL;
+        if (call ReceiveControl.start() != SUCCESS) err = FAIL;
+        if (call StdControl.start() != SUCCESS) err = FAIL;
+        post start_done();
+}
+
+task void stop_done() {
+	state = S_STOPPED;
+	signal RadioState.done();
+}
+
 
 
 void low_level_init() {
@@ -218,8 +247,8 @@ task void radioSendDone() {
 	signal RadioSend.sendDone(radio_msg, errorSendDone);
 }
 
-void signalDone( error_t err ) {
-	errorSendDone = err;
+void signalDone( error_t erro ) {
+	errorSendDone = erro;
 	post radioSendDone();
 	atomic {
 		radio_state = S_STARTED;
@@ -305,6 +334,78 @@ async event void CC2420Receive.receive( uint8_t type, message_t* ack_msg ) {
 		}
 	}
 }
+
+command error_t RadioState.turnOff() {
+        err = SUCCESS;
+
+        if (state == S_STOPPED) {
+                post stop_done();
+                return SUCCESS;
+        }
+
+        if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+        if (call StdControl.stop() != SUCCESS) err = FAIL;
+        if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+
+        if (err != SUCCESS) return FAIL;
+
+        state = S_STOPPING;
+        post stop_done();
+        return SUCCESS;
+}
+
+command error_t RadioState.standby() {
+        return call RadioState.turnOff();
+}
+
+
+command error_t RadioState.turnOn() {
+        err = SUCCESS;
+
+        if (state == S_STARTED) {
+                post start_done();
+                return SUCCESS;
+        }
+
+        if (call RadioPower.startVReg() != SUCCESS) return FAIL;
+        state = S_STARTING;
+        return SUCCESS;
+}
+
+command error_t RadioState.setChannel(uint8_t channel) {
+        call RadioConfig.setChannel( channel );
+        return call RadioConfig.sync();
+}
+
+command uint8_t RadioState.getChannel() {
+        return call RadioConfig.getChannel();
+}
+
+/****************** RadioConfig Events ****************/
+event void RadioConfig.syncDone( error_t error ) {
+        signal RadioState.done();
+}
+
+task void resource_request() {
+        call RadioResource.request();
+}
+
+async event void RadioPower.startVRegDone() {
+        post resource_request();
+}
+
+
+async event void RadioPower.startOscillatorDone() {
+        post finish_starting_radio();
+}
+
+event void RadioResource.granted() {
+        call RadioPower.startOscillator();
+}
+
+
+
+
 
 void low_level_something_wrong() {
 	call SFLUSHTX.strobe();

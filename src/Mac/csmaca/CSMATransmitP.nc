@@ -466,6 +466,8 @@ async event void RadioCCA.done(error_t err) {
 
 
 event void RadioState.done() {
+	printf("CSMA got radio state\n");
+	printfflush();
 	if (call SplitControlState.isState(S_STARTING)) {
 		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - post startDone_task");
 		post startDone_task();

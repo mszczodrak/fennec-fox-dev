@@ -50,6 +50,7 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface cc2420DriverParams;
+provides interface RadioState;
 }
 
 implementation {
@@ -62,6 +63,7 @@ cc2420DriverParams = cc2420DriverP.cc2420DriverParams;
 RadioBuffer = cc2420DriverP;
 RadioSend = cc2420DriverP.RadioSend;
 RadioPacket = cc2420DriverP.RadioPacket;
+RadioState = cc2420DriverP.RadioState;
 
 PacketTransmitPower = cc2420DriverP.PacketTransmitPower;
 PacketRSSI = cc2420DriverP.PacketRSSI;
@@ -108,5 +110,12 @@ cc2420DriverP.KEY1 -> Spi.KEY1;
 components cc2420ReceiveC;
 cc2420DriverP.CC2420Receive -> cc2420ReceiveC;
 cc2420DriverP.PacketIndicator -> cc2420ReceiveC.PacketIndicator;
+cc2420DriverP.ReceiveControl -> cc2420ReceiveC.StdControl;
+
+components cc2420ControlC;
+cc2420DriverP.RadioPower -> cc2420ControlC.RadioPower;
+cc2420DriverP.RadioResource -> cc2420ControlC.RadioResource;
+cc2420DriverP.RadioConfig -> cc2420ControlC.RadioConfig;
+
 }
 
