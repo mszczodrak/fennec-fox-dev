@@ -35,10 +35,11 @@
 
 configuration cc2420xMultiC {
 provides interface RadioReceive[uint8_t process_id];
+provides interface RadioSend[uint8_t process_id];
+provides interface RadioBuffer[uint8_t process_id];
 
 provides interface Resource as RadioResource;
 provides interface RadioPacket;
-provides interface RadioSend[uint8_t process_id];
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -65,6 +66,7 @@ RadioPacket = CC2420XDriverLayerC.RadioPacket;
 
 RadioSend = cc2420xMultiP.RadioSend;
 RadioReceive = cc2420xMultiP.RadioReceive;
+RadioBuffer = cc2420xMultiP.RadioBuffer;
 cc2420xMultiP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
 cc2420xMultiP.SubRadioSend -> AutoResourceAcquireLayerC;
 

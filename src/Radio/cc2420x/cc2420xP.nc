@@ -38,17 +38,11 @@
 
 generic module cc2420xP(uint8_t process_id) @safe() {
 provides interface SplitControl;
-provides interface RadioReceive;
-provides interface RadioBuffer;
-provides interface RadioSend;
 provides interface RadioState;
 
 uses interface cc2420xParams;
 
 uses interface RadioState as SubRadioState;
-uses interface RadioReceive as SubRadioReceive;
-uses interface RadioSend as SubRadioSend;
-uses interface RadioPacket;
 
 }
 
@@ -133,44 +127,6 @@ event void SubRadioState.done() {
 		break;
 
 	}
-}
-
-
-task void load_done() {
-	signal RadioBuffer.loadDone(m, SUCCESS);
-}
-
-async command error_t RadioBuffer.load(message_t* msg) {
-	m = msg;
-	signal RadioBuffer.loadDone(msg, SUCCESS);
-	return SUCCESS;
-}
-
-task void send_done() {
-	signal RadioSend.sendDone(m, SUCCESS);
-}
-
-async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "cc2420x RadioBuffer.send(0x%1x)", msg, useCca);
-	return call SubRadioSend.send(msg, useCca);
-}
-
-async event void SubRadioSend.ready() {
-	signal RadioSend.ready();
-}
-
-async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	signal RadioSend.sendDone(msg, error);
-}
-
-
-async event bool SubRadioReceive.header(message_t* msg) {
-	return signal RadioReceive.header(msg);
-}
-
-
-async event message_t *SubRadioReceive.receive(message_t* msg) {
-	return signal RadioReceive.receive(msg);
 }
 
 

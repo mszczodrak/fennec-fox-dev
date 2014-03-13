@@ -62,15 +62,12 @@ components cc2420xMultiC;
 
 SplitControl = cc2420xP;
 cc2420xParams = cc2420xP;
-RadioReceive = cc2420xP.RadioReceive;
-RadioBuffer = cc2420xP.RadioBuffer;
-RadioSend = cc2420xP.RadioSend;
+RadioReceive = cc2420xMultiC.RadioReceive[process_id];
+RadioBuffer = cc2420xMultiC.RadioBuffer[process_id];
+RadioSend = cc2420xMultiC.RadioSend[process_id];
 RadioState = cc2420xP.RadioState;
 
 RadioPacket = cc2420xMultiC.RadioPacket;
-cc2420xP.RadioPacket -> cc2420xMultiC.RadioPacket;
-cc2420xP.SubRadioSend -> cc2420xMultiC.RadioSend[process_id];
-cc2420xP.SubRadioReceive -> cc2420xMultiC.RadioReceive[process_id];
 cc2420xP.SubRadioState -> cc2420xMultiC.RadioState;
 
 RadioResource = cc2420xMultiC.RadioResource;
