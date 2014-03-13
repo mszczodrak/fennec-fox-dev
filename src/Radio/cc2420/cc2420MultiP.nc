@@ -32,58 +32,70 @@
   * @updated: 01/05/2014
   */
 
+module cc2420MultiP {
+provides interface RadioReceive[uint8_t process_id];
+provides interface RadioSend[uint8_t process_id];
 
-generic configuration cc2420C(uint8_t process_id) {
-provides interface SplitControl;
-provides interface RadioReceive;
-
-uses interface cc2420Params;
-
-provides interface Resource as RadioResource;
-
-provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
-
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint32_t> as PacketTimeSync;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
-
-provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
+uses interface RadioReceive as SubRadioReceive;
+uses interface RadioSend as SubRadioSend;
 }
 
 implementation {
 
-components new cc2420P(process_id);
-components cc2420MultiC;
+norace uint8_t last_proc_id;
 
-SplitControl = cc2420P;
-cc2420Params = cc2420P;
-RadioReceive = cc2420P.RadioReceive;
-RadioBuffer = cc2420P.RadioBuffer;
-RadioSend = cc2420P.RadioSend;
-RadioState = cc2420P.RadioState;
+uint8_t getProcessId(message_t *msg) {
+	cc2420_hdr_t* header = (cc2420_hdr_t*)(msg->data);
+	last_proc_id = header->destpan;
+	return header->destpan;
+}
 
-RadioPacket = cc2420MultiC.RadioPacket;
-cc2420P.RadioPacket -> cc2420MultiC.RadioPacket;
-cc2420P.SubRadioSend -> cc2420MultiC.RadioSend[process_id];
-cc2420P.SubRadioReceive -> cc2420MultiC.RadioReceive[process_id];
-cc2420P.SubRadioState -> cc2420MultiC.RadioState;
+void setProcessId(message_t *msg, uint8_t process_id) {
+	cc2420_hdr_t* header = (cc2420_hdr_t*)(msg->data);
+	last_proc_id = process_id;
+	header->destpan = process_id;
+}
 
-RadioResource = cc2420MultiC.RadioResource;
+async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool useCca) {
+	setProcessId(msg, process_id);
+	return call SubRadioSend.send(msg, useCca);
+}
 
-PacketTransmitPower = cc2420MultiC.PacketTransmitPower;
-PacketLinkQuality = cc2420MultiC.PacketLinkQuality;
-PacketRSSI = cc2420MultiC.PacketRSSI;
-RadioLinkPacketMetadata = cc2420MultiC;
-PacketTimeSync = cc2420MultiC.PacketTimeSync;
-RadioCCA = cc2420MultiC.RadioCCA;
+async event bool SubRadioReceive.header(message_t* msg) {
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioReceive.header[getProcessId(msg)](msg);
+	}
+	return FAIL;
+}
 
-components LedsC;
-//cc2420P.Leds -> LedsC;
+async event message_t *SubRadioReceive.receive(message_t* msg) {
+	return signal RadioReceive.receive[getProcessId(msg)](msg);
+}
+
+async event void SubRadioSend.ready() {
+        signal RadioSend.ready[last_proc_id]();
+}
+
+async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
+}
+
+
+default async event bool RadioReceive.header[uint8_t process_id](message_t* msg) {
+	return FALSE;
+}
+
+default async event message_t * RadioReceive.receive[uint8_t process_id](message_t* msg) {
+	return msg;
+}
+
+default async event void RadioSend.sendDone[uint8_t process_id](message_t* msg, error_t error) {
+
+}
+
+default async event void RadioSend.ready[uint8_t process_id]() {
+
+}
 
 
 }

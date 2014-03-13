@@ -37,7 +37,6 @@ configuration cc2420xMultiC {
 provides interface RadioReceive[uint8_t process_id];
 
 provides interface Resource as RadioResource;
-
 provides interface RadioPacket;
 provides interface RadioSend[uint8_t process_id];
 

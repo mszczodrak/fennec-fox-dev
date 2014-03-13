@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Columbia University.
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,48 +26,52 @@
  */
 
 /**
-  * Fennec Fox cc2420 radio driver adaptation
+  * cc2420 driver adapted from the TinyOS ActiveMessage stack for CC2420 and cc2420x
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/05/2014
+  * @updated: 01/03/2014
   */
 
 
 #include <Fennec.h>
 #include "cc2420.h"
 
-generic module cc2420P(uint8_t process_id) @safe() {
+module cc2420MultiP @safe() {
 provides interface SplitControl;
-provides interface RadioReceive;
-provides interface RadioBuffer;
-provides interface RadioSend;
 provides interface RadioState;
 
+uses interface Leds;
 uses interface cc2420Params;
-
-uses interface RadioState as SubRadioState;
-uses interface RadioReceive as SubRadioReceive;
-uses interface RadioSend as SubRadioSend;
-uses interface RadioPacket;
-
+uses interface RadioConfig;
+uses interface StdControl as ReceiveControl;
+uses interface StdControl as TransmitControl;
+uses interface RadioPower;
+uses interface Resource as RadioResource;
 }
 
 implementation {
 
 norace uint8_t state = S_STOPPED;
-norace message_t *m;
-bool sc = FALSE;
 norace error_t err;
+bool sc = FALSE;
 
 task void start_done() {
 	if (err == SUCCESS) {
-        	state = S_STARTED;
+		state = S_STARTED;
 	}
 	signal RadioState.done();
 	if (sc == TRUE) {
-                signal SplitControl.startDone(err);
-                sc = FALSE;
-        }
+		signal SplitControl.startDone(err);
+		sc = FALSE;
+	}
+}
+
+task void finish_starting_radio() {
+	if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
+	if (call RadioResource.release() != SUCCESS) err = FAIL;
+	if (call ReceiveControl.start() != SUCCESS) err = FAIL;
+	if (call TransmitControl.start() != SUCCESS) err = FAIL;
+	post start_done();
 }
 
 task void stop_done() {
@@ -82,97 +86,84 @@ task void stop_done() {
 }
 
 command error_t SplitControl.start() {
-        sc = TRUE;
-        return call RadioState.turnOn();
+	sc = TRUE;
+	return call RadioState.turnOn();
 }
+
 
 command error_t SplitControl.stop() {
-        sc = TRUE;
-        return call RadioState.turnOff();
-}
-
-command error_t RadioState.turnOn() {
-	state = S_STARTING;
-	if (call SubRadioState.turnOn() != SUCCESS) {
-		signal SubRadioState.done();
-	}
-	return SUCCESS;
+	sc = TRUE;
+	return call RadioState.turnOff();
 }
 
 command error_t RadioState.turnOff() {
-	state = S_STOPPING;
-	if (call SubRadioState.turnOff() != SUCCESS) {
-		signal SubRadioState.done();
+	err = SUCCESS;
+
+	if (state == S_STOPPED) {
+		post stop_done();
+		return SUCCESS;
 	}
+
+	if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
+	if (call TransmitControl.stop() != SUCCESS) err = FAIL;
+	if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
+
+	if (err != SUCCESS) return FAIL;
+
+	state = S_STOPPING;
+	post stop_done();
 	return SUCCESS;
 }
 
 command error_t RadioState.standby() {
-        return call RadioState.turnOff();
+	return call RadioState.turnOff();
 }
 
-command error_t RadioState.setChannel(uint8_t channel) {
-        return call SubRadioState.setChannel( channel );
-}
 
-command uint8_t RadioState.getChannel() {
-        return call SubRadioState.getChannel();
-}
+command error_t RadioState.turnOn() {
+	err = SUCCESS;
 
-event void SubRadioState.done() {
-	switch(state) {
-	case S_STARTING:
-		post start_done();		
-		break;
-
-	case S_STOPPING:
-		post stop_done();
-		break;
-
-	default:
-		break;
-
+	if (state == S_STARTED) {
+		post start_done();
+		return SUCCESS;
 	}
-}
 
-
-task void load_done() {
-	signal RadioBuffer.loadDone(m, SUCCESS);
-}
-
-async command error_t RadioBuffer.load(message_t* msg) {
-	m = msg;
-	signal RadioBuffer.loadDone(msg, SUCCESS);
+	if (call RadioPower.startVReg() != SUCCESS) return FAIL;
+	state = S_STARTING;
 	return SUCCESS;
 }
 
-task void send_done() {
-	signal RadioSend.sendDone(m, SUCCESS);
+command error_t RadioState.setChannel(uint8_t channel) {
+	call RadioConfig.setChannel( channel );
+	return call RadioConfig.sync();
 }
 
-async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "cc2420 RadioBuffer.send(0x%1x)", msg, useCca);
-	return call SubRadioSend.send(msg, useCca);
-}
-
-async event void SubRadioSend.ready() {
-	signal RadioSend.ready();
-}
-
-async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	signal RadioSend.sendDone(msg, error);
+command uint8_t RadioState.getChannel() {
+	return call RadioConfig.getChannel();
 }
 
 
-async event bool SubRadioReceive.header(message_t* msg) {
-	return signal RadioReceive.header(msg);
+
+/****************** RadioConfig Events ****************/
+event void RadioConfig.syncDone( error_t error ) {
+	signal RadioState.done();
+}
+
+task void resource_request() {
+	call RadioResource.request();
+}
+
+async event void RadioPower.startVRegDone() {
+	post resource_request();
 }
 
 
-async event message_t *SubRadioReceive.receive(message_t* msg) {
-	return signal RadioReceive.receive(msg);
+async event void RadioPower.startOscillatorDone() {
+	post finish_starting_radio();
 }
 
-
+event void RadioResource.granted() {
+	call RadioPower.startOscillator();
+}
 }
 

@@ -369,7 +369,7 @@ task void receiveDone_task() {
 
 	if (((!(call RadioConfig.isAddressRecognitionEnabled())) || (passesAddressCheck(m_p_rx_buf)) ) && length >= CC2420_SIZE) {
 		/* set conf before signaling receive */
-		m_p_rx_buf->conf = header->destpan;
+		//m_p_rx_buf->conf = header->destpan;
 		m_p_rx_buf = signal RadioReceive.receive( m_p_rx_buf);
 	}
 	atomic receivingPacket = FALSE;

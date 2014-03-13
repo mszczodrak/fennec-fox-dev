@@ -489,8 +489,8 @@ void loadTXFIFO() {
 
 
 async command error_t RadioBuffer.load(message_t* msg) {
-	cc2420_hdr_t *header = (cc2420_hdr_t*) (msg->data);
-	header->destpan = msg->conf;
+	//cc2420_hdr_t *header = (cc2420_hdr_t*) (msg->data);
+	//header->destpan = msg->conf;
 
 	if (radio_state != S_STARTED) {
 		failed_load_counter++;

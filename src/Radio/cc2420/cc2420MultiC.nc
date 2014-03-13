@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Columbia University.
+ * Copyright (c) 2009, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,24 +26,19 @@
  */
 
 /**
-  * Fennec Fox cc2420 radio driver adaptation
+  * cc2420 driver adapted from the TinyOS ActiveMessage stack for CC2420 and cc2420x
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/05/2014
+  * @updated: 01/03/2014
   */
 
 
-generic configuration cc2420C(uint8_t process_id) {
-provides interface SplitControl;
-provides interface RadioReceive;
-
-uses interface cc2420Params;
+configuration cc2420MultiC {
+provides interface RadioReceive[uint8_t process_id];
 
 provides interface Resource as RadioResource;
-
+provides interface RadioSend[uint8_t process_id];
 provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -53,37 +48,67 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
+
+provides interface RadioPower;
+provides interface RadioConfig;
+provides interface StdControl as ReceiveControl;
+provides interface StdControl as TransmitControl;
 }
 
 implementation {
 
-components new cc2420P(process_id);
-components cc2420MultiC;
+components cc2420MultiP;
 
-SplitControl = cc2420P;
-cc2420Params = cc2420P;
-RadioReceive = cc2420P.RadioReceive;
-RadioBuffer = cc2420P.RadioBuffer;
-RadioSend = cc2420P.RadioSend;
-RadioState = cc2420P.RadioState;
 
-RadioPacket = cc2420MultiC.RadioPacket;
-cc2420P.RadioPacket -> cc2420MultiC.RadioPacket;
-cc2420P.SubRadioSend -> cc2420MultiC.RadioSend[process_id];
-cc2420P.SubRadioReceive -> cc2420MultiC.RadioReceive[process_id];
-cc2420P.SubRadioState -> cc2420MultiC.RadioState;
+components cc2420ControlC;
+components cc2420DriverC;
+RadioCCA = cc2420DriverC.RadioCCA;
 
-RadioResource = cc2420MultiC.RadioResource;
+RadioPower = cc2420ControlC.RadioPower;
+//cc2420P.RadioPower -> cc2420ControlC.RadioPower;
+//cc2420P.RadioResource -> cc2420ControlC.RadioResource;
+RadioResource = cc2420ControlC.RadioResource;
 
-PacketTransmitPower = cc2420MultiC.PacketTransmitPower;
-PacketLinkQuality = cc2420MultiC.PacketLinkQuality;
-PacketRSSI = cc2420MultiC.PacketRSSI;
-RadioLinkPacketMetadata = cc2420MultiC;
-PacketTimeSync = cc2420MultiC.PacketTimeSync;
-RadioCCA = cc2420MultiC.RadioCCA;
+//SplitControl = cc2420P;
+//cc2420Params = cc2420P;
 
-components LedsC;
-//cc2420P.Leds -> LedsC;
+//RadioResource = cc2420ControlC.RadioResource;
 
+//cc2420Params = cc2420ControlC;
+
+//cc2420P.RadioConfig -> cc2420ControlC.RadioConfig;
+RadioConfig = cc2420ControlC.RadioConfig;
+
+components cc2420ReceiveC;
+cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
+
+//cc2420P.ReceiveControl -> cc2420ReceiveC.StdControl;
+ReceiveControl = cc2420ReceiveC.StdControl;
+
+RadioReceive = cc2420MultiP.RadioReceive;
+RadioSend = cc2420MultiP.RadioSend;
+cc2420MultiP.SubRadioReceive -> cc2420ReceiveC.RadioReceive;
+cc2420MultiP.SubRadioSend -> cc2420DriverC.RadioSend;
+
+//RadioBuffer = cc2420DriverC.RadioBuffer;
+RadioPacket = cc2420DriverC.RadioPacket;
+
+
+//cc2420P.TransmitControl -> cc2420DriverC.StdControl;
+TransmitControl = cc2420DriverC.StdControl;
+
+cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
+
+
+
+//RadioState = cc2420P.RadioState;
+RadioLinkPacketMetadata = cc2420DriverC.RadioLinkPacketMetadata;
+  
+PacketTransmitPower = cc2420DriverC.PacketTransmitPower;
+PacketRSSI = cc2420DriverC.PacketRSSI;
+PacketTimeSync = cc2420DriverC.PacketTimeSync;
+PacketLinkQuality = cc2420DriverC.PacketLinkQuality;
+
+cc2420ReceiveC.PacketTimeSync -> cc2420DriverC.PacketTimeSync;
 
 }
