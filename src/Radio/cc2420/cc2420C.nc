@@ -68,15 +68,9 @@ RadioSend = cc2420MultiC.RadioSend[process_id];
 RadioState = cc2420P.RadioState;
 
 RadioPacket = cc2420MultiC.RadioPacket;
-//cc2420P.RadioPacket -> cc2420MultiC.RadioPacket;
-//cc2420P.SubRadioSend -> cc2420MultiC.RadioSend[process_id];
-//cc2420P.SubRadioReceive -> cc2420MultiC.RadioReceive[process_id];
-cc2420P.RadioPower -> cc2420MultiC.RadioPower;
-cc2420P.RadioResource -> cc2420MultiC.RadioResource;
-cc2420P.ReceiveControl -> cc2420MultiC.ReceiveControl;
-cc2420P.TransmitControl -> cc2420MultiC.TransmitControl;
 
 cc2420P.cc2420DriverParams -> cc2420MultiC.cc2420DriverParams;
+cc2420P.SubRadioState -> cc2420MultiC.RadioState[process_id];
 
 RadioResource = cc2420MultiC.RadioResource;
 

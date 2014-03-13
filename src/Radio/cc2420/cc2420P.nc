@@ -42,11 +42,7 @@ provides interface RadioState;
 
 uses interface Leds;
 uses interface cc2420Params;
-uses interface RadioConfig;
-uses interface StdControl as ReceiveControl;
-uses interface StdControl as TransmitControl;
-uses interface RadioPower;
-uses interface Resource as RadioResource;
+uses interface RadioState as SubRadioState;
 uses interface cc2420DriverParams;
 }
 
@@ -63,117 +59,59 @@ task void set_params() {
 	call cc2420DriverParams.set_crc( call cc2420Params.get_crc() );
 }
 
-task void start_done() {
-	if (err == SUCCESS) {
+event void SubRadioState.done() {
+	signal RadioState.done();
+	if (sc != TRUE) {
+		return;
+	}
+
+	if (state == S_STARTING) {
+		post set_params();
 		state = S_STARTED;
+		signal SplitControl.startDone(SUCCESS);
 	}
-	post set_params();
-	signal RadioState.done();
-	if (sc == TRUE) {
-		signal SplitControl.startDone(err);
-		sc = FALSE;
-	}
-}
 
-task void finish_starting_radio() {
-	if (call RadioPower.rxOn() != SUCCESS) err = FAIL;
-	if (call RadioResource.release() != SUCCESS) err = FAIL;
-	if (call ReceiveControl.start() != SUCCESS) err = FAIL;
-	if (call TransmitControl.start() != SUCCESS) err = FAIL;
-	post start_done();
-}
-
-task void stop_done() {
-	if (err == SUCCESS) {
+	if (state == S_STOPPING) {
 		state = S_STOPPED;
+		signal SplitControl.stopDone(SUCCESS);
 	}
-	signal RadioState.done();
-	if (sc == TRUE) {
-		signal SplitControl.stopDone(err);
-		sc = FALSE;
-	}
+	sc = TRUE;
 }
-
+		
 command error_t SplitControl.start() {
 	sc = TRUE;
 	post set_params();
-	return call RadioState.turnOn();
+	state = S_STARTING;
+	return call SubRadioState.turnOn();
 }
 
 
 command error_t SplitControl.stop() {
 	sc = TRUE;
-	return call RadioState.turnOff();
+	state = S_STOPPING;
+	return call SubRadioState.turnOff();
+}
+
+command error_t RadioState.turnOn() {
+	return call SubRadioState.turnOn();
 }
 
 command error_t RadioState.turnOff() {
-	err = SUCCESS;
-
-	if (state == S_STOPPED) {
-		post stop_done();
-		return SUCCESS;
-	}
-
-	if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
-	if (call TransmitControl.stop() != SUCCESS) err = FAIL;
-	if (call RadioPower.stopVReg() != SUCCESS) err = FAIL;
-
-	if (err != SUCCESS) return FAIL;
-
-	state = S_STOPPING;
-	post stop_done();
-	return SUCCESS;
+	return call SubRadioState.turnOff();
 }
 
 command error_t RadioState.standby() {
-	return call RadioState.turnOff();
-}
-
-
-command error_t RadioState.turnOn() {
-	err = SUCCESS;
-
-	if (state == S_STARTED) {
-		post start_done();
-		return SUCCESS;
-	}
-
-	if (call RadioPower.startVReg() != SUCCESS) return FAIL;
-	state = S_STARTING;
-	return SUCCESS;
+	return call SubRadioState.standby();
 }
 
 command error_t RadioState.setChannel(uint8_t channel) {
-	call RadioConfig.setChannel( channel );
-	return call RadioConfig.sync();
+	return call SubRadioState.setChannel(channel);
 }
 
-command uint8_t RadioState.getChannel() {
-	return call RadioConfig.getChannel();
-}
-
-
-
-/****************** RadioConfig Events ****************/
-event void RadioConfig.syncDone( error_t error ) {
-	signal RadioState.done();
-}
-
-task void resource_request() {
-	call RadioResource.request();
-}
-
-async event void RadioPower.startVRegDone() {
-	post resource_request();
+command error_t RadioState.getChannel() {
+	return call SubRadioState.getChannel();
 }
 
 
-async event void RadioPower.startOscillatorDone() {
-	post finish_starting_radio();
-}
-
-event void RadioResource.granted() {
-	call RadioPower.startOscillator();
-}
 }
 

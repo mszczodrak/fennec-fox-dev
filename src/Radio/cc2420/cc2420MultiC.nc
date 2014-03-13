@@ -37,6 +37,7 @@ configuration cc2420MultiC {
 provides interface RadioReceive[uint8_t process_id];
 provides interface RadioSend[uint8_t process_id];
 provides interface RadioBuffer[uint8_t process_id];
+provides interface RadioState[uint8_t process_id];
 
 provides interface Resource as RadioResource;
 provides interface RadioPacket;
@@ -89,6 +90,9 @@ ReceiveControl = cc2420ReceiveC.StdControl;
 RadioReceive = cc2420MultiP.RadioReceive;
 RadioSend = cc2420MultiP.RadioSend;
 RadioBuffer = cc2420MultiP.RadioBuffer;
+RadioState = cc2420MultiP.RadioState;
+
+cc2420MultiP.SubRadioState -> cc2420DriverC.RadioState;
 
 cc2420MultiP.SubRadioReceive -> cc2420ReceiveC.RadioReceive;
 cc2420MultiP.SubRadioSend -> cc2420DriverC.RadioSend;
