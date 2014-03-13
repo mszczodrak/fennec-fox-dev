@@ -35,9 +35,11 @@
 module cc2420MultiP {
 provides interface RadioReceive[uint8_t process_id];
 provides interface RadioSend[uint8_t process_id];
+provides interface RadioBuffer[uint8_t process_id];
 
 uses interface RadioReceive as SubRadioReceive;
 uses interface RadioSend as SubRadioSend;
+uses interface RadioBuffer as SubRadioBuffer;
 }
 
 implementation {
@@ -56,9 +58,18 @@ void setProcessId(message_t *msg, uint8_t process_id) {
 	header->destpan = process_id;
 }
 
+async command error_t RadioBuffer.load[uint8_t process_id](message_t* msg) {
+	setProcessId(msg, process_id);
+	return call SubRadioBuffer.load(msg);
+}
+
 async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool useCca) {
 	setProcessId(msg, process_id);
 	return call SubRadioSend.send(msg, useCca);
+}
+
+async event void SubRadioBuffer.loadDone(message_t *msg, error_t err) {
+	signal RadioBuffer.loadDone[getProcessId(msg)](msg, err);
 }
 
 async event bool SubRadioReceive.header(message_t* msg) {
@@ -94,6 +105,10 @@ default async event void RadioSend.sendDone[uint8_t process_id](message_t* msg, 
 }
 
 default async event void RadioSend.ready[uint8_t process_id]() {
+
+}
+
+default async event void RadioBuffer.loadDone[uint8_t process_id](message_t *msg, error_t error) {
 
 }
 

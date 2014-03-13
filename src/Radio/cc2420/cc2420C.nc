@@ -62,16 +62,20 @@ components cc2420MultiC;
 
 SplitControl = cc2420P;
 cc2420Params = cc2420P;
-RadioReceive = cc2420P.RadioReceive;
-RadioBuffer = cc2420P.RadioBuffer;
-RadioSend = cc2420P.RadioSend;
+RadioReceive = cc2420MultiC.RadioReceive[process_id];
+RadioBuffer = cc2420MultiC.RadioBuffer[process_id];
+RadioSend = cc2420MultiC.RadioSend[process_id];
 RadioState = cc2420P.RadioState;
 
 RadioPacket = cc2420MultiC.RadioPacket;
-cc2420P.RadioPacket -> cc2420MultiC.RadioPacket;
-cc2420P.SubRadioSend -> cc2420MultiC.RadioSend[process_id];
-cc2420P.SubRadioReceive -> cc2420MultiC.RadioReceive[process_id];
-cc2420P.SubRadioState -> cc2420MultiC.RadioState;
+//cc2420P.RadioPacket -> cc2420MultiC.RadioPacket;
+//cc2420P.SubRadioSend -> cc2420MultiC.RadioSend[process_id];
+//cc2420P.SubRadioReceive -> cc2420MultiC.RadioReceive[process_id];
+cc2420P.RadioPower -> cc2420MultiC.RadioPower;
+cc2420P.RadioResource -> cc2420MultiC.RadioResource;
+cc2420P.ReceiveControl -> cc2420MultiC.ReceiveControl;
+cc2420P.TransmitControl -> cc2420MultiC.TransmitControl;
+
 
 RadioResource = cc2420MultiC.RadioResource;
 
@@ -83,7 +87,7 @@ PacketTimeSync = cc2420MultiC.PacketTimeSync;
 RadioCCA = cc2420MultiC.RadioCCA;
 
 components LedsC;
-//cc2420P.Leds -> LedsC;
+cc2420P.Leds -> LedsC;
 
 
 }
