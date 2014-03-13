@@ -76,6 +76,7 @@ cc2420P.RadioResource -> cc2420MultiC.RadioResource;
 cc2420P.ReceiveControl -> cc2420MultiC.ReceiveControl;
 cc2420P.TransmitControl -> cc2420MultiC.TransmitControl;
 
+cc2420P.cc2420DriverParams -> cc2420MultiC.cc2420DriverParams;
 
 RadioResource = cc2420MultiC.RadioResource;
 

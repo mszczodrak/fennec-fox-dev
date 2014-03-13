@@ -53,6 +53,7 @@ provides interface RadioPower;
 provides interface RadioConfig;
 provides interface StdControl as ReceiveControl;
 provides interface StdControl as TransmitControl;
+provides interface cc2420DriverParams;
 }
 
 implementation {
@@ -66,6 +67,8 @@ RadioCCA = cc2420DriverC.RadioCCA;
 
 RadioPower = cc2420ControlC.RadioPower;
 RadioResource = cc2420ControlC.RadioResource;
+
+cc2420DriverParams = cc2420DriverC.cc2420DriverParams;
 
 //SplitControl = cc2420P;
 //cc2420Params = cc2420P;
@@ -100,7 +103,7 @@ TransmitControl = cc2420DriverC.StdControl;
 
 cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;
 
-
+cc2420ControlC.cc2420DriverParams -> cc2420DriverC.cc2420DriverParams;
 
 RadioLinkPacketMetadata = cc2420DriverC.RadioLinkPacketMetadata;
   

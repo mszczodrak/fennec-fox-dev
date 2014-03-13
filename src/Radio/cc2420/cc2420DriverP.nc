@@ -30,7 +30,7 @@
  */
 
 /**
- * @author Jonathan Hui <jhui@archrock.com>
+ /* @author Jonathan Hui <jhui@archrock.com>
  * @author David Moss
  * @author Jung Il Choi Initial SACK implementation
  * @author JeongGil Ko
@@ -93,6 +93,7 @@ provides interface RadioBuffer;
 provides interface RadioPacket;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
+provides interface cc2420DriverParams;
 
 uses interface Leds; 
 uses interface GpioCapture as CaptureSFD;
@@ -119,7 +120,6 @@ uses interface CC2420Ram as KEY1;
 uses interface CC2420Ram as TXNONCE;
 
 uses interface CC2420Receive;
-uses interface cc2420Params;
 uses interface Alarm<T32khz,uint32_t> as RadioTimer;
 
 uses interface ReceiveIndicator as PacketIndicator;
@@ -141,7 +141,10 @@ norace bool m_receiving = FALSE;
 
 norace uint8_t m_tx_power;
 uint16_t m_prev_time;
-norace uint16_t param_tx_power;
+norace uint8_t param_tx_power;
+norace uint8_t param_tx_channel;
+norace uint8_t param_tx_ack;
+norace uint8_t param_tx_crc;
 
 /** Let the CC2420 driver keep a lock on the SPI while waiting for an ack */
 norace bool abortSpiRelease;
@@ -167,7 +170,10 @@ command error_t StdControl.start() {
 	m_tx_power = 0;
 	m_receiving = FALSE;
 	failed_load_counter = 0;
-	param_tx_power = call cc2420Params.get_power();
+	param_tx_power = CC2420_DEF_RFPOWER;
+	param_tx_channel = CC2420_DEF_CHANNEL;
+	param_tx_ack = 1;
+	param_tx_crc = 1;
 	call CaptureSFD.captureRisingEdge();
 	abortSpiRelease = FALSE;
 	return SUCCESS;
@@ -207,10 +213,6 @@ async event void ChipSpiResource.releasing() {
 		call ChipSpiResource.abortRelease();
 	}
 }
-
-task void updateTXPower() {
-	param_tx_power = call cc2420Params.get_power();
-} 
 
 task void radioSendDone() {
 	signal RadioSend.sendDone(radio_msg, errorSendDone);
@@ -335,6 +337,7 @@ async event void RadioTimer.fired() {
  * which is connected to timing circuitry and timer modules.  This
  * type of interrupt allows us to see what time (being some relative value)
  * the event occurred, and lets us accurately timestamp our packets.  This
+	pram_tx_powerost updateTXPower();
  * allows higher levels in our system to synchronize with other nodes.
  *
  * Because the SFD events can occur so quickly, and the interrupts go
@@ -503,7 +506,6 @@ async command error_t RadioBuffer.load(message_t* msg) {
 		radio_state = S_LOAD;
 		radio_msg = msg;
 	}
-	post updateTXPower();
 	if ( acquireSpiResource() == SUCCESS ) {
 		loadTXFIFO();
 	}
@@ -697,6 +699,38 @@ async command void PacketLinkQuality.clear(message_t* msg){
 
 async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
 	getMetadata(msg)->lqi = value;
+}
+
+command void cc2420DriverParams.set_power(uint8_t power) {
+	param_tx_power = power;
+}
+
+command uint8_t cc2420DriverParams.get_power() {
+	return param_tx_power;
+}
+
+command void cc2420DriverParams.set_channel(uint8_t channel) {
+	param_tx_channel = channel;
+}
+
+command uint8_t cc2420DriverParams.get_channel() {
+	return param_tx_channel;
+}
+
+command void cc2420DriverParams.set_ack(uint8_t status) {
+	param_tx_ack = status;
+}
+
+command uint8_t cc2420DriverParams.get_ack() {
+	return param_tx_ack;
+}
+
+command void cc2420DriverParams.set_crc(uint8_t status) {
+	param_tx_crc = status;
+}
+
+command uint8_t cc2420DriverParams.get_crc() {
+	return param_tx_crc;
 }
 
 }

@@ -108,7 +108,7 @@ uses interface Resource as SpiResource;
 uses interface Resource as SyncResource;
 
 uses interface Leds;
-uses interface cc2420Params;
+uses interface cc2420DriverParams;
 }
 
 implementation {
@@ -151,10 +151,10 @@ task void syncDone();
 
 task void get_params() {
 	atomic {
-		m_tx_power = call cc2420Params.get_power();
-		m_channel = call cc2420Params.get_channel();
-		autoAckEnabled = call cc2420Params.get_ack();    
-		autoCrc = call cc2420Params.get_crc();
+		m_tx_power = call cc2420DriverParams.get_power();
+		m_channel = call cc2420DriverParams.get_channel();
+		autoAckEnabled = call cc2420DriverParams.get_ack();    
+		autoCrc = call cc2420DriverParams.get_crc();
 	}
 }
     
@@ -178,8 +178,8 @@ command error_t Init.init() {
 		m_ext_addr.data[7-i] = t;
 	}
 
-	m_tx_power = call cc2420Params.get_power();
-	m_channel = call cc2420Params.get_channel();
+	m_tx_power = call cc2420DriverParams.get_power();
+	m_channel = call cc2420DriverParams.get_channel();
 
 #if defined(CC2420_NO_ADDRESS_RECOGNITION)
 	addressRecognition = FALSE;

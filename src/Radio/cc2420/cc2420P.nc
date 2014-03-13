@@ -47,6 +47,7 @@ uses interface StdControl as ReceiveControl;
 uses interface StdControl as TransmitControl;
 uses interface RadioPower;
 uses interface Resource as RadioResource;
+uses interface cc2420DriverParams;
 }
 
 implementation {
@@ -55,10 +56,18 @@ norace uint8_t state = S_STOPPED;
 norace error_t err;
 bool sc = FALSE;
 
+task void set_params() {
+	call cc2420DriverParams.set_power( call cc2420Params.get_power() );
+	call cc2420DriverParams.set_channel( call cc2420Params.get_channel() );
+	call cc2420DriverParams.set_ack( call cc2420Params.get_ack() );
+	call cc2420DriverParams.set_crc( call cc2420Params.get_crc() );
+}
+
 task void start_done() {
 	if (err == SUCCESS) {
 		state = S_STARTED;
 	}
+	post set_params();
 	signal RadioState.done();
 	if (sc == TRUE) {
 		signal SplitControl.startDone(err);
@@ -87,6 +96,7 @@ task void stop_done() {
 
 command error_t SplitControl.start() {
 	sc = TRUE;
+	post set_params();
 	return call RadioState.turnOn();
 }
 

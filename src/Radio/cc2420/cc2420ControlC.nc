@@ -79,7 +79,7 @@ provides interface Resource as RadioResource;
 provides interface RadioConfig;
 provides interface RadioPower;
 
-uses interface cc2420Params;
+uses interface cc2420DriverParams;
   
 }
 
@@ -90,7 +90,7 @@ RadioResource = cc2420ControlP.RadioResource;
 RadioConfig = cc2420ControlP.RadioConfig;
 RadioPower = cc2420ControlP.RadioPower;
 
-cc2420Params = cc2420ControlP;
+cc2420DriverParams = cc2420ControlP;
 
 components MainC;
 MainC.SoftwareInit -> cc2420ControlP;
