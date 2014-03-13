@@ -44,26 +44,32 @@ implementation {
 
 norace uint8_t last_proc_id;
 
-async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool useCca) {
+uint8_t getProcessId(message_t *msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+	last_proc_id = header->destpan;
+	printf("rec for %d\n", header->destpan);
+	printfflush();
+	return header->destpan;
+}
+
+void setProcessId(message_t *msg, uint8_t process_id) {
+	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
+	last_proc_id = process_id;
+	printf("send %d %d\n", process_id, header->destpan);
 	header->destpan = process_id;
-	//msg->conf = header->destpan;
+}
+
+async command error_t RadioSend.send[uint8_t process_id](message_t* msg, bool useCca) {
+	setProcessId(msg, process_id);
 	return call SubRadioSend.send(msg, useCca);
 }
 
-
 async event bool SubRadioReceive.header(message_t* msg) {
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	//msg->conf = header->destpan;
-	last_proc_id = header->dest;
-	return signal RadioReceive.header[header->destpan](msg);
+	return signal RadioReceive.header[getProcessId(msg)](msg);
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	last_proc_id = header->dest;
-	//msg->conf = header->destpan;
-	return signal RadioReceive.receive[header->destpan](msg);
+	return signal RadioReceive.receive[getProcessId(msg)](msg);
 }
 
 async event void SubRadioSend.ready() {
@@ -71,9 +77,7 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
-	last_proc_id = header->dest;
-	return signal RadioSend.sendDone[header->destpan](msg, error);
+	return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
 }
 
 
