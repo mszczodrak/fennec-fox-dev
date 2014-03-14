@@ -56,16 +56,17 @@ bool sc = FALSE;
 norace error_t err;
 
 task void set_params() {
-	call cc2420XDriverParams.set_power( call cc2420xParams.get_power() );
-	call cc2420XDriverParams.set_channel( call cc2420xParams.get_channel() );
-	call cc2420XDriverParams.set_ack( call cc2420xParams.get_ack() );
-	call cc2420XDriverParams.set_crc( call cc2420xParams.get_crc() );
+//	call cc2420XDriverParams.set_power( call cc2420xParams.get_power() );
+//	call cc2420XDriverParams.set_channel( call cc2420xParams.get_channel() );
+//	call cc2420XDriverParams.set_ack( call cc2420xParams.get_ack() );
+//	call cc2420XDriverParams.set_crc( call cc2420xParams.get_crc() );
 }
 
 
 
 event void SubRadioState.done() {
 	printf("SubRadioState.done() - [%d]\n", process_id);
+	printfflush();
 	signal RadioState.done();
 	if (sc != TRUE) {
 		return;

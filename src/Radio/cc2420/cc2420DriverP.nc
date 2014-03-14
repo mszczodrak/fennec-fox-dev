@@ -339,8 +339,7 @@ command error_t RadioState.turnOff() {
         err = SUCCESS;
 
         if (state == S_STOPPED) {
-                post stop_done();
-                return SUCCESS;
+                return EALREADY;
         }
 
         if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
@@ -363,8 +362,7 @@ command error_t RadioState.turnOn() {
         err = SUCCESS;
 
         if (state == S_STARTED) {
-                post start_done();
-                return SUCCESS;
+                return EALREADY;
         }
 
         if (call RadioPower.startVReg() != SUCCESS) return FAIL;
