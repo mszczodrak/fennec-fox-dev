@@ -64,6 +64,7 @@ provides interface RadioSend;
 provides interface RadioReceive;
 provides interface RadioCCA;
 provides interface RadioPacket;
+provides interface cc2420XDriverParams;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -94,6 +95,8 @@ RadioCCA = DriverLayerP;
 RadioPacket = DriverLayerP;
 
 LocalTimeRadio = HplC;
+
+cc2420XDriverParams = DriverLayerP;
 
 DriverLayerP.VREN -> HplC.VREN;
 DriverLayerP.CSN -> HplC.CSN;

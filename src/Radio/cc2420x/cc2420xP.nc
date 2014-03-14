@@ -36,14 +36,16 @@
 #include <Fennec.h>
 #include "cc2420x.h"
 
-generic module cc2420xP(uint8_t process_id) @safe() {
+generic module cc2420xP(process_t process_id) @safe() {
 provides interface SplitControl;
 provides interface RadioState;
+provides interface Resource as RadioResource;
 
+uses interface Leds;
 uses interface cc2420xParams;
-
 uses interface RadioState as SubRadioState;
-
+uses interface cc2420XDriverParams;
+uses interface Resource as SubRadioResource;
 }
 
 implementation {
@@ -53,80 +55,94 @@ norace message_t *m;
 bool sc = FALSE;
 norace error_t err;
 
-task void start_done() {
-	if (err == SUCCESS) {
-        	state = S_STARTED;
-	}
-	signal RadioState.done();
-	if (sc == TRUE) {
-                signal SplitControl.startDone(err);
-                sc = FALSE;
-        }
+task void set_params() {
+	call cc2420XDriverParams.set_power( call cc2420xParams.get_power() );
+	call cc2420XDriverParams.set_channel( call cc2420xParams.get_channel() );
+	call cc2420XDriverParams.set_ack( call cc2420xParams.get_ack() );
+	call cc2420XDriverParams.set_crc( call cc2420xParams.get_crc() );
 }
 
-task void stop_done() {
-	if (err == SUCCESS) {
-		state = S_STOPPED;
-	}
+
+
+event void SubRadioState.done() {
+	printf("SubRadioState.done() - [%d]\n", process_id);
 	signal RadioState.done();
-	if (sc == TRUE) {
-		signal SplitControl.stopDone(err);
-		sc = FALSE;
+	if (sc != TRUE) {
+		return;
 	}
+
+	if (state == S_STARTING) {
+		post set_params();
+		state = S_STARTED;
+		printf("SplitControl.startDone(SUCCESS) - [%d]\n", process_id);
+		signal SplitControl.startDone(SUCCESS);
+	}
+
+	if (state == S_STOPPING) {
+		state = S_STOPPED;
+		printf("SplitControl.stopDone(SUCCESS) - [%d]\n", process_id);
+		signal SplitControl.stopDone(SUCCESS);
+	}
+	sc = FALSE;
 }
+
+
 
 command error_t SplitControl.start() {
-        sc = TRUE;
-        return call RadioState.turnOn();
+	sc = TRUE;
+	printf("SplitControl.start() - [%d]\n", process_id);
+	post set_params();
+	state = S_STARTING;
+	return call SubRadioState.turnOn();
 }
 
+
 command error_t SplitControl.stop() {
-        sc = TRUE;
-        return call RadioState.turnOff();
+	sc = TRUE;
+	printf("SplitControl.stop() - [%d]\n", process_id);
+	state = S_STOPPING;
+	call SubRadioResource.release();
+	return call SubRadioState.turnOff();
 }
 
 command error_t RadioState.turnOn() {
-	state = S_STARTING;
-	if (call SubRadioState.turnOn() != SUCCESS) {
-		signal SubRadioState.done();
-	}
-	return SUCCESS;
+	return call SubRadioState.turnOn();
 }
 
 command error_t RadioState.turnOff() {
-	state = S_STOPPING;
-	if (call SubRadioState.turnOff() != SUCCESS) {
-		signal SubRadioState.done();
-	}
-	return SUCCESS;
+	return call SubRadioState.turnOff();
 }
 
 command error_t RadioState.standby() {
-        return call RadioState.turnOff();
+	return call SubRadioState.standby();
 }
 
 command error_t RadioState.setChannel(uint8_t channel) {
-        return call SubRadioState.setChannel( channel );
+	return call SubRadioState.setChannel(channel);
 }
 
-command uint8_t RadioState.getChannel() {
-        return call SubRadioState.getChannel();
+command error_t RadioState.getChannel() {
+	return call SubRadioState.getChannel();
 }
 
-event void SubRadioState.done() {
-	switch(state) {
-	case S_STARTING:
-		post start_done();		
-		break;
+async command error_t RadioResource.immediateRequest() {
+	return call SubRadioResource.immediateRequest();
+}
 
-	case S_STOPPING:
-		post stop_done();
-		break;
+async command error_t RadioResource.request() {
+	return call SubRadioResource.request();
+}
 
-	default:
-		break;
+async command bool RadioResource.isOwner() {
+	return call SubRadioResource.isOwner();
+}
 
-	}
+async command error_t RadioResource.release() {
+	return call SubRadioResource.release();
+}
+
+event void SubRadioResource.granted() {
+	signal RadioResource.granted();
 }
 
 

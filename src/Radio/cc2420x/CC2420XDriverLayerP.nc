@@ -71,6 +71,7 @@ provides interface RadioSend;
 provides interface RadioReceive;
 provides interface RadioCCA;
 provides interface RadioPacket;
+provides interface cc2420XDriverParams;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
@@ -100,6 +101,11 @@ uses interface Leds;
 implementation {
 
 typedef nx_uint32_t timesync_radio_t;
+norace uint8_t param_tx_power;
+norace uint8_t param_tx_channel;
+norace uint8_t param_tx_ack;
+norace uint8_t param_tx_crc;
+
 
 cc2420x_hdr_t* getHeader(message_t* msg) {
 	return (cc2420x_hdr_t*)msg->data;
@@ -143,9 +149,6 @@ norace uint8_t cmd = CMD_NONE;
 norace bool rxSfd = 0;
 // flag: end of TX event (falling SFD edge) was captured, but not yet processed	
 norace bool txEnd = 0;
-
-norace uint8_t txPower;
-norace uint8_t channel;
 
 norace message_t* rxMsg;
 norace message_t* txMsg;
@@ -376,8 +379,8 @@ command error_t SoftwareInit.init() {
     	call VREN.set();
     	call BusyWait.wait( 600 ); // .6ms VR startup time
 
-	txPower = CC2420_DEF_RFPOWER;
-	channel = CC2420_DEF_CHANNEL;
+	param_tx_power = CC2420_DEF_RFPOWER;
+	param_tx_channel = CC2420_DEF_CHANNEL;
     		
     	// do a reset
 	call RSTN.clr();
@@ -450,7 +453,7 @@ bool isSpiAcquired() {
 /*----------------- CHANNEL -----------------*/
 
 command uint8_t RadioState.getChannel() {
-	return channel;
+	return param_tx_channel;
 }
 
 command error_t RadioState.setChannel(uint8_t c) {
@@ -458,10 +461,10 @@ command error_t RadioState.setChannel(uint8_t c) {
 
 	if( cmd != CMD_NONE )
 		return EBUSY;
-	else if( channel == c )
+	else if( param_tx_channel == c )
 		return EALREADY;
 
-	channel = c;
+	param_tx_channel = c;
 	cmd = CMD_CHANNEL;
 	task_run();
 
@@ -472,7 +475,7 @@ inline void setChannel() {
 	cc2420X_fsctrl_t fsctrl;
 	// set up freq
 	fsctrl= cc2420X_fsctrl_default;
-	fsctrl.f.freq = 357+5*(channel - 11);
+	fsctrl.f.freq = 357+5*(param_tx_channel - 11);
 	
 	writeRegister(CC2420X_FSCTRL, fsctrl.value);
 }
@@ -585,12 +588,12 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		return EBUSY;
 
 	p = (call PacketTransmitPower.isSet(msg) ?
-		call PacketTransmitPower.get(msg) : txPower);
+		call PacketTransmitPower.get(msg) : param_tx_power);
 
-	if( p != txPower ) {
+	if( p != param_tx_power ) {
 		cc2420X_txctrl_t txctrl = cc2420X_txctrl_default;
-		txPower = p;
-		txctrl.f.pa_level = txPower;
+		param_tx_power = p;
+		txctrl.f.pa_level = param_tx_power;
 		writeRegister(CC2420X_TXCTRL, txctrl.value);
 	}
 
@@ -1031,5 +1034,38 @@ async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
 async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return call PacketLinkQuality.get(msg) > 105;
 }
+
+command void cc2420XDriverParams.set_power(uint8_t power) {
+	param_tx_power = power;
+}
+
+command uint8_t cc2420XDriverParams.get_power() {
+	return param_tx_power;
+}
+
+command void cc2420XDriverParams.set_channel(uint8_t channel) {
+	param_tx_channel = channel;
+}
+
+command uint8_t cc2420XDriverParams.get_channel() {
+	return param_tx_channel;
+}
+
+command void cc2420XDriverParams.set_ack(uint8_t status) {
+	param_tx_ack = status;
+}
+
+command uint8_t cc2420XDriverParams.get_ack() {
+	return param_tx_ack;
+}
+
+command void cc2420XDriverParams.set_crc(uint8_t status) {
+	param_tx_crc = status;
+}
+
+command uint8_t cc2420XDriverParams.get_crc() {
+	return param_tx_crc;
+}
+
 
 }

@@ -33,7 +33,7 @@
   */
 
 
-generic configuration cc2420xC(uint8_t process_id) {
+generic configuration cc2420xC(process_t process_id) {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -60,6 +60,8 @@ implementation {
 components new cc2420xP(process_id);
 components cc2420xMultiC;
 
+components new SimpleFcfsArbiterC("CC2420_RADIO_RESOURCE") as CC2420ResourceC;
+
 SplitControl = cc2420xP;
 cc2420xParams = cc2420xP;
 RadioReceive = cc2420xMultiC.RadioReceive[process_id];
@@ -68,15 +70,22 @@ RadioSend = cc2420xMultiC.RadioSend[process_id];
 RadioState = cc2420xP.RadioState;
 
 RadioPacket = cc2420xMultiC.RadioPacket;
-cc2420xP.SubRadioState -> cc2420xMultiC.RadioState;
 
-RadioResource = cc2420xMultiC.RadioResource;
+RadioResource = cc2420xP.RadioResource;
+cc2420xP.SubRadioResource -> CC2420ResourceC.Resource[process_id];
+cc2420xP.SubRadioState -> cc2420xMultiC.RadioState[process_id];
+
+cc2420xP.cc2420XDriverParams -> cc2420xMultiC.cc2420XDriverParams;
+
+//RadioResource = cc2420xMultiC.RadioResource;
+
+
+RadioCCA = cc2420xMultiC.RadioCCA[process_id];
 
 PacketTransmitPower = cc2420xMultiC.PacketTransmitPower;
 PacketLinkQuality = cc2420xMultiC.PacketLinkQuality;
 PacketRSSI = cc2420xMultiC.PacketRSSI;
 RadioLinkPacketMetadata = cc2420xMultiC;
 PacketTimeSync = cc2420xMultiC.PacketTimeSync;
-RadioCCA = cc2420xMultiC.RadioCCA;
 
 }

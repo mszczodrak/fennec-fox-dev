@@ -34,9 +34,12 @@
 
 
 configuration cc2420xMultiC {
-provides interface RadioReceive[uint8_t process_id];
-provides interface RadioSend[uint8_t process_id];
-provides interface RadioBuffer[uint8_t process_id];
+provides interface RadioReceive[process_t process_id];
+provides interface RadioSend[process_t process_id];
+provides interface RadioBuffer[process_t process_id];
+
+provides interface RadioState[process_t process_id];
+provides interface RadioCCA[process_t process_id];
 
 provides interface Resource as RadioResource;
 provides interface RadioPacket;
@@ -46,9 +49,8 @@ provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
-provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
+provides interface cc2420XDriverParams;
 }
 
 implementation {
@@ -58,11 +60,7 @@ components CC2420XDriverLayerC;
 components new RadioAlarmC();
 components new SoftwareAckLayerC();
 
-//components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as ResourceC;
-//RadioResource = ResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-
 RadioPacket = CC2420XDriverLayerC.RadioPacket;
-//RadioSend = AutoResourceAcquireLayerC;
 
 RadioSend = cc2420xMultiP.RadioSend;
 RadioReceive = cc2420xMultiP.RadioReceive;
@@ -70,7 +68,13 @@ RadioBuffer = cc2420xMultiP.RadioBuffer;
 cc2420xMultiP.SubRadioReceive -> SoftwareAckLayerC.RadioReceive;
 cc2420xMultiP.SubRadioSend -> AutoResourceAcquireLayerC;
 
-RadioState = CC2420XDriverLayerC.RadioState;
+RadioCCA = cc2420xMultiP.RadioCCA;
+cc2420xMultiP.SubRadioCCA -> CC2420XDriverLayerC.RadioCCA;
+
+cc2420XDriverParams = CC2420XDriverLayerC.cc2420XDriverParams;
+
+RadioState = cc2420xMultiP.RadioState;
+cc2420xMultiP.SubRadioState -> CC2420XDriverLayerC.RadioState;
 
 // -------- RadioAlarm
 
@@ -93,7 +97,6 @@ PacketLinkQuality = CC2420XDriverLayerC.PacketLinkQuality;
 PacketRSSI = CC2420XDriverLayerC.PacketRSSI;
 RadioLinkPacketMetadata = CC2420XDriverLayerC;
 PacketTimeSync = CC2420XDriverLayerC.PacketTimeSync;
-RadioCCA = CC2420XDriverLayerC.RadioCCA;
 
 CC2420XDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 

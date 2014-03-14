@@ -48,9 +48,9 @@ uses interface RadioCCA as SubRadioCCA;
 
 implementation {
 
-norace process_t last_proc_id;
-norace process_t last_proc_id_state;
-norace process_t last_proc_id_cca;
+norace process_t last_proc_id = UNKNOWN;
+norace process_t last_proc_id_state = UNKNOWN;
+norace process_t last_proc_id_cca = UNKNOWN;
 
 process_t getProcessId(message_t *msg) {
 	cc2420_hdr_t* header = (cc2420_hdr_t*)(msg->data);
@@ -115,12 +115,17 @@ async event void SubRadioBuffer.loadDone(message_t *msg, error_t err) {
 async event bool SubRadioReceive.header(message_t* msg) {
 	if (validProcessId(getProcessId(msg))) {
 		return signal RadioReceive.header[getProcessId(msg)](msg);
+	} else {
+		return FAIL;
 	}
-	return FAIL;
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
-	return signal RadioReceive.receive[getProcessId(msg)](msg);
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioReceive.receive[getProcessId(msg)](msg);
+	} else {
+		return msg;
+	}
 }
 
 async event void SubRadioSend.ready() {
@@ -128,7 +133,10 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
+	} else {
+	}
 }
 
 async event void SubRadioCCA.done(error_t error) {
