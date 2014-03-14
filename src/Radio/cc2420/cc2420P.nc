@@ -63,7 +63,7 @@ task void set_params() {
 }
 
 event void SubRadioState.done() {
-	printf("SubRadioState.done() - [%d]\n", process_id);
+	//printf("SubRadioState.done() - [%d]\n", process_id);
 	signal RadioState.done();
 	if (sc != TRUE) {
 		return;
@@ -72,13 +72,13 @@ event void SubRadioState.done() {
 	if (state == S_STARTING) {
 		post set_params();
 		state = S_STARTED;
-		printf("SplitControl.startDone(SUCCESS) - [%d]\n", process_id);
+		//printf("SplitControl.startDone(SUCCESS) - [%d]\n", process_id);
 		signal SplitControl.startDone(SUCCESS);
 	}
 
 	if (state == S_STOPPING) {
 		state = S_STOPPED;
-		printf("SplitControl.stopDone(SUCCESS) - [%d]\n", process_id);
+		//printf("SplitControl.stopDone(SUCCESS) - [%d]\n", process_id);
 		signal SplitControl.stopDone(SUCCESS);
 	}
 	sc = FALSE;
@@ -86,7 +86,7 @@ event void SubRadioState.done() {
 		
 command error_t SplitControl.start() {
 	sc = TRUE;
-	printf("SplitControl.start() - [%d]\n", process_id);
+	//printf("SplitControl.start() - [%d]\n", process_id);
 	post set_params();
 	state = S_STARTING;
 	call SubRadioResource.release();
@@ -96,7 +96,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	sc = TRUE;
-	printf("SplitControl.stop() - [%d]\n", process_id);
+	//printf("SplitControl.stop() - [%d]\n", process_id);
 	state = S_STOPPING;
 	return call SubRadioState.turnOff();
 }
