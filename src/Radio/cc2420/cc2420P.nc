@@ -36,14 +36,17 @@
 #include <Fennec.h>
 #include "cc2420.h"
 
-generic module cc2420P(uint8_t process_id) @safe() {
+generic module cc2420P(process_t process_id) @safe() {
 provides interface SplitControl;
 provides interface RadioState;
+provides interface Resource as RadioResource;
 
 uses interface Leds;
 uses interface cc2420Params;
 uses interface RadioState as SubRadioState;
 uses interface cc2420DriverParams;
+uses interface Resource as SubRadioResource;
+
 }
 
 implementation {
@@ -60,6 +63,7 @@ task void set_params() {
 }
 
 event void SubRadioState.done() {
+	printf("SubRadioState.done()\n");
 	signal RadioState.done();
 	if (sc != TRUE) {
 		return;
@@ -68,26 +72,31 @@ event void SubRadioState.done() {
 	if (state == S_STARTING) {
 		post set_params();
 		state = S_STARTED;
+		printf("SplitControl.startDone(SUCCESS)\n");
 		signal SplitControl.startDone(SUCCESS);
 	}
 
 	if (state == S_STOPPING) {
 		state = S_STOPPED;
+		printf("SplitControl.stopDone(SUCCESS)\n");
 		signal SplitControl.stopDone(SUCCESS);
 	}
-	sc = TRUE;
+	sc = FALSE;
 }
 		
 command error_t SplitControl.start() {
 	sc = TRUE;
+	printf("SplitControl.start()\n");
 	post set_params();
 	state = S_STARTING;
+	call SubRadioResource.release();
 	return call SubRadioState.turnOn();
 }
 
 
 command error_t SplitControl.stop() {
 	sc = TRUE;
+	printf("SplitControl.stop()\n");
 	state = S_STOPPING;
 	return call SubRadioState.turnOff();
 }
@@ -112,6 +121,25 @@ command error_t RadioState.getChannel() {
 	return call SubRadioState.getChannel();
 }
 
+async command error_t RadioResource.immediateRequest() {
+	return call SubRadioResource.immediateRequest();
+}
+
+async command error_t RadioResource.request() {
+	return call SubRadioResource.request();
+}
+
+async command bool RadioResource.isOwner() {
+	return call SubRadioResource.isOwner();
+}
+
+async command error_t RadioResource.release() {
+	return call SubRadioResource.release();
+}
+
+event void SubRadioResource.granted() {
+	signal RadioResource.granted();
+}
 
 }
 

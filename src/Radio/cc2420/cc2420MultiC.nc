@@ -34,12 +34,13 @@
 
 
 configuration cc2420MultiC {
-provides interface RadioReceive[uint8_t process_id];
-provides interface RadioSend[uint8_t process_id];
-provides interface RadioBuffer[uint8_t process_id];
-provides interface RadioState[uint8_t process_id];
+provides interface RadioReceive[process_t process_id];
+provides interface RadioSend[process_t process_id];
+provides interface RadioBuffer[process_t process_id];
+provides interface RadioState[process_t process_id];
 
-provides interface Resource as RadioResource;
+provides interface RadioCCA[process_t process_id];
+
 provides interface RadioPacket;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
@@ -48,7 +49,6 @@ provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
 
 provides interface RadioPower;
 provides interface RadioConfig;
@@ -60,31 +60,20 @@ provides interface cc2420DriverParams;
 implementation {
 
 components cc2420MultiP;
-
-
 components cc2420ControlC;
 components cc2420DriverC;
-RadioCCA = cc2420DriverC.RadioCCA;
+components cc2420ReceiveC;
 
 RadioPower = cc2420ControlC.RadioPower;
-RadioResource = cc2420ControlC.RadioResource;
+
+RadioCCA = cc2420MultiP.RadioCCA;
+cc2420MultiP.SubRadioCCA -> cc2420DriverC.RadioCCA;
 
 cc2420DriverParams = cc2420DriverC.cc2420DriverParams;
 
-//SplitControl = cc2420P;
-//cc2420Params = cc2420P;
-
-//RadioResource = cc2420ControlC.RadioResource;
-
-//cc2420Params = cc2420ControlC;
-
-//cc2420P.RadioConfig -> cc2420ControlC.RadioConfig;
 RadioConfig = cc2420ControlC.RadioConfig;
-
-components cc2420ReceiveC;
 cc2420ReceiveC.RadioConfig -> cc2420ControlC.RadioConfig;
 
-//cc2420P.ReceiveControl -> cc2420ReceiveC.StdControl;
 ReceiveControl = cc2420ReceiveC.StdControl;
 
 RadioReceive = cc2420MultiP.RadioReceive;
@@ -98,11 +87,8 @@ cc2420MultiP.SubRadioReceive -> cc2420ReceiveC.RadioReceive;
 cc2420MultiP.SubRadioSend -> cc2420DriverC.RadioSend;
 cc2420MultiP.SubRadioBuffer -> cc2420DriverC.RadioBuffer;
 
-//RadioBuffer = cc2420DriverC.RadioBuffer;
 RadioPacket = cc2420DriverC.RadioPacket;
 
-
-//cc2420P.TransmitControl -> cc2420DriverC.StdControl;
 TransmitControl = cc2420DriverC.StdControl;
 
 cc2420ReceiveC.RadioPacket -> cc2420DriverC.RadioPacket;

@@ -43,6 +43,7 @@ typedef uint16_t conf_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 typedef uint16_t event_t;
+typedef uint16_t process_t;
 
 /*
 typedef nx_struct fennec_header_t {
