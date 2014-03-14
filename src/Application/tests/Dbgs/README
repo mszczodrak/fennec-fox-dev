@@ -1,0 +1,11 @@
+Dbgs Application Module
+Author: Marcin Szczodrak
+
+A simple test application that sends DBGS format messages.
+dbgs is a debug function defined as follows:
+bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
+
+this function has global scope in Fennec Fox
+
+This application module takes none parameters.
+

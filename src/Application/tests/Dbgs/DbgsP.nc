@@ -32,11 +32,13 @@
   * @updated: 01/03/2014
   */
 
+#include <Fennec.h>
+#include "Dbgs.h"
 
-generic configuration DbgsAppC() {
+generic module DbgsP() {
 provides interface SplitControl;
 
-uses interface DbgsAppParams;
+uses interface DbgsParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -44,25 +46,40 @@ uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+
+uses interface Timer<TMilli> as Timer;
+uses interface Leds;
 }
 
 implementation {
 
-components new DbgsAppP();
-SplitControl = DbgsAppP;
+uint16_t c;
 
-DbgsAppParams = DbgsAppP;
+command error_t SplitControl.start() {
+	c = 0;
+	call Timer.startPeriodic(1000);
+	signal SplitControl.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-NetworkAMSend = DbgsAppP.NetworkAMSend;
-NetworkReceive = DbgsAppP.NetworkReceive;
-NetworkSnoop = DbgsAppP.NetworkSnoop;
-NetworkAMPacket = DbgsAppP.NetworkAMPacket;
-NetworkPacket = DbgsAppP.NetworkPacket;
-NetworkPacketAcknowledgements = DbgsAppP.NetworkPacketAcknowledgements;
+command error_t SplitControl.stop() {
+	signal SplitControl.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-components new TimerMilliC() as Timer;
-DbgsAppP.Timer -> Timer;
+event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
 
-components LedsC;
-DbgsAppP.Leds -> LedsC;
+event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event void Timer.fired() {
+	call Leds.set(c++);
+	dbgs(F_APPLICATION, S_NONE, 0 , c, c);
+}
+
 }
