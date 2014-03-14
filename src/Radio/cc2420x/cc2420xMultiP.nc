@@ -55,16 +55,16 @@ norace process_t last_proc_id_cca = UNKNOWN;
 process_t getProcessId(message_t *msg) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	last_proc_id = header->destpan;
-	printf("rec %d len %d\n", last_proc_id, header->length);
-	printfflush();
+	//printf("rec %d len %d\n", last_proc_id, header->length);
+	//printfflush();
 	return header->destpan;
 }
 
 void setProcessId(message_t *msg, process_t process_id) {
 	cc2420x_hdr_t* header = (cc2420x_hdr_t*)(msg->data);
 	last_proc_id = process_id;
-	printf("send %d\n", last_proc_id);
-	printfflush();
+	//printf("send %d\n", last_proc_id);
+	//printfflush();
 	header->destpan = process_id;
 }
 
@@ -135,10 +135,8 @@ async event void SubRadioSend.ready() {
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
 	if (validProcessId(getProcessId(msg))) {
-		printf("SubRadioSend.sendDone(%d)\n", error);
 		signal RadioSend.sendDone[getProcessId(msg)](msg, error);
 	} else {
-		printf("SubRadioSend.sendDone(%d) - wrong state\n", error);
 	}
 }
 
