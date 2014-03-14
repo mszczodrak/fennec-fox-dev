@@ -111,33 +111,46 @@ norace uint16_t myCongestionBackoff;
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
 	error_t err = EBUSY;
-	if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
+	if(call SplitControlState.isState(S_STARTED)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start() - S_STARTED");
+		post startDone_task();
+		return SUCCESS;
+	}
+
+	if (call SplitControlState.requestState(S_STARTING) == SUCCESS) {
 		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start()");
 		err = call RadioState.turnOn();
-	} else if(call SplitControlState.isState(S_STARTED)) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start() - S_STARTED");
-		err = EALREADY;
+		if (err == EALREADY) {
+			post startDone_task();
+		}
+		return SUCCESS;
 	}
-	signal RadioState.done();
+
 	return err;
 }
 
 command error_t SplitControl.stop() {
 	error_t err = EBUSY;
-	if (call SplitControlState.isState(S_STARTED)) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STARTED");
-		call SplitControlState.forceState(S_STOPPING);
-		err = call RadioState.turnOff();
-	} else if(call SplitControlState.isState(S_STOPPED)) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STOPPED");
-		err = EALREADY;
-	} else if(call SplitControlState.isState(S_TRANSMITTING)) {
+	if(call SplitControlState.isState(S_TRANSMITTING)) {
 		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_TRANSMITTING");
 		call SplitControlState.forceState(S_STOPPING);
 		// At sendDone, the radio will shut down
 		return SUCCESS;
 	}
-	signal RadioState.done();
+
+	if(call SplitControlState.isState(S_STOPPED)) {
+		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STOPPED");
+		post stopDone_task();
+		return SUCCESS;
+	}
+
+	dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STARTED");
+	call SplitControlState.forceState(S_STOPPING);
+	err = call RadioState.turnOff();
+	if (err == EALREADY) {
+		shutdown();
+		return SUCCESS;
+	}
 	return err;
 }
 
@@ -462,13 +475,13 @@ async event void RadioCCA.done(error_t err) {
 event void RadioState.done() {
 	//printf("CSMA got radio state\n");
 	//printfflush();
-	if (call SplitControlState.isState(S_STARTING) || call SplitControlState.isState(S_STARTED)) {
+	if (call SplitControlState.isState(S_STARTING)) {
 		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - post startDone_task");
 		post startDone_task();
 	}
 
 
-	if (call SplitControlState.isState(S_STOPPING) || call SplitControlState.isState(S_STOPPED)) {
+	if (call SplitControlState.isState(S_STOPPING)) {
 		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - shutdown()");
 		shutdown();
 	}
