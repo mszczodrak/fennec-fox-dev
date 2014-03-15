@@ -113,7 +113,7 @@ async command error_t RadioSend.send[process_t process](message_t* msg, bool use
 }
 
 async command error_t RadioCCA.request[process_t process]() {
-	dbg("Radio", "[%d] cape RadioCCA.request()", process);
+	//dbg("Radio", "[%d] cape RadioCCA.request()", process);
 	last_proc_id_cca = process;
 	return call SubRadioCCA.request();
 }
@@ -158,7 +158,7 @@ async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
 }
 
 async event void SubRadioCCA.done(error_t error) {
-	dbg("Radio", "[%d] SubRadioCCA.done(%d)", last_proc_id_cca, error);
+	//dbg("Radio", "[%d] SubRadioCCA.done(%d)", last_proc_id_cca, error);
 	signal RadioCCA.done[last_proc_id_cca](error);
 }
 
