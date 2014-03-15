@@ -62,8 +62,6 @@ uses interface ReceiveIndicator as EnergyIndicator;
 uses interface ReceiveIndicator as ByteIndicator;
 uses interface ReceiveIndicator as PacketIndicator;
 
-uses interface State as SplitControlState;
-
 uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 uses interface RadioCCA;
@@ -100,53 +98,18 @@ task void startDone_task() {
 	for(i = 0; i < nullMac_RECEIVE_QUEUE_SIZE; ++i) {
 		receiveQueue[i] = receiveQueueData + i;
 	}
-
 	m_state = S_STARTED;
-	call SplitControlState.forceState(S_STARTED);
+	signal SplitControl.startDone(SUCCESS);
 }
 
 task void stopDone_task() {
-	call SplitControlState.forceState(S_STOPPED);
-}
-
-void shutdown() {
 	m_state = S_STOPPED;
-	post stopDone_task();
+	signal SplitControl.stopDone(SUCCESS);
 }
 
 nullMac_header_t* getHeader(message_t *m) {
 	uint8_t *p = (uint8_t*)(m->data);
 	return (nullMac_header_t*)(p + call RadioPacket.headerLength(m));
-}
-
-error_t SplitControl_start() {
-
-	if(call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-		call RadioControl.start();
-		return SUCCESS;
-	} else if(call SplitControlState.isState(S_STARTED)) {
-		return EALREADY;
-	} else if(call SplitControlState.isState(S_STARTING)) {
-		return SUCCESS;
-	}
-	return EBUSY;
-}
-
-error_t SplitControl_stop() {
-	if (call SplitControlState.isState(S_STARTED)) {
-		call SplitControlState.forceState(S_STOPPING);
-		call RadioControl.stop();
-		return SUCCESS;	
-	} else if(call SplitControlState.isState(S_STOPPED)) {
-		return EALREADY;
-	} else if(call SplitControlState.isState(S_TRANSMITTING)) {
-		call SplitControlState.forceState(S_STOPPING);
-		// At sendDone, the radio will shut down
-		return SUCCESS;
-	} else if(call SplitControlState.isState(S_STOPPING)) {
-		return SUCCESS;
-	}
-	return EBUSY;
 }
 
 
@@ -155,15 +118,13 @@ error_t SplitControl_stop() {
 command error_t SplitControl.start() {
 	dbg("Mac", "[%d] nullMac SplitControl.start()", process);
 	post startDone_task();
-	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 
 command error_t SplitControl.stop() {
 	dbg("Mac", "[%d] nullMac SplitControl.stop()", process);
-	shutdown();
-	signal SplitControl.stopDone(SUCCESS);
+	post stopDone_task();
 	return SUCCESS;
 }
 
@@ -214,15 +175,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		header->fcf &= ~(1 << IEEE154_FCF_ACK_REQ);
 	}
 
-	atomic {
-		if (!call SplitControlState.isState(S_STARTED)) {
-			return FAIL;
-		}
-
-		call SplitControlState.forceState(S_TRANSMITTING);
-		m_msg = msg;
-	}
-
+	m_msg = msg;
 
 	header->fcf &= ((1 << IEEE154_FCF_ACK_REQ) |
 		(0x3 << IEEE154_FCF_SRC_ADDR_MODE) |
@@ -241,7 +194,9 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 command error_t MacAMSend.cancel(message_t* msg) {
 	dbg("Mac", "[%d] nullMac MacAMSend.cancel(0x%1x)", process, msg);
-	m_state = S_STARTED;
+	if (m_state == S_BEGIN_TRANSMIT) {
+		m_state = S_STARTED;
+	}
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
@@ -371,14 +326,10 @@ command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 }
 
 task void sendDone_task() {
-	error_t packetErr;
-	atomic packetErr = sendErr;
-	if(call SplitControlState.isState(S_STOPPING)) {
-		shutdown();
-	} else {
-		call SplitControlState.forceState(S_STARTED);
+	if (m_state != S_STOPPED) {
+		m_state = S_STARTED;
 	}
-	signal MacAMSend.sendDone( m_msg, packetErr );
+	signal MacAMSend.sendDone( m_msg, sendErr );
 }
 
 task void deliverTask() {

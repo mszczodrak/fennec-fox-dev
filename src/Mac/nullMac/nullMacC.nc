@@ -87,8 +87,6 @@ RadioCCA = nullMacP.RadioCCA;
 
 components RandomC;
 nullMacP.Random -> RandomC;
-components new StateC();
-nullMacP.SplitControlState -> StateC;
 
 PacketTransmitPower = nullMacP.PacketTransmitPower;
 PacketRSSI = nullMacP.PacketRSSI;
