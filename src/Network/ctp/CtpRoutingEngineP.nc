@@ -106,7 +106,7 @@
 
 #include "ctp.h"
 
-generic module CtpRoutingEngineP(uint8_t routingTableSize, uint32_t minInterval, uint32_t maxInterval) {
+generic module CtpRoutingEngineP(process_t process, uint8_t routingTableSize, uint32_t minInterval, uint32_t maxInterval) {
 provides interface UnicastNameFreeRouting as Routing;
 provides interface RootControl;
 provides interface CtpInfo;
@@ -219,7 +219,7 @@ command error_t StdControl.start() {
 //        dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
 //              sizeof(beaconMsg), maxLength);
 
-	dbg("Network", "CtpRoutingEngineP StdControl.start()");
+	dbg("Network", "[%d] ctp CtpRoutingEngineP StdControl.start()", process);
 
 	my_ll_addr = call AMPacket.address();
 	//start will (re)start the sending of messages
@@ -232,7 +232,7 @@ command error_t StdControl.start() {
 }
 
 command error_t StdControl.stop() {
-	dbg("Network", "CtpRoutingEngineP StdControl.stop()");
+	dbg("Network", "[%d] ctp CtpRoutingEngineP StdControl.stop()", process);
 	running = FALSE;
 	call RouteTimer.stop();
 	call BeaconTimer.stop();
@@ -400,7 +400,7 @@ command error_t StdControl.stop() {
                   beaconMsg->etx);
         call CollectionDebug.logEventRoute(NET_C_TREE_SENT_BEACON, beaconMsg->parent, 0, beaconMsg->etx);
 
-        dbg("Network", "ctp sendBeaconTask");	
+        dbg("Network", "[%d] ctp sendBeaconTask", process);	
         eval = call BeaconSend.send(AM_BROADCAST_ADDR, 
                                     &beaconMsgBuffer, 
                                     sizeof(ctp_routing_header_t));

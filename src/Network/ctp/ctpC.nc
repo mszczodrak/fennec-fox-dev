@@ -125,7 +125,7 @@ components new TimerMilliC() as RouteUpdateTimer;
 components new LinkEstimatorP() as Estimator;
 Forwarder.LinkEstimator -> Estimator;
 
-components new CtpRoutingEngineP(TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;
+components new CtpRoutingEngineP(process, TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;
 
 components new CtpAMQueueEntryP(AM_CTP_DATA) as AMSenderC;
 AMSenderC.AMPacket -> CtpActiveMessageC;
