@@ -72,7 +72,7 @@ command error_t SplitControl.stop() {
 event void Timer.fired() {
 	dbg("Application", "Application Blink set LED to %d", 
 		call BlinkParams.get_led());
-	//dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkParams.get_led(), on);
+	dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkParams.get_led(), on);
 	on ? call Leds.set(0) : call Leds.set(call BlinkParams.get_led()) ;
 	on = !on;
 }
