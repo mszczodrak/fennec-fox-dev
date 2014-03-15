@@ -34,7 +34,7 @@
 
 #include <Fennec.h>
 
-generic configuration cc2420C(process_t process_id) {
+generic configuration cc2420C(process_t process) {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -58,27 +58,27 @@ provides interface RadioCCA;
 
 implementation {
 
-components new cc2420P(process_id);
+components new cc2420P(process);
 components cc2420MultiC;
 
 components new SimpleFcfsArbiterC("CC2420_RADIO_RESOURCE") as CC2420ResourceC;
 
 SplitControl = cc2420P;
 cc2420Params = cc2420P;
-RadioReceive = cc2420MultiC.RadioReceive[process_id];
-RadioBuffer = cc2420MultiC.RadioBuffer[process_id];
-RadioSend = cc2420MultiC.RadioSend[process_id];
+RadioReceive = cc2420MultiC.RadioReceive[process];
+RadioBuffer = cc2420MultiC.RadioBuffer[process];
+RadioSend = cc2420MultiC.RadioSend[process];
 RadioState = cc2420P.RadioState;
 
 RadioPacket = cc2420MultiC.RadioPacket;
 
 RadioResource = cc2420P.RadioResource;
-cc2420P.SubRadioResource -> CC2420ResourceC.Resource[process_id];
+cc2420P.SubRadioResource -> CC2420ResourceC.Resource[process];
 
 cc2420P.cc2420DriverParams -> cc2420MultiC.cc2420DriverParams;
-cc2420P.SubRadioState -> cc2420MultiC.RadioState[process_id];
+cc2420P.SubRadioState -> cc2420MultiC.RadioState[process];
 
-RadioCCA = cc2420MultiC.RadioCCA[process_id];
+RadioCCA = cc2420MultiC.RadioCCA[process];
 
 PacketTransmitPower = cc2420MultiC.PacketTransmitPower;
 PacketLinkQuality = cc2420MultiC.PacketLinkQuality;

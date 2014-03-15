@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "cc2420.h"
 
-generic module cc2420P(process_t process_id) @safe() {
+generic module cc2420P(process_t process) @safe() {
 provides interface SplitControl;
 provides interface RadioState;
 provides interface Resource as RadioResource;
@@ -87,7 +87,10 @@ event void SubRadioState.done() {
 command error_t SplitControl.start() {
 	sc = TRUE;
 	//printf("SplitControl.start() - [%d]\n", process_id);
-	dbgs(F_RADIO, S_NONE, DBGS_MGMT_START, 0, 0);
+	dbgs(process, F_RADIO, S_NONE, DBGS_MGMT_START, 
+		call cc2420Params.get_power(),
+		call cc2420Params.get_channel(),
+		call cc2420Params.get_ack());
 	post set_params();
 	state = S_STARTING;
 	call SubRadioResource.release();
@@ -98,7 +101,7 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	sc = TRUE;
 	//printf("SplitControl.stop() - [%d]\n", process_id);
-	dbgs(F_RADIO, S_NONE, DBGS_MGMT_STOP, 0, 0);
+	dbgs(process, F_RADIO, S_NONE, DBGS_MGMT_STOP, 0, 0, 0);
 	state = S_STOPPING;
 	return call SubRadioState.turnOff();
 }

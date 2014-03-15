@@ -45,17 +45,6 @@ typedef uint16_t layer_t;
 typedef uint16_t event_t;
 typedef uint16_t process_t;
 
-/*
-typedef nx_struct fennec_header_t {
-	nxle_uint8_t length;
-	nxle_uint16_t fcf;
-	nxle_uint8_t dsn;
-	nxle_uint16_t destpan;
-	nxle_uint16_t dest;
-	nxle_uint16_t src;
-} fennec_header_t;
-*/
-
 #include <Serial.h>
 
 typedef union message_header {

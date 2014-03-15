@@ -42,7 +42,7 @@ provides interface SimpleStart;
 uses interface SplitControl;
 uses interface Receive;
 uses interface AMSend;
-uses interface Queue<nx_struct debug_msg>;
+uses interface Queue<struct debug_msg>;
 #endif
 uses interface Leds;
 }
@@ -53,7 +53,7 @@ uint8_t state = S_STOPPED;
 
 #ifdef __DBGS__
 message_t packet;
-norace nx_struct debug_msg *msg;
+norace struct debug_msg *msg;
 #endif
 
 command void SimpleStart.start() {
@@ -69,10 +69,10 @@ command void SimpleStart.start() {
 #ifdef __DBGS__
 task void send_msg() {
 	if (state == S_STARTED) {
-		nx_struct debug_msg q_msg = call Queue.dequeue();
+		struct debug_msg q_msg = call Queue.dequeue();
 		state = S_TRANSMITTING;
-		memcpy(msg, &q_msg, sizeof(nx_struct debug_msg));
-		call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg));
+		memcpy(msg, &q_msg, sizeof(struct debug_msg));
+		call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg));
 	}
 }
 
@@ -91,7 +91,7 @@ event void AMSend.sendDone(message_t* bufPtr, error_t error) {
 
 event void SplitControl.startDone(error_t err) {
 	state = S_STARTED;
-	msg = (nx_struct debug_msg*) call AMSend.getPayload(&packet, sizeof(nx_struct debug_msg));
+	msg = (struct debug_msg*) call AMSend.getPayload(&packet, sizeof(struct debug_msg));
 }
 
 event void SplitControl.stopDone(error_t err) {
@@ -99,19 +99,22 @@ event void SplitControl.stopDone(error_t err) {
 }
 #endif
 
-bool dbgs(uint8_t layer, uint8_t dbg_state, uint16_t action, uint16_t d0, uint16_t d1) @C() {
+bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t action,
+			uint16_t d0, uint16_t d1, uint16_t d2) @C() {
 	dbg("Dbgs", "Dbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
 #ifdef __DBGS__
 	atomic {
 		if (call Queue.full()) 
 			return 1;
 
-		memset(msg, 0, sizeof(nx_struct debug_msg));
+		memset(msg, 0, sizeof(struct debug_msg));
+		msg->process = process;
 		msg->layer = layer;
 		msg->state = dbg_state;
 		msg->action = action;
 		msg->d0 = d0;
 		msg->d1 = d1;
+		msg->d2 = d2;
 		call Queue.enqueue(*msg);
 
 		post send_msg();

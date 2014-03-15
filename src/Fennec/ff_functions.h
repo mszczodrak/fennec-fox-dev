@@ -37,6 +37,7 @@
 #define FF_FUNCTIONS_H
 
 #include <Fennec.h>
+#include "ff_structs.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -51,7 +52,8 @@ uint32_t gcdr (uint32_t a, uint32_t b )@C() {
 }
 
 /* Debugging functions */
-bool dbgs(uint8_t layer, uint8_t state, uint16_t action, uint16_t d0, uint16_t d1);
+bool dbgs(process_t process, uint8_t layer, uint8_t state, uint16_t action,
+					uint16_t d0, uint16_t d1, uint16_t);
 
 bool validProcessId(uint8_t process_id);
 

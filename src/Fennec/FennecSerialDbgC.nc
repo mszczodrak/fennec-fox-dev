@@ -51,7 +51,7 @@ FennecSerialDbgP.SplitControl -> SerialAM;
 FennecSerialDbgP.Receive -> SerialAM.Receive[AM_DEBUG_MSG];
 FennecSerialDbgP.AMSend -> SerialAM.AMSend[AM_DEBUG_MSG];
 
-components new QueueC(nx_struct debug_msg, DBG_BUFFER_SIZE);
+components new QueueC(struct debug_msg, DBG_BUFFER_SIZE);
 FennecSerialDbgP.Queue -> QueueC;
 #endif
 
