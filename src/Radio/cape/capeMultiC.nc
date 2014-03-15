@@ -34,12 +34,12 @@
 
 
 configuration capeMultiC {
-provides interface RadioReceive[process_t process_id];
-provides interface RadioSend[process_t process_id];
-provides interface RadioBuffer[process_t process_id];
-provides interface RadioState[process_t process_id];
+provides interface RadioReceive[process_t process];
+provides interface RadioSend[process_t process];
+provides interface RadioBuffer[process_t process];
+provides interface RadioState[process_t process];
 
-provides interface RadioCCA[process_t process_id];
+provides interface RadioCCA[process_t process];
 
 provides interface RadioPacket;
 

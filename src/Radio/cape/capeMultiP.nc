@@ -35,11 +35,11 @@
 #include "cape.h"
 
 module capeMultiP {
-provides interface RadioReceive[process_t process_id];
-provides interface RadioSend[process_t process_id];
-provides interface RadioBuffer[process_t process_id];
-provides interface RadioState[process_t process_id];
-provides interface RadioCCA[process_t process_id];
+provides interface RadioReceive[process_t process];
+provides interface RadioSend[process_t process];
+provides interface RadioBuffer[process_t process];
+provides interface RadioState[process_t process];
+provides interface RadioCCA[process_t process];
 
 uses interface RadioReceive as SubRadioReceive;
 uses interface RadioSend as SubRadioSend;
@@ -60,61 +60,73 @@ process_t getProcessId(message_t *msg) {
 	return header->destpan;
 }
 
-void setProcessId(message_t *msg, process_t process_id) {
+void setProcessId(message_t *msg, process_t process) {
 	cape_hdr_t* header = (cape_hdr_t*)(msg->data);
-	last_proc_id = process_id;
-	header->destpan = process_id;
-}
-
-command error_t RadioState.turnOff[process_t process_id]() {
-	last_proc_id_state = process_id;
-	return call SubRadioState.turnOff();
+	last_proc_id = process;
+	header->destpan = process;
 }
 
 event void SubRadioState.done() {
 	signal RadioState.done[last_proc_id_state]();
 }
 
-command error_t RadioState.turnOn[process_t process_id]() {
-	last_proc_id_state = process_id;
-	return call SubRadioState.turnOn();
-}
-
-command error_t RadioState.standby[process_t process_id]() {
-	last_proc_id_state = process_id;
+command error_t RadioState.turnOff[process_t process]() {
+	dbg("Radio", "[%d] cape RadioState.turnOff()", process);
+	last_proc_id_state = process;
 	return call SubRadioState.turnOff();
 }
 
-command error_t RadioState.setChannel[process_t process_id](uint8_t channel) {
-	last_proc_id_state = process_id;
+command error_t RadioState.turnOn[process_t process]() {
+	dbg("Radio", "[%d] cape RadioState.turnOn()", process);
+	last_proc_id_state = process;
+	return call SubRadioState.turnOn();
+}
+
+command error_t RadioState.standby[process_t process]() {
+	dbg("Radio", "[%d] cape RadioState.standby()", process);
+	last_proc_id_state = process;
+	return call SubRadioState.turnOff();
+}
+
+command error_t RadioState.setChannel[process_t process](uint8_t channel) {
+	dbg("Radio", "[%d] cape RadioState.setChannel(%d)", process, channel);
+	last_proc_id_state = process;
 	return call SubRadioState.setChannel( channel );
 }
 
-command uint8_t RadioState.getChannel[process_t process_id]() {
-	last_proc_id_state = process_id;
+command uint8_t RadioState.getChannel[process_t process]() {
+	dbg("Radio", "[%d] cape RadioState.getChannel()", process);
+	last_proc_id_state = process;
         return call SubRadioState.getChannel();
 }
 
-async command error_t RadioBuffer.load[process_t process_id](message_t* msg) {
-	setProcessId(msg, process_id);
+async command error_t RadioBuffer.load[process_t process](message_t* msg) {
+	dbg("Radio", "[%d] cape RadioBuffer.load(0x%1x)", process, msg);
+	setProcessId(msg, process);
 	return call SubRadioBuffer.load(msg);
 }
 
-async command error_t RadioSend.send[process_t process_id](message_t* msg, bool useCca) {
-	setProcessId(msg, process_id);
+async command error_t RadioSend.send[process_t process](message_t* msg, bool useCca) {
+	dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d)", process, msg, useCca);
+	setProcessId(msg, process);
 	return call SubRadioSend.send(msg, useCca);
 }
 
-async command error_t RadioCCA.request[process_t process_id]() {
-	last_proc_id_cca = process_id;
+async command error_t RadioCCA.request[process_t process]() {
+	dbg("Radio", "[%d] cape RadioCCA.request()", process);
+	last_proc_id_cca = process;
 	return call SubRadioCCA.request();
 }
 
 async event void SubRadioBuffer.loadDone(message_t *msg, error_t err) {
+	dbg("Radio", "[%d] cape signal RadioBuffer.loadDone(0x%1x, %d)",
+			getProcessId(msg), msg, err);
 	signal RadioBuffer.loadDone[getProcessId(msg)](msg, err);
 }
 
 async event bool SubRadioReceive.header(message_t* msg) {
+	dbg("Radio", "[%d] cape SubRadioReceive.header(0x%1x)",
+			getProcessId(msg), msg);
 	if (validProcessId(getProcessId(msg))) {
 		return signal RadioReceive.header[getProcessId(msg)](msg);
 	} else {
@@ -123,6 +135,8 @@ async event bool SubRadioReceive.header(message_t* msg) {
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
+	dbg("Radio", "[%d] cape SubRadioReceive.receive(0x%1x)",
+			getProcessId(msg), msg);
 	if (validProcessId(getProcessId(msg))) {
 		return signal RadioReceive.receive[getProcessId(msg)](msg);
 	} else {
@@ -135,6 +149,8 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	dbg("Radio", "[%d] cape SubRadioSend.sendDone(0x%1x, %d)", 
+			getProcessId(msg), msg, error);
 	if (validProcessId(getProcessId(msg))) {
 		return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
 	} else {
@@ -145,31 +161,31 @@ async event void SubRadioCCA.done(error_t error) {
 	signal RadioCCA.done[last_proc_id_cca](error);
 }
 
-default async event bool RadioReceive.header[process_t process_id](message_t* msg) {
+default async event bool RadioReceive.header[process_t process](message_t* msg) {
 	return FALSE;
 }
 
-default async event message_t * RadioReceive.receive[process_t process_id](message_t* msg) {
+default async event message_t * RadioReceive.receive[process_t process](message_t* msg) {
 	return msg;
 }
 
-default async event void RadioSend.sendDone[process_t process_id](message_t* msg, error_t error) {
+default async event void RadioSend.sendDone[process_t process](message_t* msg, error_t error) {
 
 }
 
-default async event void RadioSend.ready[process_t process_id]() {
+default async event void RadioSend.ready[process_t process]() {
 
 }
 
-default async event void RadioBuffer.loadDone[process_t process_id](message_t *msg, error_t error) {
+default async event void RadioBuffer.loadDone[process_t process](message_t *msg, error_t error) {
 
 }
 
-default event void RadioState.done[process_t process_id]() {
+default event void RadioState.done[process_t process]() {
 
 }
 
-default async event void RadioCCA.done[process_t process_id](error_t error) {
+default async event void RadioCCA.done[process_t process](error_t error) {
 
 }
 

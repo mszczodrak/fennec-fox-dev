@@ -174,30 +174,30 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "[%d] nullRadio RadioBuffer.send(0x%1x)", process, msg, useCca);
+	dbg("Radio", "[%d] nullRadio RadioSend.send(0x%1x)", process, msg, useCca);
 	post send_done();
 	return SUCCESS;
 }
 
 async command uint8_t RadioPacket.maxPayloadLength() {
-	dbg("Radio", "[%d] nullRadio RadioBuffer.maxPayloadLength()", process);
+	dbg("Radio", "[%d] nullRadio RadioPacket.maxPayloadLength()", process);
 	return nullRadio_MAX_MESSAGE_SIZE - sizeof(nx_struct nullRadio_header_t) - nullRadio_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
-	dbg("Radio", "[%d] nullRadio RadioBuffer.headerLength(0x%1x)", process, msg);
+	dbg("Radio", "[%d] nullRadio RadioPacket.headerLength(0x%1x)", process, msg);
 	return sizeof(nx_struct nullRadio_header_t);
 }
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 	nx_struct nullRadio_header_t *hdr = (nx_struct nullRadio_header_t*)(msg->data);
-	dbg("Radio", "[%d] nullRadio RadioBuffer.payloadLength(0x%1x)", process, msg);
+	dbg("Radio", "[%d] nullRadio RadioPacket.payloadLength(0x%1x)", process, msg);
 	return hdr->length - sizeof(nx_struct nullRadio_header_t) - nullRadio_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
 	nx_struct nullRadio_header_t *hdr = (nx_struct nullRadio_header_t*)(msg->data);
-	dbg("Radio", "[%d] nullRadio RadioBuffer.setPayloadLength(0x%1x, %d)", process, msg, length);
+	dbg("Radio", "[%d] nullRadio RadioPacket.setPayloadLength(0x%1x, %d)", process, msg, length);
 	hdr->length = length + sizeof(nx_struct nullRadio_header_t) + nullRadio_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 

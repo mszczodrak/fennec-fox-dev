@@ -34,7 +34,7 @@
 
 #include <Fennec.h>
 
-generic configuration capeC(process_t process_id) {
+generic configuration capeC(process_t process) {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -58,26 +58,26 @@ provides interface RadioCCA;
 
 implementation {
 
-components new capeP(process_id);
+components new capeP(process);
 components capeMultiC;
 
 components new SimpleFcfsArbiterC("CC2420_RADIO_RESOURCE") as CC2420ResourceC;
 
 SplitControl = capeP;
 capeParams = capeP;
-RadioReceive = capeMultiC.RadioReceive[process_id];
-RadioBuffer = capeMultiC.RadioBuffer[process_id];
-RadioSend = capeMultiC.RadioSend[process_id];
+RadioReceive = capeMultiC.RadioReceive[process];
+RadioBuffer = capeMultiC.RadioBuffer[process];
+RadioSend = capeMultiC.RadioSend[process];
 RadioState = capeP.RadioState;
 
 RadioPacket = capeMultiC.RadioPacket;
 
 RadioResource = capeP.RadioResource;
-capeP.SubRadioResource -> CC2420ResourceC.Resource[process_id];
+capeP.SubRadioResource -> CC2420ResourceC.Resource[process];
 
-capeP.SubRadioState -> capeMultiC.RadioState[process_id];
+capeP.SubRadioState -> capeMultiC.RadioState[process];
 
-RadioCCA = capeMultiC.RadioCCA[process_id];
+RadioCCA = capeMultiC.RadioCCA[process];
 
 PacketTransmitPower = capeMultiC.PacketTransmitPower;
 PacketLinkQuality = capeMultiC.PacketLinkQuality;
