@@ -58,9 +58,9 @@ uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
 implementation {
 
 command error_t SplitControl.start() {
-	dbg("Network", "ctpP SplitControl.start()");
+	dbg("Network", "[%d] ctp SplitControl.start()", process);
 	call RoutingControl.start();
-	dbg("Network", "ctpP SplitControl.start() - root: %d", call ctpParams.get_root());
+	dbg("Network", "[%d] ctp SplitControl.start() - root: %d", process, call ctpParams.get_root());
 	if (TOS_NODE_ID == call ctpParams.get_root()) {
 		call RootControl.setRoot();
 	}
@@ -70,7 +70,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	dbg("Network", "ctpP SplitControl.stop()");
+	dbg("Network", "[%d] ctp SplitControl.stop()", process);
 	call RoutingControl.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;

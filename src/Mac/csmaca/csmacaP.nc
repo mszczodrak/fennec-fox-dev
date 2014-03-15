@@ -76,7 +76,7 @@ uint8_t localSendId;
 
 command error_t SplitControl.start() {
 	error_t e;
-	dbg("Mac", "csmaMac SplitControl.start()");
+	dbg("Mac", "[%d] csmaca SplitControl.start()", process);
 	if (status == S_STARTED) {
 		signal SplitControl.startDone(SUCCESS);
 		return SUCCESS;
@@ -96,14 +96,14 @@ command error_t SplitControl.start() {
 		return FAIL;
 	}
 
-	dbg("Mac", "csmaMac SplitControl.stop - STARTING");
+	dbg("Mac", "[%d] csmaca SplitControl.stop - STARTING", process);
 	status = S_STARTING;
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	error_t e;
-	dbg("Mac", "csmaMac SplitControl.stop()");
+	dbg("Mac", "[%d] csmaca SplitControl.stop()", process);
 	if (status == S_STOPPED) {
 		signal SplitControl.stopDone(SUCCESS);
 		return SUCCESS;
@@ -121,7 +121,7 @@ command error_t SplitControl.stop() {
 		return FAIL;
 	}
 
-	dbg("Mac", "csmaMac SplitControl.stop - STOPPING");
+	dbg("Mac", "[%d] csmaca SplitControl.stop - STOPPING", process);
 
 	status = S_STOPPING;
 	return SUCCESS;
@@ -129,7 +129,7 @@ command error_t SplitControl.stop() {
 
 
 event void RadioControl.startDone(error_t err) {
-	dbg("Mac", "csmaMac RadioControl.startDone(%d)", err);
+	dbg("Mac", "[%d] csmaca RadioControl.startDone(%d)", process, err);
 	if (status != S_STARTING) {
 		return;
 	}
@@ -144,7 +144,7 @@ event void RadioControl.startDone(error_t err) {
 
 
 event void RadioControl.stopDone(error_t err) {
-	dbg("Mac", "csmaMac RadioControl.stopDone(%d)", err);
+	dbg("Mac", "[%d] csmaca RadioControl.stopDone(%d)", process, err);
 	if (status != S_STOPPING) {
 		return;
 	}
@@ -160,7 +160,7 @@ event void RadioControl.stopDone(error_t err) {
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	csmaca_header_t* header;
 
-	dbg("Mac", "csmaMac MacAMSend.send(%d, 0x%1x, %d)", addr, msg, len);
+	dbg("Mac", "[%d] csmaca MacAMSend.send(%d, 0x%1x, %d)", process, addr, msg, len);
 
 	header = (csmaca_header_t*)call SubSend.getPayload( msg, len );
 
@@ -186,17 +186,17 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 }
 
 command error_t MacAMSend.cancel(message_t* msg) {
-	dbg("Mac", "csmaMac MacAMSend.cancel(0x%1x)", msg);
+	dbg("Mac", "[%d] csmaca MacAMSend.cancel(0x%1x)", process, msg);
 	return call SubSend.cancel(msg);
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
-	dbg("Mac-Detail", "csmaMac MacAMSend.maxPayloadLength()");
+	dbg("Mac-Detail", "[%d] csmaca MacAMSend.maxPayloadLength()", process);
 	return call MacPacket.maxPayloadLength();
 }
 
 command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-	dbg("Mac-Detail", "csmaMac MacAMSend.getPayload(0x%1x, %d)", msg, len);
+	dbg("Mac-Detail", "[%d] csmaca MacAMSend.getPayload(0x%1x, %d)", process, msg, len);
 	return call MacPacket.getPayload(msg, len);
 }
 
@@ -315,7 +315,7 @@ event void SubSend.sendDone(message_t* msg, error_t result) {
 //	printf("sendDone error: %u \t rssi: %u \t lqi: %u \t crc: %u \t ack: %u\n",
 //		result, getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc, getMetadata(msg)->ack);
 //	printfflush();
-	dbg("Mac", "csmaMac SubSend.sendDone(0x%1x, %d)", msg, result);
+	dbg("Mac", "[%d] csmaca SubSend.sendDone(0x%1x, %d)", process, msg, result);
 	signal MacAMSend.sendDone(msg, result);
 }
 
@@ -330,7 +330,7 @@ event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 		ptr += sizeof(csmaca_header_t);
 		len -= sizeof(csmaca_header_t);
 
-		dbg("Mac", "csmaMac SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
+		dbg("Mac", "[%d] csmaca SubReceive.receive(0x%1x, 0x%1x, %d)", process, msg, payload, len);
 
 		if((call csmacaParams.get_crc()) && (!getMetadata(msg)->crc)) {
 			return msg;
