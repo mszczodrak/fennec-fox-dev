@@ -103,6 +103,7 @@ bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t action,
 			uint16_t d0, uint16_t d1, uint16_t d2) @C() {
 	dbg("Dbgs", "Dbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
 #ifdef __DBGS__
+#ifndef PRINTF_DBG
 	atomic {
 		if (call Queue.full()) 
 			return 1;
@@ -119,6 +120,12 @@ bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t action,
 
 		post send_msg();
 	}
+
+#else
+	printf("%d %d %d %d %d %d %d\n", process, layer, dbg_state, action, d0, d1, d2);
+	printfflush();
+#endif
+
 #endif
 	return 0;
 }

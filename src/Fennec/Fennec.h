@@ -35,7 +35,6 @@
 #ifndef FENNEC_H
 #define FENNEC_H
 
-
 #ifdef FENNEC_TOS_PRINTF
 #define NEW_PRINTF_SEMANTICS
 #define PRINTF_DBG
@@ -54,8 +53,6 @@
 #include "ff_structs.h"
 #include "ff_flags.h"
 #include "ff_states.h"
-//#include "ff_sensor_type.h"
-//#include "ff_sensor_ids.h"
 #include "ff_functions.h"
 #include "ff_consts.h"
 

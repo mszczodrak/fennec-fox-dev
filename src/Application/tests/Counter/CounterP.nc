@@ -94,7 +94,7 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 	dbg("Application", "[%d] Counter SplitControl.stop()", process);
-	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
+	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -113,13 +113,13 @@ void sendMessage() {
 	if (call NetworkAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
 		dbgs(process, F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
-					call CounterParams.get_dest(), 0);
+					call CounterParams.get_dest(), sizeof(CounterMsg));
 		dbg("Application", "[%d] Counter sendMessage() seqno: %d source: %d - FAILED", 
 					process, msg->seqno, msg->source); 
 	} else {
 		sendBusy = TRUE;
 		dbgs(process, F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
-					call CounterParams.get_dest(), 0);
+					call CounterParams.get_dest(), sizeof(CounterMsg));
 		dbg("Application", "[%d] Counter call NetworkAMSend.send(%d, 0x%1x, %d)",
 					process, 
 					call CounterParams.get_dest(), &packet,
@@ -156,9 +156,11 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	call Leds.set(cm->seqno);
 	if (cm->seqno > (seqno + 20)) {
 		if (call NetworkAMPacket.source(msg) == cm->source) {
-			dbgs(process, F_APPLICATION, S_ERROR, DBGS_ERROR, cm->seqno, cm->source, len);
+			dbgs(process, F_APPLICATION, S_ERROR, DBGS_ERROR,
+				cm->seqno, cm->source, len);
 		} else {
-			dbgs(process, F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, cm->source, call NetworkAMPacket.source(msg), len);
+			dbgs(process, F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, 
+				cm->source, call NetworkAMPacket.source(msg), len);
 		}
 	} else {
 		dbgs(process, F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source, len);
