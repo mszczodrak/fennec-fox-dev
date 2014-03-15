@@ -73,7 +73,7 @@
  
 #include "csmaca.h"
 
-generic module UniqueP() @safe() {
+generic module UniqueP(process_t process) @safe() {
 provides interface Send;
 provides interface Receive;
 provides interface Init;
@@ -145,8 +145,8 @@ task void deliverTask() {
 		p = (uint8_t*)(msg->data);
 		header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
 		msgDsn = header->dsn;
-		dbg("Mac", "csmaMac UniqueP deliverTask() from %u to %u, msgDsn: %d",
-					header->src, header->dest, header->dsn);
+		dbg("Mac", "[%d] csmaca UniqueP deliverTask() from %u to %u, msgDsn: %d",
+					process, header->src, header->dest, header->dsn);
 	}
 
 	if(!hasSeen(msgSource, msgDsn)) {
@@ -171,8 +171,8 @@ task void deliverTask() {
 command error_t Send.send(message_t *msg, uint8_t len) {
 	csmaca_header_t* header = (csmaca_header_t*)call SubSend.getPayload(msg, len);
 	header->dsn = localSendId++;
-	dbg("Mac", "csmaMac UniqueP Send.send(0x%1x, %u) to %u, msgDsn: %d",
-					msg, len, header->dest, header->dsn);
+	dbg("Mac", "[%d] csmaca UniqueP Send.send(0x%1x, %u) to %u, msgDsn: %d",
+				process, msg, len, header->dest, header->dsn);
 	return call SubSend.send(msg, len);
 }
 
@@ -200,7 +200,7 @@ event void SubSend.sendDone(message_t *msg, error_t error) {
 /***************** SubReceive Events *****************/
 async event message_t *SubReceive.receive(message_t* msg) {
 	message_t *m;
-	dbg("Mac", "csmaMac UniqueP SubReceive.receive(0x%1x)", msg);
+	dbg("Mac", "[%d] csmaca UniqueP SubReceive.receive(0x%1x)", process, msg);
 	atomic {
 		if( receiveQueueSize >= CSMACA_MAC_RECEIVE_QUEUE_SIZE ) {
 			m = msg;
@@ -223,11 +223,11 @@ async event bool SubReceive.header(message_t* msg) {
 	if (receiveQueueSize < CSMACA_MAC_RECEIVE_QUEUE_SIZE) {
 		uint8_t *p = (uint8_t*)(msg->data);
 		csmaca_header_t* header = (csmaca_header_t*) (p + call RadioPacket.headerLength(msg));
-		dbg("Mac", "csmaMac UniqueP SubReceive.header(0x%1x)  from %u to %u",
-				msg, header->src, header->dest);
+		dbg("Mac", "[%d] csmaca UniqueP SubReceive.header(0x%1x)  from %u to %u",
+				process, msg, header->src, header->dest);
 	        return ((header->dest == TOS_NODE_ID) || (header->dest == AM_BROADCAST_ADDR));
 	} else {
-		dbg("Mac", "csmaMac UniqueP SubReceive.header(0x%1x) - Queue.full()", msg);
+		dbg("Mac", "[%d] csmaca UniqueP SubReceive.header(0x%1x) - Queue.full()", process, msg);
 		return FALSE;
 	}
 	//return TRUE;
@@ -255,14 +255,14 @@ bool hasSeen(uint16_t msgSource, uint8_t msgDsn) {
 			if(receivedMessages[i].source == msgSource) {
 				if(receivedMessages[i].dsn == msgDsn) {
 					// Only exit this loop if we found a duplicate packet
-					dbg("Mac", "csmaMac UniqueP hasSeen src: %u dsn: %u - TRUE", msgSource, msgDsn);
+					dbg("Mac", "[%d] csmaca UniqueP hasSeen src: %u dsn: %u - TRUE", process, msgSource, msgDsn);
 					return TRUE;
 				}
 				recycleSourceElement = i;
 			}
 		}
 	}
-	dbg("Mac", "csmaMac UniqueP hasSeen src: %u dsn: %u - FALSE", msgSource, msgDsn);
+	dbg("Mac", "[%d] csmaca UniqueP hasSeen src: %u dsn: %u - FALSE", process, msgSource, msgDsn);
 	return FALSE;
 }
   

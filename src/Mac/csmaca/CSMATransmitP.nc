@@ -37,7 +37,7 @@
 #include "Fennec.h"
 #include "csmaca.h"
 
-generic module CSMATransmitP() @safe() {
+generic module CSMATransmitP(process_t process) @safe() {
 provides interface CSMATransmit;
 provides interface SplitControl;
 provides interface Send;
@@ -112,13 +112,13 @@ norace uint16_t myCongestionBackoff;
 command error_t SplitControl.start() {
 	error_t err = EBUSY;
 	if(call SplitControlState.isState(S_STARTED)) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start() - S_STARTED");
+		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.start() - S_STARTED", process);
 		post startDone_task();
 		return SUCCESS;
 	}
 
 	if (call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.start()");
+		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.start()", process);
 		err = call RadioState.turnOn();
 		if (err == EALREADY) {
 			post startDone_task();
@@ -132,19 +132,19 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	error_t err = EBUSY;
 	if(call SplitControlState.isState(S_TRANSMITTING)) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_TRANSMITTING");
+		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_TRANSMITTING", process);
 		call SplitControlState.forceState(S_STOPPING);
 		// At sendDone, the radio will shut down
 		return SUCCESS;
 	}
 
 	if(call SplitControlState.isState(S_STOPPED)) {
-		dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STOPPED");
+		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_STOPPED", process);
 		post stopDone_task();
 		return SUCCESS;
 	}
 
-	dbg("Mac", "csmaMac CSMATransmitP SplitControl.stop() - S_STARTED");
+	dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_STARTED", process);
 	call SplitControlState.forceState(S_STOPPING);
 	err = call RadioState.turnOff();
 	if (err == EALREADY) {
@@ -156,7 +156,7 @@ command error_t SplitControl.stop() {
 
 /***************** Send Commands ****************/
 command error_t Send.cancel( message_t* p_msg ) {
-	dbg("Mac", "csmaMac CSMATransmitP Send.cancel(0x%1x)", p_msg);
+	dbg("Mac", "[%d] csmaca CSMATransmitP Send.cancel(0x%1x)", process, p_msg);
 	switch( m_state ) {
 	case S_LOAD:
 	case S_SAMPLE_CCA:
@@ -173,7 +173,7 @@ command error_t Send.cancel( message_t* p_msg ) {
 command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	csmaca_header_t* header;
 	metadata_t* metadata;
-	dbg("Mac", "csmaMac CSMATransmitP Send.send(0x%1x, %d)", p_msg, len);
+	dbg("Mac", "[%d] csmaca CSMATransmitP Send.send(0x%1x, %d)", process, p_msg, len);
 
 	header = (csmaca_header_t*) call Send.getPayload( p_msg, len);
 	metadata = (metadata_t*) p_msg->metadata;
@@ -184,7 +184,7 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 
 	atomic {
 		if (!call SplitControlState.isState(S_STARTED)) {
-			dbg("Mac", "csmaMac CSMATransmitP Send.send() - FAIL - isState(S_STARTED)");
+			dbg("Mac", "[%d] csmaca CSMATransmitP Send.send() - FAIL - isState(S_STARTED)", process);
 			return FAIL;
 		}
 
@@ -219,7 +219,7 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	}
 
 	if ( m_state != S_STARTED ) {
-		dbg("Mac", "csmaMac CSMATransmitP Send.send() - FAIL - m_state != S_STARTED");
+		dbg("Mac", "[%d] csmaca CSMATransmitP Send.send() - FAIL - m_state != S_STARTED", process);
 		return FAIL;
 	}
 
@@ -230,7 +230,7 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 
 	sendDoneErr = call RadioBuffer.load(m_msg);
 	if (sendDoneErr != SUCCESS) {
-		dbg("Mac", "csmaMac CSMATransmitP Send.send() - FAIL - RadioBuffer.load(0x%1x)", m_msg);
+		dbg("Mac", "[%d] csmaca CSMATransmitP Send.send() - FAIL - RadioBuffer.load(0x%1x)", process, m_msg);
 		post signalSendDone();
 		return sendDoneErr;
 	}
@@ -294,7 +294,8 @@ void requestInitialBackoff(message_t *msg, bool resend) {
 	} else {
 		myInitialBackoff = ( call Random.rand16() % (0x1F * csmaca_backoff_period) + csmaca_min_backoff);
 	}
-	dbg("Mac-Detail", "csmaMac CSMATransmitP requestInitialBackoff(0x%1x) myInitialBackoff = %d", msg, myInitialBackoff);
+	dbg("Mac-Detail", "[%d] csmaca CSMATransmitP requestInitialBackoff(0x%1x) myInitialBackoff = %d",
+			process, msg, myInitialBackoff);
 }
 
 
@@ -302,7 +303,7 @@ void congestionBackoff(message_t *msg) {
 //	myCongestionBackoff = ( call Random.rand16() % (0x3 * csmaca_backoff_period) + csmaca_min_backoff);
 	myCongestionBackoff = ( call Random.rand16() % (0x7 * csmaca_backoff_period) + csmaca_min_backoff);
 
-	dbg("Mac-Detail", "csmaMac congestionBackoff(0x%1x) is %d", msg, myCongestionBackoff);
+	dbg("Mac-Detail", "[%d] csmaca congestionBackoff(0x%1x) is %d", process, msg, myCongestionBackoff);
 
 	if (myCongestionBackoff) {
 		call BackoffTimer.start(myCongestionBackoff);
@@ -351,36 +352,36 @@ command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	if(call SplitControlState.isState(S_STOPPING)) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) - STOPPING",
-						msg, error);
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) - STOPPING",
+						process, msg, error);
 		shutdown();
 		return;
 	}
 	if (error != SUCCESS) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) != SUCCESS"
-						, msg, error);
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) != SUCCESS",
+						process, msg, error);
 		sendDoneErr = error;
 		post signalSendDone();
 		return;
 	}
 
 	if ( m_state == S_CANCEL ) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) = S_CANCEL",
-						msg, error);
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) = S_CANCEL",
+						process, msg, error);
 		sendDoneErr = ECANCEL;
 		post signalSendDone();
 	} else if ( !m_cca ) {
-		dbg("Mac", "csmaMac CSMATransmitP start sending");
+		dbg("Mac", "[%d] csmaca CSMATransmitP start sending", process);
 		m_state = S_BEGIN_TRANSMIT;
 		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
-			dbg("Mac", "csmaMac CSMATransmitP RadioSend.send(0x%1x, %d)", m_msg, m_cca);
+			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send(0x%1x, %d)", process, m_msg, m_cca);
 			signal RadioSend.sendDone(m_msg, FAIL);
 		}
 	} else {
 		m_state = S_SAMPLE_CCA;
 
-		dbg("Mac", "csmaMac CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) = SAMPLE_CCA",
-					msg, error);
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) = SAMPLE_CCA",
+					process, msg, error);
 		requestInitialBackoff(msg, FALSE);
 		if (myInitialBackoff) {
 			call BackoffTimer.start(myInitialBackoff);
@@ -399,10 +400,10 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
    * we should have gotten one.
    */
 async event void BackoffTimer.fired() {
-	dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired()");
-	dbg("Mac", "csmaMac CSMATransmitP BackoffTimer.fired()");
+	dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired()", process);
+	dbg("Mac", "[%d] csmaca CSMATransmitP BackoffTimer.fired()", process);
 	if(call SplitControlState.isState(S_STOPPING)) {
-		dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_STOPPING");
+		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_STOPPING", process);
 		shutdown();
 		return;
 	}
@@ -413,40 +414,40 @@ async event void BackoffTimer.fired() {
 		// sample CCA and wait a little longer if free, just in case we
 		// sampled during the ack turn-around window
 		if ( call RadioCCA.request() == SUCCESS ) {
-			dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_SAMPLE_CCA -> S_BEGIN_TRANSMIT");
+			dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_SAMPLE_CCA -> S_BEGIN_TRANSMIT", process);
 			m_state = S_BEGIN_TRANSMIT;
 			call BackoffTimer.start( TIME_ACK_TURNAROUND );    
 		} else {
-			dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_SAMPLE_CCA");
+			dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_SAMPLE_CCA", process);
 			congestionBackoff(m_msg);
 		}
 		break;
         
 	case S_BEGIN_TRANSMIT:
-		dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_BEGIN_TRANSMIT");
+		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_BEGIN_TRANSMIT", process);
 		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
-			dbg("Mac", "csmaMac CSMATransmitP RadioSend.send() != SUCCESS");
+			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send() != SUCCESS", process);
 			signal RadioSend.sendDone(m_msg, FAIL);
 			return;
 		}
-		dbg("Mac", "csmaMac CSMATransmitP RadioSend.send() == SUCCESS");
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send() == SUCCESS", process);
 		break;
 
 	case S_CANCEL:
-		dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - S_CANCEL");
+		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_CANCEL", process);
 		m_state = S_STARTED;
 		sendDoneErr = ECANCEL;
 		post signalSendDone();
 		break;
         
 	default:
-		dbg("Mac-Detail", "csmaMac CSMATransmitP BackoffTimer.fired() - default");
+		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - default", process);
 		break;
 	}
 }
       
 async event void RadioSend.sendDone(message_t *msg, error_t error) {
-	dbg("Mac", "csmaMac CSMATransmitP RadioSend.sendDone(0x%1x, %d)", msg, error);
+	dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.sendDone(0x%1x, %d)", process, msg, error);
 	if (m_state == S_CANCEL){
 		sendDoneErr = ECANCEL;
 		post signalSendDone();
@@ -476,13 +477,13 @@ event void RadioState.done() {
 	//printf("CSMA got radio state\n");
 	//printfflush();
 	if (call SplitControlState.isState(S_STARTING)) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - post startDone_task");
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioState.done() - post startDone_task", process);
 		post startDone_task();
 	}
 
 
 	if (call SplitControlState.isState(S_STOPPING)) {
-		dbg("Mac", "csmaMac CSMATransmitP RadioState.done() - shutdown()");
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioState.done() - shutdown()", process);
 		shutdown();
 	}
 }

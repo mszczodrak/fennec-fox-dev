@@ -76,7 +76,7 @@
 #include "DefaultLpl.h"
 #include "AM.h"
 
-generic module DefaultLplP() {
+generic module DefaultLplP(process_t process) {
 provides interface Send;
 provides interface Receive;
 provides interface SplitControl;
@@ -249,7 +249,7 @@ bool finishSplitControlRequests() {
  * signal receive() more than once for that message.
  */
 command error_t Send.send(message_t *msg, uint8_t len) {
-	dbg("Mac", "csmaMac DefaultLplP Send.send(0x%1x, %d)", msg, len);
+	dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d)", process, msg, len);
 
 	if(state == S_STOPPED) {
 		// Everything is off right now, start SplitControl and try again
@@ -276,7 +276,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 }
 
 command error_t Send.cancel(message_t *msg) {
-	dbg("Mac", "csmaMac DefaultLplP Send.cancel(0x%1x)", msg);
+	dbg("Mac", "[%d] csmaca DefaultLplP Send.cancel(0x%1x)", process, msg);
 	if(currentSendMsg == msg) {
 		call SendState.toIdle();
 		call SendDoneTimer.stop();
@@ -314,7 +314,7 @@ task void check() {
   
 /***************** SubControl Events ***************/
 event void SubControl.startDone(error_t error) {
-	dbg("Mac", "csmaMac DefaultLplP SubControl.startDone(%d)", error);
+	dbg("Mac", "[%d] csmaca DefaultLplP SubControl.startDone(%d)", process, error);
 	if(!error) {
 		radioPowerState = TRUE;
 
@@ -332,7 +332,7 @@ event void SubControl.startDone(error_t error) {
 }
     
 event void SubControl.stopDone(error_t error) {
-	dbg("Mac", "csmaMac DefaultLplP SubControl.stopDone(%d)", error);
+	dbg("Mac", "[%d] csmaca DefaultLplP SubControl.stopDone(%d)", process, error);
 	if(!error) {
 		radioPowerState = FALSE;
 
@@ -347,7 +347,7 @@ event void SubControl.stopDone(error_t error) {
 			// We're in the middle of sending a message; start the radio back up
 			/** TODO:
  			temporarly we comment out the forcing radio on
-			dbg("Mac", "csmaMac DefaultLplP SubControl.startDone - force radio back");
+			dbg("Mac", "[%d] csmaca DefaultLplP SubControl.startDone - force radio back", process);
 			post startRadio();
 			*/
 		} else {        
@@ -359,7 +359,7 @@ event void SubControl.stopDone(error_t error) {
   
 /***************** SubSend Events ***************/
 event void SubSend.sendDone(message_t* msg, error_t error) {
-	dbg("Mac", "csmaMac DefaultLplP SubSend.sendDone(0x%1x, %d)", msg, error);
+	dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d)", process, msg, error);
    
 	switch(call SendState.getState()) {
 	case S_LPL_SENDING:
@@ -403,7 +403,7 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
   
 /***************** Timer Events ****************/
 event void OffTimer.fired() {    
-	dbg("Mac", "csmaMac DefaultLplP OffTimer.fired()");
+	dbg("Mac", "[%d] csmaca DefaultLplP OffTimer.fired()", process);
 	/*
 	* Only stop the radio if the radio is supposed to be off permanently
 	* or if the duty cycle is on and our sleep interval is not 0
@@ -421,7 +421,7 @@ event void OffTimer.fired() {
   * to a node that is receive check duty cycling.
   */
 event void SendDoneTimer.fired() {
-	dbg("Mac", "csmaMac DefaultLplP SendDoneTimer.fired()");
+	dbg("Mac", "[%d] csmaca DefaultLplP SendDoneTimer.fired()", process);
 	if(call SendState.getState() == S_LPL_SENDING) {
 		// The next time SubSend.sendDone is signaled, send is complete.
 		call SendState.forceState(S_LPL_CLEAN_UP);

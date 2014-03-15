@@ -72,7 +72,7 @@
   */
 
  
-generic configuration UniqueC() {
+generic configuration UniqueC(process_t process) {
 provides interface Send;
 provides interface Receive;
 uses interface RadioReceive as SubReceive;
@@ -81,7 +81,7 @@ uses interface Send as SubSend;
 }
 
 implementation {
-components new UniqueP(), RandomC, MainC;
+components new UniqueP(process), RandomC, MainC;
   
 Receive = UniqueP.Receive;
 SubReceive = UniqueP.SubReceive;

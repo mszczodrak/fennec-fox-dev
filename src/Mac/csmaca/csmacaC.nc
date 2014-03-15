@@ -85,14 +85,14 @@ RadioPacket = csmacaP.RadioPacket;
 
 RadioLinkPacketMetadata = csmacaP.RadioLinkPacketMetadata;
 
-components new CSMATransmitC();
+components new CSMATransmitC(process);
 RadioResource = CSMATransmitC.RadioResource;
 RadioState = CSMATransmitC.RadioState;
 
-components new DefaultLplC() as LplC;
+components new DefaultLplC(process) as LplC;
 csmacaP.RadioControl -> LplC.SplitControl;
 
-components new UniqueC();
+components new UniqueC(process);
 
 RadioPacket = UniqueC.RadioPacket;
 

@@ -35,7 +35,7 @@
 
 #include "IEEE802154.h"
 
-generic configuration CSMATransmitC() {
+generic configuration CSMATransmitC(process_t process) {
 
 provides interface CSMATransmit;
 provides interface SplitControl;
@@ -60,7 +60,7 @@ uses interface RadioState;
 
 implementation {
 
-components new CSMATransmitP();
+components new CSMATransmitP(process);
 CSMATransmit = CSMATransmitP;
 RadioCCA = CSMATransmitP.RadioCCA;
 RadioState = CSMATransmitP.RadioState;
