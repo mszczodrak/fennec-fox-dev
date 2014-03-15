@@ -80,7 +80,7 @@ norace message_t * ONE_NOK r_msg;
 norace message_t * ONE_NOK r_msg_ptr;
 norace uint8_t m_state = S_STOPPED;
 
-error_t sendErr = SUCCESS;
+norace error_t sendErr = SUCCESS;
 
 norace message_t receiveQueueData[nullMac_RECEIVE_QUEUE_SIZE];
 norace message_t* receiveQueue[nullMac_RECEIVE_QUEUE_SIZE];
