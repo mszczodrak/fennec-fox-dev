@@ -56,8 +56,6 @@ task void boot() {
 }
 
 event void Boot.booted() {
-	printf("Booted\n");
-	printfflush();
 	post boot();
 }
 

@@ -54,7 +54,7 @@ task void start_protocol_stack() {
 	if (state_record->num_confs > process_num) {
 		/* there are confs to start */
 		dbg("NetworkState", "NetworkStateP call NetworkProcess.startConf(%d)",
-				state_record->conf_list[conf]);
+				state_record->conf_list[process_num]);
 		call NetworkProcess.start(state_record->conf_list[process_num]);		
 
 	} else {
@@ -73,7 +73,7 @@ task void stop_protocol_stack() {
 	if (state_record->num_confs > process_num) {
 		/* there are confs to stop */
 		dbg("NetworkState", "NetworkStateP call NetworkProcess.stopConf(%d)",
-				state_record->conf_list[conf]);
+				state_record->conf_list[process_num]);
 		call NetworkProcess.stop(state_record->conf_list[process_num]);		
 
 	} else {
@@ -100,14 +100,12 @@ task void stop_state() {
 
 command error_t SplitControl.start() {
 	dbg("NetworkState", "NetworkStateP SplitControl.start()");
-	printf("NetworkState SplitControl.start()\n");
 	post start_state();
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	dbg("NetworkState", "NetworkStateP SplitControl.stop()");
-	printf("NetworkState SplitControl.stop()\n");
 	post stop_state();
 	return SUCCESS;
 }
