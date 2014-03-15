@@ -72,7 +72,7 @@ command error_t SplitControl.start() {
 	uint32_t send_delay = call CounterParams.get_delay() * 
 		call CounterParams.get_delay_scale();
 	//call Leds.led0On();
-	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
+	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
 	dbg("Application", "Counter SplitControl.start()");
 
 	dbg("Application", "Counter starting delay: %d", send_delay);
