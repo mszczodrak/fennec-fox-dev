@@ -111,7 +111,7 @@ command error_t SplitControl.stop() {
 }
 
 event void NetworkProcess.startDone(error_t err) {
-	dbg("NetworkState", "NetworkStateP NetworkProcess.startConfDone(%d)", err);
+	dbg("NetworkState", "NetworkStateP NetworkProcess.startDone(%d)", err);
         if (err == SUCCESS) {
 		process_num++;
         }
@@ -119,7 +119,7 @@ event void NetworkProcess.startDone(error_t err) {
 }
 
 event void NetworkProcess.stopDone(error_t err) {
-	dbg("NetworkState", "NetworkStateP NetworkProcess.stopConfDone(%d)", err);
+	dbg("NetworkState", "NetworkStateP NetworkProcess.stopDone(%d)", err);
         if (err == SUCCESS) {
 		process_num++;
 	}
