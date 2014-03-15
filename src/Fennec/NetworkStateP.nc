@@ -35,9 +35,9 @@
 
 #include <Fennec.h>
 
-module NetworkSchedulerP @safe() {
+module NetworkStateP @safe() {
 provides interface SplitControl;
-uses interface ProtocolStack;
+uses interface NetworkProcess;
 uses interface Fennec;
 }
 
@@ -45,83 +45,85 @@ implementation {
 
 
 struct state* state_record;
-uint16_t conf = UNKNOWN_CONFIGURATION;
+process_t process_num = UNKNOWN;
 
 task void start_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
-	dbg("NetworkScheduler", "NetworkSchedulerP start_protocol_stack id = %d, num_confs = %d", 
+	dbg("NetworkState", "NetworkStateP start_protocol_stack id = %d, num_confs = %d", 
 		state_record->state_id, state_record->num_confs);
-	if (state_record->num_confs > conf) {
+	if (state_record->num_confs > process_num) {
 		/* there are confs to start */
-		dbg("NetworkScheduler", "NetworkSchedulerP call ProtocolStack.startConf(%d)",
+		dbg("NetworkState", "NetworkStateP call NetworkProcess.startConf(%d)",
 				state_record->conf_list[conf]);
-		call ProtocolStack.startConf(state_record->conf_list[conf]);		
+		call NetworkProcess.start(state_record->conf_list[process_num]);		
 
 	} else {
 		/* that's all folks, all configurations are running */
-		dbg("NetworkScheduler", "NetworkSchedulerP finished starting ProtocolStack");
-		conf = UNKNOWN_CONFIGURATION;
+		dbg("NetworkState", "NetworkStateP finished starting NetworkProcess");
+		process_num = UNKNOWN;
 		signal SplitControl.startDone(SUCCESS);
 	}
 }
 
 task void stop_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
-	dbg("NetworkScheduler", "NetworkSchedulerP stop_protocol_stack id = %d, num_confs = %d", 
+	dbg("NetworkState", "NetworkStateP stop_protocol_stack id = %d, num_confs = %d", 
 		state_record->state_id, state_record->num_confs);
 
-	if (state_record->num_confs > conf) {
+	if (state_record->num_confs > process_num) {
 		/* there are confs to stop */
-		dbg("NetworkScheduler", "NetworkSchedulerP call ProtocolStack.stopConf(%d)",
+		dbg("NetworkState", "NetworkStateP call NetworkProcess.stopConf(%d)",
 				state_record->conf_list[conf]);
-		call ProtocolStack.stopConf(state_record->conf_list[conf]);		
+		call NetworkProcess.stop(state_record->conf_list[process_num]);		
 
 	} else {
 		/* that's all folks, all configurations are running */
-		dbg("NetworkScheduler", "NetworkSchedulerP finished stopping ProtocolStack");
-		conf = UNKNOWN_CONFIGURATION;
+		dbg("NetworkState", "NetworkStateP finished stopping NetworkProcess");
+		process_num = UNKNOWN;
 		signal SplitControl.stopDone(SUCCESS);
 	}
 }
 
 task void start_state() {
-	conf = 0;
-	dbg("NetworkScheduler", "NetworkSchedulerP start_state() state = %d", 
+	process_num = 0;
+	dbg("NetworkState", "NetworkStateP start_state() state = %d", 
 						call Fennec.getStateId());
 	post start_protocol_stack();
 }
 
 task void stop_state() {
-	conf = 0;
-	dbg("NetworkScheduler", "NetworkSchedulerP stop_state() state = %d",
+	process_num = 0;
+	dbg("NetworkState", "NetworkStateP stop_state() state = %d",
 						call Fennec.getStateId());
 	post stop_protocol_stack();
 }
 
 command error_t SplitControl.start() {
-	dbg("NetworkScheduler", "NetworkSchedulerP SplitControl.start()");
+	dbg("NetworkState", "NetworkStateP SplitControl.start()");
+	printf("NetworkState SplitControl.start()\n");
 	post start_state();
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("NetworkScheduler", "NetworkSchedulerP SplitControl.stop()");
+	dbg("NetworkState", "NetworkStateP SplitControl.stop()");
+	printf("NetworkState SplitControl.stop()\n");
 	post stop_state();
 	return SUCCESS;
 }
 
-event void ProtocolStack.startConfDone(error_t err) {
-	dbg("NetworkScheduler", "NetworkSchedulerP ProtocolStack.startConfDone(%d)", err);
+event void NetworkProcess.startDone(error_t err) {
+	dbg("NetworkState", "NetworkStateP NetworkProcess.startConfDone(%d)", err);
         if (err == SUCCESS) {
-		conf++;
+		process_num++;
         }
 	post start_protocol_stack();
 }
 
-event void ProtocolStack.stopConfDone(error_t err) {
-	dbg("NetworkScheduler", "NetworkSchedulerP ProtocolStack.stopConfDone(%d)", err);
+event void NetworkProcess.stopDone(error_t err) {
+	dbg("NetworkState", "NetworkStateP NetworkProcess.stopConfDone(%d)", err);
         if (err == SUCCESS) {
-		conf++;
+		process_num++;
 	}
 	post stop_protocol_stack();
 }

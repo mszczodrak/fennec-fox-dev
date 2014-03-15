@@ -127,6 +127,7 @@ command void SimpleStart.start() {
 	next_state = call Fennec.getStateId();
 	next_seq = call Fennec.getStateSeq();
 	state_transitioning = TRUE;
+	printf("Cache SimpleStart/start()\n");
 	post start_state();
 	signal SimpleStart.startDone(SUCCESS);
 }

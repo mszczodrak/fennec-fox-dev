@@ -38,8 +38,8 @@
 
 #define MODULE_RESPONSE_DELAY    200
 
-module ProtocolStackP {
-provides interface ProtocolStack;
+module NetworkProcessP {
+provides interface NetworkProcess;
 
 uses interface ModuleCtrl;
 uses interface Timer<TMilli> as Timer;
@@ -52,75 +52,82 @@ implementation {
 uint8_t state = S_STOPPED;
 uint8_t current_layer = UNKNOWN_LAYER;
 void next_layer();
-uint16_t current_conf;
-
-task void start_conf_done() {
-	signal ProtocolStack.startConfDone(SUCCESS);
-}
-
-task void stop_conf_done() {
-	signal ProtocolStack.stopConfDone(SUCCESS);
-}
+process_t current_process;
 
 task void start_next_module() {
-	call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
+	uint8_t module_id = call Fennec.getModuleId(current_process, current_layer);
+	error_t err = call ModuleCtrl.start(module_id);
+	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
+	switch(err) {
+	case EALREADY:
+		signal ModuleCtrl.startDone(module_id, SUCCESS);
+		return;
+
+	case SUCCESS:
+		return;
+
+	default:
+		signal NetworkProcess.startDone(FAIL);
+	}
 }
 
 task void stop_next_module() {
-	call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
+	uint8_t module_id = call Fennec.getModuleId(current_process, current_layer);
+	error_t err = call ModuleCtrl.stop(module_id);
+	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
+	switch(err) {
+	case EALREADY:
+		signal ModuleCtrl.stopDone(module_id, SUCCESS);
+		return;
+
+	case SUCCESS:
+		return;
+
+	default:
+		signal NetworkProcess.stopDone(FAIL);
+	}
 }
 
-
-command error_t ProtocolStack.startConf(uint16_t conf) {
-	dbg("ProtocolStack", "ProtocolStackP ProtocolStack.startConf(%d)", conf);
+command error_t NetworkProcess.start(process_t process_id) {
+	dbg("NetworkProcess", "NetworkProcessP NetworkProcess.startConf(%d)", conf);
 	state = S_STARTING;
 	current_layer = F_RADIO;
-	current_conf = conf;
-	call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
+	current_process = process_id;
+	post start_next_module();
 	return 0;
 }
 
-command error_t ProtocolStack.stopConf(uint16_t conf) {
-	dbg("ProtocolStack", "ProtocolStackP ProtocolStack.stopConf(%d)", conf);
+command error_t NetworkProcess.stop(process_t process_id) {
+	dbg("NetworkProcess", "NetworkProcessP NetworkProcess.stopConf(%d)", conf);
 	state = S_STOPPING;
 	current_layer = F_APPLICATION;
-	current_conf = conf;
-	call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
+	current_process = process_id;
+	post stop_next_module();
 	return 0;
 }
 
 event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
-	dbg("ProtocolStack", "ProtocolStack ModuleCtrl.startDone(%d, %d)", module_id, error);
-	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
-	if (error != SUCCESS) {
-		call ModuleCtrl.start(module_id);
-	} else {
+	dbg("NetworkProcess", "NetworkProcess ModuleCtrl.startDone(%d, %d)", module_id, error);
+	if ((error == SUCCESS) || (error = EALREADY)) {
 		next_layer();
-
 		if (current_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STARTED;
-			post start_conf_done();
-			return;
+			signal NetworkProcess.startDone(SUCCESS);
 		} else {
 			post start_next_module();
 		}
 	}
 }
 
-
 event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
-	dbg("ProtocolStack", "ProtocolStack ModuleCtrl.stopDone(%d, %d)", module_id, error);
-	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
-	if (error != SUCCESS) {
-		call ModuleCtrl.stop(module_id);
-	} else {
+	dbg("NetworkProcess", "NetworkProcess ModuleCtrl.stopDone(%d, %d)", module_id, error);
+	if ((error == SUCCESS) || (error = EALREADY)) {
 		next_layer();
 		if (current_layer == UNKNOWN_LAYER) {
 			call Timer.stop();
 			state = S_STOPPED;
-			post stop_conf_done();
-			return;
+			signal NetworkProcess.stopDone(SUCCESS);
 		} else {
 			post stop_next_module();
 		}
@@ -129,14 +136,11 @@ event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
 
 event void Timer.fired() {
 	if (state == S_STARTING) {
-		call ModuleCtrl.start(call Fennec.getModuleId(current_conf, current_layer));
-
+		post start_next_module();
 	} else {
-		call ModuleCtrl.stop(call Fennec.getModuleId(current_conf, current_layer));
+		post stop_next_module();
 	}
 }
-
-
 
 void next_layer() {
         if (state == S_STARTING) {

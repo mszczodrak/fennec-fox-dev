@@ -46,8 +46,8 @@ SimpleStart = CachesP;
 Fennec = CachesP;
 FennecState = CachesP;
 
-components NetworkSchedulerC;
-CachesP.SplitControl -> NetworkSchedulerC;
+components NetworkStateC;
+CachesP.SplitControl -> NetworkStateC;
 
 components RandomC;
 CachesP.Random -> RandomC;

@@ -26,27 +26,33 @@
  */
 
 /**
-  * Fennec Fox Network Scheduler
+  * Fennec Fox Protocol Stack Module
   *
   * @author: Marcin K Szczodrak
   * @updated: 09/08/2013
   */
 
-
-configuration NetworkSchedulerC {
-provides interface SplitControl;
+configuration NetworkProcessC {
+provides interface NetworkProcess;
 }
 
 implementation {
 
-components NetworkSchedulerP;
-SplitControl = NetworkSchedulerP;
+components NetworkProcessP;
+//SplitControl = NetworkProcessP.SplitControl;
+NetworkProcess = NetworkProcessP;
 
-components ProtocolStackC;
-NetworkSchedulerP.ProtocolStack -> ProtocolStackC;
+components FennecEngineC;
+NetworkProcessP.ModuleCtrl -> FennecEngineC;
+
+components new TimerMilliC() as Timer;
+NetworkProcessP.Timer -> Timer;
+
+components LedsC;
+NetworkProcessP.Leds -> LedsC;
 
 components CachesC;
-NetworkSchedulerP.Fennec -> CachesC;
+NetworkProcessP.Fennec -> CachesC;
+
+
 }
-
-
