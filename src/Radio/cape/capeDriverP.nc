@@ -75,13 +75,13 @@ uint8_t auto_ack;
 
 task void start_done() {
 	cape_radio_state = S_STARTED;
-	dbg("Radio", "cape signal RadioState.done()");
+	dbg("Radio", "[-] cape signal RadioState.done()");
 	signal RadioState.done();
 }
 
 task void finish_starting_radio() {
         if (call RadioResource.release() != SUCCESS) err = FAIL;
-	dbg("Radio", "cape finish_starting_radio()");
+	dbg("Radio", "[-] cape finish_starting_radio()");
         post start_done();
 }
 
@@ -96,23 +96,10 @@ task void load_done() {
 
 
 task void send_done() {
-	signal RadioSend.sendDone(out_msg, err);
+	if (out_msg != NULL) {
+		signal RadioSend.sendDone(out_msg, err);
+	}
 	out_msg = NULL;
-}
-
-task void send_msg() {
-	cape_hdr_t* header = (cape_hdr_t*) out_msg->data;
-	metadata_t* metadata = getMetadata(out_msg);
-
-	if ((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1) {
-		metadata->ack = 1;
-	}
-
-	err = call Model.send(BROADCAST, out_msg, header->length);
-	dbg("Radio", "cape Model.send(BROADCAST, 0x%1x)  - %d", out_msg, err);
-	if (err != SUCCESS) {
-		post send_done();
-	}
 }
 
 task void cancel_msg() {
@@ -126,7 +113,7 @@ command error_t RadioState.standby() {
 
 command error_t RadioState.turnOn() {
 	auto_ack = TRUE;
-	dbg("Radio", "cape RadioState.turnOn()");
+	dbg("Radio", "[-] cape RadioState.turnOn()");
 	call AMControl.start();
 
         err = SUCCESS;
@@ -147,7 +134,7 @@ event void AMControl.stopDone(error_t error) {
 }
 
 command error_t RadioState.turnOff() {
-	dbg("Radio", "cape RadioState.turnOff()");
+	dbg("Radio", "[-] cape RadioState.turnOff()");
 	call AMControl.stop();
 
         err = SUCCESS;
@@ -177,8 +164,8 @@ command error_t RadioState.setChannel(uint8_t new_channel) {
 }
 
 async command error_t RadioBuffer.load(message_t* msg) {
-	dbg("Radio", "cape RadioSend.load( 0x%1x )", msg);
-
+	cape_hdr_t* header = (cape_hdr_t*) msg->data;
+	dbg("Radio", "[%d] cape RadioSend.load( 0x%1x )", header->destpan, msg);
 	out_msg = msg;
 	err = SUCCESS;
 	post load_done();
@@ -186,13 +173,21 @@ async command error_t RadioBuffer.load(message_t* msg) {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
+	cape_hdr_t* header = (cape_hdr_t*) msg->data;
+	metadata_t* metadata = getMetadata(out_msg);
 	if (msg != out_msg) {
-		dbg("Radio", "cape RadioSend.send(0x%1x, %d )  FAILED", msg, useCca);
+		dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d )  FAILED", header->destpan, msg, useCca);
 		return FAIL;
 	} else {
-		dbg("Radio", "cape RadioSend.send(0x%1x, %d )", msg, useCca);
-		post send_msg();
-		return SUCCESS;
+		dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d )", header->destpan, msg, useCca);
+
+		if ((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1) {
+			metadata->ack = 1;
+		}
+
+		err = call Model.send(BROADCAST, out_msg, header->length);
+		dbg("Radio", "[%d] cape Model.send(BROADCAST, 0x%1x)  - %d", header->destpan, out_msg, err);
+		return err;
 	}
 }
 
@@ -214,21 +209,27 @@ async command error_t RadioResource.release() {
 
 
 event void Model.sendDone(message_t* msg, error_t result) {
-
+	cape_hdr_t* header;
+	if (msg == NULL) {
+		dbg("Radio", "[-] cape Model.sendDone returned with NULL pointer !!");
+		return;
+	} 
+	header = (cape_hdr_t*) msg->data;
 	if (msg != out_msg) {
-		dbg("Radio", "cape Model.sendDone returned incorred msg pointer");
+		dbg("Radio", "[%d] cape Model.sendDone returned incorrect msg pointer", header->destpan);
+		dbg("Radio", "[%d] cape Model.sendDone got 0x%1x instead of 0x%1x", header->destpan, msg, out_msg);
 		err = FAIL;
 	} 
-	dbg("Radio", "cape Model.sendDone(0x%1x, %d )", msg, result);
+	dbg("Radio", "[%d] cape Model.sendDone(0x%1x, %d )", header->destpan, msg, result);
 	err = result;
 	post send_done();
 }
 
 event void Model.receive(message_t* msg) {
-	dbg("Radio", "cape ModelReceive.receive(0x%1x)", msg);
+	cape_hdr_t* header = (cape_hdr_t*) msg->data;
+	dbg("Radio", "[%d] cape ModelReceive.receive(0x%1x)", header->destpan, msg);
 	if (signal RadioReceive.header(msg)) {
 		metadata_t* metadata;
-		//cape_hdr_t* header = (cape_hdr_t*) msg->data;
 
 		memcpy(bufferPointer, msg, sizeof(message_t));
 
@@ -237,7 +238,7 @@ event void Model.receive(message_t* msg) {
 		metadata->lqi = 0;
 		metadata->rssi = metadata->strength;
 
-		dbg("Radio", "cape RadioReceive.receive(0x%1x)", bufferPointer);
+		dbg("Radio", "[%d] cape RadioReceive.receive(0x%1x)", header->destpan, bufferPointer);
 		bufferPointer = signal RadioReceive.receive(bufferPointer);
 	}
 }
@@ -246,7 +247,7 @@ event bool Model.shouldAck(message_t* msg) {
 	cape_hdr_t* header = (cape_hdr_t*) msg->data;
 
 	if ( (header->dest == TOS_NODE_ID) && (header->fcf & (1 << IEEE154_FCF_ACK_REQ)) ) {  	
-		dbg("Radio", "cape Model.shouldAck(0x%1x) - TRUE", msg);
+		dbg("Radio", "[%d] cape Model.shouldAck(0x%1x) - TRUE", header->destpan, msg);
 		return TRUE;
 	}
 	return FALSE;
@@ -254,7 +255,8 @@ event bool Model.shouldAck(message_t* msg) {
 
 void active_message_deliver_handle(sim_event_t* evt) {
 	message_t* mg = (message_t*)evt->data;
-	dbg("cape", "Delivering packet to %i at %s\n", (int)sim_node(), sim_time_string());
+	cape_hdr_t* header = (cape_hdr_t*) mg->data;
+	dbg("cape", "[%d] Delivering packet to %i at %s\n", header->destpan, (int)sim_node(), sim_time_string());
 	signal Model.receive(mg);
 }
 
