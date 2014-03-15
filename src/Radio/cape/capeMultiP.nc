@@ -158,6 +158,7 @@ async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
 }
 
 async event void SubRadioCCA.done(error_t error) {
+	dbg("Radio", "[%d] SubRadioCCA.done(%d)", last_proc_id_cca, error);
 	signal RadioCCA.done[last_proc_id_cca](error);
 }
 
