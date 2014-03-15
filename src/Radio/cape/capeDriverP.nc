@@ -132,8 +132,7 @@ command error_t RadioState.turnOn() {
         err = SUCCESS;
 
         if (cape_radio_state == S_STARTED) {
-                post start_done();
-                return SUCCESS;
+                return EALREADY;
         }
 
         cape_radio_state = S_STARTING;
@@ -154,8 +153,7 @@ command error_t RadioState.turnOff() {
         err = SUCCESS;
 
         if (cape_radio_state == S_STOPPED) {
-                post stop_done();
-                return SUCCESS;
+                return EALREADY;
         }
 
         //if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
