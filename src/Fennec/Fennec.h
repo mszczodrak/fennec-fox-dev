@@ -38,6 +38,13 @@
 
 #ifdef FENNEC_TOS_PRINTF
 #define NEW_PRINTF_SEMANTICS
+#define PRINTF_DBG
+#include "printf.h"
+#endif
+
+#ifdef FENNEC_COOJA_PRINTF
+#define NEW_PRINTF_SEMANTICS
+#define PRINTF_DBG
 #include "printf.h"
 #endif
 

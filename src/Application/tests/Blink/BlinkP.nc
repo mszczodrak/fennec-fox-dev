@@ -74,6 +74,7 @@ event void Timer.fired() {
 		process, call BlinkParams.get_led());
 	dbgs(process, F_APPLICATION, S_NONE, DBGS_BLINK_LED,
 		call BlinkParams.get_delay(), call BlinkParams.get_led(), on);
+
 	on ? call Leds.set(0) : call Leds.set(call BlinkParams.get_led()) ;
 	on = !on;
 }
