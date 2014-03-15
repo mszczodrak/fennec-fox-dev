@@ -60,12 +60,13 @@ implementation {
 
 
 command error_t SplitControl.start() {
-	dbg("Application", "timerMilli SplitControl.start()");
-	dbg("Application", "timerMilli src: %d", call timerMilliParams.get_src());
+	dbg("Application", "[%d] timerMilli SplitControl.start()", process);
+	dbg("Application", "[%d] timerMilli src: %d", process, call timerMilliParams.get_src());
 
 	if ((call timerMilliParams.get_src() == BROADCAST) || 
 		(call timerMilliParams.get_src() == TOS_NODE_ID)) {
-		dbg("Application", "timerMilli will fire in %d ms", call timerMilliParams.get_delay());
+		dbg("Application", "[%d] timerMilli will fire in %d ms",
+			process, call timerMilliParams.get_delay());
 		call Timer.startOneShot(call timerMilliParams.get_delay());
 
 	}
@@ -75,14 +76,14 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "timerMilli SplitControl.stop()");
+	dbg("Application", "[%d] timerMilli SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 
 event void Timer.fired() {
-	dbg("Application", "timerMilli signal Event.occured(TRUE)");
+	dbg("Application", "[%d] timerMilli signal Event.occured(TRUE)", process);
 	signal Event.occured(TRUE);
 }
 

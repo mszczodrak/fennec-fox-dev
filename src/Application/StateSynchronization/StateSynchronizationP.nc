@@ -65,7 +65,7 @@ task void schedule_send_msg() {
 
 task void send_msg() {
 	nx_struct fennec_network_state *state_msg;
-	dbg("StateSynchronization", "StateSynchronizationP send_state_sync_msg()");
+	dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg()", process);
 
 	state_msg = (nx_struct fennec_network_state*) 
 	call NetworkAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_state));
@@ -80,9 +80,9 @@ task void send_msg() {
 
 	if (call NetworkAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
 		post schedule_send_msg();
-		dbg("StateSynchronization", "StateSynchronizationP send_state_sync_msg() - FAIL");
+		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - FAIL", process);
 	} else {
-		dbg("StateSynchronization", "StateSynchronizationP send_state_sync_msg() - SUCCESS");
+		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - SUCCESS", process);
 	}
 }
 
@@ -92,14 +92,14 @@ async event void FennecState.resend() {
 }
 
 command error_t SplitControl.start() {
-	dbg("StateSynchronization", "StateSynchronizationP SplitControl.start()");
+	dbg("StateSynchronization", "[%d] StateSynchronizationP SplitControl.start()", process);
 	post send_msg();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("StateSynchronization", "StateSynchronizationP SplitControl.stop()");
+	dbg("StateSynchronization", "[%d] StateSynchronizationP SplitControl.stop()", process);
 	call Timer.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -107,8 +107,8 @@ command error_t SplitControl.stop() {
 
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_state *state_msg = (nx_struct fennec_network_state*) payload;
-	dbg("StateSynchronization", "StateSynchronizationP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
-				msg, payload, len);
+	dbg("StateSynchronization", "[%d] StateSynchronizationP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
+		process, msg, payload, len);
 
 	call Fennec.setStateAndSeq(state_msg->state_id, state_msg->seq);
 	return msg;
@@ -118,7 +118,7 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event void Timer.fired() {
-	dbg("StateSynchronization", "StateSynchronizationP Timer.fired()");
+	dbg("StateSynchronization", "[%d] StateSynchronizationP Timer.fired()", process);
 	post send_msg();
 }
 

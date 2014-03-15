@@ -73,10 +73,10 @@ command error_t SplitControl.start() {
 		call CounterParams.get_delay_scale();
 	//call Leds.led0On();
 	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
-	dbg("Application", "Counter SplitControl.start()");
+	dbg("Application", "[%d] Counter SplitControl.start()", process);
 
-	dbg("Application", "Counter starting delay: %d", send_delay);
-	dbg("Application", "Counter starting src: %d  dest: %d",
+	dbg("Application", "[%d] Counter starting delay: %d", process, send_delay);
+	dbg("Application", "[%d] Counter starting src: %d  dest: %d", process,
 		call CounterParams.get_src(), call CounterParams.get_dest());
 	seqno = 0;
 	sendBusy = FALSE;
@@ -93,7 +93,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "Counter SplitControl.stop()");
+	dbg("Application", "[%d] Counter SplitControl.stop()", process);
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -114,13 +114,14 @@ void sendMessage() {
 					sizeof(CounterMsg)) != SUCCESS) {
 		dbgs(F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
 					call CounterParams.get_dest());
-		dbg("Application", "Counter sendMessage() seqno: %d source: %d - FAILED", 
-					msg->seqno, msg->source); 
+		dbg("Application", "[%d] Counter sendMessage() seqno: %d source: %d - FAILED", 
+					process, msg->seqno, msg->source); 
 	} else {
 		sendBusy = TRUE;
 		dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
 					call CounterParams.get_dest());
-		dbg("Application", "Counter call NetworkAMSend.send(%d, 0x%1x, %d)",
+		dbg("Application", "[%d] Counter call NetworkAMSend.send(%d, 0x%1x, %d)",
+					process, 
 					call CounterParams.get_dest(), &packet,
 					sizeof(CounterMsg));
 		call Leds.set(seqno);
@@ -129,7 +130,7 @@ void sendMessage() {
 
 event void Timer.fired() {
 	if (!sendBusy) {
-		dbg("Application", "Counter Timer.fired()");
+		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
 	}
 	seqno++;
@@ -138,8 +139,8 @@ event void Timer.fired() {
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 	//CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
 	//						sizeof(CounterMsg));
-	dbg("Application", "Counter event NetworkAMSend.sendDone(0x%1x, %d)",
-					msg, error);
+	dbg("Application", "[%d] Counter event NetworkAMSend.sendDone(0x%1x, %d)",
+				process, msg, error);
 	sendBusy = FALSE;
 }
 
@@ -147,8 +148,10 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
 
-	dbg("Application", "Counter event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
-	dbg("Application", "Counter receive seqno: %d source: %d", cm->seqno, cm->source); 
+	dbg("Application", "[%d] Counter event NetworkReceive.receive(0x%1x, 0x%1x, %d)",
+				process,  msg, payload, len); 
+	dbg("Application", "[%d] Counter receive seqno: %d source: %d", 
+				process, cm->seqno, cm->source); 
 
 	call Leds.set(cm->seqno);
 	if (cm->seqno > (seqno + 20)) {

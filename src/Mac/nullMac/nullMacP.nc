@@ -153,7 +153,7 @@ error_t SplitControl_stop() {
 /* Functions */
 
 command error_t SplitControl.start() {
-	dbg("Mac", "nullMac SplitControl.start()");
+	dbg("Mac", "[%d] nullMac SplitControl.start()", process);
 	post startDone_task();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -161,7 +161,7 @@ command error_t SplitControl.start() {
 
 
 command error_t SplitControl.stop() {
-	dbg("Mac", "nullMac SplitControl.stop()");
+	dbg("Mac", "[%d] nullMac SplitControl.stop()", process);
 	shutdown();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -170,19 +170,20 @@ command error_t SplitControl.stop() {
 
 
 event void RadioControl.startDone(error_t err) {
-//	dbg("Mac", "nullMac RadioControl.startDone(%d)", err);
+	dbg("Mac", "[%d] nullMac RadioControl.startDone(%d)", process, err);
 }
 
 
 event void RadioControl.stopDone(error_t err) {
-//	dbg("Mac", "nullMac RadioControl.stopDone(%d)", err);
+	dbg("Mac", "[%d] nullMac RadioControl.stopDone(%d)", process, err);
 } 
 
 
 command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	nullMac_header_t* header;
 
-	dbg("Mac", "nullMac MacAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
+	dbg("Mac", "[%d] nullMac MacAMSend.send(%d, 0x%1x, %d )",
+		process, addr, msg, len);
 
 	header = getHeader(msg);
 
@@ -235,17 +236,18 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 }
 
 command error_t MacAMSend.cancel(message_t* msg) {
-	dbg("Mac", "nullMac MacAMSend.cancel(0x%1x)", msg);
+	dbg("Mac", "[%d] nullMac MacAMSend.cancel(0x%1x)", process, msg);
 	m_state = S_STARTED;
 }
 
 command uint8_t MacAMSend.maxPayloadLength() {
-	dbg("Mac", "nullMac MacAMSend.maxPayloadLength()");
+	dbg("Mac", "[%d] nullMac MacAMSend.maxPayloadLength()", process);
 	return call MacPacket.maxPayloadLength();
 }
 
 command void* MacAMSend.getPayload(message_t* msg, uint8_t len) {
-	dbg("Mac", "nullMac MacAMSend.getpayload(0x%1x, %d )", msg, len);
+	dbg("Mac", "[%d] nullMac MacAMSend.getpayload(0x%1x, %d )",
+		process, msg, len);
 	return call MacPacket.getPayload(msg, len);
 }
 
@@ -385,10 +387,12 @@ task void deliverTask() {
 	}
 
 	if (call MacAMPacket.isForMe(msg)) {
-		dbg("Mac", "nullMac MacReceive.receive(0x%1x, 0x%1x, %d )", msg, p, len);
+		dbg("Mac", "[%d] nullMac MacReceive.receive(0x%1x, 0x%1x, %d )",
+			process, msg, p, len);
 		msg = signal MacReceive.receive(msg, p, len);
 	} else {
-		dbg("Mac", "nullMac MacSnoop.receive(0x%1x, 0x%1x, %d )", msg, p, len);
+		dbg("Mac", "nullMac MacSnoop.receive(0x%1x, 0x%1x, %d )",
+			process, msg, p, len);
 		msg = signal MacSnoop.receive(msg, p, len);
 	}
 
@@ -408,11 +412,11 @@ task void deliverTask() {
 async event message_t* RadioReceive.receive(message_t* msg) {
 	message_t *m;
 	if(!(getMetadata(msg))->crc) {
-		dbg("Mac", "nullMac MacAMSend.receive did not pass CRC");
+		dbg("Mac", "[%d] nullMac MacAMSend.receive did not pass CRC", process);
 		return msg;
 	}
 
-	dbg("Mac", "nullMac RadioReceive.receive(0x%1x)", msg);
+	dbg("Mac", "[%d] nullMac RadioReceive.receive(0x%1x)", process, msg);
 	atomic {
 		if( receiveQueueSize >= nullMac_RECEIVE_QUEUE_SIZE ) {
 			m = msg;
@@ -437,14 +441,14 @@ async event bool RadioReceive.header(message_t* msg) {
 }
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
-	dbg("Mac", "nullMac MacAMSend.loadDone(0x%1x, %d )", msg, error);
+	dbg("Mac", "[%d] nullMac MacAMSend.loadDone(0x%1x, %d )", process, msg, error);
 	m_state = S_BEGIN_TRANSMIT;
 	call RadioSend.send(m_msg, 0);
 }
 
 
 async event void RadioSend.sendDone(message_t *msg, error_t error) {
-	dbg("Mac", "nullMac MacAMSend.sendDone(0x%1x, %d )", msg, error);
+	dbg("Mac", "[%d] nullMac MacAMSend.sendDone(0x%1x, %d )", process, msg, error);
 	m_state = S_STARTED;
 	atomic sendErr = error;
 	post sendDone_task();

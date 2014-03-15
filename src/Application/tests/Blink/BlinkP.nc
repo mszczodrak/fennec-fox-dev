@@ -56,7 +56,7 @@ bool on;
 command error_t SplitControl.start() {
 	on = 0;
 	call Timer.startPeriodic(call BlinkParams.get_delay());
-	dbg("Application", "BlinkP SplitControl.start()");
+	dbg("Application", "[%d] BlinkP SplitControl.start()", process);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -64,14 +64,14 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 	call Leds.set(0);
-	dbg("Application", "BlinkP SplitControl.stop()");
+	dbg("Application", "[%d] BlinkP SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 event void Timer.fired() {
-	dbg("Application", "Application Blink set LED to %d", 
-		call BlinkParams.get_led());
+	dbg("Application", "[%d] Application Blink set LED to %d", 
+		process, call BlinkParams.get_led());
 	dbgs(F_APPLICATION, S_NONE, DBGS_BLINK_LED, call BlinkParams.get_led(), on);
 	on ? call Leds.set(0) : call Leds.set(call BlinkParams.get_led()) ;
 	on = !on;
