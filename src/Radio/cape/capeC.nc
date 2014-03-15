@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2014, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,15 @@
  */
 
 /**
-  * Cape Fox radio driver
+  * Fennec Fox cape radio driver adaptation
   *
   * @author: Marcin K Szczodrak
-  * @updated: 12/28/2013
+  * @updated: 01/05/2014
   */
 
-generic configuration capeC(uint8_t process_id) {
+#include <Fennec.h>
+
+generic configuration capeC(process_t process_id) {
 provides interface SplitControl;
 provides interface RadioReceive;
 
@@ -52,33 +54,39 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 provides interface RadioCCA;
-
 }
 
 implementation {
 
 components new capeP(process_id);
-SplitControl = capeP;
-RadioState = capeP;
-capeParams = capeP;
-RadioReceive = capeP.RadioReceive;
-
-PacketTransmitPower = capeP.PacketTransmitPower;
-PacketRSSI = capeP.PacketRSSI;
-PacketTimeSync = capeP.PacketTimeSync;
-PacketLinkQuality = capeP.PacketLinkQuality;
-RadioLinkPacketMetadata = capeP.RadioLinkPacketMetadata;
-
-RadioResource = capeP.RadioResource;
-
-RadioBuffer = capeP.RadioBuffer;
-RadioPacket = capeP.RadioPacket;
-RadioSend = capeP.RadioSend;
-
 components capeMultiC;
 
-capeP.AMControl -> capeMultiC.SplitControl[process_id];
-capeP.Model -> capeMultiC.Packet[process_id];
-RadioCCA = capeMultiC.RadioCCA;
+components new SimpleFcfsArbiterC("CC2420_RADIO_RESOURCE") as CC2420ResourceC;
+
+SplitControl = capeP;
+capeParams = capeP;
+RadioReceive = capeMultiC.RadioReceive[process_id];
+RadioBuffer = capeMultiC.RadioBuffer[process_id];
+RadioSend = capeMultiC.RadioSend[process_id];
+RadioState = capeP.RadioState;
+
+RadioPacket = capeMultiC.RadioPacket;
+
+RadioResource = capeP.RadioResource;
+capeP.SubRadioResource -> CC2420ResourceC.Resource[process_id];
+
+capeP.SubRadioState -> capeMultiC.RadioState[process_id];
+
+RadioCCA = capeMultiC.RadioCCA[process_id];
+
+PacketTransmitPower = capeMultiC.PacketTransmitPower;
+PacketLinkQuality = capeMultiC.PacketLinkQuality;
+PacketRSSI = capeMultiC.PacketRSSI;
+RadioLinkPacketMetadata = capeMultiC;
+PacketTimeSync = capeMultiC.PacketTimeSync;
+
+components LedsC;
+capeP.Leds -> LedsC;
+
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Columbia University.
+ * Copyright (c) 2014, Columbia University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,85 +26,151 @@
  */
 
 /**
-  * Cape Fox radio driver
+  * Fennec Fox cape radio driver adaptation
   *
   * @author: Marcin K Szczodrak
-  * @updated: 12/28/2013
+  * @updated: 01/05/2014
   */
 
+#include "cape.h"
+
 module capeMultiP {
-provides interface SplitControl[uint8_t process_id];
-provides interface TossimPacketModel as Packet[uint8_t process_id];
+provides interface RadioReceive[process_t process_id];
+provides interface RadioSend[process_t process_id];
+provides interface RadioBuffer[process_t process_id];
+provides interface RadioState[process_t process_id];
+provides interface RadioCCA[process_t process_id];
 
-uses interface TossimPacketModel as SubPacket;
-uses interface SplitControl as SubSplitControl;
-
+uses interface RadioReceive as SubRadioReceive;
+uses interface RadioSend as SubRadioSend;
+uses interface RadioBuffer as SubRadioBuffer;
+uses interface RadioState as SubRadioState;
+uses interface RadioCCA as SubRadioCCA;
 }
 
 implementation {
 
-uint8_t proc_id;
+norace process_t last_proc_id = UNKNOWN;
+norace process_t last_proc_id_state = UNKNOWN;
+norace process_t last_proc_id_cca = UNKNOWN;
 
-command error_t SplitControl.start[uint8_t process_id]() {
-	proc_id = process_id;
-	return call SubSplitControl.start();
+process_t getProcessId(message_t *msg) {
+	cape_hdr_t* header = (cape_hdr_t*)(msg->data);
+	last_proc_id = header->destpan;
+	return header->destpan;
 }
 
-command error_t SplitControl.stop[uint8_t process_id]() {
-	proc_id = process_id;
-	return call SubSplitControl.stop();
-}
-
-event void SubSplitControl.startDone(error_t err) {
-	signal SplitControl.startDone[proc_id](err);
-}
-
-event void SubSplitControl.stopDone(error_t err) {
-	signal SplitControl.stopDone[proc_id](err);
-}
-
-command error_t Packet.send[uint8_t process_id](int dest, message_t* msg, uint8_t len) {
-	cape_hdr_t* header = (cape_hdr_t*)msg;
+void setProcessId(message_t *msg, process_t process_id) {
+	cape_hdr_t* header = (cape_hdr_t*)(msg->data);
+	last_proc_id = process_id;
 	header->destpan = process_id;
-	return call SubPacket.send(dest, msg, len);
 }
 
-command error_t Packet.cancel[uint8_t process_id](message_t* msg) {
-	return call SubPacket.cancel(msg);
+command error_t RadioState.turnOff[process_t process_id]() {
+	last_proc_id_state = process_id;
+	return call SubRadioState.turnOff();
 }
 
-event void SubPacket.sendDone(message_t *msg, error_t error) {
-	cape_hdr_t* header = (cape_hdr_t*)msg;
-	msg->conf = header->destpan;
-	signal Packet.sendDone[header->destpan](msg, error);
+event void SubRadioState.done() {
+	signal RadioState.done[last_proc_id_state]();
 }
 
-event bool SubPacket.shouldAck(message_t *msg) {
-	cape_hdr_t* header = (cape_hdr_t*)msg;
-	msg->conf = header->destpan;
-	return signal Packet.shouldAck[header->destpan](msg);
+command error_t RadioState.turnOn[process_t process_id]() {
+	last_proc_id_state = process_id;
+	return call SubRadioState.turnOn();
 }
 
-event void SubPacket.receive(message_t *msg) {
-	cape_hdr_t* header = (cape_hdr_t*)msg;
-	msg->conf = header->destpan;
-	return signal Packet.receive[header->destpan](msg);
+command error_t RadioState.standby[process_t process_id]() {
+	last_proc_id_state = process_id;
+	return call SubRadioState.turnOff();
 }
 
-default event void SplitControl.startDone[uint8_t process_id](error_t err) {
+command error_t RadioState.setChannel[process_t process_id](uint8_t channel) {
+	last_proc_id_state = process_id;
+	return call SubRadioState.setChannel( channel );
 }
 
-default event void SplitControl.stopDone[uint8_t process_id](error_t err) {
+command uint8_t RadioState.getChannel[process_t process_id]() {
+	last_proc_id_state = process_id;
+        return call SubRadioState.getChannel();
 }
 
-default event void Packet.sendDone[uint8_t process_id](message_t *msg, error_t err) {
+async command error_t RadioBuffer.load[process_t process_id](message_t* msg) {
+	setProcessId(msg, process_id);
+	return call SubRadioBuffer.load(msg);
 }
 
-default event bool Packet.shouldAck[uint8_t process_id](message_t *msg) {
+async command error_t RadioSend.send[process_t process_id](message_t* msg, bool useCca) {
+	setProcessId(msg, process_id);
+	return call SubRadioSend.send(msg, useCca);
+}
+
+async command error_t RadioCCA.request[process_t process_id]() {
+	last_proc_id_cca = process_id;
+	return call SubRadioCCA.request();
+}
+
+async event void SubRadioBuffer.loadDone(message_t *msg, error_t err) {
+	signal RadioBuffer.loadDone[getProcessId(msg)](msg, err);
+}
+
+async event bool SubRadioReceive.header(message_t* msg) {
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioReceive.header[getProcessId(msg)](msg);
+	} else {
+		return FAIL;
+	}
+}
+
+async event message_t *SubRadioReceive.receive(message_t* msg) {
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioReceive.receive[getProcessId(msg)](msg);
+	} else {
+		return msg;
+	}
+}
+
+async event void SubRadioSend.ready() {
+        signal RadioSend.ready[last_proc_id]();
+}
+
+async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
+	if (validProcessId(getProcessId(msg))) {
+		return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
+	} else {
+	}
+}
+
+async event void SubRadioCCA.done(error_t error) {
+	signal RadioCCA.done[last_proc_id_cca](error);
+}
+
+default async event bool RadioReceive.header[process_t process_id](message_t* msg) {
 	return FALSE;
 }
 
-default event void Packet.receive[uint8_t process_id](message_t *msg) {
+default async event message_t * RadioReceive.receive[process_t process_id](message_t* msg) {
+	return msg;
+}
+
+default async event void RadioSend.sendDone[process_t process_id](message_t* msg, error_t error) {
+
+}
+
+default async event void RadioSend.ready[process_t process_id]() {
+
+}
+
+default async event void RadioBuffer.loadDone[process_t process_id](message_t *msg, error_t error) {
+
+}
+
+default event void RadioState.done[process_t process_id]() {
+
+}
+
+default async event void RadioCCA.done[process_t process_id](error_t error) {
+
 }
 
 }

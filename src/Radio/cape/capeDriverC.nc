@@ -26,59 +26,56 @@
  */
 
 /**
-  * cape driver adapted from the TinyOS ActiveMessage stack for CC2420 and capex
+  * Cape Fox radio driver
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/03/2014
+  * @updated: 12/28/2013
   */
 
+configuration capeDriverC {
+provides interface RadioReceive;
 
-configuration capeMultiC {
-provides interface RadioReceive[process_t process_id];
-provides interface RadioSend[process_t process_id];
-provides interface RadioBuffer[process_t process_id];
-provides interface RadioState[process_t process_id];
-
-provides interface RadioCCA[process_t process_id];
+provides interface Resource as RadioResource;
 
 provides interface RadioPacket;
+provides interface RadioBuffer;
+provides interface RadioSend;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint32_t> as PacketTimeSync;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 
+provides interface RadioState;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioCCA;
 
 }
 
 implementation {
 
-components capeMultiP;
-components capeDriverC;
+components CapePacketModelC as CapePacketModelC;
+components CpmModelC;
+components capeDriverP;
 
-RadioCCA = capeMultiP.RadioCCA;
-capeMultiP.SubRadioCCA -> capeDriverC.RadioCCA;
+RadioState = capeDriverP;
+RadioReceive = capeDriverP.RadioReceive;
 
-RadioReceive = capeMultiP.RadioReceive;
-RadioSend = capeMultiP.RadioSend;
-RadioBuffer = capeMultiP.RadioBuffer;
-RadioState = capeMultiP.RadioState;
+PacketTransmitPower = capeDriverP.PacketTransmitPower;
+PacketRSSI = capeDriverP.PacketRSSI;
+PacketTimeSync = capeDriverP.PacketTimeSync;
+PacketLinkQuality = capeDriverP.PacketLinkQuality;
+RadioLinkPacketMetadata = capeDriverP.RadioLinkPacketMetadata;
 
-capeMultiP.SubRadioState -> capeDriverC.RadioState;
+RadioResource = capeDriverP.RadioResource;
 
-capeMultiP.SubRadioReceive -> capeDriverC.RadioReceive;
-capeMultiP.SubRadioSend -> capeDriverC.RadioSend;
-capeMultiP.SubRadioBuffer -> capeDriverC.RadioBuffer;
+RadioBuffer = capeDriverP.RadioBuffer;
+RadioPacket = capeDriverP.RadioPacket;
+RadioSend = capeDriverP.RadioSend;
 
-RadioPacket = capeDriverC.RadioPacket;
+capeDriverP.AMControl -> CapePacketModelC;
+capeDriverP.Model -> CapePacketModelC.Packet;
+RadioCCA = CapePacketModelC.RadioCCA;
 
-RadioLinkPacketMetadata = capeDriverC.RadioLinkPacketMetadata;
-  
-PacketTransmitPower = capeDriverC.PacketTransmitPower;
-PacketRSSI = capeDriverC.PacketRSSI;
-PacketTimeSync = capeDriverC.PacketTimeSync;
-PacketLinkQuality = capeDriverC.PacketLinkQuality;
-
-
+CapePacketModelC.GainRadioModel -> CpmModelC.Model;
 }

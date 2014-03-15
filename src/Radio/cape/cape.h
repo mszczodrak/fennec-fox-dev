@@ -34,9 +34,8 @@
 
 
 
-#ifndef __H_cape_RADIO__
-#define __H_cape_RADIO___
-
+#ifndef __CAPE_RADIO_H__
+#define __CAPE_RADIO_H__
 
 nx_struct cape_radio_header_t {
         nxle_uint8_t length;
