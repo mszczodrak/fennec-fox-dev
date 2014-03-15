@@ -65,6 +65,7 @@ void setProcessId(message_t *msg, process_t process_id) {
 }
 
 command error_t RadioState.turnOff[process_t process_id]() {
+	dbgs(process_id, F_RADIO, S_TURN_OFF, 0, 0, 0, 0);
 	last_proc_id_state = process_id;
 	return call SubRadioState.turnOff();
 }
@@ -74,6 +75,7 @@ event void SubRadioState.done() {
 }
 
 command error_t RadioState.turnOn[process_t process_id]() {
+	dbgs(process_id, F_RADIO, S_TURN_ON, 0, 0, 0, 0);
 	last_proc_id_state = process_id;
 	return call SubRadioState.turnOn();
 }
