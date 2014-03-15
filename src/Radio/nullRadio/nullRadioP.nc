@@ -33,7 +33,7 @@
 #include <Fennec.h>
 #include "nullRadio.h"
 
-generic module nullRadioP(uint8_t process_id) @safe() {
+generic module nullRadioP(uint8_t process) @safe() {
 provides interface SplitControl;
 provides interface RadioReceive;
 provides interface Resource as RadioResource;
@@ -98,36 +98,42 @@ command error_t SplitControl.stop() {
 
 
 command error_t RadioState.turnOn() {
-	dbg("Radio", "nullRadio SplitControl.start()");
 
 	if (state == S_STOPPED) {
+		dbg("Radio", "[%d] nullRadio SplitControl.start() - SUCCESS", process);
 		state = S_STARTING;
 		post start_done();
 		return SUCCESS;
 
 	} else if(state == S_STARTED) {
+		dbg("Radio", "[%d] nullRadio SplitControl.start() - EALREADY", process);
 		post start_done();
 		return EALREADY;
 
 	} else if(state == S_STARTING) {
+		dbg("Radio", "[%d] nullRadio SplitControl.start() - SUCCESS", process);
 		return SUCCESS;
 	}
-	return SUCCESS;
+	dbg("Radio", "[%d] nullRadio SplitControl.start() - FAIL", process);
+	return FAIL;
 }
 
 command error_t RadioState.turnOff() {
-	dbg("Radio", "nullRadio SplitControl.stop()");
 	if (state == S_STARTED) {
+		dbg("Radio", "[%d] nullRadio SplitControl.stop() - SUCCESS", process);
 		state = S_STOPPING;
 		post stop_done();
 		return SUCCESS;
 	} else if(state == S_STOPPED) {
+		dbg("Radio", "[%d] nullRadio SplitControl.stop() - EALREADY", process);
 		post stop_done();
 		return EALREADY;
 	} else if(state == S_STOPPING) {
+		dbg("Radio", "[%d] nullRadio SplitControl.stop() - SUCCESS", process);
 		return SUCCESS;
 	}
-	return SUCCESS;
+	dbg("Radio", "[%d] nullRadio SplitControl.stop() - FAIL", process);
+	return FAIL;
 }
 
 command error_t RadioState.standby() {
@@ -156,7 +162,7 @@ task void load_done() {
 
 async command error_t RadioBuffer.load(message_t* msg) {
 	//fennec_header_t *h = (fennec_header_t*)msg->data;
-	dbg("Radio", "nullRadio RadioBuffer.load(0x%1x)", msg);
+	dbg("Radio", "[%d] nullRadio RadioBuffer.load(0x%1x)", process, msg);
 	
 	m = msg;
 	post load_done();
@@ -168,27 +174,30 @@ task void send_done() {
 }
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
-	dbg("Radio", "nullRadio RadioBuffer.send(0x%1x)", msg, useCca);
+	dbg("Radio", "[%d] nullRadio RadioBuffer.send(0x%1x)", process, msg, useCca);
 	post send_done();
 	return SUCCESS;
 }
 
 async command uint8_t RadioPacket.maxPayloadLength() {
-	dbg("Radio", "nullRadio RadioBuffer.maxPayloadLength()");
+	dbg("Radio", "[%d] nullRadio RadioBuffer.maxPayloadLength()", process);
 	return nullRadio_MAX_MESSAGE_SIZE - sizeof(nx_struct nullRadio_header_t) - nullRadio_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command uint8_t RadioPacket.headerLength(message_t* msg) {
+	dbg("Radio", "[%d] nullRadio RadioBuffer.headerLength(0x%1x)", process, msg);
 	return sizeof(nx_struct nullRadio_header_t);
 }
 
 async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 	nx_struct nullRadio_header_t *hdr = (nx_struct nullRadio_header_t*)(msg->data);
+	dbg("Radio", "[%d] nullRadio RadioBuffer.payloadLength(0x%1x)", process, msg);
 	return hdr->length - sizeof(nx_struct nullRadio_header_t) - nullRadio_SIZEOF_CRC - sizeof(timesync_radio_t);
 }
 
 async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
 	nx_struct nullRadio_header_t *hdr = (nx_struct nullRadio_header_t*)(msg->data);
+	dbg("Radio", "[%d] nullRadio RadioBuffer.setPayloadLength(0x%1x, %d)", process, msg, length);
 	hdr->length = length + sizeof(nx_struct nullRadio_header_t) + nullRadio_SIZEOF_CRC + sizeof(timesync_radio_t);
 }
 
@@ -199,8 +208,6 @@ async command uint8_t RadioPacket.metadataLength(message_t* msg) {
 async command void RadioPacket.clear(message_t* msg) {
         memset(msg, 0x0, sizeof(message_t));
 }
-
-
 
 async command error_t RadioResource.immediateRequest() {
 	return SUCCESS;
