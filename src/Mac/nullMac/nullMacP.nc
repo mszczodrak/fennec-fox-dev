@@ -197,6 +197,11 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return ESIZE;
 	}
 
+	if ( m_state != S_STARTED ) {
+		dbg("Mac", "[%d] nullMac state != S_STARTED, but %d", process, m_state);
+		return FAIL;
+	}
+
 	header->dest = addr;
 	header->src = call MacAMPacket.address();
 	header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
@@ -225,14 +230,12 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	header->fcf |= ( ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE ) |
 		( 1 << IEEE154_FCF_INTRAPAN ) );
 
-	if ( m_state != S_STARTED ) {
-		return FAIL;
-	}
-
-
 	m_state = S_LOAD;
 
-	call RadioBuffer.load(m_msg);
+	if (call RadioBuffer.load(m_msg) != SUCCESS) {
+		m_state = S_STARTED;
+		return FAIL;
+	}
 	return SUCCESS;
 }
 
