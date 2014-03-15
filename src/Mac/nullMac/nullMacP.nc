@@ -193,6 +193,7 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	getMetadata(msg)->ack = 1;
 
 	if (len > call MacPacket.maxPayloadLength()) {
+		dbg("Mac", "[%d] nullMac len > maxPayloadLength)", process);
 		return ESIZE;
 	}
 
@@ -338,18 +339,26 @@ command void MacPacket.clear(message_t* msg) {
 }
 
 command uint8_t MacPacket.payloadLength(message_t* msg) {
+	dbg("Mac", "[%d] nullMac MacPacket.payloadLength( 0x%1x )",
+			process, msg);
 	return call RadioPacket.payloadLength(msg) - sizeof(nullMac_header_t);
 }
 
 command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
+	dbg("Mac", "[%d] nullMac MacPacket.setPayloadLength( 0x%1x, %d )",
+			process, msg, len);
 	call RadioPacket.setPayloadLength(msg, len + sizeof(nullMac_header_t));
 }
 
 command uint8_t MacPacket.maxPayloadLength() {
+	dbg("Mac", "[%d] nullMac MacPacket.maxPayloadLength()",
+			process);
 	return call RadioPacket.maxPayloadLength() - sizeof(nullMac_header_t);
 }
 
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
+	dbg("Mac", "[%d] nullMac MacPacket.getPayload( 0x%1x, %d )",
+			process, msg, len);
 	if (len <= call MacPacket.maxPayloadLength()) {
 		uint8_t *p = (uint8_t*) getHeader(msg);
 		return (p + sizeof(nullMac_header_t));
