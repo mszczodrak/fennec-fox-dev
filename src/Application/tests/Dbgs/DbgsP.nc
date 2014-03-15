@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "Dbgs.h"
 
-generic module DbgsP() {
+generic module DbgsP(process_t process) {
 provides interface SplitControl;
 
 uses interface DbgsParams;

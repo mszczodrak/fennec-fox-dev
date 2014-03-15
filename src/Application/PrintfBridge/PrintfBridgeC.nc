@@ -33,7 +33,7 @@
 
 #include "PrintfBridge.h"
 
-generic configuration PrintfBridgeC() {
+generic configuration PrintfBridgeC(process_t process) {
 provides interface SplitControl;
 
 uses interface PrintfBridgeParams;
@@ -47,7 +47,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new PrintfBridgeP();
+components new PrintfBridgeP(process);
 SplitControl = PrintfBridgeP;
 
 PrintfBridgeParams = PrintfBridgeP;

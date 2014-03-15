@@ -34,7 +34,7 @@
 #include <Fennec.h>
 #include "UARTBridge.h"
 
-generic module UARTBridgeP() {
+generic module UARTBridgeP(process_t process) {
 provides interface SplitControl;
 
 uses interface UARTBridgeParams;

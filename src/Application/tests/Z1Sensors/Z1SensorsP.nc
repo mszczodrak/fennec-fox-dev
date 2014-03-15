@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "Z1Sensors.h"
 
-generic module Z1SensorsP() {
+generic module Z1SensorsP(process_t process) {
 provides interface SplitControl;
 
 uses interface Z1SensorsParams;

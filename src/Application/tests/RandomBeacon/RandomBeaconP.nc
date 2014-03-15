@@ -35,12 +35,12 @@
 
 #include <Fennec.h>
 #include <Timer.h>
-#include "RandomBeaconApp.h"
+#include "RandomBeacon.h"
 
-generic module RandomBeaconAppP() {
+generic module RandomBeaconP(process_t process) {
 provides interface SplitControl;
 
-uses interface RandomBeaconAppParams;
+uses interface RandomBeaconParams;
 
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
@@ -69,15 +69,15 @@ bool sendBusy = FALSE;
 
 task void set_timer() {
 	call Timer.startOneShot((call Random.rand32()) % 
-		(call RandomBeaconAppParams.get_delay() * 
-		call RandomBeaconAppParams.get_delay_scale()));
+		(call RandomBeaconParams.get_delay() * 
+		call RandomBeaconParams.get_delay_scale()));
 }
 
 
 command error_t SplitControl.start() {
 	//call Leds.led0On();
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
-	dbg("Application", "RandomBeaconApp SplitControl.start()");
+	dbg("Application", "RandomBeacon SplitControl.start()");
 
 	post set_timer();
 
@@ -88,7 +88,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "RandomBeaconApp SplitControl.stop()");
+	dbg("Application", "RandomBeacon SplitControl.stop()");
 	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -105,13 +105,13 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = call Random.rand32();
 
-	dbg("Application", "RandomBeaconApp sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
+	dbg("Application", "RandomBeacon sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
 	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, msg->seqno, msg->source);
 
 	if (call NetworkAMSend.send(BROADCAST, &packet, 
 					sizeof(RandomBeaconMsg)) != SUCCESS) {
 	} else {
-		dbg("Application", "RandomBeaconApp call NetworkAMSend.send(%d, 0x%1x, %d)",
+		dbg("Application", "RandomBeacon call NetworkAMSend.send(%d, 0x%1x, %d)",
 					BROADCAST, &packet,
 					sizeof(RandomBeaconMsg));
 		sendBusy = TRUE;
@@ -127,7 +127,7 @@ event void Timer.fired() {
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Application", "RandomBeaconApp event NetworkAMSend.sendDone(0x%1x, %d)",
+	dbg("Application", "RandomBeacon event NetworkAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
 }
@@ -136,8 +136,8 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	RandomBeaconMsg* cm = (RandomBeaconMsg*)payload;
 
-	dbg("Application", "RandomBeaconApp event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
-	dbg("Application", "RandomBeaconApp receive seqno: %d source: %d", cm->seqno, cm->source); 
+	dbg("Application", "RandomBeacon event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
+	dbg("Application", "RandomBeacon receive seqno: %d source: %d", cm->seqno, cm->source); 
 	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	call Leds.set(cm->seqno);
 	return msg;

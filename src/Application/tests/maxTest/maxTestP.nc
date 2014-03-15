@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "maxTest.h"
 
-generic module maxTestP() {
+generic module maxTestP(process_t process) {
 provides interface SplitControl;
 
 uses interface maxTestParams;

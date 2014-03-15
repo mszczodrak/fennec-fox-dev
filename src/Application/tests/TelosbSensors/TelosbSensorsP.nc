@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "TelosbSensors.h"
 
-generic module TelosbSensorsP() {
+generic module TelosbSensorsP(process_t process) {
 provides interface SplitControl;
 
 uses interface TelosbSensorsParams;

@@ -26,46 +26,78 @@
  */
 
 /**
-  * RandomBeacon Test Application Module
+  * Throughput Test Application Module
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/03/2014
   */
 
-generic configuration RandomBeaconAppC() {
+#include "Throughput.h"
+
+generic configuration ThroughputC(process_t process) {
 provides interface SplitControl;
+provides interface Module;
 
-uses interface RandomBeaconAppParams;
-
+uses interface ThroughputParams;
+   
 uses interface AMSend as NetworkAMSend;
 uses interface Receive as NetworkReceive;
 uses interface Receive as NetworkSnoop;
 uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface ModuleStatus as NetworkStatus;
 }
 
 implementation {
+ 
+enum {
+	SERIAL_PORT = 1
+};
+ 
+components new ThroughputP(process);
+SplitControl = ThroughputP;
+Module = ThroughputP;
+ThroughputParams = ThroughputP;
+  
+components new TimerMilliC() as TimerImp;
+ThroughputP.Timer -> TimerImp;
 
-components new RandomBeaconAppP();
-SplitControl = RandomBeaconAppP;
+/* Creating a queue for sending messages over the network interface */
+components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
+ThroughputP.NetworkQueue -> NetworkQueueC;
 
-RandomBeaconAppParams = RandomBeaconAppP;
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
+/* Creating a queue for sending messages over the serial interface */
+components new QueueC(msg_queue_t, APP_SERIAL_QUEUE_SIZE) as SerialQueueC;
+ThroughputP.SerialQueue -> SerialQueueC;
+#endif
 
-NetworkAMSend = RandomBeaconAppP.NetworkAMSend;
-NetworkReceive = RandomBeaconAppP.NetworkReceive;
-NetworkSnoop = RandomBeaconAppP.NetworkSnoop;
-NetworkAMPacket = RandomBeaconAppP.NetworkAMPacket;
-NetworkPacket = RandomBeaconAppP.NetworkPacket;
-NetworkPacketAcknowledgements = RandomBeaconAppP.NetworkPacketAcknowledgements;
+/* Creating a pool of message memory for network and serial communication */
+components new PoolC(message_t, APP_MESSAGE_POOL) as MessagePoolC;
+ThroughputP.MessagePool -> MessagePoolC;
 
 components LedsC;
-components new TimerMilliC();
+ThroughputP.Leds -> LedsC;
 
-RandomBeaconAppP.Leds -> LedsC;
-RandomBeaconAppP.Timer -> TimerMilliC;
-
-components RandomC;
-RandomBeaconAppP.Random -> RandomC;
+#if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
+components SerialActiveMessageC;
+components new SerialAMSenderC(SERIAL_PORT);
+components new SerialAMReceiverC(SERIAL_PORT);
+ThroughputP.SerialAMSend -> SerialAMSenderC.AMSend;
+ThroughputP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+ThroughputP.SerialPacket -> SerialAMSenderC.Packet; 
+ThroughputP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+ThroughputP.SerialReceive -> SerialAMReceiverC.Receive;
+#endif
+ 
+NetworkAMSend = ThroughputP.NetworkAMSend;
+NetworkReceive = ThroughputP.NetworkReceive;
+NetworkSnoop = ThroughputP.NetworkSnoop;
+NetworkAMPacket = ThroughputP.NetworkAMPacket;
+NetworkPacket = ThroughputP.NetworkPacket;
+NetworkPacketAcknowledgements = ThroughputP.NetworkPacketAcknowledgements;
+NetworkStatus = ThroughputP.NetworkStatus;
 
 }
+

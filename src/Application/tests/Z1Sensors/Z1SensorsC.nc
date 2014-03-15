@@ -37,7 +37,7 @@
 #include "Z1SensorsAdc.h"
 #endif
 
-generic configuration Z1SensorsC() {
+generic configuration Z1SensorsC(process_t process) {
 provides interface SplitControl;
 
 uses interface Z1SensorsParams;
@@ -51,7 +51,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new Z1SensorsP();
+components new Z1SensorsP(process);
 SplitControl = Z1SensorsP;
 
 Z1SensorsParams = Z1SensorsP;

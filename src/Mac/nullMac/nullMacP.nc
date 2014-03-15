@@ -32,7 +32,7 @@
 #include <Fennec.h>
 #include "nullMac.h"
 
-generic module nullMacP() @safe() {
+generic module nullMacP(process_t process) @safe() {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;

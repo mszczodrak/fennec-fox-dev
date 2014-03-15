@@ -34,7 +34,7 @@
 #include <Fennec.h>
 #include "PrintfBridge.h"
 
-generic module PrintfBridgeP() {
+generic module PrintfBridgeP(process_t process) {
 provides interface SplitControl;
 
 uses interface PrintfBridgeParams;

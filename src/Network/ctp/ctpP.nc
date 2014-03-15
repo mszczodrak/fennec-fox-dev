@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "ctp.h"
 
-generic module ctpP() {
+generic module ctpP(process_t process) {
 provides interface SplitControl;
 
 uses interface ctpParams;

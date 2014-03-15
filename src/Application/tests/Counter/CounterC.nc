@@ -32,7 +32,7 @@
   * @updated: 01/03/2014
   */
 
-generic configuration CounterC() {
+generic configuration CounterC(process_t process) {
 provides interface SplitControl;
 
 uses interface CounterParams;
@@ -47,7 +47,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 
-components new CounterP();
+components new CounterP(process);
 SplitControl = CounterP;
 
 CounterParams = CounterP;

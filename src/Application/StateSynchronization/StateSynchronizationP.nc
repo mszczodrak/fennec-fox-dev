@@ -35,7 +35,7 @@
 
 #include <Fennec.h>
 
-generic module StateSynchronizationP() @safe() {
+generic module StateSynchronizationP(process_t process) @safe() {
 provides interface SplitControl;
 
 uses interface StateSynchronizationParams;

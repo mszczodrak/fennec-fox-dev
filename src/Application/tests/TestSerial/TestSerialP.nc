@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "TestSerial.h"
 
-generic module TestSerialP() {
+generic module TestSerialP(process_t process) {
 provides interface SplitControl;
 
 uses interface TestSerialParams;

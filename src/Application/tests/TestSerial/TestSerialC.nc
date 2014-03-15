@@ -32,7 +32,7 @@
   * @updated: 01/03/2014
   */
 
-generic configuration TestSerialC() {
+generic configuration TestSerialC(process_t process) {
 provides interface SplitControl;
 
 uses interface TestSerialParams;
@@ -46,7 +46,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new TestSerialP();
+components new TestSerialP(process);
 SplitControl = TestSerialP;
 
 TestSerialParams = TestSerialP;

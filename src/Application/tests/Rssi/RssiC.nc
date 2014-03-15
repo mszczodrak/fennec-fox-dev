@@ -33,7 +33,7 @@
   */
 
 
-generic configuration RssiC() {
+generic configuration RssiC(process_t process) {
 provides interface SplitControl;
 
 uses interface RssiParams;
@@ -47,7 +47,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new RssiP();
+components new RssiP(process);
 SplitControl = RssiP;
 
 RssiParams = RssiP;

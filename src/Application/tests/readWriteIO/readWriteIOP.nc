@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "readWriteIO.h"
 
-generic module readWriteIOP() {
+generic module readWriteIOP(process_t process) {
 provides interface SplitControl;
 
 uses interface readWriteIOParams;

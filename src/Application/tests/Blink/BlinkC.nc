@@ -35,7 +35,7 @@
 
 #include "Blink.h"
 
-generic configuration BlinkC() {
+generic configuration BlinkC(process_t process) {
 provides interface SplitControl;
 
 uses interface BlinkParams;
@@ -49,7 +49,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new BlinkP();
+components new BlinkP(process);
 SplitControl = BlinkP;
 
 BlinkParams = BlinkP;

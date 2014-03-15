@@ -32,7 +32,7 @@
 #include <Fennec.h>
 #include "nullNet.h"
 
-generic module nullNetP() {
+generic module nullNetP(process_t process) {
 provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
@@ -55,19 +55,19 @@ uses interface LinkPacketMetadata as MacLinkPacketMetadata;
 implementation {
 
 command error_t SplitControl.start() {
-	dbg("Network", "nullNetP SplitControl.start()");
+	dbg("Network", "nullNet SplitControl.start()");
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("Network", "nullNetP SplitControl.stop()");
+	dbg("Network", "nullNet SplitControl.stop()");
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	dbg("Network", "nullNetP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
+	dbg("Network", "nullNet NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
 	if ((addr == TOS_NODE_ID)) {
 		dbg("Network", "nullNet NetworkAMSend.sendDone(0x%1x, %d )", msg, SUCCESS);
@@ -84,32 +84,32 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 }
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
-	dbg("Network", "nullNetP NetworkAMSend.cancel(0x%1x)", msg);
+	dbg("Network", "nullNet NetworkAMSend.cancel(0x%1x)", msg);
 	return call MacAMSend.cancel(msg);
 }
 
 command uint8_t NetworkAMSend.maxPayloadLength() {
-	dbg("Network", "nullNetP NetworkAMSend.maxPayloadLength()");
+	dbg("Network", "nullNet NetworkAMSend.maxPayloadLength()");
 	return (call MacAMSend.maxPayloadLength() - 
 		sizeof(nx_struct nullNet_header));
 }
 
 command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr; 
-	dbg("Network", "nullNetP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
+	dbg("Network", "nullNet NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
 	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
 				len + sizeof(nx_struct nullNet_header));
 	return (void*) (ptr + sizeof(nx_struct nullNet_header));
 }
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Network", "nullNetP NetworkAMSend.sendDone(0x%1x, %d )", msg, error);
+	dbg("Network", "nullNet NetworkAMSend.sendDone(0x%1x, %d )", msg, error);
 	signal NetworkAMSend.sendDone(msg, error);
 }
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "nullNetP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+	dbg("Network", "nullNet NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct nullNet_header), 
 			len - sizeof(nx_struct nullNet_header));
 	return signal NetworkReceive.receive(msg, 
@@ -119,7 +119,7 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "nullNetP NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
+	dbg("Network", "nullNet NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct nullNet_header), 
 			len - sizeof(nx_struct nullNet_header));
 	return signal NetworkSnoop.receive(msg, 

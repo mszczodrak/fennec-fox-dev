@@ -29,7 +29,10 @@
   *
   * @author: Marcin K Szczodrak
   */
-generic configuration nullAppC() {
+
+#include <Fennec.h>
+
+generic configuration nullAppC(process_t process_id) {
 provides interface SplitControl;
 
 uses interface nullAppParams;
@@ -43,7 +46,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new nullAppP();
+components new nullAppP(process_id);
 SplitControl = nullAppP;
 
 nullAppParams = nullAppP;

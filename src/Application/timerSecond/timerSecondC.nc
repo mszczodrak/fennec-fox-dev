@@ -31,7 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration timerSecondC() {
+generic configuration timerSecondC(process_t process) {
 provides interface SplitControl;
 
 uses interface timerSecondParams;
@@ -47,7 +47,7 @@ provides interface Event;
 }
 
 implementation {
-components new timerSecondP();
+components new timerSecondP(process);
 SplitControl = timerSecondP;
 
 timerSecondParams = timerSecondP;

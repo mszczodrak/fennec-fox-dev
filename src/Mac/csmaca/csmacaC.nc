@@ -34,7 +34,7 @@
 
 #include "csmaca.h"
 
-generic configuration csmacaC() {
+generic configuration csmacaC(process_t process) {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
@@ -67,7 +67,7 @@ uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 implementation {
 
-components new csmacaP();
+components new csmacaP(process);
 
 SplitControl = csmacaP;
 MacAMSend = csmacaP.MacAMSend;

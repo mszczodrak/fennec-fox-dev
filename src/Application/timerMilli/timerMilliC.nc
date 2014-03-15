@@ -31,7 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration timerMilliC() {
+generic configuration timerMilliC(process_t process) {
 provides interface SplitControl;
 
 uses interface timerMilliParams;
@@ -47,7 +47,7 @@ provides interface Event;
 }
 
 implementation {
-components new timerMilliP();
+components new timerMilliP(process);
 SplitControl = timerMilliP;
 
 timerMilliParams = timerMilliP;

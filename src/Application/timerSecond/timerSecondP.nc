@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "timerSecond.h"
 
-generic module timerSecondP() {
+generic module timerSecondP(process_t process) {
 provides interface SplitControl;
 
 uses interface timerSecondParams;

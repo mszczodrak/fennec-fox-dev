@@ -33,7 +33,7 @@
   */
 
 
-generic configuration DbgsC() {
+generic configuration DbgsC(process_t process) {
 provides interface SplitControl;
 
 uses interface DbgsParams;
@@ -48,7 +48,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 
-components new DbgsP();
+components new DbgsP(process);
 SplitControl = DbgsP;
 
 DbgsParams = DbgsP;

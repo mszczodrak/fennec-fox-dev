@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "ReadSensor.h"
 
-generic module ReadSensorP() {
+generic module ReadSensorP(process_t process) {
 provides interface SplitControl;
 
 uses interface ReadSensorParams;

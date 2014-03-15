@@ -31,7 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration readWriteIOC() {
+generic configuration readWriteIOC(process_t process) {
 provides interface SplitControl;
 
 uses interface readWriteIOParams;
@@ -45,7 +45,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new readWriteIOP();
+components new readWriteIOP(process);
 SplitControl = readWriteIOP;
 
 readWriteIOParams = readWriteIOP;

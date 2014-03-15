@@ -32,11 +32,11 @@
   * @updated: 01/03/2014
   */
 
-generic module ThroughputAppP() {
+generic module ThroughputP(process_t process) {
 provides interface SplitControl;
 provides interface Module;
 
-uses interface ThroughputAppParams ;
+uses interface ThroughputParams ;
 
 /* Network interfaces */
 uses interface AMSend as NetworkAMSend;
@@ -105,8 +105,8 @@ command error_t SplitControl.start() {
 
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 	/* check if this node will be sending messages over the serial */
-	if ((TOS_NODE_ID == call ThroughputAppParams.get_destination()) || 
-	        (NODE == call ThroughputAppParams.get_destination())) {
+	if ((TOS_NODE_ID == call ThroughputParams.get_destination()) || 
+	        (NODE == call ThroughputParams.get_destination())) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
@@ -211,7 +211,7 @@ event void SerialSplitControl.startDone(error_t error) {}
 
 event void Timer.fired() {
 	if (init) {
-		call Timer.startPeriodic(call ThroughputAppParams.get_freq());
+		call Timer.startPeriodic(call ThroughputParams.get_freq());
 		init = 0;
 	}
 	call Leds.led2Toggle();
@@ -241,13 +241,13 @@ void prepare_network_message() {
 
         network_data_payload = (app_data_t*)
                 call NetworkAMSend.getPayload(network_message, sizeof(app_data_t)
-                                        + call ThroughputAppParams.get_size());
+                                        + call ThroughputParams.get_size());
 
         /* set network message content */
         network_data_payload->src = TOS_NODE_ID;
         network_data_payload->seqno = seqno;
-        network_data_payload->freq = call ThroughputAppParams.get_freq();
-        memset(network_data_payload->data, 0, call ThroughputAppParams.get_size());
+        network_data_payload->freq = call ThroughputParams.get_freq();
+        memset(network_data_payload->data, 0, call ThroughputParams.get_size());
 
         /* Check if there is a space in queue */
         if (call NetworkQueue.full()) {
@@ -259,8 +259,8 @@ void prepare_network_message() {
 
         /* Just add the message to the queue and wait */
         nm.msg = network_message;
-        nm.len = sizeof(app_data_t) + call ThroughputAppParams.get_size();
-        nm.addr = call ThroughputAppParams.get_destination();
+        nm.len = sizeof(app_data_t) + call ThroughputParams.get_size();
+        nm.addr = call ThroughputParams.get_destination();
         call NetworkQueue.enqueue(nm);
 
         post send_network_message();

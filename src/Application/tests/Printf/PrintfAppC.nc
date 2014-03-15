@@ -32,7 +32,7 @@
   * @updated: 01/03/2014
   */
 
-generic configuration PrintfAppC() {
+generic configuration PrintfAppC(process_t process) {
 provides interface SplitControl;
 
 uses interface PrintfAppParams;
@@ -47,7 +47,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 
-components new PrintfAppP();
+components new PrintfAppP(process);
 SplitControl = PrintfAppP;
 
 PrintfAppParams = PrintfAppP;

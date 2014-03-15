@@ -31,7 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration ReadSensorC() {
+generic configuration ReadSensorC(process_t process) {
 provides interface SplitControl;
 
 uses interface ReadSensorParams;
@@ -45,7 +45,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new ReadSensorP();
+components new ReadSensorP(process);
 SplitControl = ReadSensorP;
 
 ReadSensorParams = ReadSensorP;

@@ -32,7 +32,7 @@
   * @updated: 02/04/2014
   */
 
-generic configuration TelosbSensorsC() {
+generic configuration TelosbSensorsC(process_t process) {
 provides interface SplitControl;
 
 uses interface TelosbSensorsParams;
@@ -46,7 +46,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new TelosbSensorsP();
+components new TelosbSensorsP(process);
 SplitControl = TelosbSensorsP;
 
 TelosbSensorsParams = TelosbSensorsP;

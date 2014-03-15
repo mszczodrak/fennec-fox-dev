@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "ButtonToLed.h"
 
-generic module ButtonToLedP() {
+generic module ButtonToLedP(process_t process) {
 provides interface SplitControl;
 
 uses interface ButtonToLedParams;

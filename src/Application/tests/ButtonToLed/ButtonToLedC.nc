@@ -32,9 +32,7 @@
   * @updated: 03/07/2014
   */
 
-
-
-generic configuration ButtonToLedC() {
+generic configuration ButtonToLedC(process_t process) {
 provides interface SplitControl;
 
 uses interface ButtonToLedParams;
@@ -48,7 +46,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new ButtonToLedP();
+components new ButtonToLedP(process);
 SplitControl = ButtonToLedP;
 
 ButtonToLedParams = ButtonToLedP;

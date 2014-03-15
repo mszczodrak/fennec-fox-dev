@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "PrintfApp.h"
 
-generic module PrintfAppP() {
+generic module PrintfAppP(process_t process) {
 provides interface SplitControl;
 
 uses interface PrintfAppParams;

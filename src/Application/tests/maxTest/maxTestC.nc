@@ -32,7 +32,7 @@
   * @updated: 01/03/2014
   */
 
-generic configuration maxTestC() {
+generic configuration maxTestC(process_t process) {
 provides interface SplitControl;
 
 uses interface maxTestParams;
@@ -46,7 +46,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 }
 
 implementation {
-components new maxTestP();
+components new maxTestP(process_t process);
 SplitControl = maxTestP;
 
 maxTestParams = maxTestP;

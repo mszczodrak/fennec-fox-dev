@@ -36,7 +36,7 @@
 #include <Fennec.h>
 #include "StateSynchronization.h"
 
-generic configuration StateSynchronizationC() {
+generic configuration StateSynchronizationC(process_t process) {
 provides interface SplitControl;
 
 uses interface StateSynchronizationParams;
@@ -50,7 +50,7 @@ uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 implementation {
 
-components new StateSynchronizationP();
+components new StateSynchronizationP(process);
 SplitControl = StateSynchronizationP;
 StateSynchronizationParams = StateSynchronizationP;
 

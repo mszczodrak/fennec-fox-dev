@@ -36,7 +36,7 @@
 #include <Timer.h>
 #include "Counter.h"
 
-generic module CounterP() {
+generic module CounterP(process_t process) {
 provides interface SplitControl;
 
 uses interface CounterParams;

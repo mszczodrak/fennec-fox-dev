@@ -37,7 +37,7 @@
 #include <Fennec.h>
 #include <Ctp.h>
 
-generic configuration ctpC() {
+generic configuration ctpC(process_t process) {
 provides interface SplitControl;
 
 uses interface ctpParams;
@@ -73,7 +73,7 @@ enum {
 };
 
 
-components new ctpP();
+components new ctpP(process);
 components LedsC;
 components new CtpActiveMessageC();
 components new CtpForwardingEngineP() as Forwarder;

@@ -31,7 +31,7 @@
   */
 #include "nullMac.h"
 
-generic configuration nullMacC() {
+generic configuration nullMacC(process_t process) {
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
 provides interface Receive as MacReceive;
@@ -62,7 +62,7 @@ uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 implementation {
 
-components new nullMacP();
+components new nullMacP(process);
 SplitControl = nullMacP;
 MacAMSend = nullMacP.MacAMSend;
 MacReceive = nullMacP.MacReceive;

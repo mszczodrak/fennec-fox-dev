@@ -32,7 +32,7 @@
 #include <Fennec.h>
 #include "nullApp.h"
 
-generic module nullAppP() {
+generic module nullAppP(process_t process_id) {
 provides interface SplitControl;
 
 uses interface nullAppParams;
