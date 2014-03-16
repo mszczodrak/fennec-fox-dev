@@ -54,7 +54,7 @@ norace event_t event_mask;
 norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
-norace conf_t systemProcessId = UNKNOWN;
+norace process_t systemProcessId = UNKNOWN;
 
 task void check_event() {
 	uint8_t i;
@@ -87,20 +87,20 @@ task void start_done() {
 	state_transitioning = FALSE;
 }
 
-uint16_t get_conf_id_in_state(module_t module_id) {
+uint16_t get_process_id_in_state(module_t module_id) {
 	uint8_t i;
-	conf_t conf_id;
+	process_t process_id;
 	
-	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
-		conf_id = states[call Fennec.getStateId()].conf_list[i];
+	for (i = 0; i < states[call Fennec.getStateId()].num_processes; i++) {
+		process_id = states[call Fennec.getStateId()].process_list[i];
 		if ( 
-			(configurations[conf_id].application == module_id)
+			(processes[process_id].application == module_id)
 			||
-			(configurations[conf_id].network == module_id)
+			(processes[process_id].network == module_id)
 			||
-			(configurations[conf_id].mac == module_id)
+			(processes[process_id].mac == module_id)
 			||
-			(configurations[conf_id].radio == module_id)
+			(processes[process_id].radio == module_id)
 		) { 
 			return i;
 		}
@@ -108,11 +108,11 @@ uint16_t get_conf_id_in_state(module_t module_id) {
 	return UNKNOWN_CONFIGURATION;
 }
 
-event_t get_event_id(module_t module_id, conf_t conf_id) {
+event_t get_event_id(module_t module_id, process_t process_id) {
 	uint8_t i;
 	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
 		if ((event_module_conf[i].module_id == module_id) &&
-			(event_module_conf[i].conf_id == conf_id)) {
+			(event_module_conf[i].process_id == process_id)) {
 			return event_module_conf[i].event_id;
 		}
 	}
@@ -197,8 +197,8 @@ command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 }
 
 command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
-	conf_t conf_id = call Fennec.getConfId(module_id);
-	uint8_t event_id = get_event_id(module_id, conf_id);
+	process_t process_id = call Fennec.getConfId(module_id);
+	uint8_t event_id = get_event_id(module_id, process_id);
 	dbg("Caches", "CachesP Fennec.eventOccured(%d, %d)", module_id, oc);
 	if (oc) {
 		event_mask |= (1 << event_id);
@@ -209,48 +209,48 @@ command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
 }
 
 
-async command module_t Fennec.getModuleId(conf_t conf, layer_t layer) {
-	if (conf >= NUMBER_OF_CONFIGURATIONS) {
+async command module_t Fennec.getModuleId(process_t conf, layer_t layer) {
+	if (conf >= NUMBER_OF_PROCESSES) {
 		return UNKNOWN_LAYER;
 	}
 
 	switch(layer) {
 
 	case F_APPLICATION:
-		return configurations[ conf ].application;
+		return processes[ conf ].application;
 
 	case F_NETWORK:
-		return configurations[ conf ].network;
+		return processes[ conf ].network;
 
 	case F_MAC:
-		return configurations[ conf ].mac;
+		return processes[ conf ].mac;
 
 	case F_RADIO:
-		return configurations[ conf ].radio;
+		return processes[ conf ].radio;
 
 	default:
 		return UNKNOWN_LAYER;
 	}
 }
 
-async command conf_t Fennec.getConfId(module_t module_id) {
+async command process_t Fennec.getConfId(module_t module_id) {
 	uint8_t i;
-	conf_t conf_id;
+	process_t process_id;
 
-	for (i = 0; i < states[call Fennec.getStateId()].num_confs; i++) {
-		conf_id = states[call Fennec.getStateId()].conf_list[i];
+	for (i = 0; i < states[call Fennec.getStateId()].num_processes; i++) {
+		process_id = states[call Fennec.getStateId()].process_list[i];
 		if ( 
-			(configurations[conf_id].application == module_id)
+			(processes[process_id].application == module_id)
 			||
-			(configurations[conf_id].network == module_id)
+			(processes[process_id].network == module_id)
 			||
-			(configurations[conf_id].mac == module_id)
+			(processes[process_id].mac == module_id)
 			||
-			(configurations[conf_id].radio == module_id)
+			(processes[process_id].radio == module_id)
 		) { 
 			//dbg("Caches", "Fennec.getConfId(%d) returns %d",
-			//	module_id, configurations[conf_id].conf_id);
-			return configurations[conf_id].conf_id;
+			//	module_id, processes[process_id].process_id);
+			return processes[process_id].process_id;
 		}
 	}
 	dbg("Caches", "Current state is %d", call Fennec.getStateId());
@@ -261,11 +261,11 @@ async command conf_t Fennec.getConfId(module_t module_id) {
 }
 
 async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
-//	conf_t c = call Fennec.getConfId(from_module_id);
+//	process_t c = call Fennec.getConfId(from_module_id);
 	return call Fennec.getModuleId(call Fennec.getConfId(from_module_id), to_layer_id);
 }
 
-command void Fennec.systemProcessId(conf_t process_id) {
+command void Fennec.systemProcessId(process_t process_id) {
 	systemProcessId = process_id;
 }
 
@@ -279,9 +279,9 @@ bool validProcessId(uint8_t process_id) @C() {
 		return SUCCESS;
 	}
 
-	for(i = 0; i < this_state->num_confs; i++) {
-		if (this_state->conf_list[i] == process_id) {
-			//printf("success %d %d\n", this_state->conf_list[i], process_id);
+	for(i = 0; i < this_state->num_processes; i++) {
+		if (this_state->process_list[i] == process_id) {
+			//printf("success %d %d\n", this_state->process_list[i], process_id);
 			return TRUE;
 		}
 	}

@@ -49,13 +49,13 @@ process_t process_num = UNKNOWN;
 
 task void start_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
-	dbg("NetworkState", "NetworkStateP start_protocol_stack id = %d, num_confs = %d", 
-		state_record->state_id, state_record->num_confs);
-	if (state_record->num_confs > process_num) {
+	dbg("NetworkState", "NetworkStateP start_protocol_stack id = %d, num_processes = %d", 
+		state_record->state_id, state_record->num_processes);
+	if (state_record->num_processes > process_num) {
 		/* there are confs to start */
 		dbg("NetworkState", "NetworkStateP call NetworkProcess.startConf(%d)",
-				state_record->conf_list[process_num]);
-		call NetworkProcess.start(state_record->conf_list[process_num]);		
+				state_record->process_list[process_num]);
+		call NetworkProcess.start(state_record->process_list[process_num]);		
 
 	} else {
 		/* that's all folks, all configurations are running */
@@ -67,14 +67,14 @@ task void start_protocol_stack() {
 
 task void stop_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
-	dbg("NetworkState", "NetworkStateP stop_protocol_stack id = %d, num_confs = %d", 
-		state_record->state_id, state_record->num_confs);
+	dbg("NetworkState", "NetworkStateP stop_protocol_stack id = %d, num_processes = %d", 
+		state_record->state_id, state_record->num_processes);
 
-	if (state_record->num_confs > process_num) {
+	if (state_record->num_processes > process_num) {
 		/* there are confs to stop */
 		dbg("NetworkState", "NetworkStateP call NetworkProcess.stopConf(%d)",
-				state_record->conf_list[process_num]);
-		call NetworkProcess.stop(state_record->conf_list[process_num]);		
+				state_record->process_list[process_num]);
+		call NetworkProcess.stop(state_record->process_list[process_num]);		
 
 	} else {
 		/* that's all folks, all configurations are running */

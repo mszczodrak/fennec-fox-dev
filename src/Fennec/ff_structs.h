@@ -39,7 +39,6 @@
 #include "ff_consts.h"
 
 typedef uint16_t state_t;
-typedef uint16_t conf_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 typedef uint16_t event_t;
@@ -54,9 +53,10 @@ typedef union message_header {
 
 
 struct state {
-        uint8_t 		state_id;
-        uint8_t 		num_confs;
-	conf_t *		conf_list;
+        state_t 		state_id;
+        uint8_t 		num_processes;
+	process_t *		process_list;
+	uint8_t 		level;
 };
 
 
@@ -89,16 +89,15 @@ typedef nx_struct message_t {
 struct event_module_conf {
 	event_t 	event_id;
 	module_t 	module_id;
-	conf_t 		conf_id;
+	process_t	process_id;
 };
 
-struct stack_configuration {
-	uint16_t conf_id;
+struct network_process {
+	process_t process_id;
 	uint8_t application;
 	uint8_t network;
 	uint8_t mac;
 	uint8_t radio;
-	uint8_t level;
 };
 
 struct default_params {
