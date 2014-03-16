@@ -86,15 +86,11 @@ task void stop_protocol_stack() {
 
 task void start_state() {
 	process_num = 0;
-	dbg("NetworkState", "NetworkStateP start_state() state = %d", 
-						call Fennec.getStateId());
 	post start_protocol_stack();
 }
 
 task void stop_state() {
 	process_num = 0;
-	dbg("NetworkState", "NetworkStateP stop_state() state = %d",
-						call Fennec.getStateId());
 	post stop_protocol_stack();
 }
 
