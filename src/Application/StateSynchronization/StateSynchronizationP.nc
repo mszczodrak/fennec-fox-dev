@@ -46,7 +46,6 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface Fennec;
 uses interface FennecState;
 
 uses interface Random;
@@ -75,8 +74,8 @@ task void send_msg() {
 		return;
 	}
 
-	state_msg->seq = (nx_uint16_t) call Fennec.getStateSeq();
-	state_msg->state_id = (nx_uint8_t) call Fennec.getStateId();
+	state_msg->seq = (nx_uint16_t) call FennecState.getStateSeq();
+	state_msg->state_id = (nx_uint16_t) call FennecState.getStateId();
 
 	if (call NetworkAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
 		post schedule_send_msg();
@@ -87,7 +86,7 @@ task void send_msg() {
 }
 
 
-async event void FennecState.resend() {
+event void FennecState.resend() {
 	post send_msg();
 }
 
@@ -110,7 +109,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	dbg("StateSynchronization", "[%d] StateSynchronizationP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
-	call Fennec.setStateAndSeq(state_msg->state_id, state_msg->seq);
+	call FennecState.setStateAndSeq(state_msg->state_id, state_msg->seq);
 	return msg;
 }
 
@@ -125,7 +124,7 @@ event void Timer.fired() {
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_state *state_msg = (nx_struct fennec_network_state*) payload;
-	call Fennec.setStateAndSeq(state_msg->state_id, state_msg->seq);
+	call FennecState.setStateAndSeq(state_msg->state_id, state_msg->seq);
 	return msg;
 }
 

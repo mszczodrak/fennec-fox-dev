@@ -49,7 +49,7 @@ uses interface Random;
 implementation {
 
 norace uint16_t current_seq = 0;
-norace uint16_t current_state = 0;
+norace state_t current_state = 0;
 
 norace event_t event_mask;
 
@@ -62,8 +62,8 @@ task void check_event() {
 	uint8_t i;
 	dbg("Fennec", "FennecP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
-		if ((policies[i].src_conf == call Fennec.getStateId()) && (policies[i].event_mask == event_mask)) {
-			call Fennec.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
+		if ((policies[i].src_conf == call FennecState.getStateId()) && (policies[i].event_mask == event_mask)) {
+			call FennecState.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
 			signal FennecState.resend();
 			return;
 		}
@@ -89,13 +89,37 @@ task void start_done() {
 	state_transitioning = FALSE;
 }
 
+task void send_state_update() {
+	signal FennecState.resend();
+}
+
+bool validProcessId(uint8_t process_id) @C() {
+	struct state *this_state = &states[call FennecState.getStateId()];
+	uint8_t i;
+
+	if (process_id == systemProcessId) {
+		return SUCCESS;
+	}
+
+	for(i = 0; i < this_state->num_processes; i++) {
+		if (this_state->process_list[i] == process_id) {
+			//printf("success %d %d\n", this_state->process_list[i], process_id);
+			return TRUE;
+		}
+	}
+	/* we should report it */
+	post send_state_update();	
+
+	return FALSE;
+}
+
 event void Boot.booted() {
 	event_mask = 0;
 	current_seq = 0;
 	systemProcessId = UNKNOWN;
 	current_state = active_state;
-	next_state = call Fennec.getStateId();
-	next_seq = call Fennec.getStateSeq();
+	next_state = call FennecState.getStateId();
+	next_seq = call FennecState.getStateSeq();
 	state_transitioning = TRUE;
 	post start_state();
 }
@@ -112,7 +136,7 @@ event void SplitControl.startDone(error_t err) {
 
 event void SplitControl.stopDone(error_t err) {
 	dbg("Fennec", "FennecP SplitControl.stopDone(%d)", err);
-	dbg("Fennec", "FennecP running in state %d", call Fennec.getStateId());
+	dbg("Fennec", "FennecP running in state %d", call FennecState.getStateId());
 	post stop_done();
 }
 
@@ -139,23 +163,46 @@ command void Event.report(process_t process, uint8_t status) {
 	post check_event();
 }
 
+/** Fennec interface **/
+command struct state* Fennec.getStateRecord() {
+	return &states[call FennecState.getStateId()];
+}
 
-/** Fennec Interface **/
+command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
+	if (process_id >= NUMBER_OF_PROCESSES) {
+		return UNKNOWN_LAYER;
+	}
 
-async command state_t Fennec.getStateId() {
-	//dbg("Fennec", "FennecP Fennec.getStateId() returns %d", current_state);
+	switch(layer) {
+
+	case F_APPLICATION:
+		return processes[ process_id ].application;
+
+	case F_NETWORK:
+		return processes[ process_id ].network;
+
+	case F_MAC:
+		return processes[ process_id ].mac;
+
+	case F_RADIO:
+		return processes[ process_id ].radio;
+
+	default:
+		return UNKNOWN;
+	}
+}
+
+/** FennecState Interface **/
+
+command state_t FennecState.getStateId() {
 	return current_state;
 }
 
-command uint16_t Fennec.getStateSeq() {
+command uint16_t FennecState.getStateSeq() {
 	return current_seq;
 }
 
-command struct state* Fennec.getStateRecord() {
-	return &states[call Fennec.getStateId()];
-}
-
-command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
+command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 	dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
@@ -189,55 +236,11 @@ command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 	return SUCCESS;
 }
 
-async command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
-	if (process_id >= NUMBER_OF_PROCESSES) {
-		return UNKNOWN_LAYER;
-	}
-
-	switch(layer) {
-
-	case F_APPLICATION:
-		return processes[ process_id ].application;
-
-	case F_NETWORK:
-		return processes[ process_id ].network;
-
-	case F_MAC:
-		return processes[ process_id ].mac;
-
-	case F_RADIO:
-		return processes[ process_id ].radio;
-
-	default:
-		return UNKNOWN;
-	}
-}
-
-command void Fennec.systemProcessId(process_t process_id) {
+command void FennecState.systemProcessId(process_t process_id) {
 	systemProcessId = process_id;
 }
 
-bool validProcessId(uint8_t process_id) @C() {
-	struct state *this_state = &states[call Fennec.getStateId()];
-	uint8_t i;
-
-	if (process_id == systemProcessId) {
-		return SUCCESS;
-	}
-
-	for(i = 0; i < this_state->num_processes; i++) {
-		if (this_state->process_list[i] == process_id) {
-			//printf("success %d %d\n", this_state->process_list[i], process_id);
-			return TRUE;
-		}
-	}
-	/* we should report it */
-	signal FennecState.resend();
-	
-	return FALSE;
-}
-
-default async event void FennecState.resend() {}
+default event void FennecState.resend() {}
 
 }
 

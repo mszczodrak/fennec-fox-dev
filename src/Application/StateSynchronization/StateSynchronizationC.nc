@@ -62,7 +62,6 @@ NetworkPacket = StateSynchronizationP.NetworkPacket;
 NetworkPacketAcknowledgements = StateSynchronizationP.NetworkPacketAcknowledgements;
 
 components FennecC;
-StateSynchronizationP.Fennec -> FennecC;
 StateSynchronizationP.FennecState -> FennecC;
 
 components RandomC;
