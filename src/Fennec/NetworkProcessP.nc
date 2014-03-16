@@ -55,7 +55,7 @@ void next_layer();
 process_t current_process;
 
 task void start_next_module() {
-	uint8_t module_id = call Fennec.getModuleId(current_process, current_layer);
+	module_t module_id = call Fennec.getModuleId(current_process, current_layer);
 	error_t err = call ModuleCtrl.start(module_id);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	switch(err) {
@@ -76,7 +76,7 @@ task void start_next_module() {
 }
 
 task void stop_next_module() {
-	uint8_t module_id = call Fennec.getModuleId(current_process, current_layer);
+	module_t module_id = call Fennec.getModuleId(current_process, current_layer);
 	error_t err = call ModuleCtrl.stop(module_id);
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	switch(err) {
@@ -114,7 +114,7 @@ command error_t NetworkProcess.stop(process_t process_id) {
 	return 0;
 }
 
-event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
+event void ModuleCtrl.startDone(module_t module_id, error_t error) {
 	dbg("NetworkProcess", "NetworkProcess ModuleCtrl.startDone(%d, %d)", module_id, error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();
@@ -129,7 +129,7 @@ event void ModuleCtrl.startDone(uint8_t module_id, error_t error) {
 	}
 }
 
-event void ModuleCtrl.stopDone(uint8_t module_id, error_t error) {
+event void ModuleCtrl.stopDone(module_t module_id, error_t error) {
 	dbg("NetworkProcess", "NetworkProcess ModuleCtrl.stopDone(%d, %d)", module_id, error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();

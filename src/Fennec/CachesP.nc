@@ -190,60 +190,28 @@ command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 	return SUCCESS;
 }
 
-async command module_t Fennec.getModuleId(process_t conf, layer_t layer) {
-	if (conf >= NUMBER_OF_PROCESSES) {
+async command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
+	if (process_id >= NUMBER_OF_PROCESSES) {
 		return UNKNOWN_LAYER;
 	}
 
 	switch(layer) {
 
 	case F_APPLICATION:
-		return processes[ conf ].application;
+		return processes[ process_id ].application;
 
 	case F_NETWORK:
-		return processes[ conf ].network;
+		return processes[ process_id ].network;
 
 	case F_MAC:
-		return processes[ conf ].mac;
+		return processes[ process_id ].mac;
 
 	case F_RADIO:
-		return processes[ conf ].radio;
+		return processes[ process_id ].radio;
 
 	default:
-		return UNKNOWN_LAYER;
+		return UNKNOWN;
 	}
-}
-
-async command process_t Fennec.getConfId(module_t module_id) {
-	uint8_t i;
-	process_t process_id;
-
-	for (i = 0; i < states[call Fennec.getStateId()].num_processes; i++) {
-		process_id = states[call Fennec.getStateId()].process_list[i];
-		if ( 
-			(processes[process_id].application == module_id)
-			||
-			(processes[process_id].network == module_id)
-			||
-			(processes[process_id].mac == module_id)
-			||
-			(processes[process_id].radio == module_id)
-		) { 
-			//dbg("Caches", "Fennec.getConfId(%d) returns %d",
-			//	module_id, processes[process_id].process_id);
-			return processes[process_id].process_id;
-		}
-	}
-	dbg("Caches", "Current state is %d", call Fennec.getStateId());
-	dbg("Caches", "Fennec.getConfId(%d) returns %d",
-			module_id, UNKNOWN_CONFIGURATION);
-	return UNKNOWN_CONFIGURATION;
-
-}
-
-async command module_t Fennec.getNextModuleId(module_t from_module_id, uint8_t to_layer_id) {
-//	process_t c = call Fennec.getConfId(from_module_id);
-	return call Fennec.getModuleId(call Fennec.getConfId(from_module_id), to_layer_id);
 }
 
 command void Fennec.systemProcessId(process_t process_id) {
