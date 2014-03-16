@@ -121,7 +121,7 @@ implementation {
         signal Model.sendDone(sendMsgPtr, SUCCESS);
     }
 
-    default command error_t Model.send(int node, message_t* msg, uint8_t len) {
+    default async command error_t Model.send(int node, message_t* msg, uint8_t len) {
 
         sendMsgPtr = msg;
 

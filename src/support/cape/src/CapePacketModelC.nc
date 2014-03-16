@@ -63,7 +63,7 @@ command error_t Packet.cancel(message_t* msg) {
 
 void start_radio();
 
-command error_t Packet.send(int dest, message_t* msg, uint8_t len) {
+async command error_t Packet.send(int dest, message_t* msg, uint8_t len) {
 	if (!running) {
 		dbg("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not running!\n");
 		return EOFF;

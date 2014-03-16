@@ -208,7 +208,7 @@ implementation {
 	
   }
   
-  command bool Model.clearChannel() {
+  async command bool Model.clearChannel() {
     dbg("CpmModelC", "Checking clear channel @ %s: %f <= %f \n", sim_time_string(), (double)packetNoise(NULL), clearThreshold);
     return packetNoise(NULL) < clearThreshold;
   }
@@ -456,7 +456,7 @@ implementation {
   }
     
 
-  command void Model.setPendingTransmission() {
+  async command void Model.setPendingTransmission() {
     transmitting = TRUE;
     dbg("CpmModelC", "setPendingTransmission: transmitting %i @ %s\n", transmitting, sim_time_string());
   }

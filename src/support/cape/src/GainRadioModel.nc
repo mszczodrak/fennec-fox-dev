@@ -53,8 +53,8 @@ interface GainRadioModel {
 			  double reverseGain);
 
   command void setClearValue(double value);
-  command bool clearChannel();
-  command void setPendingTransmission();
+  async command bool clearChannel();
+  async command void setPendingTransmission();
   
   event void acked(message_t* msg);
   event void receive(message_t* msg);
