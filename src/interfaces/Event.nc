@@ -35,5 +35,5 @@
  */
 
 interface Event {
-event void occured(uint16_t oc);
+command void report(process_t process, uint8_t status);
 }

@@ -36,6 +36,7 @@
 configuration CachesC {
 provides interface SimpleStart;
 provides interface Fennec;
+provides interface Event;
 provides interface FennecState;
 }
 
@@ -45,6 +46,7 @@ components CachesP;
 SimpleStart = CachesP;
 Fennec = CachesP;
 FennecState = CachesP;
+Event = CachesP;
 
 components NetworkStateC;
 CachesP.SplitControl -> NetworkStateC;

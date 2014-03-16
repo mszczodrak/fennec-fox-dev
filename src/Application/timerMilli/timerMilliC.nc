@@ -43,7 +43,7 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-provides interface Event;
+uses interface Event;
 }
 
 implementation {

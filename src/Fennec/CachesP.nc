@@ -39,6 +39,7 @@ module CachesP @safe() {
 provides interface Fennec;
 provides interface SimpleStart;
 provides interface FennecState;
+provides interface Event;
 uses interface SplitControl;
 
 uses interface Random;
@@ -146,6 +147,11 @@ event void SplitControl.stopDone(error_t err) {
 	dbg("Caches", "CachesP running in state %d", call Fennec.getStateId());
 	post stop_done();
 }
+
+command void Event.report(process_t process, uint8_t status) {
+
+}
+
 
 /** Fennec Interface **/
 

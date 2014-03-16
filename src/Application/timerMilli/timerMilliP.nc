@@ -47,8 +47,8 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
+uses interface Event;
 uses interface Timer<TMilli>;
-provides interface Event;
 }
 
 implementation {
@@ -83,8 +83,8 @@ command error_t SplitControl.stop() {
 
 
 event void Timer.fired() {
-	dbg("Application", "[%d] timerMilli signal Event.occured(TRUE)", process);
-	signal Event.occured(TRUE);
+	dbg("Application", "[%d] timerMilli call Event.report(%d, TRUE)", process, process);
+	call Event.report(process, TRUE);
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
