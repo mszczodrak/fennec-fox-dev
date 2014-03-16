@@ -61,9 +61,9 @@ NetworkAMPacket = StateSynchronizationP.NetworkAMPacket;
 NetworkPacket = StateSynchronizationP.NetworkPacket;
 NetworkPacketAcknowledgements = StateSynchronizationP.NetworkPacketAcknowledgements;
 
-components CachesC;
-StateSynchronizationP.Fennec -> CachesC;
-StateSynchronizationP.FennecState -> CachesC;
+components FennecC;
+StateSynchronizationP.Fennec -> FennecC;
+StateSynchronizationP.FennecState -> FennecC;
 
 components RandomC;
 StateSynchronizationP.Random -> RandomC;

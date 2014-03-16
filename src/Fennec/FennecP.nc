@@ -26,47 +26,218 @@
  */
 
 /**
-  * Fennec Fox Main Module
+  * Fennec Fox Fennec
   *
   * @author: Marcin K Szczodrak
   * @updated: 09/08/2013
   */
 
+#include <Fennec.h>
+#include "ff_caches.h"
 
-module FennecP {
+module FennecP @safe() {
+provides interface Fennec;
+provides interface FennecState;
+provides interface Event;
+
 uses interface Boot;
-
 uses interface Leds;
-uses interface SimpleStart as DbgSerial;
-uses interface SimpleStart as Caches;
-uses interface SimpleStart as Registry;
+uses interface SplitControl;
+uses interface Random;
 }
 
 implementation {
 
-task void start_caches() {
-	dbg("Fennec", "Fennec start_caches()");
-	call Caches.start();
+norace uint16_t current_seq = 0;
+norace uint16_t current_state = 0;
+
+norace event_t event_mask;
+
+norace state_t next_state = 0;
+norace uint16_t next_seq = 0;
+norace bool state_transitioning = TRUE;
+norace process_t systemProcessId = UNKNOWN;
+
+task void check_event() {
+	uint8_t i;
+	dbg("Fennec", "FennecP check_event() current mask %d", event_mask);
+	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
+		if ((policies[i].src_conf == call Fennec.getStateId()) && (policies[i].event_mask == event_mask)) {
+			call Fennec.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
+			signal FennecState.resend();
+			return;
+		}
+	}
 }
 
-task void boot() {
-	dbg("Fennec", "Fennec Boot.booted()");
-	call DbgSerial.start();
-	post start_caches();
+task void stop_state() {
+	call SplitControl.stop();
+}
+
+task void start_state() {
+	call SplitControl.start();
+}
+
+task void stop_done() {
+	event_mask = 0;
+	current_state = next_state;
+	current_seq = next_seq;
+	post start_state();
+}
+
+task void start_done() {
+	state_transitioning = FALSE;
 }
 
 event void Boot.booted() {
-	post boot();
+	event_mask = 0;
+	current_seq = 0;
+	systemProcessId = UNKNOWN;
+	current_state = active_state;
+	next_state = call Fennec.getStateId();
+	next_seq = call Fennec.getStateSeq();
+	state_transitioning = TRUE;
+	post start_state();
+}
+
+event void SplitControl.startDone(error_t err) {
+	dbg("Fennec", "FennecP SplitControl.startDone(%d)", err);
+	event_mask = 0;
+	dbg("Fennec", " ");
+	dbg("Fennec", " ");
+	dbg("Fennec", " ");
+	post start_done();
 }
 
 
-event void DbgSerial.startDone(error_t err) {
+event void SplitControl.stopDone(error_t err) {
+	dbg("Fennec", "FennecP SplitControl.stopDone(%d)", err);
+	dbg("Fennec", "FennecP running in state %d", call Fennec.getStateId());
+	post stop_done();
 }
 
-event void Caches.startDone(error_t err) {
+command void Event.report(process_t process, uint8_t status) {
+	event_t event_id = UNKNOWN;
+	uint8_t i;
+	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
+		if (events[i].process_id == process) {
+			event_id = events[i].event_id;
+			break;
+		}
+	}
+
+	if (event_id == UNKNOWN) {
+		return;
+	}
+
+	dbg("Fennec", "FennecP Fennec.eventOccured(%d, %d)", event_id, status);
+	if (status) {
+		event_mask |= (1 << event_id);
+	} else {
+		event_mask &= ~(1 << event_id);
+	}
+	post check_event();
 }
 
-event void Registry.startDone(error_t err) {}
+
+/** Fennec Interface **/
+
+async command state_t Fennec.getStateId() {
+	//dbg("Fennec", "FennecP Fennec.getStateId() returns %d", current_state);
+	return current_state;
+}
+
+command uint16_t Fennec.getStateSeq() {
+	return current_seq;
+}
+
+command struct state* Fennec.getStateRecord() {
+	return &states[call Fennec.getStateId()];
+}
+
+command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
+	dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
+	/* check if there is ongoing reconfiguration */
+	if (state_transitioning) {
+		dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
+		return EBUSY;	
+	}
+
+	if (new_seq < current_seq) {
+		signal FennecState.resend();
+		return SUCCESS;
+	}
+
+	if (new_seq > current_seq) {
+		if (new_state == current_state) {
+			current_seq = new_seq;
+			signal FennecState.resend();
+		} else {
+			next_state = new_state;
+			next_seq = new_seq;
+			state_transitioning = TRUE;
+			post stop_state();
+		}
+		return SUCCESS;
+	}
+
+	if ((new_state != current_state) && (new_seq == current_seq)) {
+		current_seq += (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
+		signal FennecState.resend();
+	}
+
+	return SUCCESS;
+}
+
+async command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
+	if (process_id >= NUMBER_OF_PROCESSES) {
+		return UNKNOWN_LAYER;
+	}
+
+	switch(layer) {
+
+	case F_APPLICATION:
+		return processes[ process_id ].application;
+
+	case F_NETWORK:
+		return processes[ process_id ].network;
+
+	case F_MAC:
+		return processes[ process_id ].mac;
+
+	case F_RADIO:
+		return processes[ process_id ].radio;
+
+	default:
+		return UNKNOWN;
+	}
+}
+
+command void Fennec.systemProcessId(process_t process_id) {
+	systemProcessId = process_id;
+}
+
+bool validProcessId(uint8_t process_id) @C() {
+	struct state *this_state = &states[call Fennec.getStateId()];
+	uint8_t i;
+
+	if (process_id == systemProcessId) {
+		return SUCCESS;
+	}
+
+	for(i = 0; i < this_state->num_processes; i++) {
+		if (this_state->process_list[i] == process_id) {
+			//printf("success %d %d\n", this_state->process_list[i], process_id);
+			return TRUE;
+		}
+	}
+	/* we should report it */
+	signal FennecState.resend();
+	
+	return FALSE;
+}
+
+default async event void FennecState.resend() {}
 
 }
 

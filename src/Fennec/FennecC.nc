@@ -36,26 +36,31 @@
 #include <Fennec.h>
 
 configuration FennecC {
+provides interface Fennec;
+provides interface Event;
+provides interface FennecState;
 }
 
 implementation {
 
-components FennecP;
-
 components MainC;
-FennecP.Boot -> MainC;
-
-components CachesC;
-FennecP.Caches -> CachesC;
-
+components FennecP;
 components LedsC;
-FennecP.Leds -> LedsC;
-
-components RegistryC;
-FennecP.Registry -> RegistryC;
-
 components FennecSerialDbgC;
-FennecP.DbgSerial -> FennecSerialDbgC;
+components NetworkStateC;
+components RandomC;
+
+Fennec = FennecP;
+FennecState = FennecP;
+Event = FennecP;
+
+FennecP.Boot -> MainC;
+FennecP.Leds -> LedsC;
+FennecSerialDbgC.Boot -> MainC;
+FennecP.SplitControl -> NetworkStateC;
+FennecP.Random -> RandomC;
+
+
 
 #ifdef FENNEC_TOS_PRINTF
 components PrintfC;

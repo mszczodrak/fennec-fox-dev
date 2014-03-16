@@ -37,13 +37,13 @@
 #include "DebugMsg.h"
 
 configuration FennecSerialDbgC {
-provides interface SimpleStart;
+uses interface Boot;
 }
 
 implementation {
 
 components FennecSerialDbgP;
-SimpleStart = FennecSerialDbgP;
+Boot = FennecSerialDbgP;
 
 #ifdef __DBGS__
 components SerialActiveMessageC as SerialAM;

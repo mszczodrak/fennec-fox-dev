@@ -39,7 +39,6 @@ provides interface NetworkProcess;
 implementation {
 
 components NetworkProcessP;
-//SplitControl = NetworkProcessP.SplitControl;
 NetworkProcess = NetworkProcessP;
 
 components FennecEngineC;
@@ -51,8 +50,8 @@ NetworkProcessP.Timer -> Timer;
 components LedsC;
 NetworkProcessP.Leds -> LedsC;
 
-components CachesC;
-NetworkProcessP.Fennec -> CachesC;
+components FennecC;
+NetworkProcessP.Fennec -> FennecC;
 
 
 }

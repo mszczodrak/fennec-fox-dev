@@ -26,6 +26,7 @@ include $(MAKERULES)
 
 clean: FORCE
 	rm -rf build $(CLEAN_EXTRA) pp
+	rm -rf doc
 	rm -rf _TOSSIMmodule.so TOSSIM.pyc TOSSIM.py app.xml simbuild
 	rm -rf VolumeMapC.nc
 	if [ -d $(SFC_GEN) ]; then rm -rf $(SFC_GEN); fi

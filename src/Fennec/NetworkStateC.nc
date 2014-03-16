@@ -45,8 +45,8 @@ SplitControl = NetworkStateP;
 components NetworkProcessC;
 NetworkStateP.NetworkProcess -> NetworkProcessC;
 
-components CachesC;
-NetworkStateP.Fennec -> CachesC;
+components FennecC;
+NetworkStateP.Fennec -> FennecC;
 }
 
 

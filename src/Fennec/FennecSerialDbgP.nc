@@ -36,7 +36,7 @@
 #include "DebugMsg.h"
 
 module FennecSerialDbgP @safe() {
-provides interface SimpleStart;
+uses interface Boot;
 
 #ifdef __DBGS__
 uses interface SplitControl;
@@ -56,14 +56,13 @@ message_t packet;
 norace struct debug_msg *msg;
 #endif
 
-command void SimpleStart.start() {
+event void Boot.booted() {
 	state = S_STOPPED;
 #ifdef __DBGS__
 	state = S_STARTING;
 	msg = NULL;
 	call SplitControl.start();
 #endif
-	signal SimpleStart.startDone(SUCCESS);
 }
 
 #ifdef __DBGS__
