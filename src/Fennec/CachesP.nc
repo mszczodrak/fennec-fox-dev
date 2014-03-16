@@ -88,37 +88,6 @@ task void start_done() {
 	state_transitioning = FALSE;
 }
 
-uint16_t get_process_id_in_state(module_t module_id) {
-	uint8_t i;
-	process_t process_id;
-	
-	for (i = 0; i < states[call Fennec.getStateId()].num_processes; i++) {
-		process_id = states[call Fennec.getStateId()].process_list[i];
-		if ( 
-			(processes[process_id].application == module_id)
-			||
-			(processes[process_id].network == module_id)
-			||
-			(processes[process_id].mac == module_id)
-			||
-			(processes[process_id].radio == module_id)
-		) { 
-			return i;
-		}
-	}
-	return UNKNOWN_CONFIGURATION;
-}
-
-event_t get_event_id(module_t module_id, process_t process_id) {
-	uint8_t i;
-	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
-		if ((event_module_conf[i].module_id == module_id) &&
-			(event_module_conf[i].process_id == process_id)) {
-			return event_module_conf[i].event_id;
-		}
-	}
-	return 0;
-}
 
 command void SimpleStart.start() {
 	event_mask = 0;
@@ -149,7 +118,26 @@ event void SplitControl.stopDone(error_t err) {
 }
 
 command void Event.report(process_t process, uint8_t status) {
+	event_t event_id = UNKNOWN;
+	uint8_t i;
+	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
+		if (events[i].process_id == process) {
+			event_id = events[i].event_id;
+			break;
+		}
+	}
 
+	if (event_id == UNKNOWN) {
+		return;
+	}
+
+	dbg("Caches", "CachesP Fennec.eventOccured(%d, %d)", event_id, status);
+	if (status) {
+		event_mask |= (1 << event_id);
+	} else {
+		event_mask &= ~(1 << event_id);
+	}
+	post check_event();
 }
 
 
@@ -201,19 +189,6 @@ command error_t Fennec.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 
 	return SUCCESS;
 }
-
-command void Fennec.eventOccured(module_t module_id, uint16_t oc) {
-	process_t process_id = call Fennec.getConfId(module_id);
-	uint8_t event_id = get_event_id(module_id, process_id);
-	dbg("Caches", "CachesP Fennec.eventOccured(%d, %d)", module_id, oc);
-	if (oc) {
-		event_mask |= (1 << event_id);
-	} else {
-		event_mask &= ~(1 << event_id);
-	}
-	post check_event();
-}
-
 
 async command module_t Fennec.getModuleId(process_t conf, layer_t layer) {
 	if (conf >= NUMBER_OF_PROCESSES) {

@@ -86,9 +86,8 @@ typedef nx_struct message_t {
 } message_t;
 
 
-struct event_module_conf {
+struct event_process {
 	event_t 	event_id;
-	module_t 	module_id;
 	process_t	process_id;
 };
 
