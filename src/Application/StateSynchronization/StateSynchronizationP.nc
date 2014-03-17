@@ -46,8 +46,8 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
+uses interface Boot;
 uses interface FennecState;
-
 uses interface Random;
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
@@ -85,6 +85,13 @@ task void send_msg() {
 	}
 }
 
+task void reportStateProcessId() {
+	call FennecState.systemProcessId(process);
+}
+
+event void Boot.booted() {
+	post reportStateProcessId();
+}
 
 event void FennecState.resend() {
 	post send_msg();

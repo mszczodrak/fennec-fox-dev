@@ -118,7 +118,6 @@ bool validProcessId(uint8_t process_id) @C() {
 
 event void Boot.booted() {
 	event_mask = 0;
-	systemProcessId = UNKNOWN;
 	current_seq = 0;
 	current_state = active_state;
 	next_state = current_state;
@@ -204,11 +203,13 @@ command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
 /** FennecState Interface **/
 
 command state_t FennecState.getStateId() {
-	return current_state;
+	return next_state;
+//	return current_state;
 }
 
 command uint16_t FennecState.getStateSeq() {
-	return current_seq;
+	return next_seq;
+//	return current_seq;
 }
 
 command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) {
