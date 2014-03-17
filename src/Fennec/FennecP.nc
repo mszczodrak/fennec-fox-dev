@@ -94,18 +94,19 @@ task void send_state_update() {
 
 bool validProcessId(process_t process_id) @C() {
 	struct network_process **npr;
-	dbg("Fennec", "Fennec validProcessId(%d)", process_id);
 
-	for(npr = privileged_processes; npr != NULL ; npr++) {
+	for(npr = privileged_processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success privileged %d %d\n", npr->process_id, process_id);
+			dbg("Fennec", "Fennec validProcessId(%d) - privileged", process_id);
 			return TRUE;
 		}
 	}
 
-	for(npr = states[current_state].processes; npr != NULL ; npr++) {
+	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success ordinary %d %d\n", npr->process_id, process_id);
+			dbg("Fennec", "Fennec validProcessId(%d) - ordinary", process_id);
 			return TRUE;
 		}
 	}
