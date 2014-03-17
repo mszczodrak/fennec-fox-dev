@@ -109,8 +109,7 @@ event void NetworkProcess.startDone(error_t err) {
         if (err == SUCCESS) {
 		if ((privileged) && (*privileged != NULL)) {
 			privileged++;
-		}
-		if ((privileged == NULL) || (*privileged == NULL)) {
+		} else {
 			ordinary++;
 		}
         }
@@ -122,8 +121,7 @@ event void NetworkProcess.stopDone(error_t err) {
         if (err == SUCCESS) {
 		if ((privileged) && (*privileged != NULL)) {
 			privileged++;
-		}
-		if ((privileged == NULL) || (*privileged == NULL)) {
+		} else {
 			ordinary++;
 		}
 	}

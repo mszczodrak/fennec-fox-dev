@@ -55,7 +55,7 @@ uint32_t gcdr (uint32_t a, uint32_t b )@C() {
 bool dbgs(process_t process, uint8_t layer, uint8_t state, uint16_t action,
 					uint16_t d0, uint16_t d1, uint16_t);
 
-bool validProcessId(uint8_t process_id);
+bool validProcessId(process_t process_id);
 
 #ifdef FENNEC_LOGGER
 void insertLog(uint16_t from, uint16_t message);

@@ -92,8 +92,9 @@ task void send_state_update() {
 	signal FennecState.resend();
 }
 
-bool validProcessId(uint8_t process_id) @C() {
+bool validProcessId(process_t process_id) @C() {
 	struct network_process **npr;
+	dbg("Fennec", "Fennec validProcessId(%d)", process_id);
 
 	for(npr = privileged_processes; npr != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
