@@ -125,21 +125,25 @@ async event void SubRadioBuffer.loadDone(message_t *msg, error_t err) {
 }
 
 async event bool SubRadioReceive.header(message_t* msg) {
-	dbg("Radio", "[%d] cape SubRadioReceive.header(0x%1x)",
-			getProcessId(msg), msg);
 	if (validProcessId(getProcessId(msg))) {
+		dbg("Radio", "[%d] cape SubRadioReceive.header(0x%1x)",
+				getProcessId(msg), msg);
 		return signal RadioReceive.header[getProcessId(msg)](msg);
 	} else {
+		dbg("Radio", "[%d] cape SubRadioReceive.header(0x%1x) - not valid",
+				getProcessId(msg), msg);
 		return FAIL;
 	}
 }
 
 async event message_t *SubRadioReceive.receive(message_t* msg) {
-	dbg("Radio", "[%d] cape SubRadioReceive.receive(0x%1x)",
-			getProcessId(msg), msg);
 	if (validProcessId(getProcessId(msg))) {
+		dbg("Radio", "[%d] cape SubRadioReceive.receive(0x%1x)",
+				getProcessId(msg), msg);
 		return signal RadioReceive.receive[getProcessId(msg)](msg);
 	} else {
+		dbg("Radio", "[%d] cape SubRadioReceive.receive(0x%1x) - not valid",
+				getProcessId(msg), msg);
 		return msg;
 	}
 }
@@ -149,11 +153,13 @@ async event void SubRadioSend.ready() {
 }
 
 async event void SubRadioSend.sendDone(message_t *msg, error_t error) {
-	dbg("Radio", "[%d] cape SubRadioSend.sendDone(0x%1x, %d)", 
-			getProcessId(msg), msg, error);
 	if (validProcessId(getProcessId(msg))) {
+		dbg("Radio", "[%d] cape SubRadioSend.sendDone(0x%1x, %d)", 
+				getProcessId(msg), msg, error);
 		return signal RadioSend.sendDone[getProcessId(msg)](msg, error);
 	} else {
+		dbg("Radio", "[%d] cape SubRadioSend.sendDone(0x%1x, %d) - not valid", 
+				getProcessId(msg), msg, error);
 	}
 }
 

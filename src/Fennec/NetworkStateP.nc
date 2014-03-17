@@ -53,7 +53,7 @@ task void start_protocol_stack() {
 		state_record->state_id, state_record->num_processes);
 	if (state_record->num_processes > process_num) {
 		/* there are confs to start */
-		dbg("NetworkState", "[-] NetworkState call NetworkProcess.startConf(%d)",
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d)",
 				state_record->process_list[process_num]);
 		call NetworkProcess.start(state_record->process_list[process_num]);		
 
@@ -72,7 +72,7 @@ task void stop_protocol_stack() {
 
 	if (state_record->num_processes > process_num) {
 		/* there are confs to stop */
-		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stopConf(%d)",
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d)",
 				state_record->process_list[process_num]);
 		call NetworkProcess.stop(state_record->process_list[process_num]);		
 

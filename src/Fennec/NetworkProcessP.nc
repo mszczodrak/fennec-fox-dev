@@ -113,7 +113,7 @@ command error_t NetworkProcess.stop(process_t process_id) {
 }
 
 event void ModuleCtrl.startDone(module_t module_id, error_t error) {
-	dbg("NetworkProcess", "'[-] NetworkProcess ModuleCtrl.startDone(%d, %d)", module_id, error);
+	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.startDone(%d, %d)", module_id, error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();
 		next_layer();

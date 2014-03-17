@@ -375,7 +375,7 @@ task void deliverTask() {
 async event message_t* RadioReceive.receive(message_t* msg) {
 	message_t *m;
 	if(!(getMetadata(msg))->crc) {
-		dbg("Mac", "[%d] nullMac MacAMSend.receive did not pass CRC", process);
+		dbg("Mac", "[%d] nullMac RadioReceive.receive did not pass CRC", process);
 		return msg;
 	}
 

@@ -98,7 +98,7 @@ bool validProcessId(uint8_t process_id) @C() {
 	uint8_t i;
 
 	if (process_id == systemProcessId) {
-		return SUCCESS;
+		return TRUE;
 	}
 
 	for(i = 0; i < this_state->num_processes; i++) {
@@ -107,7 +107,10 @@ bool validProcessId(uint8_t process_id) @C() {
 			return TRUE;
 		}
 	}
+
 	/* we should report it */
+	dbg("Fennec", "[-] Fennec validProcessId(%d) - FALSE", process_id);
+
 	post send_state_update();	
 
 	return FALSE;
