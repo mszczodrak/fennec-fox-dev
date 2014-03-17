@@ -62,7 +62,7 @@ task void check_event() {
 	uint8_t i;
 	dbg("Fennec", "FennecP check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
-		if ((policies[i].src_conf == call FennecState.getStateId()) && (policies[i].event_mask == event_mask)) {
+		if ((policies[i].src_conf == current_state) && (policies[i].event_mask == event_mask)) {
 			call FennecState.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
 			signal FennecState.resend();
 			return;
@@ -94,7 +94,7 @@ task void send_state_update() {
 }
 
 bool validProcessId(uint8_t process_id) @C() {
-	struct state *this_state = &states[call FennecState.getStateId()];
+	struct state *this_state = &states[current_state];
 	uint8_t i;
 
 	if (process_id == systemProcessId) {
@@ -115,11 +115,11 @@ bool validProcessId(uint8_t process_id) @C() {
 
 event void Boot.booted() {
 	event_mask = 0;
-	current_seq = 0;
 	systemProcessId = UNKNOWN;
+	current_seq = 0;
 	current_state = active_state;
-	next_state = call FennecState.getStateId();
-	next_seq = call FennecState.getStateSeq();
+	next_state = current_state;
+	next_seq = current_seq;
 	state_transitioning = TRUE;
 	post start_state();
 }
@@ -136,7 +136,7 @@ event void SplitControl.startDone(error_t err) {
 
 event void SplitControl.stopDone(error_t err) {
 	dbg("Fennec", "FennecP SplitControl.stopDone(%d)", err);
-	dbg("Fennec", "FennecP running in state %d", call FennecState.getStateId());
+	dbg("Fennec", "FennecP running in state %d", current_state);
 	post stop_done();
 }
 
@@ -165,7 +165,7 @@ command void Event.report(process_t process, uint8_t status) {
 
 /** Fennec interface **/
 command struct state* Fennec.getStateRecord() {
-	return &states[call FennecState.getStateId()];
+	return &states[current_state];
 }
 
 command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
@@ -210,34 +210,59 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 		return EBUSY;	
 	}
 
+	if (new_state >= NUMBER_OF_STATES) {
+		dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d) - FAIL", new_state, new_seq);
+		return FAIL;
+	}
+
+	/* Nothing new, receive current information */
+	if ((new_seq == current_seq) && (new_state == current_state)) {
+		return SUCCESS;
+	}
+
+	/* Some mote is still in the old state, resend control message */
 	if (new_seq < current_seq) {
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 
-	if (new_seq > current_seq) {
-		if (new_state == current_state) {
-			current_seq = new_seq;
-			signal FennecState.resend();
-		} else {
-			next_state = new_state;
-			next_seq = new_seq;
-			state_transitioning = TRUE;
-			post stop_state();
-		}
+	/* Network State Sequnce has increased */
+	if ((new_seq > current_seq) && (new_state == current_state)) {
+		current_seq = new_seq;
+		signal FennecState.resend();
 		return SUCCESS;
 	}
 
-	if ((new_state != current_state) && (new_seq == current_seq)) {
-		current_seq += (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
+	/* Receive information about a new network state */
+	if (new_seq > current_seq) {
+		next_state = new_state;
+		next_seq = new_seq;
+		state_transitioning = TRUE;
 		signal FennecState.resend();
+		return SUCCESS;
 	}
 
+	/* Receive same sequence but different states - synchronize using priority levels */
+	if (states[current_state].level > states[new_state].level) {
+		signal FennecState.resend();
+		return SUCCESS;
+	}
+		
+	/* Receive same sequence but different states with the same priority levels */ 
+	next_seq = current_seq + (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
+	state_transitioning = TRUE;
+	signal FennecState.resend();
 	return SUCCESS;
 }
 
 command void FennecState.systemProcessId(process_t process_id) {
 	systemProcessId = process_id;
+}
+
+command void FennecState.resendDone(error_t error) {
+	if (state_transitioning) {
+		post stop_state();
+	}
 }
 
 default event void FennecState.resend() {}

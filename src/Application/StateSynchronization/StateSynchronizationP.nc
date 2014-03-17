@@ -114,6 +114,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+	call FennecState.resendDone(error);
 }
 
 event void Timer.fired() {
