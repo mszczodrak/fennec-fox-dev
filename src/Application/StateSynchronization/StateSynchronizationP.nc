@@ -46,7 +46,6 @@ uses interface AMPacket as NetworkAMPacket;
 uses interface Packet as NetworkPacket;
 uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface Boot;
 uses interface FennecState;
 uses interface Random;
 uses interface Timer<TMilli> as Timer;
@@ -83,10 +82,6 @@ task void send_msg() {
 	} else {
 		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - SUCCESS", process);
 	}
-}
-
-event void Boot.booted() {
-	call FennecState.addPrivilegedProcess(process);
 }
 
 event void FennecState.resend() {

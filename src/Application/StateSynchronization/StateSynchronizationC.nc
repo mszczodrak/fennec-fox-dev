@@ -73,7 +73,5 @@ StateSynchronizationP.Leds -> LedsC;
 components new TimerMilliC() as Timer;
 StateSynchronizationP.Timer -> Timer;
 
-components MainC;
-StateSynchronizationP.Boot -> MainC;
 }
 

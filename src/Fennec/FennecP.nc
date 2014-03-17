@@ -56,7 +56,6 @@ norace event_t event_mask;
 norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
-norace process_t systemProcessId = UNKNOWN;
 
 task void check_event() {
 	uint8_t i;
@@ -94,15 +93,18 @@ task void send_state_update() {
 }
 
 bool validProcessId(uint8_t process_id) @C() {
-	struct network_process *npr = *states[current_state].processes;
+	struct network_process **npr;
 
-	if (process_id == systemProcessId) {
-		return TRUE;
+	for(npr = privileged_processes; npr != NULL ; npr++) {
+		if ((*npr)->process_id == process_id) {
+			//printf("success privileged %d %d\n", npr->process_id, process_id);
+			return TRUE;
+		}
 	}
 
-	for( ; npr ; npr++) {
-		if (npr->process_id == process_id) {
-			//printf("success %d %d\n", npr->process_id, process_id);
+	for(npr = states[current_state].processes; npr != NULL ; npr++) {
+		if ((*npr)->process_id == process_id) {
+			//printf("success ordinary %d %d\n", npr->process_id, process_id);
 			return TRUE;
 		}
 	}
@@ -272,11 +274,6 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	state_transitioning = TRUE;
 	signal FennecState.resend();
 	return SUCCESS;
-}
-
-command void FennecState.addPrivilegedProcess(process_t process_id) {
-	dbg("Fennec", "[-] Fennec FennecState.systemProcessId(%d)", process_id);
-	systemProcessId = process_id;
 }
 
 command void FennecState.resendDone(error_t error) {
