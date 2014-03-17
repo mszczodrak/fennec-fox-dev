@@ -49,14 +49,14 @@ struct network_process *ordinary = NULL;
 task void start_stack() {
 	if (privileged != NULL) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (privileged)",
-						*privileged);
+						privileged->process_id);
 		call NetworkProcess.start(privileged->process_id);		
 		return;
 	}
 
 	if (ordinary != NULL) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (ordinary)",
-						*ordinary);
+						ordinary->process_id);
 		call NetworkProcess.start(ordinary->process_id);		
 		return;	
 	}
@@ -69,7 +69,7 @@ task void start_stack() {
 task void stop_stack() {
 	if (privileged != NULL) {
 //		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (privileged)",
-//						*privileged);
+//						privileged->process_id);
 //		call NetworkProcess.stop(privileged->process_id);		
 		privileged = NULL;
 //		return;
@@ -77,7 +77,7 @@ task void stop_stack() {
 
 	if (ordinary != NULL) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (ordinary)",
-						*ordinary);
+						ordinary->process_id);
 		call NetworkProcess.stop(ordinary->process_id);		
 		return;	
 	}
@@ -97,6 +97,8 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.stop()");
+	privileged = NULL;
+	ordinary = call Fennec.getOrdinaryProcesses();
 	post stop_stack();
 	return SUCCESS;
 }
@@ -104,10 +106,10 @@ command error_t SplitControl.stop() {
 event void NetworkProcess.startDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.startDone(%d)", err);
         if (err == SUCCESS) {
-		if (privileged) {
+		if (privileged != NULL) {
 			privileged++;
 		}
-		if (!privileged) {
+		if (privileged == NULL) {
 			ordinary++;
 		}
         }
@@ -117,7 +119,12 @@ event void NetworkProcess.startDone(error_t err) {
 event void NetworkProcess.stopDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.stopDone(%d)", err);
         if (err == SUCCESS) {
-		ordinary++;
+		if (privileged != NULL) {
+			privileged++;
+		}
+		if (privileged == NULL) {
+			ordinary++;
+		}
 	}
 	post stop_stack();
 }
