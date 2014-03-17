@@ -85,12 +85,8 @@ task void send_msg() {
 	}
 }
 
-task void reportStateProcessId() {
-	call FennecState.systemProcessId(process);
-}
-
 event void Boot.booted() {
-	post reportStateProcessId();
+	call FennecState.addPrivilegedProcess(process);
 }
 
 event void FennecState.resend() {
@@ -99,7 +95,6 @@ event void FennecState.resend() {
 
 command error_t SplitControl.start() {
 	dbg("StateSynchronization", "[%d] StateSynchronizationP SplitControl.start()", process);
-	call FennecState.systemProcessId(process);
 	post send_msg();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;

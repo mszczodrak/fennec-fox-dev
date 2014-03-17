@@ -278,7 +278,7 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	return SUCCESS;
 }
 
-command void FennecState.systemProcessId(process_t process_id) {
+command void FennecState.addPrivilegedProcess(process_t process_id) {
 	dbg("Fennec", "[-] Fennec FennecState.systemProcessId(%d)", process_id);
 	systemProcessId = process_id;
 }
