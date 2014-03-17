@@ -104,7 +104,7 @@
 #include <CtpForwardingEngine.h>
 #include <CtpDebugMsg.h>
    
-generic module CtpForwardingEngineP() {
+generic module CtpForwardingEngineP(process_t process) {
   provides {
     interface StdControl;
     interface Send[uint8_t client];
@@ -430,7 +430,7 @@ task void sendTask() {
 	  clearState(QUEUE_CONGESTED);
 	}
 
-        dbg("Network", "CTP send data message\n");	
+        dbg("Network", "[%d] ctp CtpForwardingEngine send data message\n", process);	
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.
@@ -515,7 +515,7 @@ task void sendTask() {
     if (error != SUCCESS) {
       /* The radio wasn't able to send the packet: retransmit it. */
       dbg("Forwarder", "%s: send failed\n", __FUNCTION__);
-      dbg("Network", "CTP %s: send failed", __FUNCTION__);
+      dbg("Network", "[%d] ctp CtpForwardingEngine  %s: send failed", process, __FUNCTION__);
       call CollectionDebug.logEventMsg(NET_C_FE_SENDDONE_FAIL, 
 				       call CollectionPacket.getSequenceNumber(msg), 
 				       call CollectionPacket.getOrigin(msg), 
@@ -528,7 +528,7 @@ task void sendTask() {
       call CtpInfo.recomputeRoutes();
       if (--qe->retries) { 
         dbg("Forwarder", "%s: not acked, retransmit\n", __FUNCTION__);
-        dbg("Network", "CTP %s: not acked, retransmit", __FUNCTION__);
+        dbg("Network", "[%d] ctp CtpForwardingEngine %s: not acked, retransmit", process, __FUNCTION__);
         //dbgs(F_NETWORK, S_ACK_WAIT, DBGS_NOT_ACKED_RESEND, call SubAMPacket.destination(msg), call SubAMPacket.destination(msg));
         call CollectionDebug.logEventMsg(NET_C_FE_SENDDONE_WAITACK, 
 					 call CollectionPacket.getSequenceNumber(msg), 
@@ -536,7 +536,7 @@ task void sendTask() {
                                          call SubAMPacket.destination(msg));
         startRetxmitTimer(SENDDONE_NOACK_WINDOW, SENDDONE_NOACK_OFFSET);
       } else {
-        dbg("Network", "CTP %s: not acked, drop packaget", __FUNCTION__);
+        dbg("Network", "[%d] ctp CtpForwardingEngine %s: not acked, drop packaget", process, __FUNCTION__);
 	/* Hit max retransmit threshold: drop the packet. */
 	call SendQueue.dequeue();
         clearState(SENDING);
@@ -549,7 +549,7 @@ task void sendTask() {
       /* Packet was acknowledged. Updated the link estimator,
 	 free the buffer (pool or sendDone), start timer to
 	 send next packet. */
-      dbg("Network", "CTP %s: acked and success", __FUNCTION__);
+      dbg("Network", "[%d] ctp CtpForwardingEngine %s: acked and success", process, __FUNCTION__);
       call SendQueue.dequeue();
       clearState(SENDING);
       startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
@@ -660,7 +660,7 @@ task void sendTask() {
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
-    dbg("Network", "CTP CtpForwardEngine SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
+    dbg("Network", "[%d] ctp CtpForwardingEngine SubReceive.receive(0x%1x, 0x%1x, %d)", process, msg, payload, len);
 
     // Update the THL here, since it has lived another hop, and so
     // that the root sees the correct THL.
@@ -700,7 +700,7 @@ task void sendTask() {
 
     // If I'm the root, signal receive. 
     else if (call RootControl.isRoot()) {
-      dbg("Network", "CTP signal Receive.receive(0x%1x, 0x%1x, %d) from %u", msg, 
+      dbg("Network", "[%d] ctp CtpForwardingEngine signal Receive.receive(0x%1x, 0x%1x, %d) from %u", process, msg, 
 					       call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 					       call Packet.payloadLength(msg),
 						getHeader(msg)->origin);
@@ -714,11 +714,11 @@ task void sendTask() {
 	if (!signal Intercept.forward(msg, 
 						  call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 						  call Packet.payloadLength(msg))) {
-          dbg("Network", "CTP ignore msg 0x%1x from %u", msg, getHeader(msg)->origin);
+          dbg("Network", "[%d] ctp CtpForwardingEngine ignore msg 0x%1x from %u", process, msg, getHeader(msg)->origin);
 
           return msg;
         } else {
-          dbg("Network", "CTP forward msg 0x%1x from %u to Root", msg, getHeader(msg)->origin);
+          dbg("Network", "[%d] ctp CtpForwardingEngine forward msg 0x%1x from %u to Root", process, msg, getHeader(msg)->origin);
           dbg("Route", "Forwarding packet from %hu.\n", getHeader(msg)->origin);
           return forward(msg);
         }

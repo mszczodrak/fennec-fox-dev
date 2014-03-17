@@ -76,7 +76,7 @@ enum {
 components new ctpP(process);
 components LedsC;
 components new CtpActiveMessageC();
-components new CtpForwardingEngineP() as Forwarder;
+components new CtpForwardingEngineP(process) as Forwarder;
 
 
 SplitControl = ctpP;

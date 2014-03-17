@@ -98,7 +98,7 @@ bool validProcessId(process_t process_id) @C() {
 	for(npr = privileged_processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success privileged %d %d\n", npr->process_id, process_id);
-			dbg("Fennec", "Fennec validProcessId(%d) - privileged", process_id);
+			dbg("Fennec", "[-] Fennec validProcessId(%d) - privileged", process_id);
 			return TRUE;
 		}
 	}
@@ -106,7 +106,7 @@ bool validProcessId(process_t process_id) @C() {
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success ordinary %d %d\n", npr->process_id, process_id);
-			dbg("Fennec", "Fennec validProcessId(%d) - ordinary", process_id);
+			dbg("Fennec", "[-] Fennec validProcessId(%d) - ordinary", process_id);
 			return TRUE;
 		}
 	}
@@ -203,6 +203,7 @@ command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
 		return processes[ process_id ].radio;
 
 	default:
+		dbg("Fennec", "[-] Fennec Fennec.getModuleId(%d, %d) - UNKNOWN", process_id, layer);
 		return UNKNOWN;
 	}
 }

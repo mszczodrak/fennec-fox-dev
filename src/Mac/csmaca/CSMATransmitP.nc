@@ -144,7 +144,7 @@ command error_t SplitControl.stop() {
 		return SUCCESS;
 	}
 
-	dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_STARTED", process);
+	dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_STOPPING", process);
 	call SplitControlState.forceState(S_STOPPING);
 	err = call RadioState.turnOff();
 	if (err == EALREADY) {
@@ -273,6 +273,7 @@ task void startDone_task() {
 }
 
 task void stopDone_task() {
+	dbg("Mac", "[%d] csmaca CSMATransmitP stopDone_task()", process);
 	call SplitControlState.forceState(S_STOPPED);
 	signal SplitControl.stopDone( SUCCESS );
 }
