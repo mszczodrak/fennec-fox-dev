@@ -92,6 +92,7 @@ event void FennecState.resend() {
 
 command error_t SplitControl.start() {
 	dbg("StateSynchronization", "[%d] StateSynchronizationP SplitControl.start()", process);
+	call FennecState.systemProcessId(process);
 	post send_msg();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -121,7 +122,6 @@ event void Timer.fired() {
 	dbg("StateSynchronization", "[%d] StateSynchronizationP Timer.fired()", process);
 	post send_msg();
 }
-
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_state *state_msg = (nx_struct fennec_network_state*) payload;
