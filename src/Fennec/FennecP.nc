@@ -121,6 +121,7 @@ event void Boot.booted() {
 	next_state = current_state;
 	next_seq = current_seq;
 	state_transitioning = TRUE;
+	dbg("Fennec", "[-] Fennec Boot.booted()");
 	post start_state();
 }
 

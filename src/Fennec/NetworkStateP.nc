@@ -49,17 +49,17 @@ process_t process_num = UNKNOWN;
 
 task void start_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
-	dbg("NetworkState", "NetworkStateP start_protocol_stack id = %d, num_processes = %d", 
+	dbg("NetworkState", "[-] NetworkState start_protocol_stack id = %d, num_processes = %d", 
 		state_record->state_id, state_record->num_processes);
 	if (state_record->num_processes > process_num) {
 		/* there are confs to start */
-		dbg("NetworkState", "NetworkStateP call NetworkProcess.startConf(%d)",
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.startConf(%d)",
 				state_record->process_list[process_num]);
 		call NetworkProcess.start(state_record->process_list[process_num]);		
 
 	} else {
 		/* that's all folks, all configurations are running */
-		dbg("NetworkState", "NetworkStateP finished starting NetworkProcess");
+		dbg("NetworkState", "[-] NetworkState finished starting NetworkProcess");
 		process_num = UNKNOWN;
 		signal SplitControl.startDone(SUCCESS);
 	}
@@ -67,18 +67,18 @@ task void start_protocol_stack() {
 
 task void stop_protocol_stack() {
 	state_record = call Fennec.getStateRecord();
-	dbg("NetworkState", "NetworkStateP stop_protocol_stack id = %d, num_processes = %d", 
+	dbg("NetworkState", "[-] NetworkState stop_protocol_stack id = %d, num_processes = %d", 
 		state_record->state_id, state_record->num_processes);
 
 	if (state_record->num_processes > process_num) {
 		/* there are confs to stop */
-		dbg("NetworkState", "NetworkStateP call NetworkProcess.stopConf(%d)",
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stopConf(%d)",
 				state_record->process_list[process_num]);
 		call NetworkProcess.stop(state_record->process_list[process_num]);		
 
 	} else {
 		/* that's all folks, all configurations are running */
-		dbg("NetworkState", "NetworkStateP finished stopping NetworkProcess");
+		dbg("NetworkState", "[-] NetworkState finished stopping NetworkProcess");
 		process_num = UNKNOWN;
 		signal SplitControl.stopDone(SUCCESS);
 	}
@@ -95,19 +95,19 @@ task void stop_state() {
 }
 
 command error_t SplitControl.start() {
-	dbg("NetworkState", "NetworkStateP SplitControl.start()");
+	dbg("NetworkState", "[-] NetworkState SplitControl.start()");
 	post start_state();
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("NetworkState", "NetworkStateP SplitControl.stop()");
+	dbg("NetworkState", "[-] NetworkState SplitControl.stop()");
 	post stop_state();
 	return SUCCESS;
 }
 
 event void NetworkProcess.startDone(error_t err) {
-	dbg("NetworkState", "NetworkStateP NetworkProcess.startDone(%d)", err);
+	dbg("NetworkState", "[-] NetworkState NetworkProcess.startDone(%d)", err);
         if (err == SUCCESS) {
 		process_num++;
         }
@@ -115,7 +115,7 @@ event void NetworkProcess.startDone(error_t err) {
 }
 
 event void NetworkProcess.stopDone(error_t err) {
-	dbg("NetworkState", "NetworkStateP NetworkProcess.stopDone(%d)", err);
+	dbg("NetworkState", "[-] NetworkState NetworkProcess.stopDone(%d)", err);
         if (err == SUCCESS) {
 		process_num++;
 	}
