@@ -60,11 +60,11 @@ norace process_t systemProcessId = UNKNOWN;
 
 task void check_event() {
 	uint8_t i;
-	dbg("Fennec", "FennecP check_event() current mask %d", event_mask);
+	dbg("Fennec", "[-] Fennec check_event() current mask %d", event_mask);
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == current_state) && (policies[i].event_mask == event_mask)) {
+			dbg("Fennec", "[-] Fennec found matching rule #%d", i);
 			call FennecState.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
-			signal FennecState.resend();
 			return;
 		}
 	}
@@ -125,18 +125,18 @@ event void Boot.booted() {
 }
 
 event void SplitControl.startDone(error_t err) {
-	dbg("Fennec", "FennecP SplitControl.startDone(%d)", err);
+	dbg("Fennec", "[-] Fennec SplitControl.startDone(%d)", err);
 	event_mask = 0;
-	dbg("Fennec", " ");
-	dbg("Fennec", " ");
-	dbg("Fennec", " ");
+	dbg("Fennec", "[-] Fennec");
+	dbg("Fennec", "[-] Fennec ");
+	dbg("Fennec", "[-] Fennec ");
 	post start_done();
 }
 
 
 event void SplitControl.stopDone(error_t err) {
-	dbg("Fennec", "FennecP SplitControl.stopDone(%d)", err);
-	dbg("Fennec", "FennecP running in state %d", current_state);
+	dbg("Fennec", "[-] Fennec SplitControl.stopDone(%d)", err);
+	dbg("Fennec", "[-] Fennec running in state %d", current_state);
 	post stop_done();
 }
 
@@ -145,19 +145,24 @@ command void Event.report(process_t process, uint8_t status) {
 	uint8_t i;
 	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
 		if (events[i].process_id == process) {
+			dbg("Fennec", "[-] Fennec Event.report(%d, %d) found event_id %d",
+				process, status, event_id);
 			event_id = events[i].event_id;
 			break;
 		}
 	}
 
 	if (event_id == UNKNOWN) {
+		dbg("Fennec", "[-] Fennec Event.report(%d, %d) event_id not found",
+				process, status);
 		return;
 	}
 
-	dbg("Fennec", "FennecP Fennec.eventOccured(%d, %d)", event_id, status);
 	if (status) {
+		dbg("Fennec", "[-] Fennec setting event id %d", event_id);
 		event_mask |= (1 << event_id);
 	} else {
+		dbg("Fennec", "[-] Fennec clearing event id %d", event_id);
 		event_mask &= ~(1 << event_id);
 	}
 	post check_event();
@@ -203,31 +208,34 @@ command uint16_t FennecState.getStateSeq() {
 }
 
 command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) {
-	dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
+	dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
-		dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
+		dbg("Fennec", "Fennec Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
 		return EBUSY;	
 	}
 
 	if (new_state >= NUMBER_OF_STATES) {
-		dbg("Fennec", "FennecP Fennec.setStateAndSeq(%d, %d) - FAIL", new_state, new_seq);
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - FAIL", new_state, new_seq);
 		return FAIL;
 	}
 
 	/* Nothing new, receive current information */
 	if ((new_seq == current_seq) && (new_state == current_state)) {
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - nothing new", new_state, new_seq);
 		return SUCCESS;
 	}
 
 	/* Some mote is still in the old state, resend control message */
 	if (new_seq < current_seq) {
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - old state", new_state, new_seq);
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 
-	/* Network State Sequnce has increased */
+	/* Network State sequnce has increased */
 	if ((new_seq > current_seq) && (new_state == current_state)) {
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - update sequence", new_state, new_seq);
 		current_seq = new_seq;
 		signal FennecState.resend();
 		return SUCCESS;
@@ -235,6 +243,7 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Receive information about a new network state */
 	if (new_seq > current_seq) {
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - new state", new_state, new_seq);
 		next_state = new_state;
 		next_seq = new_seq;
 		state_transitioning = TRUE;
@@ -244,11 +253,13 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Receive same sequence but different states - synchronize using priority levels */
 	if (states[current_state].level > states[new_state].level) {
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - sync with level", new_state, new_seq);
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 		
 	/* Receive same sequence but different states with the same priority levels */ 
+	dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - sync with rand seq", new_state, new_seq);
 	next_seq = current_seq + (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
 	state_transitioning = TRUE;
 	signal FennecState.resend();
@@ -256,12 +267,19 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 }
 
 command void FennecState.systemProcessId(process_t process_id) {
+	dbg("Fennec", "[-] Fennec FennecState.systemProcessId(%d)", process_id);
 	systemProcessId = process_id;
 }
 
 command void FennecState.resendDone(error_t error) {
 	if (state_transitioning) {
-		post stop_state();
+		if (error == SUCCESS) {
+			dbg("Fennec", "[-] Fennec FennecState.resendDone(%d)", error);
+			post stop_state();
+		} else {
+			dbg("Fennec", "[-] Fennec FennecState.resendDone(%d) - resend", error);
+			signal FennecState.resend();
+		}
 	}
 }
 
