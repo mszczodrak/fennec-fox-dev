@@ -90,7 +90,6 @@ task void stop_stack() {
 command error_t SplitControl.start() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.start()");
 	privileged = call Fennec.getPrivilegedProcesses();
-	privileged = NULL;
 	ordinary = call Fennec.getOrdinaryProcesses();
 	post start_stack();
 	return SUCCESS;
@@ -99,6 +98,7 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.stop()");
 	privileged = call Fennec.getPrivilegedProcesses();
+	privileged = NULL;
 	ordinary = call Fennec.getOrdinaryProcesses();
 	post stop_stack();
 	return SUCCESS;
@@ -127,7 +127,6 @@ event void NetworkProcess.stopDone(error_t err) {
 			ordinary++;
 		}
 	}
-	dbg("NetworkState", "here\n");
 	post stop_stack();
 }
 
