@@ -52,13 +52,19 @@ typedef union message_header {
 } message_header_t;
 
 
-struct state {
-        state_t 		state_id;
-        uint8_t 		num_processes;
-	process_t *		process_list;
-	uint8_t 		level;
+struct network_process {
+	process_t process_id;
+	uint8_t application;
+	uint8_t network;
+	uint8_t mac;
+	uint8_t radio;
 };
 
+struct state {
+        state_t 		state_id;
+	struct network_process **processes;
+	uint8_t 		level;
+};
 
 typedef nx_struct metadata_t {
 	nx_uint8_t rssi;
@@ -91,14 +97,6 @@ struct event_process {
 	process_t	process_id;
 };
 
-struct network_process {
-	process_t process_id;
-	uint8_t application;
-	uint8_t network;
-	uint8_t mac;
-	uint8_t radio;
-};
-
 struct default_params {
 	void 	*application_cache;
 	void 	*application_default_params;
@@ -117,13 +115,10 @@ struct default_params {
 	int 	radio_default_size;
 };
 
-
 struct fennec_policy {
 	uint16_t  src_conf;
 	uint16_t event_mask;
 	uint16_t  dst_conf;
 };
-
-
 
 #endif

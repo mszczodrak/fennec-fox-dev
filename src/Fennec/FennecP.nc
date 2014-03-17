@@ -94,16 +94,15 @@ task void send_state_update() {
 }
 
 bool validProcessId(uint8_t process_id) @C() {
-	struct state *this_state = &states[current_state];
-	uint8_t i;
+	struct network_process *npr = *states[current_state].processes;
 
 	if (process_id == systemProcessId) {
 		return TRUE;
 	}
 
-	for(i = 0; i < this_state->num_processes; i++) {
-		if (this_state->process_list[i] == process_id) {
-			//printf("success %d %d\n", this_state->process_list[i], process_id);
+	for( ; npr ; npr++) {
+		if (npr->process_id == process_id) {
+			//printf("success %d %d\n", npr->process_id, process_id);
 			return TRUE;
 		}
 	}
@@ -174,6 +173,14 @@ command void Event.report(process_t process, uint8_t status) {
 /** Fennec interface **/
 command struct state* Fennec.getStateRecord() {
 	return &states[current_state];
+}
+
+command struct network_process* Fennec.getPrivilegedProcesses() {
+	return NULL;
+}
+
+command struct network_process* Fennec.getOrdinaryProcesses() {
+	return *states[current_state].processes;
 }
 
 command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {

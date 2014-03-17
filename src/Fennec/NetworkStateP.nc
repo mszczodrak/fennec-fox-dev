@@ -43,83 +43,83 @@ uses interface Fennec;
 
 implementation {
 
+struct network_process *privileged = NULL;
+struct network_process *ordinary = NULL;
 
-struct state* state_record;
-process_t process_num = UNKNOWN;
-
-task void start_protocol_stack() {
-	state_record = call Fennec.getStateRecord();
-	dbg("NetworkState", "[-] NetworkState start_protocol_stack id = %d, num_processes = %d", 
-		state_record->state_id, state_record->num_processes);
-	if (state_record->num_processes > process_num) {
-		/* there are confs to start */
-		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d)",
-				state_record->process_list[process_num]);
-		call NetworkProcess.start(state_record->process_list[process_num]);		
-
-	} else {
-		/* that's all folks, all configurations are running */
-		dbg("NetworkState", "[-] NetworkState finished starting NetworkProcess");
-		process_num = UNKNOWN;
-		signal SplitControl.startDone(SUCCESS);
+task void start_stack() {
+	if (privileged != NULL) {
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (privileged)",
+						*privileged);
+		call NetworkProcess.start(privileged->process_id);		
+		return;
 	}
-}
 
-task void stop_protocol_stack() {
-	state_record = call Fennec.getStateRecord();
-	dbg("NetworkState", "[-] NetworkState stop_protocol_stack id = %d, num_processes = %d", 
-		state_record->state_id, state_record->num_processes);
-
-	if (state_record->num_processes > process_num) {
-		/* there are confs to stop */
-		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d)",
-				state_record->process_list[process_num]);
-		call NetworkProcess.stop(state_record->process_list[process_num]);		
-
-	} else {
-		/* that's all folks, all configurations are running */
-		dbg("NetworkState", "[-] NetworkState finished stopping NetworkProcess");
-		process_num = UNKNOWN;
-		signal SplitControl.stopDone(SUCCESS);
+	if (ordinary != NULL) {
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (ordinary)",
+						*ordinary);
+		call NetworkProcess.start(ordinary->process_id);		
+		return;	
 	}
+
+	/* that's all folks, all processes are running */
+	dbg("NetworkState", "[-] NetworkState finished starting all processes");
+	signal SplitControl.startDone(SUCCESS);
 }
 
-task void start_state() {
-	process_num = 0;
-	post start_protocol_stack();
-}
+task void stop_stack() {
+	if (privileged != NULL) {
+//		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (privileged)",
+//						*privileged);
+//		call NetworkProcess.stop(privileged->process_id);		
+		privileged = NULL;
+//		return;
+	}
 
-task void stop_state() {
-	process_num = 0;
-	post stop_protocol_stack();
+	if (ordinary != NULL) {
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (ordinary)",
+						*ordinary);
+		call NetworkProcess.stop(ordinary->process_id);		
+		return;	
+	}
+
+	/* that's all folks, all processes are running */
+	dbg("NetworkState", "[-] NetworkState finished stopping all processes");
+	signal SplitControl.stopDone(SUCCESS);
 }
 
 command error_t SplitControl.start() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.start()");
-	post start_state();
+	privileged = call Fennec.getPrivilegedProcesses();
+	ordinary = call Fennec.getOrdinaryProcesses();
+	post start_stack();
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.stop()");
-	post stop_state();
+	post stop_stack();
 	return SUCCESS;
 }
 
 event void NetworkProcess.startDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.startDone(%d)", err);
         if (err == SUCCESS) {
-		process_num++;
+		if (privileged) {
+			privileged++;
+		}
+		if (!privileged) {
+			ordinary++;
+		}
         }
-	post start_protocol_stack();
+	post start_stack();
 }
 
 event void NetworkProcess.stopDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.stopDone(%d)", err);
         if (err == SUCCESS) {
-		process_num++;
+		ordinary++;
 	}
-	post stop_protocol_stack();
+	post stop_stack();
 }
 
 }
