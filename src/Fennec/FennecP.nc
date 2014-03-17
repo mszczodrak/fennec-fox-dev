@@ -171,12 +171,8 @@ command void Event.report(process_t process, uint8_t status) {
 }
 
 /** Fennec interface **/
-command struct state* Fennec.getStateRecord() {
-	return &states[current_state];
-}
-
 command struct network_process* Fennec.getPrivilegedProcesses() {
-	return NULL;
+	return *privileged_processes;
 }
 
 command struct network_process* Fennec.getOrdinaryProcesses() {
