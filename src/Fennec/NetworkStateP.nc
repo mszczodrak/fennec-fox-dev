@@ -43,21 +43,21 @@ uses interface Fennec;
 
 implementation {
 
-struct network_process *privileged = NULL;
-struct network_process *ordinary = NULL;
+struct network_process **privileged = NULL;
+struct network_process **ordinary = NULL;
 
 task void start_stack() {
-	if (privileged != NULL) {
+	if ((privileged != NULL) && (*privileged != NULL)) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (privileged)",
-						privileged->process_id);
-		call NetworkProcess.start(privileged->process_id);		
+						(*privileged)->process_id);
+		call NetworkProcess.start((*privileged)->process_id);		
 		return;
 	}
 
-	if (ordinary != NULL) {
+	if ((ordinary != NULL) && (*ordinary != NULL)) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (ordinary)",
-						ordinary->process_id);
-		call NetworkProcess.start(ordinary->process_id);		
+						(*ordinary)->process_id);
+		call NetworkProcess.start((*ordinary)->process_id);		
 		return;	
 	}
 
@@ -67,18 +67,18 @@ task void start_stack() {
 }
 
 task void stop_stack() {
-	if (privileged != NULL) {
+	if ((privileged != NULL) && (*privileged != NULL)) {
 //		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (privileged)",
-//						privileged->process_id);
-//		call NetworkProcess.stop(privileged->process_id);		
-		privileged = NULL;
+//						(*privileged)->process_id);
+//		call NetworkProcess.stop((*privileged)->process_id);		
+		*privileged = NULL;
 //		return;
 	}
 
-	if (ordinary != NULL) {
+	if ((ordinary != NULL) && (*ordinary != NULL)) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (ordinary)",
-						ordinary->process_id);
-		call NetworkProcess.stop(ordinary->process_id);		
+						(*ordinary)->process_id);
+		call NetworkProcess.stop((*ordinary)->process_id);		
 		return;	
 	}
 
@@ -90,6 +90,7 @@ task void stop_stack() {
 command error_t SplitControl.start() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.start()");
 	privileged = call Fennec.getPrivilegedProcesses();
+	privileged = NULL;
 	ordinary = call Fennec.getOrdinaryProcesses();
 	post start_stack();
 	return SUCCESS;
@@ -97,7 +98,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.stop()");
-	privileged = NULL;
+	privileged = call Fennec.getPrivilegedProcesses();
 	ordinary = call Fennec.getOrdinaryProcesses();
 	post stop_stack();
 	return SUCCESS;
@@ -106,10 +107,10 @@ command error_t SplitControl.stop() {
 event void NetworkProcess.startDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.startDone(%d)", err);
         if (err == SUCCESS) {
-		if (privileged != NULL) {
+		if ((privileged) && (*privileged != NULL)) {
 			privileged++;
 		}
-		if (privileged == NULL) {
+		if ((privileged == NULL) || (*privileged == NULL)) {
 			ordinary++;
 		}
         }
@@ -119,13 +120,14 @@ event void NetworkProcess.startDone(error_t err) {
 event void NetworkProcess.stopDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.stopDone(%d)", err);
         if (err == SUCCESS) {
-		if (privileged != NULL) {
+		if ((privileged) && (*privileged != NULL)) {
 			privileged++;
 		}
-		if (privileged == NULL) {
+		if ((privileged == NULL) || (*privileged == NULL)) {
 			ordinary++;
 		}
 	}
+	dbg("NetworkState", "here\n");
 	post stop_stack();
 }
 

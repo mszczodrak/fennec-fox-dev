@@ -171,12 +171,12 @@ command void Event.report(process_t process, uint8_t status) {
 }
 
 /** Fennec interface **/
-command struct network_process* Fennec.getPrivilegedProcesses() {
-	return *privileged_processes;
+command struct network_process** Fennec.getPrivilegedProcesses() {
+	return privileged_processes;
 }
 
-command struct network_process* Fennec.getOrdinaryProcesses() {
-	return *states[current_state].processes;
+command struct network_process** Fennec.getOrdinaryProcesses() {
+	return states[current_state].processes;
 }
 
 command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
