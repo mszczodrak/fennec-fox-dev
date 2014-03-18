@@ -207,7 +207,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 		return FAIL;
 	}
    
-	sendState = S_LPL_SENDING; 
+	sendState = S_STARTED; 
 	currentSendMsg = msg;
 	currentSendLen = len;
       
@@ -279,7 +279,7 @@ event void SubControl.startDone(error_t error) {
 			post check();
 		}
     
-		if(sendState == S_LPL_SENDING) {
+		if(sendState == S_STARTED) {
 			post send();
 		}
 	}
@@ -299,7 +299,7 @@ event void SubControl.stopDone(error_t error) {
 			call OnTimer.startOneShot(sleepInterval);
 		}
 
-		if(sendState == S_LPL_SENDING) {
+		if(sendState == S_STARTED) {
 			// We're in the middle of sending a message; start the radio back up
 			/** TODO:
  			temporarly we comment out the forcing radio on
@@ -318,7 +318,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 	dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d)", process, msg, error);
    
 	switch(sendState) {
-	case S_LPL_SENDING:
+	case S_STARTED:
 		if(call SendDoneTimer.isRunning()) {
 			if(!call PacketAcknowledgements.wasAcked(msg)) {
 				post resend();
@@ -375,7 +375,7 @@ event void OffTimer.fired() {
   */
 event void SendDoneTimer.fired() {
 	dbg("Mac", "[%d] csmaca DefaultLplP SendDoneTimer.fired()", process);
-	if(sendState == S_LPL_SENDING) {
+	if(sendState == S_STARTED) {
 		// The next time SubSend.sendDone is signaled, send is complete.
 		sendState = S_LPL_CLEAN_UP;
 	}
