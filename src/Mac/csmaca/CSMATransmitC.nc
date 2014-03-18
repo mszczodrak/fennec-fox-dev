@@ -41,7 +41,6 @@ provides interface CSMATransmit;
 provides interface SplitControl;
 provides interface Send;
 
-uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
@@ -64,8 +63,6 @@ components new CSMATransmitP(process);
 CSMATransmit = CSMATransmitP;
 RadioCCA = CSMATransmitP.RadioCCA;
 RadioState = CSMATransmitP.RadioState;
-
-RadioStdControl = CSMATransmitP.RadioStdControl;
 
 //components new Alarm32khz32C() as Alarm;
 //CSMATransmitP.BackoffTimer -> Alarm;
