@@ -249,9 +249,9 @@ bool finishSplitControlRequests() {
  * signal receive() more than once for that message.
  */
 command error_t Send.send(message_t *msg, uint8_t len) {
-	dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d)", process, msg, len);
 
 	if(state == S_STOPPED) {
+		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - EOFF", process, msg, len);
 		// Everything is off right now, start SplitControl and try again
 		return EOFF;
 	}
@@ -265,13 +265,16 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 		call SendDoneTimer.stop();
       
 		if(radioPowerState) {
+			dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d)", process, msg, len);
 			post send();
 			return SUCCESS;
 		} else {
+			dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - startRadio", process, msg, len);
 			post startRadio();
-		}
+			}
 		return SUCCESS;
 	}
+	dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - EBUSY", process, msg, len);
 	return EBUSY;
 }
 
