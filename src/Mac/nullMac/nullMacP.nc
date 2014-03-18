@@ -70,6 +70,7 @@ uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
 uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
+uses interface Timer<TMilli>;
 }
 
 implementation {
@@ -185,7 +186,9 @@ command error_t MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	m_state = S_LOAD;
 
+	call Timer.startOneShot(nullMac_TIMER_DELAY);
 	if (call RadioBuffer.load(m_msg) != SUCCESS) {
+		call Timer.stop();
 		m_state = S_STARTED;
 		return FAIL;
 	}
@@ -326,6 +329,7 @@ command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 }
 
 task void sendDone_task() {
+	call Timer.stop();
 	if (m_state != S_STOPPED) {
 		m_state = S_STARTED;
 	}
@@ -403,18 +407,45 @@ async event bool RadioReceive.header(message_t* msg) {
 	//return TRUE;
 }
 
-async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
-	dbg("Mac", "[%d] nullMac MacAMSend.loadDone(0x%1x, %d )", process, msg, error);
+task void transmit() {
 	m_state = S_BEGIN_TRANSMIT;
-	call RadioSend.send(m_msg, 0);
+	call Timer.startOneShot(nullMac_TIMER_DELAY);
+	sendErr = call RadioSend.send(m_msg, 0);
+	if (sendErr != SUCCESS) {
+		dbg("Mac", "[%d] nullMac RadioSend.send(0x%1x, %d ) - FAIL", process, m_msg, sendErr);
+		post sendDone_task();
+	} else {
+		dbg("Mac", "[%d] nullMac RadioSend.send(0x%1x, %d )", process, m_msg, sendErr);
+	}
+}
+
+async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
+	if (m_state != S_LOAD) {
+		return;
+	}
+
+	if (error != SUCCESS) {
+		sendErr = error;
+		post sendDone_task();
+		dbg("Mac", "[%d] nullMac RadioBuffer.loadDone(0x%1x, %d ) - FAIL", process, msg, error);
+	}
+
+	post transmit();
 }
 
 
 async event void RadioSend.sendDone(message_t *msg, error_t error) {
 	dbg("Mac", "[%d] nullMac MacAMSend.sendDone(0x%1x, %d )", process, msg, error);
-	m_state = S_STARTED;
 	atomic sendErr = error;
 	post sendDone_task();
+}
+
+event void Timer.fired() {
+	if ((m_state == S_BEGIN_TRANSMIT) || (m_state == S_LOAD)) {
+		dbg("Mac", "[%d] nullMac Timer.fired() - FAIL at %d state", process, m_state);
+		sendErr = FAIL;
+		post sendDone_task();
+	}
 }
 
 event void RadioState.done() {}

@@ -430,7 +430,7 @@ task void sendTask() {
 	  clearState(QUEUE_CONGESTED);
 	}
 
-        dbg("Network", "[%d] ctp CtpForwardingEngine send data message\n", process);	
+        dbg("Network", "[%d] ctp CtpForwardingEngine send data message", process);	
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.

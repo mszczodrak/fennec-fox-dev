@@ -74,14 +74,14 @@ message_t* bufferPointer = &buffer;
 uint8_t auto_ack;
 
 task void start_done() {
-	cape_radio_state = S_STARTED;
-	dbg("Radio", "[-] cape signal RadioState.done()");
+	
+	dbg("Radio-Detail", "[-] cape signal RadioState.done()");
 	signal RadioState.done();
 }
 
 task void finish_starting_radio() {
         if (call RadioResource.release() != SUCCESS) err = FAIL;
-	dbg("Radio", "[-] cape finish_starting_radio()");
+	dbg("Radio-Detail", "[-] cape finish_starting_radio()");
         post start_done();
 }
 
@@ -113,7 +113,7 @@ command error_t RadioState.standby() {
 
 command error_t RadioState.turnOn() {
 	auto_ack = TRUE;
-	dbg("Radio", "[-] cape RadioState.turnOn()");
+	dbg("Radio-Detail", "[-] cape RadioState.turnOn()");
 	call AMControl.start();
 
         err = SUCCESS;
@@ -134,7 +134,7 @@ event void AMControl.stopDone(error_t error) {
 }
 
 command error_t RadioState.turnOff() {
-	dbg("Radio", "[-] cape RadioState.turnOff()");
+	dbg("Radio-Detail", "[-] cape RadioState.turnOff()");
 	call AMControl.stop();
 
         err = SUCCESS;
@@ -211,7 +211,7 @@ async command error_t RadioResource.release() {
 event void Model.sendDone(message_t* msg, error_t result) {
 	cape_hdr_t* header;
 	if (msg == NULL) {
-		dbg("Radio", "[-] cape Model.sendDone returned with NULL pointer !!");
+		dbg("Radio-Detail", "[-] cape Model.sendDone returned with NULL pointer !!");
 		return;
 	} 
 	header = (cape_hdr_t*) msg->data;

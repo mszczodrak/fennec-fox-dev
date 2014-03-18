@@ -93,5 +93,8 @@ PacketRSSI = nullMacP.PacketRSSI;
 PacketTimeSync = nullMacP.PacketTimeSync;
 PacketLinkQuality = nullMacP.PacketLinkQuality;
 
+components new TimerMilliC();
+nullMacP.Timer -> TimerMilliC;
+
 }
 

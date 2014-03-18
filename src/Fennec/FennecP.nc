@@ -98,7 +98,7 @@ bool validProcessId(process_t process_id) @C() {
 	for(npr = privileged_processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success privileged %d %d\n", npr->process_id, process_id);
-			dbg("Fennec", "[-] Fennec validProcessId(%d) - privileged", process_id);
+			//dbg("Fennec", "[-] Fennec validProcessId(%d) - privileged", process_id);
 			return TRUE;
 		}
 	}
@@ -106,7 +106,7 @@ bool validProcessId(process_t process_id) @C() {
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success ordinary %d %d\n", npr->process_id, process_id);
-			dbg("Fennec", "[-] Fennec validProcessId(%d) - ordinary", process_id);
+			//dbg("Fennec", "[-] Fennec validProcessId(%d) - ordinary", process_id);
 			return TRUE;
 		}
 	}
@@ -224,7 +224,7 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
-		dbg("Fennec", "Fennec Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
+		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
 		return EBUSY;	
 	}
 

@@ -32,9 +32,10 @@
 #ifndef __nullMac_H_
 #define __nullMac_H_
 
-#define nullMac_RECEIVE_HISTORY_SIZE 4
-#define nullMac_INVALID_ELEMENT      0xFF
-#define nullMac_RECEIVE_QUEUE_SIZE   5
+#define nullMac_RECEIVE_HISTORY_SIZE	4
+#define nullMac_INVALID_ELEMENT		0xFF
+#define nullMac_RECEIVE_QUEUE_SIZE	5
+#define nullMac_TIMER_DELAY		300
 
 typedef nx_struct nullMac_header_t {
         nxle_uint16_t fcf;
