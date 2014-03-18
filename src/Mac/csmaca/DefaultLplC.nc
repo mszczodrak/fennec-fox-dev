@@ -75,7 +75,6 @@ generic configuration DefaultLplC(process_t process) {
 provides interface Send;
 provides interface Receive;
 provides interface SplitControl;
-provides interface State as SendState;
   
 uses interface Send as SubSend;
 uses interface Receive as SubReceive;
@@ -96,7 +95,6 @@ uses interface PacketField<uint8_t> as PacketLinkQuality;
 implementation {
 components new DefaultLplP(process),
       RandomC,
-      new StateC() as SendStateC,
       new TimerMilliC() as OffTimerC,
       new TimerMilliC() as OnTimerC,
       new TimerMilliC() as SendDoneTimerC,
@@ -105,7 +103,6 @@ components new DefaultLplP(process),
 Send = DefaultLplP;
 Receive = DefaultLplP;
 SplitControl = DefaultLplP;
-SendState = SendStateC;
 MacPacketAcknowledgements = DefaultLplP.PacketAcknowledgements;
 
 CSMATransmit = DefaultLplP.CSMATransmit;
@@ -115,8 +112,6 @@ SubControl = DefaultLplP.SubControl;
 SubReceive = DefaultLplP.SubReceive;
 SubSend = DefaultLplP.SubSend;
   
-  
-DefaultLplP.SendState -> SendStateC;
 DefaultLplP.OffTimer -> OffTimerC;
 DefaultLplP.OnTimer -> OnTimerC;
 DefaultLplP.SendDoneTimer -> SendDoneTimerC;

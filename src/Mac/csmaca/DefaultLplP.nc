@@ -86,7 +86,6 @@ uses interface CSMATransmit;
 uses interface Receive as SubReceive;
 uses interface SplitControl as SubControl;
 uses interface PacketAcknowledgements;
-uses interface State as SendState;
 uses interface Timer<TMilli> as OffTimer;
 uses interface Timer<TMilli> as OnTimer;
 uses interface Timer<TMilli> as SendDoneTimer;
@@ -117,6 +116,8 @@ bool radioPowerState = FALSE;
 
 uint8_t state = S_STOPPED;
 
+uint8_t sendState;
+
 
 /***************** Prototypes ***************/
 task void send();
@@ -135,14 +136,6 @@ bool isDutyCycling();
 
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
-	if( state == S_STARTED) {
-		return EALREADY;
-	} else if( state == S_STARTING) {
-		return SUCCESS;
-	} else if(state != S_STOPPED) {
-		return EBUSY;
-	}
-
 	// Radio was off, now has been told to turn on or duty cycle.
 	state = S_STARTING;
 
@@ -163,14 +156,6 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	if(state == S_STOPPED) {
-		return EALREADY;
-	} else if(state == S_STOPPING) {
-		return SUCCESS;
-	} else if(state != S_STARTED) {
-		return EBUSY;
-	}
-
 	state = S_STOPPING;
 	post stopRadio();
 	return SUCCESS;
@@ -255,25 +240,24 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 		// Everything is off right now, start SplitControl and try again
 		return EOFF;
 	}
-    
-	 if(call SendState.requestState(S_LPL_SENDING) == SUCCESS) {
-		currentSendMsg = msg;
-		currentSendLen = len;
+   
+	sendState = S_LPL_SENDING; 
+	currentSendMsg = msg;
+	currentSendLen = len;
       
-		// In case our off timer is running...
-		call OffTimer.stop();
-		call SendDoneTimer.stop();
+	// In case our off timer is running...
+	call OffTimer.stop();
+	call SendDoneTimer.stop();
       
-		if(radioPowerState) {
-			dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d)", process, msg, len);
-			post send();
-			return SUCCESS;
-		} else {
-			dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - startRadio", process, msg, len);
-			post startRadio();
-			}
+	if(radioPowerState) {
+		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d)", process, msg, len);
+		post send();
 		return SUCCESS;
-	}
+	} else {
+		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - startRadio", process, msg, len);
+		post startRadio();
+		}
+	return SUCCESS;
 	dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - EBUSY", process, msg, len);
 	return EBUSY;
 }
@@ -281,7 +265,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 command error_t Send.cancel(message_t *msg) {
 	dbg("Mac", "[%d] csmaca DefaultLplP Send.cancel(0x%1x)", process, msg);
 	if(currentSendMsg == msg) {
-		call SendState.toIdle();
+		sendState = S_SLEEPING;
 		call SendDoneTimer.stop();
 		startOffTimer();
 		return call SubSend.cancel(msg);
@@ -302,14 +286,14 @@ task void check() {
 
 	uint16_t i = 0;
 
-	for( ; i < MAX_LPL_CCA_CHECKS && call SendState.isIdle(); i++) {
+	for( ; i < MAX_LPL_CCA_CHECKS && (sendState == S_SLEEPING); i++) {
 		if(call RadioCCA.request() == EBUSY) {
 			startOffTimer();
 			return;
 		}
 	}
 	
-	if(call SendState.isIdle()) {
+	if(sendState == S_SLEEPING) {
 		post stopRadio();
 	}
 }
@@ -327,8 +311,7 @@ event void SubControl.startDone(error_t error) {
 			post check();
 		}
     
-		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
-			|| call SendState.getState() == S_LPL_SENDING) {
+		if(sendState == S_LPL_SENDING) {
 			post send();
 		}
 	}
@@ -345,8 +328,7 @@ event void SubControl.stopDone(error_t error) {
 			call OnTimer.startOneShot(sleepInterval);
 		}
 
-		if(call SendState.getState() == S_LPL_FIRST_MESSAGE
-	        	  || call SendState.getState() == S_LPL_SENDING) {
+		if(sendState == S_LPL_SENDING) {
 			// We're in the middle of sending a message; start the radio back up
 			/** TODO:
  			temporarly we comment out the forcing radio on
@@ -364,7 +346,7 @@ event void SubControl.stopDone(error_t error) {
 event void SubSend.sendDone(message_t* msg, error_t error) {
 	dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d)", process, msg, error);
    
-	switch(call SendState.getState()) {
+	switch(sendState) {
 	case S_LPL_SENDING:
 		if(call SendDoneTimer.isRunning()) {
 			if(!call PacketAcknowledgements.wasAcked(msg)) {
@@ -385,7 +367,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 		break;
 	}  
     
-	call SendState.toIdle();
+	sendState = S_SLEEPING;;
 	call SendDoneTimer.stop();
 	startOffTimer();
 	signal Send.sendDone(msg, error);
@@ -411,7 +393,7 @@ event void OffTimer.fired() {
 	* Only stop the radio if the radio is supposed to be off permanently
 	* or if the duty cycle is on and our sleep interval is not 0
 	*/
-	if(state == S_STOPPED || (sleepInterval > 0 && state != S_STOPPED && call SendState.getState() == S_LPL_NOT_SENDING)) { 
+	if(state == S_STOPPED || (sleepInterval > 0 && state != S_STOPPED)) { 
 		post stopRadio();
 	}
 }
@@ -425,9 +407,9 @@ event void OffTimer.fired() {
   */
 event void SendDoneTimer.fired() {
 	dbg("Mac", "[%d] csmaca DefaultLplP SendDoneTimer.fired()", process);
-	if(call SendState.getState() == S_LPL_SENDING) {
+	if(sendState == S_LPL_SENDING) {
 		// The next time SubSend.sendDone is signaled, send is complete.
-		call SendState.forceState(S_LPL_CLEAN_UP);
+		sendState = S_LPL_CLEAN_UP;
 	}
 }
   
