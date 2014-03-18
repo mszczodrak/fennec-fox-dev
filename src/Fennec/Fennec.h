@@ -52,7 +52,7 @@
 
 #include "ff_structs.h"
 #include "ff_flags.h"
-#include "ff_states.h"
+#include "fennec_states.h"
 #include "ff_functions.h"
 #include "ff_consts.h"
 
