@@ -49,7 +49,6 @@ uses interface RadioSend;
 uses interface RadioPacket;
 uses interface csmacaParams;
 uses interface Random;
-uses interface State as SplitControlState;
 uses interface Resource as RadioResource;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
@@ -89,8 +88,6 @@ task void startDone_task();
 task void stopDone_task();
 task void sendDone_task();
 
-void shutdown();
-
 task void signalSendDone() {
 	m_state = S_STARTED;
 	atomic sendErr = sendDoneErr;
@@ -106,48 +103,47 @@ norace uint16_t myInitialBackoff;
 /** The congestion backoff period */
 norace uint16_t myCongestionBackoff;
 
+norace uint8_t moduleState = S_STOPPED;
+
 
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
 	error_t err = EBUSY;
-	if(call SplitControlState.isState(S_STARTED)) {
+	if(moduleState == S_STARTED) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.start() - S_STARTED", process);
 		post startDone_task();
 		return SUCCESS;
 	}
 
-	if (call SplitControlState.requestState(S_STARTING) == SUCCESS) {
-		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.start()", process);
-		err = call RadioState.turnOn();
-		if (err == EALREADY) {
-			post startDone_task();
-		}
-		return SUCCESS;
+	moduleState = S_STARTING;
+	dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.start()", process);
+	err = call RadioState.turnOn();
+	if (err == EALREADY) {
+		post startDone_task();
 	}
-
-	return err;
+	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	error_t err = EBUSY;
-	if(call SplitControlState.isState(S_TRANSMITTING)) {
+	if( moduleState == S_TRANSMITTING) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_TRANSMITTING", process);
-		call SplitControlState.forceState(S_STOPPING);
+		moduleState = S_STOPPING;
 		// At sendDone, the radio will shut down
 		return SUCCESS;
 	}
 
-	if(call SplitControlState.isState(S_STOPPED)) {
+	if( moduleState == S_STOPPED) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_STOPPED", process);
 		post stopDone_task();
 		return SUCCESS;
 	}
 
 	dbg("Mac", "[%d] csmaca CSMATransmitP SplitControl.stop() - S_STOPPING", process);
-	call SplitControlState.forceState(S_STOPPING);
+	moduleState = S_STOPPING;
 	err = call RadioState.turnOff();
 	if (err == EALREADY) {
-		shutdown();
+		post stopDone_task();
 		return SUCCESS;
 	}
 	return err;
@@ -182,12 +178,12 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 	}
 
 	atomic {
-		if (!call SplitControlState.isState(S_STARTED)) {
+		if (moduleState != S_STARTED) {
 			dbg("Mac", "[%d] csmaca CSMATransmitP Send.send() - FAIL - isState(S_STARTED)", process);
 			return FAIL;
 		}
 
-		call SplitControlState.forceState(S_TRANSMITTING);
+		moduleState = S_TRANSMITTING;
 		m_msg = p_msg;
 	}
 
@@ -250,10 +246,10 @@ event void RadioResource.granted() {}
 task void sendDone_task() {
 	error_t packetErr;
 	atomic packetErr = sendErr;
-	if(call SplitControlState.isState(S_STOPPING)) {
-		shutdown();
+	if(moduleState == S_STOPPING) {
+		post stopDone_task();
 	} else {
-		call SplitControlState.forceState(S_STARTED);
+		moduleState = S_STARTED;
 	}
 
 	signal Send.sendDone( m_msg, packetErr );
@@ -266,26 +262,17 @@ task void startDone_task() {
 
 	m_state = S_STARTED;
 
-	call SplitControlState.forceState(S_STARTED);
+	moduleState = S_STARTED;
 	signal SplitControl.startDone( SUCCESS );
 }
 
 task void stopDone_task() {
-	dbg("Mac", "[%d] csmaca CSMATransmitP stopDone_task()", process);
-	call SplitControlState.forceState(S_STOPPED);
-	signal SplitControl.stopDone( SUCCESS );
-}
-
-/***************** Functions ****************/
-/**
- * Shut down all sub-components and turn off the radio
- */
-void shutdown() {
 	m_state = S_STOPPED;
 	call BackoffTimer.stop();
-	post stopDone_task();
+	dbg("Mac", "[%d] csmaca CSMATransmitP stopDone_task()", process);
+	moduleState = S_STOPPED;
+	signal SplitControl.stopDone( SUCCESS );
 }
-
 
 void requestInitialBackoff(message_t *msg, bool resend) {
 	if ((csmaca_delay_after_receive > 0) && (resend)) {
@@ -351,10 +338,10 @@ command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
 }
 
 async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
-	if(call SplitControlState.isState(S_STOPPING)) {
+	if(moduleState == S_STOPPING) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP RadioBuffer.loadDone(0x%1x, %d) - STOPPING",
 						process, msg, error);
-		shutdown();
+		post stopDone_task();
 		return;
 	}
 	if (error != SUCCESS) {
@@ -402,9 +389,9 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
    */
 async event void BackoffTimer.fired() {
 	dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired()", process);
-	if(call SplitControlState.isState(S_STOPPING)) {
+	if(moduleState == S_STOPPING) {
 		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_STOPPING", process);
-		shutdown();
+		post stopDone_task();
 		return;
 	}
 
@@ -470,20 +457,19 @@ async event void RadioSend.ready() {
 
 
 async event void RadioCCA.done(error_t err) {
-
 }
 
 
 event void RadioState.done() {
-	if (call SplitControlState.isState(S_STARTING)) {
+	if (moduleState == S_STARTING) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP RadioState.done() - post startDone_task", process);
 		post startDone_task();
 	}
 
 
-	if (call SplitControlState.isState(S_STOPPING)) {
+	if (moduleState == S_STOPPING) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP RadioState.done() - shutdown()", process);
-		shutdown();
+		post stopDone_task();
 	}
 }
 

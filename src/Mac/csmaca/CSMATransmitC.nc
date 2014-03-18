@@ -84,9 +84,6 @@ SplitControl = CSMATransmitP;
 Send = CSMATransmitP;
 RadioResource = CSMATransmitP.RadioResource;
 
-components new StateC();
-CSMATransmitP.SplitControlState -> StateC;
-
 PacketTransmitPower = CSMATransmitP.PacketTransmitPower;
 PacketRSSI = CSMATransmitP.PacketRSSI;
 PacketTimeSync = CSMATransmitP.PacketTimeSync;

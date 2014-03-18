@@ -103,15 +103,13 @@ uses interface csmacaParams;
 
 implementation {
   
-/** The message currently being sent */
+/** The message currently being sent and its length*/
 norace message_t *currentSendMsg;
-  
-/** The length of the current send message */
 uint8_t currentSendLen;
   
 bool radioPowerState = FALSE;
 uint8_t moduleState = S_STOPPED;
-uint8_t sendState;
+uint8_t radioState;
 
 
 /***************** Prototypes ***************/
@@ -122,9 +120,6 @@ task void stopRadio();
 
 /** The current period of the duty cycle, equivalent of wakeup interval */
 uint16_t sleepInterval = LPL_DEF_LOCAL_WAKEUP;
-
-bool finishSplitControlRequests();
-
 
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
@@ -203,11 +198,10 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 
 	if(moduleState == S_STOPPED) {
 		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - FAIL", process, msg, len);
-		// Everything is off right now, start SplitControl and try again
 		return FAIL;
 	}
    
-	sendState = S_STARTED; 
+	radioState = S_STARTED; 
 	currentSendMsg = msg;
 	currentSendLen = len;
       
@@ -231,7 +225,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 command error_t Send.cancel(message_t *msg) {
 	dbg("Mac", "[%d] csmaca DefaultLplP Send.cancel(0x%1x)", process, msg);
 	if(currentSendMsg == msg) {
-		sendState = S_SLEEPING;
+		radioState = S_SLEEPING;
 		call SendDoneTimer.stop();
 		call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 		return call SubSend.cancel(msg);
@@ -251,14 +245,14 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
 task void check() {
 	uint16_t i = 0;
 
-	for( ; i < MAX_LPL_CCA_CHECKS && (sendState == S_SLEEPING); i++) {
+	for( ; i < MAX_LPL_CCA_CHECKS && (radioState == S_SLEEPING); i++) {
 		if(call RadioCCA.request() == EBUSY) {
 			call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 			return;
 		}
 	}
 	
-	if(sendState == S_SLEEPING) {
+	if(radioState == S_SLEEPING) {
 		post stopRadio();
 	}
 }
@@ -279,7 +273,7 @@ event void SubControl.startDone(error_t error) {
 			post check();
 		}
     
-		if(sendState == S_STARTED) {
+		if(radioState == S_STARTED) {
 			post send();
 		}
 	}
@@ -299,7 +293,7 @@ event void SubControl.stopDone(error_t error) {
 			call OnTimer.startOneShot(sleepInterval);
 		}
 
-		if(sendState == S_STARTED) {
+		if(radioState == S_STARTED) {
 			// We're in the middle of sending a message; start the radio back up
 			/** TODO:
  			temporarly we comment out the forcing radio on
@@ -317,7 +311,7 @@ event void SubControl.stopDone(error_t error) {
 event void SubSend.sendDone(message_t* msg, error_t error) {
 	dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d)", process, msg, error);
    
-	switch(sendState) {
+	switch(radioState) {
 	case S_STARTED:
 		if(call SendDoneTimer.isRunning()) {
 			if(!call PacketAcknowledgements.wasAcked(msg)) {
@@ -327,7 +321,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 		}
 		break;
       
-	case S_LPL_CLEAN_UP:
+	case S_NOT_ACKED:
 	/**
 	* We include this moduleState so upper layers can't send a different message
 	* before the last message gets done sending
@@ -338,7 +332,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 		break;
 	}  
     
-	sendState = S_SLEEPING;
+	radioState = S_SLEEPING;
 	call SendDoneTimer.stop();
 	call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 	signal Send.sendDone(msg, error);
@@ -375,14 +369,15 @@ event void OffTimer.fired() {
   */
 event void SendDoneTimer.fired() {
 	dbg("Mac", "[%d] csmaca DefaultLplP SendDoneTimer.fired()", process);
-	if(sendState == S_STARTED) {
+	if(radioState == S_STARTED) {
 		// The next time SubSend.sendDone is signaled, send is complete.
-		sendState = S_LPL_CLEAN_UP;
+		radioState = S_NOT_ACKED;
 	}
 }
   
 /***************** Tasks ***************/
 task void send() {
+	call SendDoneTimer.startOneShot(sleepInterval + 20);
 	if(call SubSend.send(currentSendMsg, currentSendLen) != SUCCESS) {
 		post send();
 	}
