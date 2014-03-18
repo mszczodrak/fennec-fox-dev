@@ -230,8 +230,7 @@ command error_t Send.send( message_t* p_msg, uint8_t len ) {
 
 	sendDoneErr = call RadioBuffer.load(m_msg);
 	if (sendDoneErr != SUCCESS) {
-		dbg("Mac", "[%d] csmaca CSMATransmitP Send.send() - FAIL - RadioBuffer.load(0x%1x)", process, m_msg);
-		post signalSendDone();
+		dbg("Mac", "[%d] csmaca CSMATransmitP Send.send() - RadioBuffer.load(0x%1x) = %d", process, m_msg, sendDoneErr);
 		return sendDoneErr;
 	}
 	return SUCCESS;
@@ -343,9 +342,10 @@ command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
 			signal BackoffTimer.fired();
 		}
 	} else {
-		if (call RadioSend.send(m_msg, useCca) != SUCCESS) {
-			signal RadioSend.sendDone(m_msg, FAIL);
-			return FAIL;
+		sendErr = call RadioSend.send(m_msg, useCca);
+		if (sendErr != SUCCESS) {
+			signal RadioSend.sendDone(m_msg, sendErr);
+			return sendErr;
 		}
 	}
 	return SUCCESS;
@@ -374,9 +374,10 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
 	} else if ( !m_cca ) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP start sending", process);
 		m_state = S_BEGIN_TRANSMIT;
-		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
-			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send(0x%1x, %d)", process, m_msg, m_cca);
-			signal RadioSend.sendDone(m_msg, FAIL);
+		sendErr = call RadioSend.send(m_msg, m_cca);
+		if (sendErr != SUCCESS) {
+			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send(0x%1x, %d) = %d", process, m_msg, m_cca, sendErr);
+			signal RadioSend.sendDone(m_msg, sendErr);
 		}
 	} else {
 		m_state = S_SAMPLE_CCA;
@@ -425,9 +426,10 @@ async event void BackoffTimer.fired() {
         
 	case S_BEGIN_TRANSMIT:
 		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_BEGIN_TRANSMIT", process);
-		if (call RadioSend.send(m_msg, m_cca) != SUCCESS) {
-			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send() != SUCCESS", process);
-			signal RadioSend.sendDone(m_msg, FAIL);
+		sendErr = call RadioSend.send(m_msg, m_cca);
+		if (sendErr != SUCCESS) {
+			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send() = %d", process, sendErr);
+			signal RadioSend.sendDone(m_msg, sendErr);
 			return;
 		}
 		dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.send() == SUCCESS", process);
@@ -474,8 +476,6 @@ async event void RadioCCA.done(error_t err) {
 
 
 event void RadioState.done() {
-	//printf("CSMA got radio state\n");
-	//printfflush();
 	if (call SplitControlState.isState(S_STARTING)) {
 		dbg("Mac", "[%d] csmaca CSMATransmitP RadioState.done() - post startDone_task", process);
 		post startDone_task();

@@ -304,8 +304,10 @@ command uint8_t MacPacket.maxPayloadLength() {
 command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
 	if (len <= call SubSend.maxPayloadLength()) {
 		uint8_t *p = (uint8_t*) call SubSend.getPayload(msg, len);
+		dbg("Mac-Detail", "[%d] csmaca MacPacket.getPayload(0x%1x, %d)", process, msg, len);
 		return (p + sizeof(csmaca_header_t));
 	} else {
+		dbg("Mac-Detail", "[%d] csmaca MacPacket.getPayload(0x%1x, %d) - NULL", process, msg, len);
 		return NULL;
 	}
 }
