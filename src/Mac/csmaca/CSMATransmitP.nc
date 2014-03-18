@@ -44,7 +44,6 @@ provides interface Send;
 
 uses interface Alarm<T32khz,uint32_t> as BackoffTimer;
 uses interface RadioCCA;
-uses interface StdControl as RadioStdControl;
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
