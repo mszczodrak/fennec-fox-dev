@@ -65,11 +65,13 @@ void start_radio();
 
 async command error_t Packet.send(int dest, message_t* msg, uint8_t len) {
 	if (!running) {
+		dbg("Radio-Detail", "[-] cape CapePacketModel Packet.send - not running");
 		dbg("TossimPacketModelC", "TossimPacketModelC: Send.send() called, but not running!\n");
 		return EOFF;
 	}
 	dbg("TossimPacketModelC", "TossimPacketModelC packet.send");
 	if (sending != NULL) {
+		dbg("Radio-Detail", "[-] cape CapePacketModel Packet.send - BUSY");
 		return EBUSY;
 	}
 	sendingLength = len; 

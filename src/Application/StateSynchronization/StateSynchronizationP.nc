@@ -55,6 +55,7 @@ uses interface Leds;
 implementation {
 
 message_t packet;
+uint8_t resend;
 
 task void schedule_send_msg() {
 	call Timer.startOneShot(call Random.rand16() % 
@@ -69,7 +70,7 @@ task void send_msg() {
 	call NetworkAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_state));
    
 	if (state_msg == NULL) {
-		post schedule_send_msg();
+		signal NetworkAMSend.sendDone(&packet, FAIL);
 		return;
 	}
 
@@ -77,14 +78,15 @@ task void send_msg() {
 	state_msg->state_id = (nx_uint16_t) call FennecState.getStateId();
 
 	if (call NetworkAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
-		post schedule_send_msg();
 		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - FAIL", process);
+		signal NetworkAMSend.sendDone(&packet, FAIL);
 	} else {
 		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - SUCCESS", process);
 	}
 }
 
 event void FennecState.resend() {
+	resend = call StateSynchronizationParams.get_resend(); 
 	post send_msg();
 }
 
@@ -112,7 +114,12 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	call FennecState.resendDone(error);
+	if (resend > 0) {
+		resend--;
+		post schedule_send_msg();
+	} else {
+		call FennecState.resendDone(error);
+	}
 }
 
 event void Timer.fired() {
