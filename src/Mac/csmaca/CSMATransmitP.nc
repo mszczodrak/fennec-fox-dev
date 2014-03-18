@@ -402,7 +402,6 @@ async event void RadioBuffer.loadDone(message_t* msg, error_t error) {
    */
 async event void BackoffTimer.fired() {
 	dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired()", process);
-	dbg("Mac", "[%d] csmaca CSMATransmitP BackoffTimer.fired()", process);
 	if(call SplitControlState.isState(S_STOPPING)) {
 		dbg("Mac-Detail", "[%d] csmaca CSMATransmitP BackoffTimer.fired() - S_STOPPING", process);
 		shutdown();

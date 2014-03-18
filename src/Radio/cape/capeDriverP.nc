@@ -74,15 +74,9 @@ message_t* bufferPointer = &buffer;
 uint8_t auto_ack;
 
 task void start_done() {
-	
+	cape_radio_state = S_STARTED;	
 	dbg("Radio-Detail", "[-] cape signal RadioState.done()");
 	signal RadioState.done();
-}
-
-task void finish_starting_radio() {
-        if (call RadioResource.release() != SUCCESS) err = FAIL;
-	dbg("Radio-Detail", "[-] cape finish_starting_radio()");
-        post start_done();
 }
 
 task void stop_done() {
@@ -112,18 +106,21 @@ command error_t RadioState.standby() {
 
 
 command error_t RadioState.turnOn() {
-	auto_ack = TRUE;
-	dbg("Radio-Detail", "[-] cape RadioState.turnOn()");
-	call AMControl.start();
-
-        err = SUCCESS;
-
         if (cape_radio_state == S_STARTED) {
+		dbg("Radio-Detail", "[-] cape RadioState.turnOn() - EALREADY");
                 return EALREADY;
         }
 
+	auto_ack = TRUE;
+	dbg("Radio-Detail", "[-] cape RadioState.turnOn()");
+	out_msg = NULL;
+	
         cape_radio_state = S_STARTING;
-        post finish_starting_radio();
+
+	call AMControl.start();
+	call RadioResource.release();
+
+        post start_done();
         return SUCCESS;
 }
 
@@ -134,17 +131,15 @@ event void AMControl.stopDone(error_t error) {
 }
 
 command error_t RadioState.turnOff() {
+        if (cape_radio_state == S_STOPPED) {
+		dbg("Radio-Detail", "[-] cape RadioState.turnOff() - EALREADY");
+                return EALREADY;
+        }
+
 	dbg("Radio-Detail", "[-] cape RadioState.turnOff()");
 	call AMControl.stop();
 
         err = SUCCESS;
-
-        if (cape_radio_state == S_STOPPED) {
-                return EALREADY;
-        }
-
-        //if (call ReceiveControl.stop() != SUCCESS) err = FAIL;
-        //if (call TransmitControl.stop() != SUCCESS) err = FAIL;
 
         if (err != SUCCESS) return FAIL;
 
@@ -165,6 +160,17 @@ command error_t RadioState.setChannel(uint8_t new_channel) {
 
 async command error_t RadioBuffer.load(message_t* msg) {
 	cape_hdr_t* header = (cape_hdr_t*) msg->data;
+
+        if (cape_radio_state != S_STARTED) {
+		dbg("Radio", "[%d] cape RadioBuffer.load(0x%1x) - EOFF (%d)", header->destpan, msg, cape_radio_state);
+                return EOFF;
+        }
+
+	if (out_msg != NULL) {
+		dbg("Radio", "[%d] cape RadioSend.load( 0x%1x ) - EBUSY", header->destpan, msg);
+		return EBUSY;
+	}
+
 	dbg("Radio", "[%d] cape RadioSend.load( 0x%1x )", header->destpan, msg);
 	out_msg = msg;
 	err = SUCCESS;
@@ -174,7 +180,12 @@ async command error_t RadioBuffer.load(message_t* msg) {
 
 async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	cape_hdr_t* header = (cape_hdr_t*) msg->data;
-	metadata_t* metadata = getMetadata(out_msg);
+
+        if (cape_radio_state != S_STARTED) {
+		dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d) - EOFF (%d)", header->destpan, msg, useCca, cape_radio_state);
+                return EOFF;
+        }
+
 	if (msg != out_msg) {
 		dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d )  FAILED", header->destpan, msg, useCca);
 		return FAIL;
@@ -182,6 +193,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d )", header->destpan, msg, useCca);
 
 		if ((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1) {
+			metadata_t* metadata = getMetadata(out_msg);
 			metadata->ack = 1;
 		}
 
