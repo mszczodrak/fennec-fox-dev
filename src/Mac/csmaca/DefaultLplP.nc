@@ -128,7 +128,6 @@ bool finishSplitControlRequests();
 
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
-	// Radio was off, now has been told to turn on or duty cycle.
 	moduleState = S_STARTING;
 
 	if (TOS_NODE_ID == call csmacaParams.get_sink_addr()) {
@@ -138,7 +137,6 @@ command error_t SplitControl.start() {
 	}
 
 	if(sleepInterval > 0) {
-		// Begin duty cycling
 		post stopRadio();
 		return SUCCESS;
 	} else {
@@ -176,7 +174,7 @@ event void OnTimer.fired() {
 task void stopRadio() {
 	error_t err = call SubControl.stop();
 	if ((err != SUCCESS && err != EALREADY)) {
-		if( moduleState == S_STOPPING) {
+		if( moduleState == S_STOPPING ) {
 			moduleState = S_STOPPED;
 			signal SplitControl.stopDone(SUCCESS);
 		}
@@ -277,7 +275,6 @@ event void SubControl.startDone(error_t error) {
 			signal SplitControl.startDone(SUCCESS);
 		}
 
-
 		if( sleepInterval > 0 && (moduleState == S_STARTED) ) {
 			post check();
 		}
@@ -341,7 +338,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 		break;
 	}  
     
-	sendState = S_SLEEPING;;
+	sendState = S_SLEEPING;
 	call SendDoneTimer.stop();
 	call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 	signal Send.sendDone(msg, error);
