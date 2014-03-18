@@ -109,13 +109,8 @@ norace message_t *currentSendMsg;
 /** The length of the current send message */
 uint8_t currentSendLen;
   
-/** TRUE if the radio is duty cycling and not always on */
-bool dutyCycling = FALSE;
-
 bool radioPowerState = FALSE;
-
-uint8_t state = S_STOPPED;
-
+uint8_t moduleState = S_STOPPED;
 uint8_t sendState;
 
 
@@ -125,19 +120,16 @@ task void resend();
 task void startRadio();
 task void stopRadio();
 
-void startOffTimer();
-
 /** The current period of the duty cycle, equivalent of wakeup interval */
 uint16_t sleepInterval = LPL_DEF_LOCAL_WAKEUP;
 
 bool finishSplitControlRequests();
-bool isDutyCycling();
 
 
 /***************** SplitControl Commands ****************/
 command error_t SplitControl.start() {
 	// Radio was off, now has been told to turn on or duty cycle.
-	state = S_STARTING;
+	moduleState = S_STARTING;
 
 	if (TOS_NODE_ID == call csmacaParams.get_sink_addr()) {
 		sleepInterval = 0;
@@ -156,7 +148,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	state = S_STOPPING;
+	moduleState = S_STOPPING;
 	post stopRadio();
 	return SUCCESS;
 }
@@ -164,64 +156,40 @@ command error_t SplitControl.stop() {
 
 /***************** Timer Events ****************/
 event void OnTimer.fired() {
-	if(isDutyCycling()) {
-		if(radioPowerState) {
-			// Someone else turned on the radio, try again in awhile
-			call OnTimer.startOneShot(sleepInterval);
-		} else {
-
-			/*
-        		 * Turn on the radio only after the uC is fully awake.  ATmega128's
-	        	 * have this issue when running on an external crystal.
-	        	 */
+	if( sleepInterval > 0 && (moduleState == S_STARTED) ) {
+//		if(radioPowerState) {
+//			// Someone else turned on the radio, try again in awhile
+//			call OnTimer.startOneShot(sleepInterval);
+//		} else {
+//
+//			/*
+  //      		 * Turn on the radio only after the uC is fully awake.  ATmega128's
+//	        	 * have this issue when running on an external crystal.
+//	        	 */
 			post startRadio();
-		}
+//		}
 	}
 }
 
 
 /***************** Tasks ****************/
 task void stopRadio() {
-	if (call SubControl.stop() != SUCCESS) {
-		finishSplitControlRequests();
+	error_t err = call SubControl.stop();
+	if ((err != SUCCESS && err != EALREADY)) {
+		if( moduleState == S_STOPPING) {
+			moduleState = S_STOPPED;
+			signal SplitControl.stopDone(SUCCESS);
+		}
 		call OnTimer.startOneShot(sleepInterval);
 	}
 }
 
 
 task void startRadio() {
-	error_t startResult = call SubControl.start();
-	if ((startResult != SUCCESS && startResult != EALREADY)) {
+	error_t err = call SubControl.start();
+	if ((err != SUCCESS && err != EALREADY)) {
                 post startRadio();
         }
-}
-
-
-/**
- * @return TRUE if the radio should be actively duty cycling
- */
-bool isDutyCycling() {
-	return sleepInterval > 0 && (state == S_STARTED);
-}
-
-
-/**
- * @return TRUE if we successfully handled a SplitControl request
- */
-bool finishSplitControlRequests() {
-	if( state == S_STOPPING) {
-		state = S_STOPPED;
-		signal SplitControl.stopDone(SUCCESS);
-		return TRUE;
-
-	} else if(state == S_STARTING) {
-		// Starting while we're duty cycling first turns off the radio
-		state = S_STARTED;
-		signal SplitControl.startDone(SUCCESS);
-		return TRUE;
-	}
-
-	return FALSE;
 }
 
 
@@ -235,10 +203,10 @@ bool finishSplitControlRequests() {
  */
 command error_t Send.send(message_t *msg, uint8_t len) {
 
-	if(state == S_STOPPED) {
-		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - EOFF", process, msg, len);
+	if(moduleState == S_STOPPED) {
+		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - FAIL", process, msg, len);
 		// Everything is off right now, start SplitControl and try again
-		return EOFF;
+		return FAIL;
 	}
    
 	sendState = S_LPL_SENDING; 
@@ -256,7 +224,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 	} else {
 		dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - startRadio", process, msg, len);
 		post startRadio();
-		}
+	}
 	return SUCCESS;
 	dbg("Mac", "[%d] csmaca DefaultLplP Send.send(0x%1x, %d) - EBUSY", process, msg, len);
 	return EBUSY;
@@ -267,7 +235,7 @@ command error_t Send.cancel(message_t *msg) {
 	if(currentSendMsg == msg) {
 		sendState = S_SLEEPING;
 		call SendDoneTimer.stop();
-		startOffTimer();
+		call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 		return call SubSend.cancel(msg);
 	}
 	return FAIL;
@@ -283,12 +251,11 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
  
 
 task void check() {
-
 	uint16_t i = 0;
 
 	for( ; i < MAX_LPL_CCA_CHECKS && (sendState == S_SLEEPING); i++) {
 		if(call RadioCCA.request() == EBUSY) {
-			startOffTimer();
+			call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 			return;
 		}
 	}
@@ -305,9 +272,13 @@ event void SubControl.startDone(error_t error) {
 	if(!error) {
 		radioPowerState = TRUE;
 
-		if(finishSplitControlRequests()) {
+		if(moduleState == S_STARTING) {
+			moduleState = S_STARTED;
+			signal SplitControl.startDone(SUCCESS);
+		}
 
-		} else if(isDutyCycling()) {
+
+		if( sleepInterval > 0 && (moduleState == S_STARTED) ) {
 			post check();
 		}
     
@@ -322,9 +293,12 @@ event void SubControl.stopDone(error_t error) {
 	if(!error) {
 		radioPowerState = FALSE;
 
-		if(finishSplitControlRequests()) {
+		if(moduleState == S_STOPPING) {
+			moduleState = S_STOPPED;
+			signal SplitControl.startDone(SUCCESS);
+		}
 	
-		} else if(isDutyCycling()) {
+		if( sleepInterval > 0 && (moduleState == S_STARTED) ) {
 			call OnTimer.startOneShot(sleepInterval);
 		}
 
@@ -358,7 +332,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
       
 	case S_LPL_CLEAN_UP:
 	/**
-	* We include this state so upper layers can't send a different message
+	* We include this moduleState so upper layers can't send a different message
 	* before the last message gets done sending
 	*/
 		break;
@@ -369,7 +343,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
     
 	sendState = S_SLEEPING;;
 	call SendDoneTimer.stop();
-	startOffTimer();
+	call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 	signal Send.sendDone(msg, error);
 }
   
@@ -382,7 +356,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
  * as the broadcast address
  */
 event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	startOffTimer();
+	call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
 	return signal Receive.receive(msg, payload, len);
 }
   
@@ -393,14 +367,11 @@ event void OffTimer.fired() {
 	* Only stop the radio if the radio is supposed to be off permanently
 	* or if the duty cycle is on and our sleep interval is not 0
 	*/
-	if(state == S_STOPPED || (sleepInterval > 0 && state != S_STOPPED)) { 
+	if(moduleState == S_STOPPED || (sleepInterval > 0 && moduleState != S_STOPPED)) { 
 		post stopRadio();
 	}
 }
 
-
-
-  
 /**
   * When this timer is running, that means we're sending repeating messages
   * to a node that is receive check duty cycling.
@@ -426,13 +397,6 @@ task void resend() {
 	}
 }
   
-  
-  
-void startOffTimer() {
-	call OffTimer.startOneShot(call csmacaParams.get_delay_after_receive());
-}
-
-
 async event void RadioCCA.done(error_t err) {
 
 }
