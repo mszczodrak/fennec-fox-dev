@@ -13,9 +13,7 @@ provides interface SlottedCollisionConfig;
 provides interface ActiveMessageConfig;
 provides interface DummyConfig;
 
-#ifdef LOW_POWER_LISTENING
 provides interface LowPowerListeningConfig;
-#endif
 
 //provides interface PacketFlag<uint8_t>;
 
@@ -30,7 +28,7 @@ provides interface RadioPacket;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
-provides interface LinkPacketMetadata;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface Alarm<TRadio, tradio_size>;
@@ -56,10 +54,7 @@ RandomCollisionConfig = RadioP;
 SlottedCollisionConfig = RadioP;
 ActiveMessageConfig = RadioP;
 DummyConfig = RadioP;
-
-#ifdef LOW_POWER_LISTENING
 LowPowerListeningConfig = RadioP;
-#endif
 
 components cc2420xNewImplC;
 Resource = cc2420xNewImplC.Resource[process];
@@ -85,7 +80,7 @@ PacketTimeStampRadio = cc2420xNewImplC.PacketTimeStampRadio;
 PacketTimeStampMilli = cc2420xNewImplC.PacketTimeStampMilli;
 PacketTimeStamp32khz = cc2420xNewImplC.PacketTimeStamp32khz;
 
-LinkPacketMetadata = RadioDriverLayerC;
+RadioLinkPacketMetadata = RadioDriverLayerC;
 LocalTimeRadio = RadioDriverLayerC;
 Alarm = RadioDriverLayerC;
 

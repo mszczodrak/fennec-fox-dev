@@ -62,12 +62,7 @@ uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 uses interface ActiveMessageConfig;
 uses interface UniqueConfig;
-
-
-#ifdef LOW_POWER_LISTENING
-                interface LowPowerListeningConfig;
-#endif
-
+uses interface LowPowerListeningConfig;
 uses interface RandomCollisionConfig;
 uses interface SlottedCollisionConfig;
 uses interface SoftwareAckConfig;
@@ -93,6 +88,7 @@ PacketTransmitPower = csmaP.PacketTransmitPower;
 PacketRSSI = csmaP.PacketRSSI;
 PacketLinkQuality = csmaP.PacketLinkQuality;
 TrafficMonitorConfig = csmaP.TrafficMonitorConfig;
+LowPowerListeningConfig = csmaP.LowPowerListeningConfig;
 CsmaConfig = csmaP.CsmaConfig;
 SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
 
