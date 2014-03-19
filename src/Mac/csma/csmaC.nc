@@ -99,7 +99,7 @@ implementation
 
 #ifndef IEEE154FRAMES_ENABLED
 	components new ActiveMessageLayerC();
-	RadioActiveMessageConfig = ActiveMessageLayerC.Config;
+	ActiveMessageConfig = ActiveMessageLayerC.Config;
 	ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
 	ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
 	ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
@@ -147,7 +147,7 @@ AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
 // -------- UniqueLayer Send part (wired twice)
 
 	components new UniqueLayerC();
-	RadioUniqueConfig = UniqueLayerC.Config;
+	UniqueConfig = UniqueLayerC.Config;
 	UniqueLayerC.SubSend -> PacketLinkLayerC;
 
 // -------- Packet Link
@@ -194,10 +194,10 @@ AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
 
 #ifdef SLOTTED_MAC
 	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-	RadioSlottedCollisionConfig = CollisionAvoidanceLayerC.Config;
+	SlottedCollisionConfig = CollisionAvoidanceLayerC.Config;
 #else
 	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
-	RadioRandomCollisionConfig = CollisionAvoidanceLayerC.Config;
+	RandomCollisionConfig = CollisionAvoidanceLayerC.Config;
 #endif
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
@@ -211,14 +211,14 @@ AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
 	///SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	RadioAlarm[unique(UQ_RADIO_ALARM)] = SoftwareAckLayerC.RadioAlarm;
 	MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
-	RadioSoftwareAckConfig = SoftwareAckLayerC.Config;
+	SoftwareAckConfig = SoftwareAckLayerC.Config;
 	SoftwareAckLayerC.SubSend -> CsmaLayerC;
 	SoftwareAckLayerC.SubReceive -> CsmaLayerC;
 
 // -------- Carrier Sense
 
 	components new DummyLayerC() as CsmaLayerC;
-	//RadioCsmaConfig = CsmaLayerC.Config;
+	//CsmaConfig = CsmaLayerC.Config;
 	CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
 	CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
 	RadioCCA = CsmaLayerC;
@@ -233,7 +233,7 @@ AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
 #ifdef TRAFFIC_MONITOR
 	components new TrafficMonitorLayerC();
 	TrafficMonitor = TrafficMonitorLayerC;
-	RadioTrafficMonitorConfig = TrafficMonitorLayerC.Config;
+	TrafficMonitorConfig = TrafficMonitorLayerC.Config;
 #else
 	components new DummyLayerC() as TrafficMonitorLayerC;
 #endif
