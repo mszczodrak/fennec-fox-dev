@@ -43,6 +43,10 @@ provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
 provides interface PacketTimeStamp<TMilli, uint32_t> as MacPacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
 
+
+/* to Radio */
+provides interface Ieee154PacketLayer;
+
 uses interface RadioReceive;
 
 uses interface Resource as RadioResource;
@@ -71,8 +75,6 @@ uses interface CsmaConfig;
 
 uses interface RadioAlarm[uint8_t id];
 
-
-
 uses interface PacketTimeStamp<TRadio, uint32_t> as RadioPacketTimeStampRadio;
 uses interface PacketTimeStamp<TMilli, uint32_t> as RadioPacketTimeStampMilli;
 uses interface PacketTimeStamp<T32khz, uint32_t> as RadioPacketTimeStamp32khz;
@@ -91,6 +93,9 @@ TrafficMonitorConfig = csmaP.TrafficMonitorConfig;
 LowPowerListeningConfig = csmaP.LowPowerListeningConfig;
 CsmaConfig = csmaP.CsmaConfig;
 SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
+
+
+Ieee154PacketLayer = Ieee154PacketLayerC;
 
 	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
 
@@ -113,8 +118,8 @@ SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
 	components new ActiveMessageLayerC();
 	ActiveMessageConfig = ActiveMessageLayerC.Config;
 	ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
-	ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
-	ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
+	ActiveMessageLayerC.SubReceive -> PacketLinkLayerC;
+	ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
 
 	MacAMSend = ActiveMessageLayerC.AMSend[process];
 	MacReceive = ActiveMessageLayerC.Receive[process];
@@ -141,19 +146,8 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 #else
 components new DummyLayerC() as AutoResourceAcquireLayerC;
 #endif
-AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
+AutoResourceAcquireLayerC.SubSend -> UniqueLayerC;
 #endif
-
-// -------- RadioSend Resource
-
-
-// -------- Tinyos Network
-
-	components new TinyosNetworkLayerC();
-
-	TinyosNetworkLayerC.SubSend -> UniqueLayerC;
-	TinyosNetworkLayerC.SubReceive -> PacketLinkLayerC;
-	TinyosNetworkLayerC.SubPacket -> Ieee154PacketLayerC;
 
 // -------- IEEE 802.15.4 Packet
 
@@ -217,8 +211,7 @@ AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
 #endif
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
-	////CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-	RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC.RadioAlarm;
+	RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC;
 
 // -------- SoftwareAcknowledgement
 

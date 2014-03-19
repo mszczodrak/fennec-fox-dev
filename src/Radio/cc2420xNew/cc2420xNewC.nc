@@ -17,7 +17,7 @@ provides interface LowPowerListeningConfig;
 
 //provides interface PacketFlag<uint8_t>;
 
-provides interface Resource;
+provides interface Resource as RadioResource;
 
 provides interface RadioState;
 provides interface RadioSend;
@@ -31,13 +31,16 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 provides interface LocalTime<TRadio> as LocalTimeRadio;
-provides interface Alarm<TRadio, tradio_size>;
+//provides interface Alarm<TRadio, tradio_size>;
+provides interface RadioAlarm[uint8_t id];
 
 provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface cc2420xNewParams;
+
+uses interface Ieee154PacketLayer;
 
 }
 
@@ -56,8 +59,12 @@ ActiveMessageConfig = RadioP;
 DummyConfig = RadioP;
 LowPowerListeningConfig = RadioP;
 
+Ieee154PacketLayer = RadioP;
+RadioP.RadioAlarm -> cc2420xNewImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+
 components cc2420xNewImplC;
-Resource = cc2420xNewImplC.Resource[process];
+RadioResource = cc2420xNewImplC.Resource[process];
+RadioAlarm = cc2420xNewImplC;
 
 cc2420xNewParams = cc2420xNewP;
 SplitControl = cc2420xNewP;
@@ -82,7 +89,7 @@ PacketTimeStamp32khz = cc2420xNewImplC.PacketTimeStamp32khz;
 
 RadioLinkPacketMetadata = RadioDriverLayerC;
 LocalTimeRadio = RadioDriverLayerC;
-Alarm = RadioDriverLayerC;
+//Alarm = RadioDriverLayerC;
 
 
 cc2420xNewImplC.CC2420XDriverConfig -> RadioP;

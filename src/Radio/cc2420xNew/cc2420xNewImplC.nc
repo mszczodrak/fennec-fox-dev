@@ -9,6 +9,7 @@ provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LocalTime<TRadio> as LocalTimeRadio;
+provides interface RadioAlarm[uint8_t id];
 
 provides interface LinkPacketMetadata;
 
@@ -48,6 +49,8 @@ TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[TIME_STAMP_FL
 components CC2420XDriverLayerC as RadioDriverLayerC;
 
 components new RadioAlarmC();
+RadioAlarm = RadioAlarmC;
+
 RadioAlarmC.Alarm -> RadioDriverLayerC;
 
 RadioState = RadioDriverLayerC;
