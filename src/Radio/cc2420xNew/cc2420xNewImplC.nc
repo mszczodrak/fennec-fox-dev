@@ -58,11 +58,6 @@ RadioSend = RadioDriverLayerC;
 RadioReceive = RadioDriverLayerC;
 RadioCCA = RadioDriverLayerC;
 
-PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
-PacketRSSI = RadioDriverLayerC.PacketRSSI;
-//PacketTimeSyncOffset = RadioDriverLayerC.PacketTimeSyncOffset;
-PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
-
 CC2420XDriverConfig = RadioDriverLayerC.Config;
 RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
 PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
