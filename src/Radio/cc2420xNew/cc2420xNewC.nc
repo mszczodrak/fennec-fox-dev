@@ -2,7 +2,6 @@
 
 generic configuration cc2420xNewC(process_t process) {
 
-//provides interface CC2420XDriverConfig;
 provides interface SoftwareAckConfig;
 provides interface UniqueConfig;
 provides interface CsmaConfig;
