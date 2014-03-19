@@ -15,7 +15,7 @@ provides interface DummyConfig;
 
 provides interface LowPowerListeningConfig;
 
-//provides interface PacketFlag<uint8_t>;
+provides interface PacketFlag as AckReceivedFlag;
 
 provides interface Resource as RadioResource;
 
@@ -65,6 +65,7 @@ RadioP.RadioAlarm -> cc2420xNewImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 components cc2420xNewImplC;
 RadioResource = cc2420xNewImplC.Resource[process];
 RadioAlarm = cc2420xNewImplC;
+AckReceivedFlag = cc2420xNewImplC.PacketFlag[ACK_RECEIVED_FLAG];
 
 cc2420xNewParams = cc2420xNewP;
 SplitControl = cc2420xNewP;
