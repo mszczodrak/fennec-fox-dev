@@ -33,6 +33,10 @@ provides interface LinkPacketMetadata;
 provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface Alarm<TRadio, tradio_size>;
 
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
+
 uses interface cc2420xNewParams;
 
 }
@@ -41,7 +45,6 @@ implementation {
 
 
 components CC2420XRadioP as RadioP;
-CC2420XDriverConfig = RadioP;
 SoftwareAckConfig = RadioP;
 UniqueConfig = RadioP;
 CsmaConfig = RadioP;
@@ -58,6 +61,7 @@ LowPowerListeningConfig = RadioP;
 components cc2420xNewImplC;
 Resource = cc2420xNewImplC.Resource[process];
 
+cc2420xNewParams = RadioP;
 
 components CC2420XDriverLayerC as RadioDriverLayerC;
 
@@ -72,6 +76,10 @@ PacketTransmitPower = cc2420xNewImplC.PacketTransmitPower;
 PacketRSSI = cc2420xNewImplC.PacketRSSI;
 //PacketTimeSyncOffset = cc2420xNewImplC.PacketTimeSyncOffset;
 PacketLinkQuality = cc2420xNewImplC.PacketLinkQuality;
+
+PacketTimeStampRadio = cc2420xNewImplC.PacketTimeStampRadio;
+PacketTimeStampMilli = cc2420xNewImplC.PacketTimeStampMilli;
+PacketTimeStamp32khz = cc2420xNewImplC.PacketTimeStamp32khz;
 
 LinkPacketMetadata = RadioDriverLayerC;
 LocalTimeRadio = RadioDriverLayerC;

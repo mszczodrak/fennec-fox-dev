@@ -39,14 +39,13 @@ uses interface csmaParams;
 /* new */
 provides interface LowPowerListening;
 provides interface RadioChannel;
-provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
+provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as MacPacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
 
 uses interface RadioReceive;
 
 uses interface Resource as RadioResource;
-uses interface SplitControl as RadioControl;
 uses interface RadioPacket;
 uses interface RadioSend;
 
@@ -76,10 +75,27 @@ uses interface TrafficMonitorConfig;
 uses interface CsmaConfig;
 
 uses interface RadioAlarm[uint8_t id];
+
+
+
+uses interface PacketTimeStamp<TRadio, uint32_t> as RadioPacketTimeStampRadio;
+uses interface PacketTimeStamp<TMilli, uint32_t> as RadioPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as RadioPacketTimeStamp32khz;
+
 }
 
 implementation
 {
+
+components new csmaP(process);
+csmaParams = csmaP.csmaParams;
+PacketTransmitPower = csmaP.PacketTransmitPower;
+PacketRSSI = csmaP.PacketRSSI;
+PacketLinkQuality = csmaP.PacketLinkQuality;
+TrafficMonitorConfig = csmaP.TrafficMonitorConfig;
+CsmaConfig = csmaP.CsmaConfig;
+SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
+
 	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
 
 /*
@@ -109,11 +125,15 @@ implementation
 	MacSnoop = ActiveMessageLayerC.Snoop[process];
 /////	//SendNotifier = ActiveMessageLayerC;
 	MacAMPacket = ActiveMessageLayerC.AMPacket;
-/////	PacketForActiveMessage = ActiveMessageLayerC;
+	MacPacket = ActiveMessageLayerC;
 
-/////	//ReceiveDefault = ActiveMessageLayerC.ReceiveDefault;
-////	//SnoopDefault = ActiveMessageLayerC.SnoopDefault;
 #endif
+
+MacLinkPacketMetadata = RadioLinkPacketMetadata;
+
+MacPacketTimeStampRadio = RadioPacketTimeStampRadio;
+MacPacketTimeStampMilli = RadioPacketTimeStampMilli;
+MacPacketTimeStamp32khz = RadioPacketTimeStamp32khz;
 
 // -------- Automatic RadioSend Resource
 
