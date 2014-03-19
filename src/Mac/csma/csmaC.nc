@@ -24,56 +24,15 @@
 #include <RadioConfig.h>
 
 generic configuration csmaC(process_t process) {
-	provides 
-	{
-		interface SplitControl;
 
-#ifndef IEEE154FRAMES_ENABLED
-		interface AMSend[am_id_t id];
-		interface Receive[am_id_t id];
-		interface Receive as Snoop[am_id_t id];
-		interface SendNotifier[am_id_t id];
-
-		// for TOSThreads
-		interface Receive as ReceiveDefault[am_id_t id];
-		interface Receive as SnoopDefault[am_id_t id];
-
-		interface AMPacket;
-		interface Packet as PacketForActiveMessage;
-#endif
-
-#ifndef TFRAMES_ENABLED
-		interface Ieee154Send;
-		interface Receive as Ieee154Receive;
-		interface SendNotifier as Ieee154Notifier;
-
-		interface Resource as SendResource[uint8_t clint];
-
-		interface Ieee154Packet;
-		interface Packet as PacketForIeee154Message;
-#endif
-
-		interface PacketAcknowledgements;
-		interface LowPowerListening;
-		interface PacketLink;
-
-#ifdef TRAFFIC_MONITOR
-		interface TrafficMonitor;
-#endif
-
-		interface RadioChannel;
-
-		interface PacketField<uint8_t> as PacketLinkQuality;
-		interface PacketField<uint8_t> as PacketTransmitPower;
-		interface PacketField<uint8_t> as PacketRSSI;
-		interface LinkPacketMetadata;
-
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-	}
-
-
+provides interface SplitControl;
+provides interface AMSend as MacAMSend;
+provides interface Receive as MacReceive;
+provides interface Receive as MacSnoop;
+provides interface AMPacket as MacAMPacket;
+provides interface Packet as MacPacket;
+provides interface PacketAcknowledgements as MacPacketAcknowledgements;
+provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 
 uses interface csmaParams;
@@ -94,7 +53,6 @@ uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 
-uses interface SoftwareAckConfig;
 uses interface ActiveMessageConfig;
 uses interface UniqueConfig;
 
@@ -156,7 +114,11 @@ implementation
 #ifndef TFRAMES_ENABLED
 	components new AutoResourceAcquireLayerC();
 /////	AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-	AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[process];
+/////	AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[process];
+
+
+RadioResource = AutoResourceAcquireLayerC.Resource;
+
 #else
 	components new DummyLayerC() as AutoResourceAcquireLayerC;
 #endif
@@ -166,9 +128,6 @@ implementation
 // -------- RadioSend Resource
 
 #ifndef TFRAMES_ENABLED
-/////	components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
-	components new SimpleFcfsArbiterC(RADIO_SEND_RESOURCE) as SendResourceC;
-	SendResource = SendResourceC;
 
 // -------- Ieee154 Message
 

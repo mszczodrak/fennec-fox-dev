@@ -14,6 +14,8 @@ provides interface DummyConfig;
 provides interface LowPowerListeningConfig;
 #endif
 
+provides interface Resource;
+
 provides interface RadioState;
 provides interface RadioSend;
 provides interface RadioReceive;
@@ -29,10 +31,12 @@ provides interface LinkPacketMetadata;
 provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface Alarm<TRadio, tradio_size>;
 
+uses interface cc2420xNewParams;
 
 }
 
 implementation {
+
 
 components CC2420XRadioP as RadioP;
 CC2420XDriverConfig = RadioP;
@@ -48,6 +52,9 @@ DummyConfig = RadioP;
 #ifdef LOW_POWER_LISTENING
 LowPowerListeningConfig = RadioP;
 #endif
+
+components cc2420xNewImplC;
+Resource = cc2420xNewImplC.Resource[process];
 
 
 components CC2420XDriverLayerC as RadioDriverLayerC;
