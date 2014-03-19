@@ -32,7 +32,6 @@
  * Author: Miklos Maroti
  */
 
-#include <Tasklet.h>
 #include <RadioAssert.h>
 
 generic module RandomCollisionLayerP()
@@ -54,7 +53,7 @@ generic module RandomCollisionLayerP()
 
 implementation
 {
-	tasklet_norace uint8_t state;
+	norace uint8_t state;
 	enum
 	{
 		STATE_READY = 0,
@@ -65,10 +64,10 @@ implementation
 		STATE_BARRIER = 0x80,
 	};
 
-	tasklet_norace message_t *txMsg;
-	tasklet_norace uint16_t txBarrier;
+	norace message_t *txMsg;
+	norace uint16_t txBarrier;
 
-	tasklet_async event void SubSend.ready()
+	async event void SubSend.ready()
 	{
 		if( state == STATE_READY && call RadioAlarm.isFree() )
 			signal RadioSend.ready();
@@ -95,7 +94,7 @@ implementation
 		return (a % maxBackoff) + call Config.getMinimumBackoff();
 	}
 
-	tasklet_async command error_t RadioSend.send(message_t* msg)
+	async command error_t RadioSend.send(message_t* msg)
 	{
 		if( state != STATE_READY || ! call RadioAlarm.isFree() )
 			return EBUSY;
@@ -107,7 +106,7 @@ implementation
 		return SUCCESS;
 	}
 
-	tasklet_async event void RadioAlarm.fired()
+	async event void RadioAlarm.fired()
 	{
 		error_t error;
 		int16_t delay;
@@ -152,7 +151,7 @@ implementation
 			state = STATE_TX_SENDING;
 	}
 
-	tasklet_async event void SubSend.sendDone(error_t error)
+	async event void SubSend.sendDone(error_t error)
 	{
 		RADIO_ASSERT( state == STATE_TX_SENDING );
 
@@ -160,12 +159,12 @@ implementation
 		signal RadioSend.sendDone(error);
 	}
 
-	tasklet_async event bool SubReceive.header(message_t* msg)
+	async event bool SubReceive.header(message_t* msg)
 	{
 		return signal RadioReceive.header(msg);
 	}
 
-	tasklet_async event message_t* SubReceive.receive(message_t* msg)
+	async event message_t* SubReceive.receive(message_t* msg)
 	{
 		int16_t delay;
 
