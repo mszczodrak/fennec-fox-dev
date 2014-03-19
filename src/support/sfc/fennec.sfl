@@ -93,6 +93,7 @@ use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/nullMac ()
 
 use mac rfx $(FENNEC_FOX_LIB)/Mac/rfx ()
+use mac csma $(FENNEC_FOX_LIB)/Mac/csma ()
 
 use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (
 		uint16_t sink_addr,
