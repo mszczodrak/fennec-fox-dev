@@ -99,14 +99,6 @@ Ieee154PacketLayer = Ieee154PacketLayerC;
 
 	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
 
-/*
-	csmaConfigP.Ieee154PacketLayer -> Ieee154PacketLayerC;
-///// 	csmaConfigP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-	csmaConfigP.RadioAlarm -> RadioAlarmC.RadioAlarm[process];
-	csmaConfigP.PacketTimeStamp -> TimeStampingLayerC;
-	RadioPacket = csmaConfigP.CC2420XPacket;
-*/
-
 // -------- RadioAlarm
 
 /////	components new RadioAlarmC();
@@ -138,21 +130,14 @@ MacPacketTimeStamp32khz = RadioPacketTimeStamp32khz;
 
 // -------- Automatic RadioSend Resource
 
-#ifndef IEEE154FRAMES_ENABLED
-#ifndef TFRAMES_ENABLED
 components new AutoResourceAcquireLayerC();
 RadioResource = AutoResourceAcquireLayerC.Resource;
-
-#else
-components new DummyLayerC() as AutoResourceAcquireLayerC;
-#endif
 AutoResourceAcquireLayerC.SubSend -> UniqueLayerC;
-#endif
 
 // -------- IEEE 802.15.4 Packet
 
-	components new Ieee154PacketLayerC();
-	Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
+components new Ieee154PacketLayerC();
+Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
 
 // -------- UniqueLayer Send part (wired twice)
 
@@ -163,11 +148,9 @@ AutoResourceAcquireLayerC.SubSend -> UniqueLayerC;
 // -------- Packet Link
 
 	components new PacketLinkLayerC();
-/////	PacketLink = PacketLinkLayerC;
 	PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 	PacketLinkLayerC -> LowPowerListeningLayerC.Send;
 	PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
-	PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 	PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
 // -------- Low Power Listening
