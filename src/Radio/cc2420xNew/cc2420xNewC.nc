@@ -2,6 +2,8 @@
 
 generic configuration cc2420xNewC(process_t process) {
 
+provides interface SplitControl;
+
 provides interface SoftwareAckConfig;
 provides interface UniqueConfig;
 provides interface CsmaConfig;
@@ -43,6 +45,7 @@ uses interface cc2420xNewParams;
 
 implementation {
 
+components new cc2420xNewP(process);
 
 components CC2420XRadioP as RadioP;
 SoftwareAckConfig = RadioP;
@@ -61,7 +64,8 @@ LowPowerListeningConfig = RadioP;
 components cc2420xNewImplC;
 Resource = cc2420xNewImplC.Resource[process];
 
-cc2420xNewParams = RadioP;
+cc2420xNewParams = cc2420xNewP;
+SplitControl = cc2420xNewP;
 
 components CC2420XDriverLayerC as RadioDriverLayerC;
 
