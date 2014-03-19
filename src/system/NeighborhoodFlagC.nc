@@ -32,26 +32,15 @@
  * Author: Miklos Maroti
  */
 
-interface UniqueConfig
+generic configuration NeighborhoodFlagC()
 {
-	/**
-	 * Returns the sequence number of the packet.
-	 */
-	async command uint8_t getSequenceNumber(message_t* msg);
+	provides interface NeighborhoodFlag;
+}
 
-	/**
-	 * Returns the sender of the packet. 
-	 */
-	async command am_addr_t getSender(message_t* msg);
+implementation
+{
+	components NeighborhoodP;
 
-	/**
-	 * Sets the sequence number of the packet.
-	 */
-	async command void setSequenceNumber(message_t*msg, uint8_t number);
-
-	/**
-	 * This command is called when the unqiue layer detects a missing (jump 
-	 * in the data sequence number) or a duplicate packet.
-	 */
-	async command void reportChannelError();
+	// TODO: make sure that no more than 8 flags are used at a time
+	NeighborhoodFlag = NeighborhoodP.NeighborhoodFlag[unique("NeighborhoodFlag")];
 }

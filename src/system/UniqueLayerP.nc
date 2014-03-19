@@ -32,7 +32,6 @@
  * Author: Miklos Maroti
  */
 
-#include <Tasklet.h>
 #include <Neighborhood.h>
 
 generic module UniqueLayerP()
@@ -82,15 +81,15 @@ implementation
 		signal Send.sendDone(msg, error);
 	}
 
-	tasklet_async event bool SubReceive.header(message_t* msg)
+	async event bool SubReceive.header(message_t* msg)
 	{
 		// we could scan here, but better be lazy
 		return signal RadioReceive.header(msg);
 	}
 
-	tasklet_norace uint8_t receivedNumbers[NEIGHBORHOOD_SIZE];
+	norace uint8_t receivedNumbers[NEIGHBORHOOD_SIZE];
 
-	tasklet_async event message_t* SubReceive.receive(message_t* msg)
+	async event message_t* SubReceive.receive(message_t* msg)
 	{
 		uint8_t idx = call Neighborhood.insertNode(call UniqueConfig.getSender(msg));
 		uint8_t dsn = call UniqueConfig.getSequenceNumber(msg);
@@ -113,5 +112,5 @@ implementation
 		return signal RadioReceive.receive(msg);
 	}
 
-	tasklet_async event void Neighborhood.evicted(uint8_t idx) { }
+	async event void Neighborhood.evicted(uint8_t idx) { }
 }
