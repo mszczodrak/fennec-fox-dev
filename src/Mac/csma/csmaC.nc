@@ -33,42 +33,72 @@ implementation {
 
 components new csmaP(process);
 
-
+components new AutoResourceAcquireLayerC();
 components new Ieee154PacketLayerC();
+components new UniqueLayerC();
+components new PacketLinkLayerC();
+components new LowPowerListeningLayerC();
+components new MessageBufferLayerC();
+components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
+components new SoftwareAckLayerC();
+components new DummyLayerC() as CsmaLayerC;
+components new TimeStampingLayerC();
+
+SplitControl = csmaP;
+MacAMSend = csmaP.MacAMSend;
+MacReceive = csmaP.MacReceive;
+MacSnoop = csmaP.MacSnoop;
+MacPacket = csmaP.MacPacket;
+MacAMPacket = csmaP.MacAMPacket;
+MacLinkPacketMetadata = csmaP.MacLinkPacketMetadata;
+csmaParams = csmaP;
+
+
+csmaP.SubSend -> AutoResourceAcquireLayerC;
+csmaP.SubSplitControl -> LowPowerListeningLayerC;
+csmaP.SubReceive -> PacketLinkLayerC;
+csmaP.SubPacket -> Ieee154PacketLayerC;
+
+
+
+
+
+AutoResourceAcquireLayerC.Resource = RadioResourceC.Resource[process];
+
+
+MacPacketAcknowledgements = SoftwareAckLayerC;
+
+
+
 Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
 
-components new UniqueLayerC();
 UniqueLayerC.SubSend -> PacketLinkLayerC;
 
-components new PacketLinkLayerC();
 //PacketLink = PacketLinkLayerC;
 PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 PacketLinkLayerC -> LowPowerListeningLayerC.Send;
 PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
 PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
-components new LowPowerListeningLayerC();
 LowPowerListeningLayerC.Config -> RadioP;
 LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
-//SplitControl = LowPowerListeningLayerC;
 //LowPowerListening = LowPowerListeningLayerC;
 
-components new MessageBufferLayerC();
 MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
 MessageBufferLayerC.RadioReceive -> UniqueLayerC;
 MessageBufferLayerC.RadioState -> TrafficMonitorLayerC;
 //RadioChannel = MessageBufferLayerC;
 
-components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
 CollisionAvoidanceLayerC.Config -> RadioP;
 CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
 CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-components new SoftwareAckLayerC();
+
+
 SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 PacketAcknowledgements = SoftwareAckLayerC;
@@ -76,14 +106,12 @@ SoftwareAckLayerC.Config -> RadioP;
 SoftwareAckLayerC.SubSend -> CsmaLayerC;
 SoftwareAckLayerC.SubReceive -> CsmaLayerC;
 
-components new DummyLayerC() as CsmaLayerC;
 CsmaLayerC.Config -> RadioP;
 CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
 CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
 CsmaLayerC -> RadioDriverLayerC.RadioCCA;
 
 
-components new TimeStampingLayerC();
 TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
 TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
 PacketTimeStampRadio = TimeStampingLayerC;
@@ -95,17 +123,8 @@ MetadataFlagsLayerC.SubPacket -> RadioDriverLayerC;
 
 
 
-SplitControl = csmaP;
-MacAMSend = csmaP.MacAMSend;
-MacReceive = csmaP.MacReceive;
-MacSnoop = csmaP.MacSnoop;
-MacPacket = csmaP.MacPacket;
-MacAMPacket = csmaP.MacAMPacket;
-MacPacketAcknowledgements = csmaP.MacPacketAcknowledgements;
-MacLinkPacketMetadata = csmaP.MacLinkPacketMetadata;
 
-csmaParams = csmaP;
-
+/*
 RadioResource = csmaP.RadioResource;
 RadioPacket = csmaP.RadioPacket;
 RadioBuffer = csmaP.RadioBuffer;
@@ -127,6 +146,7 @@ PacketLinkQuality = csmaP.PacketLinkQuality;
 
 components new TimerMilliC();
 csmaP.Timer -> TimerMilliC;
+*/
 
 }
 
