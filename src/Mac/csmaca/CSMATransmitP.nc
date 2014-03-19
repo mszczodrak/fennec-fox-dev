@@ -304,6 +304,7 @@ void congestionBackoff(message_t *msg) {
  * @param cca TRUE if this transmit should use clear channel assessment
  */
 command error_t CSMATransmit.resend(message_t *msg, bool useCca) {
+	dbg("Mac", "[%d] csmaca CSMATransmitP CSMATransmit.resend(0x%1x, %d)", process, msg, useCca);
 	if (m_msg != msg) {
 		return FAIL;
 	}
@@ -435,16 +436,21 @@ async event void BackoffTimer.fired() {
 }
       
 async event void RadioSend.sendDone(message_t *msg, error_t error) {
-	dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.sendDone(0x%1x, %d)", process, msg, error);
 	if (m_state == S_CANCEL){
+		dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.sendDone(0x%1x, %d) - S_CANCEL",
+								process, msg, error);
 		sendDoneErr = ECANCEL;
 		post signalSendDone();
 	} else {
 		if (error == EBUSY) {
+			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.sendDone(0x%1x, %d) - EBUSY", 
+								process, msg, error);
 			m_state = S_SAMPLE_CCA;
 			totalCcaChecks = 0;
 			congestionBackoff(m_msg);
 		} else {
+			dbg("Mac", "[%d] csmaca CSMATransmitP RadioSend.sendDone(0x%1x, %d)", 
+								process, msg, error);
 			call BackoffTimer.stop();
 			sendDoneErr = error;
 			post signalSendDone();

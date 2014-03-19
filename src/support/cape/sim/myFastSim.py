@@ -42,7 +42,7 @@ class Simulator():
 	def __init__(self):
 		self.cape = Cape.Cape()
 		#self.dbg_channels = ["Application", "Network"]
-		self.dbg_channels = ["Application", "Network", "Mac", "Radio", "Fennec", "FennecEngine", "NetworkState", "NetworkProcess", "StateSynchronization", "Mac-Detail"]
+		self.dbg_channels = ["Application", "Network", "Mac", "Radio", "Fennec", "FennecEngine", "NetworkState", "NetworkProcess", "StateSynchronization", "Mac-Detail", "Radio-Detail"]
 		#self.dbg_channels = ["Application", "Radio", "Fennec", "NetworkState", "StateSynchronization"]
 		#self.dbg_channels = ["Application", "Fennec", "NetworkState", "StateSynchronization"]
 		#self.dbg_channels = ["Application", "Network", "Mac", "Radio", "Fennec", "StateSynchronization"]

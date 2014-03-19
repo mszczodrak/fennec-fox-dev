@@ -309,12 +309,15 @@ event void SubControl.stopDone(error_t error) {
   
 /***************** SubSend Events ***************/
 event void SubSend.sendDone(message_t* msg, error_t error) {
-	dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d)", process, msg, error);
    
 	switch(radioState) {
 	case S_STARTED:
+		dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d)",
+							process, msg, error);
 		if(call SendDoneTimer.isRunning()) {
 			if(!call PacketAcknowledgements.wasAcked(msg)) {
+				dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d) - resend",
+							process, msg, error);
 				post resend();
 				return;
 			}
@@ -326,9 +329,13 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 	* We include this moduleState so upper layers can't send a different message
 	* before the last message gets done sending
 	*/
+		dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d) - S_NOT_ACKED", 
+							process, msg, error);
 		break;
       
 	default:
+		dbg("Mac", "[%d] csmaca DefaultLplP SubSend.sendDone(0x%1x, %d) - %d", 
+							process, msg, error, radioState);
 		break;
 	}  
     

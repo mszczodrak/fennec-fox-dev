@@ -47,20 +47,15 @@ provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 uses interface csmacaParams;
 
 uses interface RadioReceive;
-
 uses interface Resource as RadioResource;
-
 uses interface RadioBuffer;
 uses interface RadioSend;
 uses interface RadioPacket;
-
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
 uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
-
 uses interface RadioCCA;
-
 uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 }

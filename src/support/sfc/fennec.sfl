@@ -92,6 +92,8 @@ use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 # MAC Modules
 use mac nullMac $(FENNEC_FOX_LIB)/Mac/nullMac ()
 
+use mac rfx $(FENNEC_FOX_LIB)/Mac/rfx ()
+
 use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (
 		uint16_t sink_addr,
 		uint16_t delay_after_receive, 

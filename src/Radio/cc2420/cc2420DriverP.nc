@@ -357,7 +357,6 @@ command error_t RadioState.standby() {
         return call RadioState.turnOff();
 }
 
-
 command error_t RadioState.turnOn() {
         err = SUCCESS;
 
