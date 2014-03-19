@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Vanderbilt University
+ * Copyright (c) 2009, Vanderbilt University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,28 +32,23 @@
  * Author: Miklos Maroti
  */
 
-#include <Tasklet.h>
-
-interface UniqueConfig
+interface RadioChannel
 {
 	/**
-	 * Returns the sequence number of the packet.
+	 * Sets the current channel. Returns EBUSY if the stack is unable
+	 * to change the channel this time (some other operation is in progress),
+	 * EALREADY if the selected channel is already set, SUCCESS otherwise.
 	 */
-	async command uint8_t getSequenceNumber(message_t* msg);
+	command error_t setChannel(uint8_t channel);
 
 	/**
-	 * Returns the sender of the packet. 
+	 * This event is signaled exactly once for each sucessfully posted state 
+	 * setChannel command when it is completed.
 	 */
-	async command am_addr_t getSender(message_t* msg);
+	event void setChannelDone();
 
 	/**
-	 * Sets the sequence number of the packet.
+	 * Returns the currently selected channel.
 	 */
-	async command void setSequenceNumber(message_t*msg, uint8_t number);
-
-	/**
-	 * This command is called when the unqiue layer detects a missing (jump 
-	 * in the data sequence number) or a duplicate packet.
-	 */
-	tasklet_async command void reportChannelError();
+	command uint8_t getChannel();
 }

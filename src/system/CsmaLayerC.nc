@@ -32,86 +32,30 @@
  * Author: Miklos Maroti
  */
 
-#include <Tasklet.h>
-#include <Neighborhood.h>
-
-generic module UniqueLayerP()
+generic configuration CsmaLayerC()
 {
 	provides
 	{
-		interface BareSend as Send;
+		interface RadioSend;
 		interface RadioReceive;
-
-		interface Init;
 	}
-
 	uses
 	{
-		interface BareSend as SubSend;
+		interface RadioSend as SubSend;
 		interface RadioReceive as SubReceive;
+		interface RadioCCA as SubCCA;
 
-		interface UniqueConfig;
-		interface Neighborhood;
-		interface NeighborhoodFlag;
+		interface CsmaConfig as Config;
 	}
 }
 
 implementation
 {
-	uint8_t sequenceNumber;
+	components new CsmaLayerP();
 
-	command error_t Init.init()
-	{
-		sequenceNumber = TOS_NODE_ID << 4;
-		return SUCCESS;
-	}
-
-	command error_t Send.send(message_t* msg)
-	{
-		call UniqueConfig.setSequenceNumber(msg, ++sequenceNumber);
-		return call SubSend.send(msg);
-	}
-
-	command error_t Send.cancel(message_t* msg)
-	{
-		return call SubSend.cancel(msg);
-	}
-
-	event void SubSend.sendDone(message_t* msg, error_t error)
-	{
-		signal Send.sendDone(msg, error);
-	}
-
-	tasklet_async event bool SubReceive.header(message_t* msg)
-	{
-		// we could scan here, but better be lazy
-		return signal RadioReceive.header(msg);
-	}
-
-	tasklet_norace uint8_t receivedNumbers[NEIGHBORHOOD_SIZE];
-
-	tasklet_async event message_t* SubReceive.receive(message_t* msg)
-	{
-		uint8_t idx = call Neighborhood.insertNode(call UniqueConfig.getSender(msg));
-		uint8_t dsn = call UniqueConfig.getSequenceNumber(msg);
-
-		if( call NeighborhoodFlag.get(idx) )
-		{
-			uint8_t diff = dsn - receivedNumbers[idx];
-
-			if( diff == 0 )
-			{
-				call UniqueConfig.reportChannelError();
-				return msg;
-			}
-		}
-		else
-			call NeighborhoodFlag.set(idx);
-
-		receivedNumbers[idx] = dsn;
-
-		return signal RadioReceive.receive(msg);
-	}
-
-	tasklet_async event void Neighborhood.evicted(uint8_t idx) { }
+	RadioSend = CsmaLayerP;
+	SubSend = CsmaLayerP;
+	RadioReceive = SubReceive;
+	SubCCA = CsmaLayerP;
+	Config = CsmaLayerP;
 }

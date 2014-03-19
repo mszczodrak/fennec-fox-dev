@@ -33,85 +33,82 @@
  */
 
 #include <Tasklet.h>
-#include <Neighborhood.h>
+#include <RadioAssert.h>
 
-generic module UniqueLayerP()
+generic module CsmaLayerP()
 {
 	provides
 	{
-		interface BareSend as Send;
-		interface RadioReceive;
-
-		interface Init;
+		interface RadioSend;
 	}
 
 	uses
 	{
-		interface BareSend as SubSend;
-		interface RadioReceive as SubReceive;
+		interface CsmaConfig as Config;
 
-		interface UniqueConfig;
-		interface Neighborhood;
-		interface NeighborhoodFlag;
+		interface RadioSend as SubSend;
+		interface RadioCCA as SubCCA;
 	}
 }
 
 implementation
 {
-	uint8_t sequenceNumber;
+	tasklet_norace message_t *txMsg;
 
-	command error_t Init.init()
+	tasklet_norace uint8_t state;
+	enum
 	{
-		sequenceNumber = TOS_NODE_ID << 4;
-		return SUCCESS;
+		STATE_READY = 0,
+		STATE_CCA_WAIT = 1,
+		STATE_SEND = 2,
+	};
+
+	tasklet_async event void SubSend.ready()
+	{
+		if( state == STATE_READY )
+			signal RadioSend.ready();
 	}
 
-	command error_t Send.send(message_t* msg)
+	tasklet_async command error_t RadioSend.send(message_t* msg)
 	{
-		call UniqueConfig.setSequenceNumber(msg, ++sequenceNumber);
-		return call SubSend.send(msg);
-	}
+		error_t error;
 
-	command error_t Send.cancel(message_t* msg)
-	{
-		return call SubSend.cancel(msg);
-	}
-
-	event void SubSend.sendDone(message_t* msg, error_t error)
-	{
-		signal Send.sendDone(msg, error);
-	}
-
-	tasklet_async event bool SubReceive.header(message_t* msg)
-	{
-		// we could scan here, but better be lazy
-		return signal RadioReceive.header(msg);
-	}
-
-	tasklet_norace uint8_t receivedNumbers[NEIGHBORHOOD_SIZE];
-
-	tasklet_async event message_t* SubReceive.receive(message_t* msg)
-	{
-		uint8_t idx = call Neighborhood.insertNode(call UniqueConfig.getSender(msg));
-		uint8_t dsn = call UniqueConfig.getSequenceNumber(msg);
-
-		if( call NeighborhoodFlag.get(idx) )
+		if( state == STATE_READY )
 		{
-			uint8_t diff = dsn - receivedNumbers[idx];
-
-			if( diff == 0 )
+			if( call Config.requiresSoftwareCCA(msg) )
 			{
-				call UniqueConfig.reportChannelError();
-				return msg;
+				txMsg = msg;
+
+				if( (error = call SubCCA.request()) == SUCCESS )
+					state = STATE_CCA_WAIT;
 			}
+			else if( (error = call SubSend.send(msg)) == SUCCESS )
+				state = STATE_SEND;
 		}
 		else
-			call NeighborhoodFlag.set(idx);
+			error = EBUSY;
 
-		receivedNumbers[idx] = dsn;
-
-		return signal RadioReceive.receive(msg);
+		return error;
 	}
 
-	tasklet_async event void Neighborhood.evicted(uint8_t idx) { }
+	tasklet_async event void SubCCA.done(error_t error)
+	{
+		RADIO_ASSERT( state == STATE_CCA_WAIT );
+
+		if( error == SUCCESS && (error = call SubSend.send(txMsg)) == SUCCESS )
+			state = STATE_SEND;
+		else
+		{
+			state = STATE_READY;
+			signal RadioSend.sendDone(EBUSY);
+		}
+	}
+
+	tasklet_async event void SubSend.sendDone(error_t error)
+	{
+		RADIO_ASSERT( state == STATE_SEND );
+
+		state = STATE_READY;
+		signal RadioSend.sendDone(error);
+	}
 }

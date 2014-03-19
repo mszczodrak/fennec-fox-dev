@@ -33,85 +33,97 @@
  */
 
 #include <Tasklet.h>
-#include <Neighborhood.h>
+#include <RadioAssert.h>
 
-generic module UniqueLayerP()
+module TaskletC
 {
-	provides
-	{
-		interface BareSend as Send;
-		interface RadioReceive;
-
-		interface Init;
-	}
-
-	uses
-	{
-		interface BareSend as SubSend;
-		interface RadioReceive as SubReceive;
-
-		interface UniqueConfig;
-		interface Neighborhood;
-		interface NeighborhoodFlag;
-	}
+	provides interface Tasklet;
 }
 
 implementation
 {
-	uint8_t sequenceNumber;
+#ifdef TASKLET_IS_TASK
 
-	command error_t Init.init()
+	task void tasklet()
 	{
-		sequenceNumber = TOS_NODE_ID << 4;
-		return SUCCESS;
+		signal Tasklet.run();
 	}
 
-	command error_t Send.send(message_t* msg)
+	inline async command void Tasklet.schedule()
 	{
-		call UniqueConfig.setSequenceNumber(msg, ++sequenceNumber);
-		return call SubSend.send(msg);
+		post tasklet();
 	}
 
-	command error_t Send.cancel(message_t* msg)
+	inline command void Tasklet.suspend()
 	{
-		return call SubSend.cancel(msg);
 	}
 
-	event void SubSend.sendDone(message_t* msg, error_t error)
+	inline command void Tasklet.resume()
 	{
-		signal Send.sendDone(msg, error);
 	}
 
-	tasklet_async event bool SubReceive.header(message_t* msg)
+#else
+	
+	/**
+	 * The lower 7 bits contain the number of suspends plus one if the run 
+	 * event is currently beeing executed. The highest bit is set if the run 
+	 * event needs to be called again when the suspend count goes down to zero.
+	 */
+	uint8_t state;
+
+	void doit()
 	{
-		// we could scan here, but better be lazy
-		return signal RadioReceive.header(msg);
-	}
-
-	tasklet_norace uint8_t receivedNumbers[NEIGHBORHOOD_SIZE];
-
-	tasklet_async event message_t* SubReceive.receive(message_t* msg)
-	{
-		uint8_t idx = call Neighborhood.insertNode(call UniqueConfig.getSender(msg));
-		uint8_t dsn = call UniqueConfig.getSequenceNumber(msg);
-
-		if( call NeighborhoodFlag.get(idx) )
+		for(;;)
 		{
-			uint8_t diff = dsn - receivedNumbers[idx];
+			signal Tasklet.run();
 
-			if( diff == 0 )
+			atomic
 			{
-				call UniqueConfig.reportChannelError();
-				return msg;
+				if( state == 1 )
+				{
+					state = 0;
+					return;
+				}
+
+				RADIO_ASSERT( state == 0x81 );
+				state = 1;
 			}
 		}
-		else
-			call NeighborhoodFlag.set(idx);
-
-		receivedNumbers[idx] = dsn;
-
-		return signal RadioReceive.receive(msg);
 	}
 
-	tasklet_async event void Neighborhood.evicted(uint8_t idx) { }
+	inline command void Tasklet.suspend()
+	{
+		atomic ++state;
+	}
+
+	command void Tasklet.resume()
+	{
+		atomic
+		{
+			if( --state != 0x80 )
+				return;
+
+			state = 1;
+		}
+
+		doit();
+	}
+
+	async command void Tasklet.schedule()
+	{
+		atomic
+		{
+			if( state != 0 )
+			{
+				state |= 0x80;
+				return;
+			}
+
+			state = 1;
+		}
+
+		doit();
+	}
+
+#endif
 }

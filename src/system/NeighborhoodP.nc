@@ -46,11 +46,11 @@ module NeighborhoodP
 
 implementation
 {
-	norace am_addr_t nodes[NEIGHBORHOOD_SIZE];
-	norace uint8_t ages[NEIGHBORHOOD_SIZE];
-	norace uint8_t flags[NEIGHBORHOOD_SIZE];
-	norace uint8_t time;
-	norace uint8_t last;
+	tasklet_norace am_addr_t nodes[NEIGHBORHOOD_SIZE];
+	tasklet_norace uint8_t ages[NEIGHBORHOOD_SIZE];
+	tasklet_norace uint8_t flags[NEIGHBORHOOD_SIZE];
+	tasklet_norace uint8_t time;
+	tasklet_norace uint8_t last;
 
 	command error_t Init.init()
 	{
@@ -62,17 +62,17 @@ implementation
 		return SUCCESS;
 	}
 
-	inline async command am_addr_t Neighborhood.getNode(uint8_t idx)
+	inline tasklet_async command am_addr_t Neighborhood.getNode(uint8_t idx)
 	{
 		return nodes[idx];
 	}
 
-	inline async command uint8_t Neighborhood.getAge(uint8_t idx)
+	inline tasklet_async command uint8_t Neighborhood.getAge(uint8_t idx)
 	{
 		return time - ages[idx];
 	}
 
-	async uint8_t command Neighborhood.getIndex(am_addr_t node)
+	tasklet_async uint8_t command Neighborhood.getIndex(am_addr_t node)
 	{
 		uint8_t i;
 
@@ -91,7 +91,7 @@ implementation
 		return i;
 	}
 
-	async uint8_t command Neighborhood.insertNode(am_addr_t node)
+	tasklet_async uint8_t command Neighborhood.insertNode(am_addr_t node)
 	{
 		uint8_t i;
 		uint8_t maxAge;
@@ -155,22 +155,22 @@ implementation
 		return last;
 	}
 
-	inline async command bool NeighborhoodFlag.get[uint8_t bit](uint8_t idx)
+	inline tasklet_async command bool NeighborhoodFlag.get[uint8_t bit](uint8_t idx)
 	{
 		return flags[idx] & (1 << bit);
 	}
 
-	inline async command void NeighborhoodFlag.set[uint8_t bit](uint8_t idx)
+	inline tasklet_async command void NeighborhoodFlag.set[uint8_t bit](uint8_t idx)
 	{
 		flags[idx] |= (1 << bit);
 	}
 
-	inline async command void NeighborhoodFlag.clear[uint8_t bit](uint8_t idx)
+	inline tasklet_async command void NeighborhoodFlag.clear[uint8_t bit](uint8_t idx)
 	{
 		flags[idx] &= ~(1 << bit);
 	}
 
-	async command void NeighborhoodFlag.clearAll[uint8_t bit]()
+	tasklet_async command void NeighborhoodFlag.clearAll[uint8_t bit]()
 	{
 		uint8_t i;
 

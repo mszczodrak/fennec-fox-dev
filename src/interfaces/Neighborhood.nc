@@ -46,7 +46,7 @@ interface Neighborhood
 	 * found in the table, then the value NEIGHBORHOOD is  returned, 
 	 * otherwise an index in the range [0, NEIGHBORHOOD-1] is returned.
 	 */
-	async command uint8_t getIndex(am_addr_t id);
+	tasklet_async command uint8_t getIndex(am_addr_t id);
 
 	/**
 	 * Returns the age of the given entry. The age is incremented by one
@@ -54,12 +54,12 @@ interface Neighborhood
 	 * is not already at the very end. If the age would get too large to
 	 * fit into a byte, then it is periodically reset to a smaller value.
 	 */
-	async command uint8_t getAge(uint8_t idx);
+	tasklet_async command uint8_t getAge(uint8_t idx);
 
 	/**
 	 * Returns the node address for the given entry.
 	 */
-	async command am_addr_t getNode(uint8_t idx);
+	tasklet_async command am_addr_t getNode(uint8_t idx);
 
 	/**
 	 * Adds a new node into the neighborhood table. If this node was already
@@ -68,7 +68,7 @@ interface Neighborhood
 	 * and its entry is replaced with this node. The index of the entry
 	 * is returned in the range [0, NEIGHBORHOOD-1]. 
 	 */
-	async command uint8_t insertNode(am_addr_t id);
+	tasklet_async command uint8_t insertNode(am_addr_t id);
 
 	/**
 	 * This event is fired when the oldest entry is replaced with a new
@@ -77,5 +77,5 @@ interface Neighborhood
 	 * After this event is fired, all flags for this entry are cleared
 	 * (see the NeighborhoodFlag interface)
 	 */
-	async event void evicted(uint8_t idx);
+	tasklet_async event void evicted(uint8_t idx);
 }
