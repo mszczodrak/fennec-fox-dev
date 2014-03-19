@@ -94,7 +94,20 @@ uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
 
+uses interface SoftwareAckConfig;
+uses interface ActiveMessageConfig;
+uses interface UniqueConfig;
 
+
+#ifdef LOW_POWER_LISTENING
+                interface LowPowerListeningConfig;
+#endif
+
+uses interface RandomCollisionConfig;
+uses interface SlottedCollisionConfig;
+uses interface SoftwareAckConfig;
+uses interface TrafficMonitorConfig;
+uses interface CsmaConfig;
 
 
 }
@@ -104,15 +117,13 @@ implementation
 	#define UQ_METADATA_FLAGS	"UQ_CC2420X_METADATA_FLAGS"
 	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
 
-// -------- csmaConfigP
-
-	components new csmaConfigP(process);
-
+/*
 	csmaConfigP.Ieee154PacketLayer -> Ieee154PacketLayerC;
 ///// 	csmaConfigP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	csmaConfigP.RadioAlarm -> RadioAlarmC.RadioAlarm[process];
 	csmaConfigP.PacketTimeStamp -> TimeStampingLayerC;
 	RadioPacket = csmaConfigP.CC2420XPacket;
+*/
 
 // -------- RadioAlarm
 
@@ -123,7 +134,7 @@ implementation
 
 #ifndef IEEE154FRAMES_ENABLED
 	components new ActiveMessageLayerC();
-	ActiveMessageLayerC.Config -> csmaConfigP;
+	ActiveMessageConfig = ActiveMessageLayerC.Config;
 	ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
 	ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
 	ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
@@ -190,7 +201,7 @@ implementation
 // -------- UniqueLayer Send part (wired twice)
 
 	components new UniqueLayerC();
-	UniqueLayerC.Config -> csmaConfigP;
+	UniqueConfig = UniqueLayerC.Config;
 	UniqueLayerC.SubSend -> PacketLinkLayerC;
 
 // -------- Packet Link
@@ -207,7 +218,7 @@ implementation
 #ifdef LOW_POWER_LISTENING
 	#warning "*** USING LOW POWER LISTENING LAYER"
 	components new LowPowerListeningLayerC();
-	LowPowerListeningLayerC.Config -> csmaConfigP;
+	LowPowerListeningConfig = LowPowerListeningLayerC.Config;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 #else	
 	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
@@ -235,10 +246,11 @@ implementation
 
 #ifdef SLOTTED_MAC
 	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
+	SlottedCollisionConfig = CollisionAvoidanceLayerC.Config;
 #else
 	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
+	RandomCollisionConfig = CollisionAvoidanceLayerC.Config;
 #endif
-	CollisionAvoidanceLayerC.Config -> csmaConfigP;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
@@ -249,14 +261,14 @@ implementation
 	SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	PacketAcknowledgements = SoftwareAckLayerC;
-	SoftwareAckLayerC.Config -> csmaConfigP;
+	SoftwareAckConfig = SoftwareAckLayerC.Config;
 	SoftwareAckLayerC.SubSend -> CsmaLayerC;
 	SoftwareAckLayerC.SubReceive -> CsmaLayerC;
 
 // -------- Carrier Sense
 
 	components new DummyLayerC() as CsmaLayerC;
-	CsmaLayerC.Config -> csmaConfigP;
+	CsmaConfig = CsmaLayerC.Config;
 	CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
 	CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
 	RadioCCA = CsmaLayerC;
@@ -283,7 +295,7 @@ implementation
 #else
 	components new DummyLayerC() as TrafficMonitorLayerC;
 #endif
-	TrafficMonitorLayerC.Config -> csmaConfigP;
+	TrafficMonitorConfig = TrafficMonitorLayerC.Config;
 	RadioSend = TrafficMonitorLayerC.SubSend;
 	RadioReceive = TrafficMonitorLayerC.SubReceive;
 	RadioState = TrafficMonitorLayerC.SubState;
