@@ -1,6 +1,8 @@
+#include "CC2420.h"
+
 generic configuration cc2420xNewC(process_t process) {
 
-provides interface CC2420XDriverConfig;
+//provides interface CC2420XDriverConfig;
 provides interface SoftwareAckConfig;
 provides interface UniqueConfig;
 provides interface CsmaConfig;
@@ -14,6 +16,8 @@ provides interface DummyConfig;
 provides interface LowPowerListeningConfig;
 #endif
 
+//provides interface PacketFlag<uint8_t>;
+
 provides interface Resource;
 
 provides interface RadioState;
@@ -24,7 +28,6 @@ provides interface RadioPacket;
 
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LinkPacketMetadata;
 
@@ -59,36 +62,23 @@ Resource = cc2420xNewImplC.Resource[process];
 
 components CC2420XDriverLayerC as RadioDriverLayerC;
 
-RadioState = RadioDriverLayerC;
-RadioSend = RadioDriverLayerC;
-RadioReceive = RadioDriverLayerC;
-RadioCCA = RadioDriverLayerC;
-RadioPacket = RadioDriverLayerC;
+RadioState = cc2420xNewImplC.RadioState;
+RadioSend = cc2420xNewImplC.RadioSend;
+RadioReceive = cc2420xNewImplC.RadioReceive;
+RadioCCA = cc2420xNewImplC.RadioCCA;
 
+RadioPacket = cc2420xNewImplC.RadioPacket;
 
-PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
-PacketRSSI = RadioDriverLayerC.PacketRSSI;
-PacketTimeSyncOffset = RadioDriverLayerC.PacketTimeSyncOffset;
-PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
+PacketTransmitPower = cc2420xNewImplC.PacketTransmitPower;
+PacketRSSI = cc2420xNewImplC.PacketRSSI;
+//PacketTimeSyncOffset = cc2420xNewImplC.PacketTimeSyncOffset;
+PacketLinkQuality = cc2420xNewImplC.PacketLinkQuality;
 
 LinkPacketMetadata = RadioDriverLayerC;
 LocalTimeRadio = RadioDriverLayerC;
 Alarm = RadioDriverLayerC;
 
 
-RadioDriverLayerC.Config -> RadioP;
-/*
-RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
-*/
-
-/*
-RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-*/
-
-
-
+cc2420xNewImplC.CC2420XDriverConfig -> RadioP;
 
 }

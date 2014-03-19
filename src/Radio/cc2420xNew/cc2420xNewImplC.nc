@@ -1,10 +1,77 @@
 configuration cc2420xNewImplC {
 provides interface Resource[uint8_t id];
+provides interface PacketFlag[uint8_t bit];
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface LinkPacketMetadata;
+
+
+provides interface RadioState;
+provides interface RadioSend;
+provides interface RadioReceive;
+provides interface RadioCCA;
+provides interface RadioPacket;
+
+provides interface CC2420XDriverConfig;
+
 }
 
 implementation {
 
 components new SimpleFcfsArbiterC("cc2420xNew");
 Resource = SimpleFcfsArbiterC.Resource;
+
+components new MetadataFlagsLayerC();
+PacketFlag = MetadataFlagsLayerC;
+MetadataFlagsLayerC.SubPacket -> RadioDriverLayerC;
+
+components new TimeStampingLayerC();
+TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
+RadioPacket = TimeStampingLayerC;
+
+
+TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
+PacketTimeStampRadio = TimeStampingLayerC;
+PacketTimeStampMilli = TimeStampingLayerC;
+TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[TIME_STAMP_FLAG];
+
+
+components CC2420XDriverLayerC as RadioDriverLayerC;
+
+
+
+components new RadioAlarmC();
+RadioAlarmC.Alarm -> RadioDriverLayerC;
+
+
+
+RadioState = RadioDriverLayerC;
+RadioSend = RadioDriverLayerC;
+RadioReceive = RadioDriverLayerC;
+RadioCCA = RadioDriverLayerC;
+
+PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
+PacketRSSI = RadioDriverLayerC.PacketRSSI;
+//PacketTimeSyncOffset = RadioDriverLayerC.PacketTimeSyncOffset;
+PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
+
+CC2420XDriverConfig = RadioDriverLayerC.Config;
+RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
+PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
+PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
+PacketRSSI = RadioDriverLayerC.PacketRSSI;
+LinkPacketMetadata = RadioDriverLayerC;
+LocalTimeRadio = RadioDriverLayerC;
+
+RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
+RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[TRANSMIT_POWER_FLAG];
+RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[RSSI_FLAG];
+RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[TIME_SYNC_FLAG];
+RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+
 
 }

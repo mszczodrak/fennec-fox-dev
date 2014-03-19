@@ -57,4 +57,11 @@
 
 #define F_LAYERS		4
 
+#define ACK_RECEIVED_FLAG	0
+#define TIME_STAMP_FLAG		1
+#define TRANSMIT_POWER_FLAG	2
+#define RSSI_FLAG		3
+#define TIME_SYNC_FLAG		4
+
+
 #endif

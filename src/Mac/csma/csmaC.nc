@@ -35,6 +35,17 @@ provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 
+/* new */
+provides interface LowPowerListening;
+provides interface RadioChannel;
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
+
+
+
+
+
 uses interface csmaParams;
 uses interface RadioReceive;
 
@@ -46,8 +57,10 @@ uses interface RadioSend;
 
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
-uses interface PacketField<uint32_t> as PacketTimeSync;
 uses interface PacketField<uint8_t> as PacketLinkQuality;
+uses interface PacketFlag as AckReceivedFlag;
+
+
 uses interface RadioCCA;
 uses interface RadioState;
 uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
@@ -67,7 +80,7 @@ uses interface SoftwareAckConfig;
 uses interface TrafficMonitorConfig;
 uses interface CsmaConfig;
 
-
+uses interface RadioAlarm[uint8_t id];
 }
 
 implementation
@@ -85,8 +98,8 @@ implementation
 
 // -------- RadioAlarm
 
-	components new RadioAlarmC();
-	RadioAlarmC.Alarm -> RadioDriverLayerC;
+/////	components new RadioAlarmC();
+/////	RadioAlarmC.Alarm -> RadioDriverLayerC;
 
 // -------- Active Message
 
@@ -97,32 +110,28 @@ implementation
 	ActiveMessageLayerC.SubReceive -> TinyosNetworkLayerC.TinyosReceive;
 	ActiveMessageLayerC.SubPacket -> TinyosNetworkLayerC.TinyosPacket;
 
-	AMSend = ActiveMessageLayerC;
-	Receive = ActiveMessageLayerC.Receive;
-	Snoop = ActiveMessageLayerC.Snoop;
-	SendNotifier = ActiveMessageLayerC;
-	AMPacket = ActiveMessageLayerC;
-	PacketForActiveMessage = ActiveMessageLayerC;
+	MacAMSend = ActiveMessageLayerC.AMSend[process];
+	MacReceive = ActiveMessageLayerC.Receive[process];
+	MacSnoop = ActiveMessageLayerC.Snoop[process];
+/////	//SendNotifier = ActiveMessageLayerC;
+	MacAMPacket = ActiveMessageLayerC.AMPacket;
+/////	PacketForActiveMessage = ActiveMessageLayerC;
 
-	ReceiveDefault = ActiveMessageLayerC.ReceiveDefault;
-	SnoopDefault = ActiveMessageLayerC.SnoopDefault;
+/////	//ReceiveDefault = ActiveMessageLayerC.ReceiveDefault;
+////	//SnoopDefault = ActiveMessageLayerC.SnoopDefault;
 #endif
 
 // -------- Automatic RadioSend Resource
 
 #ifndef IEEE154FRAMES_ENABLED
 #ifndef TFRAMES_ENABLED
-	components new AutoResourceAcquireLayerC();
-/////	AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[unique(RADIO_SEND_RESOURCE)];
-/////	AutoResourceAcquireLayerC.Resource -> SendResourceC.Resource[process];
-
-
+components new AutoResourceAcquireLayerC();
 RadioResource = AutoResourceAcquireLayerC.Resource;
 
 #else
-	components new DummyLayerC() as AutoResourceAcquireLayerC;
+components new DummyLayerC() as AutoResourceAcquireLayerC;
 #endif
-	AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
+AutoResourceAcquireLayerC -> TinyosNetworkLayerC.TinyosSend;
 #endif
 
 // -------- RadioSend Resource
@@ -131,17 +140,17 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 
 // -------- Ieee154 Message
 
-	components new Ieee154MessageLayerC();
-	Ieee154MessageLayerC.Ieee154PacketLayer -> Ieee154PacketLayerC;
-	Ieee154MessageLayerC.SubSend -> TinyosNetworkLayerC.Ieee154Send;
-	Ieee154MessageLayerC.SubReceive -> TinyosNetworkLayerC.Ieee154Receive;
-	Ieee154MessageLayerC.RadioPacket -> TinyosNetworkLayerC.Ieee154Packet;
+/////	components new Ieee154MessageLayerC();
+/////	Ieee154MessageLayerC.Ieee154PacketLayer -> Ieee154PacketLayerC;
+/////	Ieee154MessageLayerC.SubSend -> TinyosNetworkLayerC.Ieee154Send;
+/////	Ieee154MessageLayerC.SubReceive -> TinyosNetworkLayerC.Ieee154Receive;
+/////	Ieee154MessageLayerC.RadioPacket -> TinyosNetworkLayerC.Ieee154Packet;
 
-	Ieee154Send = Ieee154MessageLayerC;
-	Ieee154Receive = Ieee154MessageLayerC;
-	Ieee154Notifier = Ieee154MessageLayerC;
-	Ieee154Packet = Ieee154PacketLayerC;
-	PacketForIeee154Message = Ieee154MessageLayerC;
+/////	Ieee154Send = Ieee154MessageLayerC;
+/////	Ieee154Receive = Ieee154MessageLayerC;
+/////	Ieee154Notifier = Ieee154MessageLayerC;
+/////	Ieee154Packet = Ieee154PacketLayerC;
+/////	PacketForIeee154Message = Ieee154MessageLayerC;
 #endif
 
 // -------- Tinyos Network
@@ -166,10 +175,11 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 // -------- Packet Link
 
 	components new PacketLinkLayerC();
-	PacketLink = PacketLinkLayerC;
+/////	PacketLink = PacketLinkLayerC;
 	PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 	PacketLinkLayerC -> LowPowerListeningLayerC.Send;
 	PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
+	PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 	PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
 // -------- Low Power Listening
@@ -185,7 +195,8 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
-	LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
+	//LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
+	RadioPacket = LowPowerListeningLayerC.SubPacket;
 	SplitControl = LowPowerListeningLayerC;
 	LowPowerListening = LowPowerListeningLayerC;
 
@@ -212,14 +223,17 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 #endif
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
-	CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+	////CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+	RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC.RadioAlarm;
 
 // -------- SoftwareAcknowledgement
 
 	components new SoftwareAckLayerC();
-	SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-	PacketAcknowledgements = SoftwareAckLayerC;
+	//SoftwareAckLayerC.AckReceivedFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+	AckReceivedFlag = SoftwareAckLayerC.AckReceivedFlag;
+	///SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+	RadioAlarm[unique(UQ_RADIO_ALARM)] = SoftwareAckLayerC.RadioAlarm;
+	MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
 	SoftwareAckConfig = SoftwareAckLayerC.Config;
 	SoftwareAckLayerC.SubSend -> CsmaLayerC;
 	SoftwareAckLayerC.SubReceive -> CsmaLayerC;
@@ -234,17 +248,17 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 
 // -------- TimeStamping
 
-	components new TimeStampingLayerC();
-	TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
-	TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
-	PacketTimeStampRadio = TimeStampingLayerC;
-	PacketTimeStampMilli = TimeStampingLayerC;
-	TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+/////	components new TimeStampingLayerC();
+/////	TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
+/////	TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
+/////	PacketTimeStampRadio = TimeStampingLayerC;
+/////	PacketTimeStampMilli = TimeStampingLayerC;
+/////	TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 
 // -------- MetadataFlags
 
-	components new MetadataFlagsLayerC();
-	RadioPacket = MetadataFlagsLayerC.SubPacket;
+/////	components new MetadataFlagsLayerC();
+/////	RadioPacket = MetadataFlagsLayerC.SubPacket;
 
 // -------- Traffic Monitor
 
@@ -258,30 +272,5 @@ RadioResource = AutoResourceAcquireLayerC.Resource;
 	RadioSend = TrafficMonitorLayerC.SubSend;
 	RadioReceive = TrafficMonitorLayerC.SubReceive;
 	RadioState = TrafficMonitorLayerC.SubState;
-
-// -------- Driver
-
-
-
-
-
-
-/*
-
-	components CC2420XDriverLayerC as RadioDriverLayerC;
-	RadioDriverLayerC.Config -> csmaConfigP;
-	RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
-	PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
-	PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
-	PacketRSSI = RadioDriverLayerC.PacketRSSI;
-	LinkPacketMetadata = RadioDriverLayerC;
-	LocalTimeRadio = RadioDriverLayerC;
-
-	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
-	RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-
-*/
 
 }
