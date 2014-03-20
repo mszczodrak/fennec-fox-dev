@@ -94,7 +94,6 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	printf("Application SplitControl.stop()\n");
 	dbg("Application", "[%d] Counter SplitControl.stop()", process);
 	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
@@ -105,7 +104,6 @@ void sendMessage() {
 	CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
 
-	printf("Application sendMessage()\n");
 	call Leds.led1Toggle();
 	if (msg == NULL) {
 		return;
@@ -120,7 +118,6 @@ void sendMessage() {
 					call CounterParams.get_dest(), sizeof(CounterMsg));
 		dbg("Application", "[%d] Counter sendMessage() seqno: %d source: %d - FAILED", 
 					process, msg->seqno, msg->source); 
-		printf("Application sendMessage() != SUCCESS\n");
 	} else {
 		sendBusy = TRUE;
 		dbgs(process, F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
@@ -145,7 +142,6 @@ event void Timer.fired() {
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
 	//CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
 	//						sizeof(CounterMsg));
-	printf("Application NetworkAMSend.sendDone(%d)\n", error);
 	dbg("Application", "[%d] Counter event NetworkAMSend.sendDone(0x%1x, %d)",
 				process, msg, error);
 	sendBusy = FALSE;
