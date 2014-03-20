@@ -94,118 +94,101 @@ LowPowerListeningConfig = csmaP.LowPowerListeningConfig;
 CsmaConfig = csmaP.CsmaConfig;
 SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
 
-
 Ieee154PacketLayer = Ieee154PacketLayerC;
-
-	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
-
-// -------- RadioAlarm
-
-/////	components new RadioAlarmC();
-/////	RadioAlarmC.Alarm -> RadioDriverLayerC;
-
-// -------- Active Message
-
-#ifndef IEEE154FRAMES_ENABLED
-	components new ActiveMessageLayerC();
-	ActiveMessageConfig = ActiveMessageLayerC.Config;
-	ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
-	ActiveMessageLayerC.SubReceive -> PacketLinkLayerC;
-	ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
-
-	MacAMSend = ActiveMessageLayerC.AMSend[process];
-	MacReceive = ActiveMessageLayerC.Receive[process];
-	MacSnoop = ActiveMessageLayerC.Snoop[process];
-/////	//SendNotifier = ActiveMessageLayerC;
-	MacAMPacket = ActiveMessageLayerC.AMPacket;
-	MacPacket = ActiveMessageLayerC;
-
-#endif
-
 MacLinkPacketMetadata = RadioLinkPacketMetadata;
-
 MacPacketTimeStampRadio = RadioPacketTimeStampRadio;
 MacPacketTimeStampMilli = RadioPacketTimeStampMilli;
 MacPacketTimeStamp32khz = RadioPacketTimeStamp32khz;
 
-// -------- Automatic RadioSend Resource
+#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
 
+// -------- Active Message
+
+components new ActiveMessageLayerC();
 components new AutoResourceAcquireLayerC();
+components new Ieee154PacketLayerC();
+components new UniqueLayerC();
+components new PacketLinkLayerC();
+
+MacAMSend = ActiveMessageLayerC.AMSend[process];
+MacReceive = ActiveMessageLayerC.Receive[process];
+MacSnoop = ActiveMessageLayerC.Snoop[process];
+/////	//SendNotifier = ActiveMessageLayerC;
+MacAMPacket = ActiveMessageLayerC.AMPacket;
+MacPacket = ActiveMessageLayerC;
+
+
+ActiveMessageConfig = ActiveMessageLayerC.Config;
+ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
+ActiveMessageLayerC.SubReceive -> PacketLinkLayerC;
+ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
+
 RadioResource = AutoResourceAcquireLayerC.Resource;
 AutoResourceAcquireLayerC.SubSend -> UniqueLayerC;
 
-// -------- IEEE 802.15.4 Packet
-
-components new Ieee154PacketLayerC();
 Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
 
-// -------- UniqueLayer Send part (wired twice)
+UniqueConfig = UniqueLayerC.Config;
+UniqueLayerC.SubSend -> PacketLinkLayerC;
 
-	components new UniqueLayerC();
-	UniqueConfig = UniqueLayerC.Config;
-	UniqueLayerC.SubSend -> PacketLinkLayerC;
-
-// -------- Packet Link
-
-	components new PacketLinkLayerC();
-	PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-	PacketLinkLayerC -> LowPowerListeningLayerC.Send;
-	PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
-	PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
+PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
+PacketLinkLayerC -> LowPowerListeningLayerC.Send;
+PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
+PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
 // -------- Low Power Listening
 
 #ifdef LOW_POWER_LISTENING
-	#warning "*** USING LOW POWER LISTENING LAYER"
-	components new LowPowerListeningLayerC();
-	RadioLowPowerListeningConfig = LowPowerListeningLayerC.Config;
-	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
+#warning "*** USING LOW POWER LISTENING LAYER"
+components new LowPowerListeningLayerC();
+RadioLowPowerListeningConfig = LowPowerListeningLayerC.Config;
+LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 #else	
-	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
+components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
 #endif
-	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
-	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
-	LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
-	//LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
-	RadioPacket = LowPowerListeningLayerC.SubPacket;
-	SplitControl = LowPowerListeningLayerC;
-	LowPowerListening = LowPowerListeningLayerC;
+LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
+LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
+LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
+//LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
+RadioPacket = LowPowerListeningLayerC.SubPacket;
+SplitControl = LowPowerListeningLayerC;
+LowPowerListening = LowPowerListeningLayerC;
 
 // -------- MessageBuffer
 
-	components new MessageBufferLayerC();
-	MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
-	MessageBufferLayerC.RadioReceive -> UniqueLayerC;
-	MessageBufferLayerC.RadioState -> TrafficMonitorLayerC;
-	RadioChannel = MessageBufferLayerC;
+components new MessageBufferLayerC();
+MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
+MessageBufferLayerC.RadioReceive -> UniqueLayerC;
+MessageBufferLayerC.RadioState -> TrafficMonitorLayerC;
+RadioChannel = MessageBufferLayerC;
 
 // -------- UniqueLayer receive part (wired twice)
 
-	UniqueLayerC.SubReceive -> CollisionAvoidanceLayerC;
+UniqueLayerC.SubReceive -> CollisionAvoidanceLayerC;
 
 // -------- CollisionAvoidance
 
 #ifdef SLOTTED_MAC
-	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-	SlottedCollisionConfig = CollisionAvoidanceLayerC.Config;
+components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
+SlottedCollisionConfig = CollisionAvoidanceLayerC.Config;
 #else
-	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
-	RandomCollisionConfig = CollisionAvoidanceLayerC.Config;
+components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
+RandomCollisionConfig = CollisionAvoidanceLayerC.Config;
 #endif
-	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
-	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
-	RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC;
+CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
+CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
+RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC;
 
 // -------- SoftwareAcknowledgement
 
-	components new SoftwareAckLayerC();
-	AckReceivedFlag = SoftwareAckLayerC.AckReceivedFlag;
-	///SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-	RadioAlarm[unique(UQ_RADIO_ALARM)] = SoftwareAckLayerC.RadioAlarm;
-	MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
-	SoftwareAckConfig = SoftwareAckLayerC.Config;
-	SoftwareAckLayerC.SubSend -> CsmaLayerC;
-	SoftwareAckLayerC.SubReceive -> CsmaLayerC;
+components new SoftwareAckLayerC();
+AckReceivedFlag = SoftwareAckLayerC.AckReceivedFlag;
+///SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+RadioAlarm[unique(UQ_RADIO_ALARM)] = SoftwareAckLayerC.RadioAlarm;
+MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
+SoftwareAckConfig = SoftwareAckLayerC.Config;
+SoftwareAckLayerC.SubSend -> CsmaLayerC;
+SoftwareAckLayerC.SubReceive -> CsmaLayerC;
 
 // -------- Carrier Sense
 

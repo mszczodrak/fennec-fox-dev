@@ -48,7 +48,6 @@
 #endif
 
 #include "Dbgs.h"
-#include "AM.h"
 
 #include "ff_structs.h"
 #include "ff_flags.h"
@@ -57,8 +56,11 @@
 #include "ff_consts.h"
 
 
-//#include "message.h"
 #include <Ieee154.h>
 
+#include <AM.h>
+#include <message.h>
+#include <Serial.h>
+#include "platform_message.h"
 
 #endif

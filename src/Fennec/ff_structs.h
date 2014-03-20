@@ -37,19 +37,23 @@
 #define FF_STRUCTURES_H
 
 #include "ff_consts.h"
+#include "ff_structs.h"
+
+#ifndef TOSH_DATA_LENGTH
+#define TOSH_DATA_LENGTH 127
+#endif
+
+#ifndef TOS_BCAST_ADDR
+#define TOS_BCAST_ADDR 0xFFFF
+#endif
+
+#define RADIO_SEND_RESOURCE "RADIO_SEND_RESOURCE"
 
 typedef uint16_t state_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 typedef uint16_t event_t;
 typedef uint16_t process_t;
-
-#include <Serial.h>
-
-typedef union message_header {
-//  cc2420_header_t cc2420;
-  serial_header_t serial;
-} message_header_t;
 
 
 struct network_process {
@@ -82,15 +86,6 @@ typedef nx_struct metadata_t {
 	nx_bool ack;
 #endif
 } metadata_t;
-
-
-typedef nx_struct message_t {
-	nx_uint8_t header[sizeof(message_header_t)];
-	nx_uint8_t data[FENNEC_MSG_DATA_LEN];
-	nx_uint8_t metadata[sizeof(metadata_t)];
-//	nx_uint16_t conf;
-} message_t;
-
 
 struct event_process {
 	event_t 	event_id;
