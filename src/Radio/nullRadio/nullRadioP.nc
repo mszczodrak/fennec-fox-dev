@@ -32,6 +32,8 @@
 
 #include <Fennec.h>
 #include "nullRadio.h"
+#include <Tasklet.h>
+
 
 generic module nullRadioP(uint8_t process) @safe() {
 provides interface SplitControl;
@@ -97,7 +99,7 @@ command error_t SplitControl.stop() {
 }
 
 
-command error_t RadioState.turnOn() {
+tasklet_async command error_t RadioState.turnOn() {
 
 	if (state == S_STOPPED) {
 		dbg("Radio", "[%d] nullRadio SplitControl.start() - SUCCESS", process);
@@ -118,7 +120,7 @@ command error_t RadioState.turnOn() {
 	return FAIL;
 }
 
-command error_t RadioState.turnOff() {
+tasklet_async command error_t RadioState.turnOff() {
 	if (state == S_STARTED) {
 		dbg("Radio", "[%d] nullRadio SplitControl.stop() - SUCCESS", process);
 		state = S_STOPPING;
@@ -136,17 +138,17 @@ command error_t RadioState.turnOff() {
 	return FAIL;
 }
 
-command error_t RadioState.standby() {
+tasklet_async command error_t RadioState.standby() {
 	return call RadioState.turnOff();
 }
 
-command error_t RadioState.setChannel(uint8_t new_channel) {
+tasklet_async command error_t RadioState.setChannel(uint8_t new_channel) {
 	channel = new_channel;
 	signal RadioState.done();
         return SUCCESS;
 }
 
-command uint8_t RadioState.getChannel() {
+tasklet_async command uint8_t RadioState.getChannel() {
         return channel;
 }
 
@@ -173,7 +175,7 @@ task void send_done() {
 	signal RadioSend.sendDone(m, SUCCESS);
 }
 
-async command error_t RadioSend.send(message_t* msg, bool useCca) {
+tasklet_async command error_t RadioSend.send(message_t* msg, bool useCca) {
 	dbg("Radio", "[%d] nullRadio RadioSend.send(0x%1x)", process, msg, useCca);
 	post send_done();
 	return SUCCESS;

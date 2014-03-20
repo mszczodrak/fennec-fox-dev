@@ -62,8 +62,6 @@ AckReceivedFlag = cc2420xNewImplC.PacketFlag[ACK_RECEIVED_FLAG];
 cc2420xNewParams = cc2420xNewP;
 SplitControl = cc2420xNewP;
 
-components CC2420XDriverLayerC as RadioDriverLayerC;
-
 RadioState = cc2420xNewImplC.RadioState;
 RadioSend = cc2420xNewImplC.RadioSend;
 RadioReceive = cc2420xNewImplC.RadioReceive;
@@ -79,8 +77,8 @@ PacketTimeStampRadio = cc2420xNewImplC.PacketTimeStampRadio;
 PacketTimeStampMilli = cc2420xNewImplC.PacketTimeStampMilli;
 PacketTimeStamp32khz = cc2420xNewImplC.PacketTimeStamp32khz;
 
-RadioLinkPacketMetadata = RadioDriverLayerC;
-LocalTimeRadio = RadioDriverLayerC;
+RadioLinkPacketMetadata = cc2420xNewImplC;
+LocalTimeRadio = cc2420xNewImplC;
 cc2420xNewImplC.CC2420XDriverConfig -> RadioP;
 
 }

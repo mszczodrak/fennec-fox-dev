@@ -1,4 +1,4 @@
-configuration cc2420xNewImplC {
+configuration capeImplC {
 provides interface Resource[uint8_t id];
 provides interface PacketFlag[uint8_t bit];
 provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
@@ -19,7 +19,7 @@ provides interface RadioPacket;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
-uses interface CC2420XDriverConfig;
+uses interface capeDriverConfig;
 
 uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp32khz;
 
@@ -45,7 +45,7 @@ PacketTimeStampMilli = TimeStampingLayerC;
 TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[TIME_STAMP_FLAG];
 
 
-components CC2420XDriverLayerC as RadioDriverLayerC;
+//components CC2420XDriverLayerC as RadioDriverLayerC;
 
 components new RadioAlarmC();
 RadioAlarm = RadioAlarmC;
@@ -57,7 +57,7 @@ RadioSend = RadioDriverLayerC;
 RadioReceive = RadioDriverLayerC;
 RadioCCA = RadioDriverLayerC;
 
-CC2420XDriverConfig = RadioDriverLayerC.Config;
+capeDriverConfig = RadioDriverLayerC.Config;
 PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
 PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
 PacketRSSI = RadioDriverLayerC.PacketRSSI;

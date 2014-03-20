@@ -38,6 +38,7 @@
 
 #include "ff_consts.h"
 #include "ff_structs.h"
+#include "platform_message.h"
 
 #ifndef TOSH_DATA_LENGTH
 #define TOSH_DATA_LENGTH 127
@@ -70,6 +71,7 @@ struct state {
 	uint8_t 		level;
 };
 
+/*
 typedef nx_struct metadata_t {
 	nx_uint8_t rssi;
 	nx_uint8_t lqi;
@@ -86,6 +88,7 @@ typedef nx_struct metadata_t {
 	nx_bool ack;
 #endif
 } metadata_t;
+*/
 
 struct event_process {
 	event_t 	event_id;
