@@ -224,6 +224,7 @@ command error_t StdControl.start() {
 	setState(ROUTING_ON);
 	if (!call SendQueue.empty()) {
 		dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+		printf("Network ctp, StdControl,start\n");
 		post sendTask();
 	}
 	return SUCCESS;
@@ -249,6 +250,7 @@ command error_t StdControl.stop() {
    */ 
   event void UnicastNameFreeRouting.routeFound() {
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+	printf("Network ctp post sendTask from routeFound()\n");
     post sendTask();
   }
 
@@ -448,6 +450,7 @@ task void sendTask() {
 	else if (subsendResult == ESIZE) {
 	  dbg("Forwarder", "%s: subsend failed from ESIZE: truncate packet.\n", __FUNCTION__);
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
+		printf("Network ctp post sendTask from -ESIZE\n");
 	  post sendTask();
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
 	}
@@ -530,6 +533,7 @@ task void sendTask() {
     }
     else if (hasState(ACK_PENDING) && !call PacketAcknowledgements.wasAcked(msg)) {
       /* No ack: if countdown is not 0, retransmit, else drop the packet. */
+    	printf("Network ctp SubSend.sendDone(0x%1x, %d)\n - not acked", msg, error);
       call LinkEstimator.txNoAck(call SubAMPacket.destination(msg));
       call CtpInfo.recomputeRoutes();
       if (--qe->retries) { 
@@ -630,6 +634,7 @@ task void sendTask() {
           // sendTask is only immediately posted if we don't detect a
           // loop.
 	  dbg("FHangBug", "%s: posted sendTask.\n", __FUNCTION__);
+  printf("Network ctp post sendTask from Retx\n");
           post sendTask();
         }
         
@@ -748,6 +753,7 @@ task void sendTask() {
   event void RetxmitTimer.fired() {
     clearState(SENDING);
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+printf("Network ctp Retimer fired()\n");
     post sendTask();
   }
 
