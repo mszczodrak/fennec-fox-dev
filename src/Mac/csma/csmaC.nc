@@ -183,7 +183,6 @@ RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC;
 
 components new SoftwareAckLayerC();
 AckReceivedFlag = SoftwareAckLayerC.AckReceivedFlag;
-///SoftwareAckLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 RadioAlarm[unique(UQ_RADIO_ALARM)] = SoftwareAckLayerC.RadioAlarm;
 MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
 SoftwareAckConfig = SoftwareAckLayerC.Config;
