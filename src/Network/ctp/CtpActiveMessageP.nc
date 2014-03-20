@@ -26,6 +26,7 @@ uint8_t getCtpType(message_t* msg) {
 	}
 	ptr++;
 	t = *ptr;
+	printf("Network ctp CtpActiveMessage getCtpType() - %d\n", t);
 	return t;
 }
 
@@ -146,11 +147,13 @@ async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
 }
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
+	printf("Network ctp CtpActiveMessage MacAMSend.sendDone()\n");
 	do_sendDone(msg, error);
 }
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	//dbgs(F_NETWORK, S_NONE, DBGS_GOT_RECEIVE, 0, 0);
+	printf("Network ctp CtpActiveMessage MacReceive.receive()\n");
 	return do_receive(msg, payload, len);
 }
 

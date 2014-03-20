@@ -72,6 +72,7 @@ command error_t SplitControl.start() {
 	uint32_t send_delay = call CounterParams.get_delay() * 
 		call CounterParams.get_delay_scale();
 	//call Leds.led0On();
+	printf("Application SplitControl.start()\n");
 	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0, 0);
 	dbg("Application", "[%d] Counter SplitControl.start()", process);
 
@@ -93,6 +94,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
+	printf("Application SplitControl.stop()\n");
 	dbg("Application", "[%d] Counter SplitControl.stop()", process);
 	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
@@ -132,6 +134,7 @@ void sendMessage() {
 }
 
 event void Timer.fired() {
+	printf("Application Timer.fired() - %d\n", sendBusy);
 	if (!sendBusy) {
 		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
@@ -156,6 +159,8 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 				process,  msg, payload, len); 
 	dbg("Application", "[%d] Counter receive seqno: %d source: %d", 
 				process, cm->seqno, cm->source); 
+
+	printf("Application Network.receive()\n");
 
 	call Leds.set(cm->seqno);
 	if (cm->seqno > (seqno + 20)) {

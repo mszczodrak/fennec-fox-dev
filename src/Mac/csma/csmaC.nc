@@ -192,11 +192,11 @@ SoftwareAckLayerC.SubReceive -> CsmaLayerC;
 
 // -------- Carrier Sense
 
-	components new DummyLayerC() as CsmaLayerC;
-	//CsmaConfig = CsmaLayerC.Config;
-	CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
-	CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
-	RadioCCA = CsmaLayerC;
+components new DummyLayerC() as CsmaLayerC;
+//CsmaConfig = CsmaLayerC.Config;
+CsmaLayerC -> TrafficMonitorLayerC.RadioSend;
+CsmaLayerC -> TrafficMonitorLayerC.RadioReceive;
+RadioCCA = CsmaLayerC;
 
 // -------- MetadataFlags
 
@@ -206,14 +206,14 @@ SoftwareAckLayerC.SubReceive -> CsmaLayerC;
 // -------- Traffic Monitor
 
 #ifdef TRAFFIC_MONITOR
-	components new TrafficMonitorLayerC();
-	TrafficMonitor = TrafficMonitorLayerC;
-	TrafficMonitorConfig = TrafficMonitorLayerC.Config;
+components new TrafficMonitorLayerC();
+TrafficMonitor = TrafficMonitorLayerC;
+TrafficMonitorConfig = TrafficMonitorLayerC.Config;
 #else
-	components new DummyLayerC() as TrafficMonitorLayerC;
+components new DummyLayerC() as TrafficMonitorLayerC;
 #endif
-	RadioSend = TrafficMonitorLayerC.SubSend;
-	RadioReceive = TrafficMonitorLayerC.SubReceive;
-	RadioState = TrafficMonitorLayerC.SubState;
+RadioSend = TrafficMonitorLayerC.SubSend;
+RadioReceive = TrafficMonitorLayerC.SubReceive;
+RadioState = TrafficMonitorLayerC.SubState;
 
 }

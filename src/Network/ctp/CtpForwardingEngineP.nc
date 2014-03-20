@@ -279,6 +279,8 @@ command error_t StdControl.stop() {
     dbg("Forwarder", "%s: sending packet from client %hhu: %x, len %hhu\n", __FUNCTION__, client, msg, len);
     if (!hasState(ROUTING_ON)) {return EOFF;}
     if (len > call Send.maxPayloadLength[client]()) {return ESIZE;}
+
+	printf("Network ctp Send.send len:%d\n", len);
     
     call Packet.setPayloadLength(msg, len);
     hdr = getHeader(msg);
@@ -353,6 +355,7 @@ command error_t StdControl.stop() {
 task void sendTask() {
     uint16_t gradient;
     dbg("Forwarder", "%s: Trying to send a packet. Queue size is %hhu.\n", __FUNCTION__, call SendQueue.size());
+	printf("Network ctp sendTask()\n");
     if (hasState(SENDING) || call SendQueue.empty()) {
       call CollectionDebug.logEvent(NET_C_FE_SENDQUEUE_EMPTY);
       return;
@@ -369,6 +372,7 @@ task void sendTask() {
        * Otherwise the forwarder might hang indefinitely. As this test
        * doesn't require radio activity, the energy cost is minimal. */
       dbg("Forwarder", "%s: no route, don't send, try again in %i.\n", __FUNCTION__, NO_ROUTE_RETRY);
+	printf("Network ctp sendTask() - no route\n");
       call RetxmitTimer.startOneShot(NO_ROUTE_RETRY);
       call CollectionDebug.logEvent(NET_C_FE_NO_ROUTE);
       return;
@@ -414,11 +418,13 @@ task void sendTask() {
         loopbackMsgPtr = signal Receive.receive(loopbackMsgPtr,
 							   payload,
 							   payloadLength);
+	printf("Network ctp sendTask() self-Root\n");
         signal SubSend.sendDone(qe->msg, SUCCESS);
       }
       else {
 	/* The basic forwarding/sending case. */
         //dbgs(F_NETWORK, S_NONE, DBGS_FORWARDING, dest, dest);
+	printf("Network ctp forwarding\n");
 
 	call CtpPacket.setEtx(qe->msg, gradient);
 	call CtpPacket.clearOption(qe->msg, CTP_OPT_ECN | CTP_OPT_PULL);
@@ -659,6 +665,8 @@ task void sendTask() {
     bool duplicate = FALSE;
     fe_queue_entry_t* qe;
     uint8_t i, thl;
+
+    printf("Network ctp SubReceive.receive len:%d\n", len);
 
     dbg("Network", "[%d] ctp CtpForwardingEngine SubReceive.receive(0x%1x, 0x%1x, %d)", process, msg, payload, len);
 

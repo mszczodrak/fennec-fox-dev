@@ -673,6 +673,7 @@ implementation {
 				      void* payload,
 				      uint8_t len) {
     dbg("LI", "Received upper packet. Will signal up\n");
+	printf("Network ctp LinkEstimator SubReceive.receive()\n");
     processReceivedMessage(msg, payload, len);
     return signal Receive.receive(msg,
 				  call Packet.getPayload(msg, call Packet.payloadLength(msg)),
