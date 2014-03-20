@@ -73,7 +73,6 @@ RadioPacket = cc2420xNewImplC.RadioPacket;
 
 PacketTransmitPower = cc2420xNewImplC.PacketTransmitPower;
 PacketRSSI = cc2420xNewImplC.PacketRSSI;
-//PacketTimeSyncOffset = cc2420xNewImplC.PacketTimeSyncOffset;
 PacketLinkQuality = cc2420xNewImplC.PacketLinkQuality;
 
 PacketTimeStampRadio = cc2420xNewImplC.PacketTimeStampRadio;
@@ -82,9 +81,6 @@ PacketTimeStamp32khz = cc2420xNewImplC.PacketTimeStamp32khz;
 
 RadioLinkPacketMetadata = RadioDriverLayerC;
 LocalTimeRadio = RadioDriverLayerC;
-//Alarm = RadioDriverLayerC;
-
-
 cc2420xNewImplC.CC2420XDriverConfig -> RadioP;
 
 }
