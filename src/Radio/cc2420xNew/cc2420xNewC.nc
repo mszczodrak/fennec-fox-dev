@@ -3,42 +3,34 @@
 generic configuration cc2420xNewC(process_t process) {
 
 provides interface SplitControl;
+uses interface cc2420xNewParams;
 
-provides interface SoftwareAckConfig;
+provides interface ActiveMessageConfig;
 provides interface UniqueConfig;
-provides interface CsmaConfig;
-provides interface TrafficMonitorConfig;
+provides interface LowPowerListeningConfig;
 provides interface RandomCollisionConfig;
 provides interface SlottedCollisionConfig;
-provides interface ActiveMessageConfig;
+provides interface SoftwareAckConfig;
+provides interface TrafficMonitorConfig;
+provides interface CsmaConfig;
 provides interface DummyConfig;
 
-provides interface LowPowerListeningConfig;
-
-provides interface PacketFlag as AckReceivedFlag;
-
-provides interface Resource as RadioResource;
-
 provides interface RadioState;
-provides interface RadioSend;
 provides interface RadioReceive;
-provides interface RadioCCA;
+provides interface RadioSend;
 provides interface RadioPacket;
-
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface RadioCCA;
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-
-provides interface LocalTime<TRadio> as LocalTimeRadio;
-//provides interface Alarm<TRadio, tradio_size>;
+provides interface Resource as RadioResource;
 provides interface RadioAlarm[uint8_t id];
-
+provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
-
-uses interface cc2420xNewParams;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketFlag as AckReceivedFlag;
 
 uses interface Ieee154PacketLayer;
 

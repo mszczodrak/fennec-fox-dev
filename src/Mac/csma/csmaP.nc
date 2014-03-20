@@ -9,6 +9,10 @@ uses interface TrafficMonitorConfig;
 uses interface CsmaConfig;
 uses interface SlottedCollisionConfig;
 uses interface LowPowerListeningConfig;
+uses interface DummyConfig;
+uses interface LocalTime<TRadio> as LocalTimeRadio;
+
+
 }
 
 implementation {

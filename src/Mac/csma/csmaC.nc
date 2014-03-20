@@ -72,9 +72,10 @@ uses interface SlottedCollisionConfig;
 uses interface SoftwareAckConfig;
 uses interface TrafficMonitorConfig;
 uses interface CsmaConfig;
+uses interface DummyConfig;
 
 uses interface RadioAlarm[uint8_t id];
-
+uses interface LocalTime<TRadio> as LocalTimeRadio;
 uses interface PacketTimeStamp<TRadio, uint32_t> as RadioPacketTimeStampRadio;
 uses interface PacketTimeStamp<TMilli, uint32_t> as RadioPacketTimeStampMilli;
 uses interface PacketTimeStamp<T32khz, uint32_t> as RadioPacketTimeStamp32khz;
@@ -93,6 +94,8 @@ TrafficMonitorConfig = csmaP.TrafficMonitorConfig;
 LowPowerListeningConfig = csmaP.LowPowerListeningConfig;
 CsmaConfig = csmaP.CsmaConfig;
 SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
+DummyConfig = csmaP.DummyConfig;
+LocalTimeRadio = csmaP.LocalTimeRadio;
 
 Ieee154PacketLayer = Ieee154PacketLayerC;
 MacLinkPacketMetadata = RadioLinkPacketMetadata;
