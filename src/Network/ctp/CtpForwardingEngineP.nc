@@ -224,7 +224,6 @@ command error_t StdControl.start() {
 	setState(ROUTING_ON);
 	if (!call SendQueue.empty()) {
 		dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-		printf("Network ctp, StdControl,start\n");
 		post sendTask();
 	}
 	return SUCCESS;
@@ -250,7 +249,6 @@ command error_t StdControl.stop() {
    */ 
   event void UnicastNameFreeRouting.routeFound() {
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-	printf("Network ctp post sendTask from routeFound()\n");
     post sendTask();
   }
 
@@ -282,8 +280,6 @@ command error_t StdControl.stop() {
     if (!hasState(ROUTING_ON)) {return EOFF;}
     if (len > call Send.maxPayloadLength[client]()) {return ESIZE;}
 
-	printf("Network ctp Send.send len:%d\n", len);
-    
     call Packet.setPayloadLength(msg, len);
     hdr = getHeader(msg);
     hdr->origin = TOS_NODE_ID;
@@ -357,7 +353,6 @@ command error_t StdControl.stop() {
 task void sendTask() {
     uint16_t gradient;
     dbg("Forwarder", "%s: Trying to send a packet. Queue size is %hhu.\n", __FUNCTION__, call SendQueue.size());
-	printf("Network ctp sendTask()\n");
     if (hasState(SENDING) || call SendQueue.empty()) {
       call CollectionDebug.logEvent(NET_C_FE_SENDQUEUE_EMPTY);
       return;
@@ -374,7 +369,6 @@ task void sendTask() {
        * Otherwise the forwarder might hang indefinitely. As this test
        * doesn't require radio activity, the energy cost is minimal. */
       dbg("Forwarder", "%s: no route, don't send, try again in %i.\n", __FUNCTION__, NO_ROUTE_RETRY);
-	printf("Network ctp sendTask() - no route\n");
       call RetxmitTimer.startOneShot(NO_ROUTE_RETRY);
       call CollectionDebug.logEvent(NET_C_FE_NO_ROUTE);
       return;
@@ -420,13 +414,11 @@ task void sendTask() {
         loopbackMsgPtr = signal Receive.receive(loopbackMsgPtr,
 							   payload,
 							   payloadLength);
-	printf("Network ctp sendTask() self-Root\n");
         signal SubSend.sendDone(qe->msg, SUCCESS);
       }
       else {
 	/* The basic forwarding/sending case. */
         //dbgs(F_NETWORK, S_NONE, DBGS_FORWARDING, dest, dest);
-	printf("Network ctp forwarding\n");
 
 	call CtpPacket.setEtx(qe->msg, gradient);
 	call CtpPacket.clearOption(qe->msg, CTP_OPT_ECN | CTP_OPT_PULL);
@@ -450,7 +442,6 @@ task void sendTask() {
 	else if (subsendResult == ESIZE) {
 	  dbg("Forwarder", "%s: subsend failed from ESIZE: truncate packet.\n", __FUNCTION__);
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
-		printf("Network ctp post sendTask from -ESIZE\n");
 	  post sendTask();
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
 	}
@@ -533,7 +524,6 @@ task void sendTask() {
     }
     else if (hasState(ACK_PENDING) && !call PacketAcknowledgements.wasAcked(msg)) {
       /* No ack: if countdown is not 0, retransmit, else drop the packet. */
-    	printf("Network ctp SubSend.sendDone(0x%1x, %d)\n - not acked", msg, error);
       call LinkEstimator.txNoAck(call SubAMPacket.destination(msg));
       call CtpInfo.recomputeRoutes();
       if (--qe->retries) { 
@@ -634,7 +624,6 @@ task void sendTask() {
           // sendTask is only immediately posted if we don't detect a
           // loop.
 	  dbg("FHangBug", "%s: posted sendTask.\n", __FUNCTION__);
-  printf("Network ctp post sendTask from Retx\n");
           post sendTask();
         }
         
@@ -670,8 +659,6 @@ task void sendTask() {
     bool duplicate = FALSE;
     fe_queue_entry_t* qe;
     uint8_t i, thl;
-
-    printf("Network ctp SubReceive.receive len:%d\n", len);
 
     dbg("Network", "[%d] ctp CtpForwardingEngine SubReceive.receive(0x%1x, 0x%1x, %d)", process, msg, payload, len);
 
@@ -753,7 +740,6 @@ task void sendTask() {
   event void RetxmitTimer.fired() {
     clearState(SENDING);
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-printf("Network ctp Retimer fired()\n");
     post sendTask();
   }
 

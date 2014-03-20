@@ -375,7 +375,6 @@ command error_t StdControl.stop() {
         if (sending) {
             return;
         }
-	printf("Network ctp CtpRoutingEngine sendBeaconTask()\n");
 
         beaconMsg->options = 0;
 
@@ -451,8 +450,6 @@ event void BeaconTimer.fired() {
         am_addr_t from;
         ctp_routing_header_t* rcvBeacon;
         bool congested;
-
-	printf("Network ctp CtpRoutingEngine BeaconReceive.receive()\n");
 
         // Received a beacon, but it's not from us.
         if (len != sizeof(ctp_routing_header_t)) {
