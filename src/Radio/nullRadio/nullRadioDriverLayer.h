@@ -17,22 +17,6 @@ typedef struct nullRadio_metadata_t
 	}; 
 } nullRadio_metadata_t; 
 
-enum nullRadio_timing_enums {
-	NULLRADIO_SYMBOL_TIME = 16, // 16us	
-	IDLE_2_RX_ON_TIME = 12 * NULLRADIO_SYMBOL_TIME, 
-	PD_2_IDLE_TIME = 860, // .86ms
-	STROBE_TO_TX_ON_TIME = 12 * NULLRADIO_SYMBOL_TIME, 
-	// TX SFD delay is computed as follows:
-	// a.) STROBE_TO_TX_ON_TIME is required for preamble transmission to 
-	// start after TX strobe is issued
-	// b.) the SFD byte is the 5th byte transmitted (10 symbol periods)
-	// c.) there's approximately a 25us delay between the strobe and reading
-	// the timer register
-	TX_SFD_DELAY = STROBE_TO_TX_ON_TIME + 10 * NULLRADIO_SYMBOL_TIME - 25,
-	// TX SFD is captured in hardware
-	RX_SFD_DELAY = 0,
-};
-
 enum nullRadio_reg_access_enums {
 	NULLRADIO_CMD_REGISTER_MASK = 0x3f,
 	NULLRADIO_CMD_REGISTER_READ = 0x40,
