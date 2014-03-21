@@ -1,52 +1,79 @@
 #include <RadioConfig.h>
 #include <nullRadioDriverLayer.h>
 
-#include <AM.h>
+configuration nullRadioDriverLayerC
+{
+	provides
+	{
+		interface RadioState;
+		interface RadioSend;
+		interface RadioReceive;
+		interface RadioCCA;
+		interface RadioPacket;
 
-configuration capeDriverLayerC {
-provides interface RadioReceive;
+		interface PacketField<uint8_t> as PacketTransmitPower;
+		interface PacketField<uint8_t> as PacketRSSI;
+		interface PacketField<uint8_t> as PacketTimeSyncOffset;
+		interface PacketField<uint8_t> as PacketLinkQuality;
+		interface LinkPacketMetadata;
 
-provides interface Resource as RadioResource;
+		interface LocalTime<TRadio> as LocalTimeRadio;
+		interface Alarm<TRadio, tradio_size>;
+	}
 
-provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
+	uses
+	{
+		interface nullRadioDriverConfig as Config;
+		interface PacketTimeStamp<TRadio, uint32_t>;
 
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint32_t> as PacketTimeSync;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
-
-provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
-provides interface RadioCCA;
-
+		interface PacketFlag as TransmitPowerFlag;
+		interface PacketFlag as RSSIFlag;
+		interface PacketFlag as TimeSyncFlag;
+		interface RadioAlarm;
+	}
 }
 
-implementation {
+implementation
+{
+	components nullRadioDriverLayerP as DriverLayerP,
+		BusyWaitMicroC,
+		TaskletC,
+		MainC,
+		HplnullRadioC as HplC;
 
-components CapePacketModelC as CapePacketModelC;
-components CpmModelC;
-components capeDriverLayerP;
+	MainC.SoftwareInit -> DriverLayerP.SoftwareInit;
+	MainC.SoftwareInit -> HplC.Init;
 
-RadioState = capeDriverLayerP;
-RadioReceive = capeDriverLayerP.RadioReceive;
+	RadioState = DriverLayerP;
+	RadioSend = DriverLayerP;
+	RadioReceive = DriverLayerP;
+	RadioCCA = DriverLayerP;
+	RadioPacket = DriverLayerP;
 
-PacketTransmitPower = capeDriverLayerP.PacketTransmitPower;
-PacketRSSI = capeDriverLayerP.PacketRSSI;
-PacketTimeSync = capeDriverLayerP.PacketTimeSync;
-PacketLinkQuality = capeDriverLayerP.PacketLinkQuality;
-RadioLinkPacketMetadata = capeDriverLayerP.RadioLinkPacketMetadata;
+	LocalTimeRadio = HplC;
+	Config = DriverLayerP;
 
-RadioResource = capeDriverLayerP.RadioResource;
+	PacketTransmitPower = DriverLayerP.PacketTransmitPower;
+	TransmitPowerFlag = DriverLayerP.TransmitPowerFlag;
 
-RadioBuffer = capeDriverLayerP.RadioBuffer;
-RadioPacket = capeDriverLayerP.RadioPacket;
-RadioSend = capeDriverLayerP.RadioSend;
+	PacketRSSI = DriverLayerP.PacketRSSI;
+	RSSIFlag = DriverLayerP.RSSIFlag;
 
-capeDriverLayerP.AMControl -> CapePacketModelC;
-capeDriverLayerP.Model -> CapePacketModelC.Packet;
-RadioCCA = CapePacketModelC.RadioCCA;
+	PacketTimeSyncOffset = DriverLayerP.PacketTimeSyncOffset;
+	TimeSyncFlag = DriverLayerP.TimeSyncFlag;
 
-CapePacketModelC.GainRadioModel -> CpmModelC.Model;
+	PacketLinkQuality = DriverLayerP.PacketLinkQuality;
+	PacketTimeStamp = DriverLayerP.PacketTimeStamp;
+	LinkPacketMetadata = DriverLayerP;
+
+	Alarm = HplC.Alarm;
+	RadioAlarm = DriverLayerP.RadioAlarm;
+
+	DriverLayerP.Tasklet -> TaskletC;
+	DriverLayerP.BusyWait -> BusyWaitMicroC;
+
+	DriverLayerP.LocalTime-> HplC.LocalTimeRadio;
+
+	components LedsC;
+	DriverLayerP.Leds -> LedsC;
 }
