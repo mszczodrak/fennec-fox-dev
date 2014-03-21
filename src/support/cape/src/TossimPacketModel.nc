@@ -38,7 +38,7 @@
  * @date   December 2 2005
  */ 
 
-
+#include <TossimRadioMsg.h>
 #include <TinyError.h>
 #include <message.h>
 

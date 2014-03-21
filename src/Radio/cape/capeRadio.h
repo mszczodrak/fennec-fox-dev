@@ -29,14 +29,14 @@
 #include <Ieee154PacketLayer.h>
 #include <ActiveMessageLayer.h>
 #include <MetadataFlagsLayer.h>
-#include <CC2420XDriverLayer.h>
+#include <capeDriverLayer.h>
 #include <TimeStampingLayer.h>
 #include <LowPowerListeningLayer.h>
 #include <PacketLinkLayer.h>
 
 typedef nx_struct capepacket_header_t
 {
-	cape_header_t cc2420x;
+	cape_header_t cape;
 	ieee154_simple_header_t ieee154;
 #ifndef TFRAMES_ENABLED
 	network_header_t network;
@@ -51,6 +51,7 @@ typedef nx_struct capepacket_footer_t
 	// the time stamp is not recorded here, time stamped messaged cannot have max length
 } capepacket_footer_t;
 
+
 typedef struct capepacket_metadata_t
 {
 #ifdef LOW_POWER_LISTENING
@@ -61,7 +62,7 @@ typedef struct capepacket_metadata_t
 #endif
 	timestamp_metadata_t timestamp;
 	flags_metadata_t flags;
-	cc2420x_metadata_t cc2420x;
+	message_metadata_t cape;
 } capepacket_metadata_t;
 
 #endif//__CC2420XRADIO_H__

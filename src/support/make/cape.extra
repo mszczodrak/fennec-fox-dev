@@ -10,6 +10,8 @@ OPTFLAGS = -g -O0
 LIBS = -lm -lstdc++ 
 PFLAGS += -tossim -fnesc-nido-tosnodes=1000 -fnesc-simulate -fnesc-nido-motenumber=sim_node\(\) -fnesc-gcc=$(GCC)
 PFLAGS += -fnesc-nido-tosnodes=1000 -fnesc-simulate -fnesc-nido-motenumber=sim_node\(\) -fnesc-gcc=$(GCC)
+PFLAGS += -I$(TOSDIR)/lib/rfxlink/layers
+PFLAGS += -I$(TOSDIR)/lib/rfxlink/util
 WFLAGS = -Wno-nesc-data-race
 PYTHON_VERSION ?= $(shell python --version 2>&1 | sed 's/Python 2\.\([0-9]\)\.[0-9]+\{0,1\}/2.\1/')
 

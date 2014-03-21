@@ -61,6 +61,6 @@
 #include <AM.h>
 #include <message.h>
 #include <Serial.h>
-#include "platform_message.h"
+
 
 #endif
