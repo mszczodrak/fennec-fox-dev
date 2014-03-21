@@ -25,7 +25,7 @@
 #define __RADIOCONFIG_H__
 
 #include <Timer.h>
-#include <CC2420XDriverLayer.h>
+#include <nullRadioDriverLayer.h>
 //#include <util/crc16.h>
 
 /* The number of microseconds a sending micaz mote will wait for an acknowledgement */

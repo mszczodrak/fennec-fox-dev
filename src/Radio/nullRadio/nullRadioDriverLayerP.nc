@@ -45,7 +45,7 @@ module nullRadioDriverLayerP
 
 implementation
 {
-	cc2420x_header_t* getHeader(message_t* msg)
+	nullRadio_header_t* getHeader(message_t* msg)
 	{
 		return ((void*)msg) + call Config.headerLength(msg);
 	}
@@ -55,7 +55,7 @@ implementation
 		return ((void*)msg);
 	}
 
-	cc2420x_metadata_t* getMeta(message_t* msg)
+	nullRadio_metadata_t* getMeta(message_t* msg)
 	{
 		return ((void*)msg) + sizeof(message_t) - call RadioPacket.metadataLength(msg);
 	}
@@ -155,7 +155,7 @@ implementation
 	
 	async command uint8_t RadioPacket.headerLength(message_t* msg)
 	{
-		return call Config.headerLength(msg) + sizeof(cc2420x_header_t);
+		return call Config.headerLength(msg) + sizeof(nullRadio_header_t);
 	}
 
 	async command uint8_t RadioPacket.payloadLength(message_t* msg)
@@ -171,12 +171,12 @@ implementation
 
 	async command uint8_t RadioPacket.maxPayloadLength()
 	{
-		return call Config.maxPayloadLength() - sizeof(cc2420x_header_t);
+		return call Config.maxPayloadLength() - sizeof(nullRadio_header_t);
 	}
 
 	async command uint8_t RadioPacket.metadataLength(message_t* msg)
 	{
-		return call Config.metadataLength(msg) + sizeof(cc2420x_metadata_t);
+		return call Config.metadataLength(msg) + sizeof(nullRadio_metadata_t);
 	}
 
 	async command void RadioPacket.clear(message_t* msg)
