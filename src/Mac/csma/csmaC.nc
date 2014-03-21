@@ -116,7 +116,6 @@ components new PacketLinkLayerC();
 MacAMSend = ActiveMessageLayerC.AMSend[process];
 MacReceive = ActiveMessageLayerC.Receive[process];
 MacSnoop = ActiveMessageLayerC.Snoop[process];
-/////	//SendNotifier = ActiveMessageLayerC;
 MacAMPacket = ActiveMessageLayerC.AMPacket;
 MacPacket = ActiveMessageLayerC;
 
