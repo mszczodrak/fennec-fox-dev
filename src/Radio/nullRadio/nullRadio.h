@@ -6,7 +6,7 @@
 #include <Ieee154PacketLayer.h>
 #include <ActiveMessageLayer.h>
 #include <MetadataFlagsLayer.h>
-#include <nullRadioLayer.h>
+#include <nullRadioDriverLayer.h>
 #include <TimeStampingLayer.h>
 #include <LowPowerListeningLayer.h>
 #include <PacketLinkLayer.h>
@@ -42,4 +42,4 @@ typedef struct nullRadiopacket_metadata_t
 	message_metadata_t nullRadio;
 } nullRadiopacket_metadata_t;
 
-#endif//__CC2420XRADIO_H__
+#endif//__NULLRADIO_H__

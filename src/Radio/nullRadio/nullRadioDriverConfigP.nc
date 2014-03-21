@@ -2,11 +2,11 @@
 #include <RadioConfig.h>
 #include <Tasklet.h>
 
-module nullRadioConfigP
+module nullRadioDriverConfigP
 {
 	provides
 	{
-		interface nullRadioConfig;
+		interface nullRadioDriverConfig;
 
 		interface SoftwareAckConfig;
 		interface UniqueConfig;
@@ -33,30 +33,30 @@ module nullRadioConfigP
 implementation
 {
 
-/*----------------- nullRadioConfig -----------------*/
+/*----------------- nullRadioDriverConfig -----------------*/
 
-	async command uint8_t nullRadioConfig.headerLength(message_t* msg)
+	async command uint8_t nullRadioDriverConfig.headerLength(message_t* msg)
 	{
 		return offsetof(message_t, data) - sizeof(nullRadiopacket_header_t);
 	}
 
-	async command uint8_t nullRadioConfig.maxPayloadLength()
+	async command uint8_t nullRadioDriverConfig.maxPayloadLength()
 	{
 		return sizeof(nullRadiopacket_header_t) + TOSH_DATA_LENGTH;
 	}
 
-	async command uint8_t nullRadioConfig.metadataLength(message_t* msg)
+	async command uint8_t nullRadioDriverConfig.metadataLength(message_t* msg)
 	{
 		return 0;
 	}
 
-	async command uint8_t nullRadioConfig.headerPreloadLength()
+	async command uint8_t nullRadioDriverConfig.headerPreloadLength()
 	{
 		// we need the fcf, dsn, destpan and dest
 		return 7;
 	}
 
-	async command bool nullRadioConfig.requiresRssiCca(message_t* msg)
+	async command bool nullRadioDriverConfig.requiresRssiCca(message_t* msg)
 	{
 		return call Ieee154PacketLayer.isDataFrame(msg);
 	}

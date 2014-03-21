@@ -39,7 +39,7 @@ implementation {
 
 components new nullRadioP(process);
 
-components nullRadioConfigP as RadioP;
+components nullRadioDriverConfigP as RadioP;
 SoftwareAckConfig = RadioP;
 UniqueConfig = RadioP;
 CsmaConfig = RadioP;
@@ -78,6 +78,6 @@ PacketTimeStamp32khz = nullRadioImplC.PacketTimeStamp32khz;
 
 RadioLinkPacketMetadata = nullRadioImplC;
 LocalTimeRadio = nullRadioImplC;
-nullRadioImplC.nullRadioConfig -> RadioP;
+nullRadioImplC.nullRadioDriverConfig -> RadioP;
 
 }

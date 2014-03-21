@@ -1,4 +1,4 @@
-interface nullRadioConfig
+interface nullRadioDriverConfig
 {
 	/**
 	 * Returns the length of a dummy header to align the payload properly.
