@@ -60,24 +60,10 @@ implementation
 		return ((void*)msg) + sizeof(message_t) - call RadioPacket.metadataLength(msg);
 	}
 
-/*----------------- STATE -----------------*/
-
-
-	// flag: RX SFD was captured, but not yet processed
-	norace bool rxSfd = 0;
-	// flag: end of TX event (falling SFD edge) was captured, but not yet processed	
-	norace bool txEnd = 0;
-
-	tasklet_norace uint8_t txPower;
+//tasklet_norace uint8_t txPower;
 	tasklet_norace uint8_t channel;
 
-	tasklet_norace message_t* rxMsg;
-	message_t rxMsgBuffer;
 
-	norace uint16_t capturedTime;	// time when the last SFD rising edge was captured
-
-	inline cc2420X_status_t getStatus();
-	inline cc2420X_status_t enableReceiveSfd();
 
 /*----------------- ALARM -----------------*/
 	tasklet_async event void RadioAlarm.fired()
@@ -103,23 +89,26 @@ implementation
 
 	tasklet_async command error_t RadioState.setChannel(uint8_t c)
 	{
-		call Tasklet.schedule();
+		signal RadioState.done();
 		return SUCCESS;
 	}
 
 	tasklet_async command error_t RadioState.turnOff()
 	{
+		signal RadioState.done();
 		return SUCCESS;
 	}
 	
 	tasklet_async command error_t RadioState.standby()
 	{
+		signal RadioState.done();
 		return SUCCESS;
 	}
 
 
 	tasklet_async command error_t RadioState.turnOn()
 	{
+		signal RadioState.done();
 		return SUCCESS;
 	}
 
@@ -129,6 +118,7 @@ implementation
 
 	tasklet_async command error_t RadioSend.send(message_t* msg)
 	{
+		signal RadioSend.sendDone(SUCCESS);
 		return SUCCESS;
 	}
 

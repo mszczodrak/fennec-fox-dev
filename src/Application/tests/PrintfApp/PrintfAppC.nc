@@ -61,4 +61,7 @@ NetworkPacketAcknowledgements = PrintfAppP.NetworkPacketAcknowledgements;
 
 components new TimerMilliC() as Timer;
 PrintfAppP.Timer -> Timer;
+
+components LedsC;
+PrintfAppP.Leds -> LedsC;
 }
