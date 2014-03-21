@@ -71,7 +71,10 @@ TrafficMonitorConfig = nullMacP.TrafficMonitorConfig;
 LowPowerListeningConfig = nullMacP.LowPowerListeningConfig;
 CsmaConfig = nullMacP.CsmaConfig;
 SlottedCollisionConfig = nullMacP.SlottedCollisionConfig;
+RandomCollisionConfig = nullMacP.RandomCollisionConfig;
 DummyConfig = nullMacP.DummyConfig;
+UniqueConfig = nullMacP.UniqueConfig;
+SoftwareAckConfig = nullMacP.SoftwareAckConfig;
 LocalTimeRadio = nullMacP.LocalTimeRadio;
 
 Ieee154PacketLayer = Ieee154PacketLayerC;
@@ -81,6 +84,7 @@ MacPacketTimeStampMilli = RadioPacketTimeStampMilli;
 MacPacketTimeStamp32khz = RadioPacketTimeStamp32khz;
 
 #define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
+RadioAlarm[unique(UQ_RADIO_ALARM)] = nullMacP.RadioAlarm;
 
 // -------- Active Message
 
@@ -100,12 +104,11 @@ MacPacket = ActiveMessageLayerC;
 ActiveMessageConfig = ActiveMessageLayerC.Config;
 ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
 ActiveMessageLayerC.SubReceive -> nullMacP;
-ActiveMessageLayerC.SubPacket -> nullMacP;
+RadioPacket = ActiveMessageLayerC.SubPacket;
 
 RadioResource = AutoResourceAcquireLayerC.Resource;
 AutoResourceAcquireLayerC.SubSend -> nullMacP;
 
-RadioPacket = nullMacP.RadioPacket;
 SplitControl = nullMacP;
 LowPowerListening = nullMacP;
 
