@@ -38,7 +38,7 @@
  * @date   December 2 2005
  */ 
 
-#include <TossimRadioMsg.h>
+
 #include <TinyError.h>
 #include <message.h>
 
@@ -54,7 +54,7 @@ interface TossimPacketModel {
     * cannot satisfy; in this case, it will signal sendDone with an
     * appropriate error code.
     */ 
-  async command error_t send(int node, message_t* msg, uint8_t len);
+  command error_t send(int node, message_t* msg, uint8_t len);
 
   /**
     * Cancel a requested transmission. Returns SUCCESS if the 

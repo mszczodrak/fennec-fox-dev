@@ -208,7 +208,7 @@ implementation {
 	
   }
   
-  async command bool Model.clearChannel() {
+  command bool Model.clearChannel() {
     dbg("CpmModelC", "Checking clear channel @ %s: %f <= %f \n", sim_time_string(), (double)packetNoise(NULL), clearThreshold);
     return packetNoise(NULL) < clearThreshold;
   }
@@ -323,7 +323,7 @@ implementation {
       // Copy this receiver's packet signal strength to the metadata region
       // of the packet. Note that this packet is actually shared across all
       // receivers: a higher layer performs the copy.
-      metadata_t* meta = (metadata_t*)(&mine->msg->metadata);
+      tossim_metadata_t* meta = (tossim_metadata_t*)(&mine->msg->metadata);
       meta->strength = mine->strength;
       
       dbg_clear("CpmModelC,SNRLoss", "  -signaling reception\n");
@@ -456,7 +456,7 @@ implementation {
   }
     
 
-  async command void Model.setPendingTransmission() {
+  command void Model.setPendingTransmission() {
     transmitting = TRUE;
     dbg("CpmModelC", "setPendingTransmission: transmitting %i @ %s\n", transmitting, sim_time_string());
   }

@@ -594,7 +594,7 @@ task void sendTask() {
       }
 
       memset(newMsg, 0, sizeof(message_t));
-//      memset(m->metadata, 0, sizeof(metadata_t));    /* TODO: is it OK to disable this memset? */
+      memset(m->metadata, 0, sizeof(message_metadata_t));
       
       qe->msg = m;
       qe->client = 0xff;

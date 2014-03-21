@@ -32,7 +32,12 @@
   * @updated: 12/28/2013
   */
 
-configuration capeDriverC {
+#include <RadioConfig.h>
+#include <capeDriverLayer.h>
+
+#include <AM.h>
+
+configuration capeDriverLayerC {
 provides interface RadioReceive;
 
 provides interface Resource as RadioResource;
@@ -56,25 +61,25 @@ implementation {
 
 components CapePacketModelC as CapePacketModelC;
 components CpmModelC;
-components capeDriverP;
+components capeDriverLayerP;
 
-RadioState = capeDriverP;
-RadioReceive = capeDriverP.RadioReceive;
+RadioState = capeDriverLayerP;
+RadioReceive = capeDriverLayerP.RadioReceive;
 
-PacketTransmitPower = capeDriverP.PacketTransmitPower;
-PacketRSSI = capeDriverP.PacketRSSI;
-PacketTimeSync = capeDriverP.PacketTimeSync;
-PacketLinkQuality = capeDriverP.PacketLinkQuality;
-RadioLinkPacketMetadata = capeDriverP.RadioLinkPacketMetadata;
+PacketTransmitPower = capeDriverLayerP.PacketTransmitPower;
+PacketRSSI = capeDriverLayerP.PacketRSSI;
+PacketTimeSync = capeDriverLayerP.PacketTimeSync;
+PacketLinkQuality = capeDriverLayerP.PacketLinkQuality;
+RadioLinkPacketMetadata = capeDriverLayerP.RadioLinkPacketMetadata;
 
-RadioResource = capeDriverP.RadioResource;
+RadioResource = capeDriverLayerP.RadioResource;
 
-RadioBuffer = capeDriverP.RadioBuffer;
-RadioPacket = capeDriverP.RadioPacket;
-RadioSend = capeDriverP.RadioSend;
+RadioBuffer = capeDriverLayerP.RadioBuffer;
+RadioPacket = capeDriverLayerP.RadioPacket;
+RadioSend = capeDriverLayerP.RadioSend;
 
-capeDriverP.AMControl -> CapePacketModelC;
-capeDriverP.Model -> CapePacketModelC.Packet;
+capeDriverLayerP.AMControl -> CapePacketModelC;
+capeDriverLayerP.Model -> CapePacketModelC.Packet;
 RadioCCA = CapePacketModelC.RadioCCA;
 
 CapePacketModelC.GainRadioModel -> CpmModelC.Model;

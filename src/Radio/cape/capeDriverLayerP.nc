@@ -35,9 +35,14 @@
 
 
 #include <Fennec.h>
-#include "cape.h"
+#include <capeDriverLayer.h>
+#include <Tasklet.h>
+#include <RadioAssert.h>
+#include <TimeSyncMessageLayer.h>
+#include <RadioConfig.h>
 
-module capeDriverP @safe() {
+
+module capeDriverLayerP @safe() {
 
 provides interface RadioState;
 
@@ -193,7 +198,7 @@ async command error_t RadioSend.send(message_t* msg, bool useCca) {
 		dbg("Radio", "[%d] cape RadioSend.send(0x%1x, %d )", header->destpan, msg, useCca);
 
 		if ((( header->fcf >> IEEE154_FCF_ACK_REQ ) & 0x01) == 1) {
-			metadata_t* metadata = getMetadata(out_msg);
+			tossim_metadata_t* metadata = getMetadata(out_msg);
 			metadata->ack = 1;
 		}
 
@@ -241,11 +246,11 @@ event void Model.receive(message_t* msg) {
 	cape_hdr_t* header = (cape_hdr_t*) msg->data;
 	dbg("Radio", "[%d] cape ModelReceive.receive(0x%1x)", header->destpan, msg);
 	if (signal RadioReceive.header(msg)) {
-		metadata_t* metadata;
+		tossim_metadata_t* metadata;
 
 		memcpy(bufferPointer, msg, sizeof(message_t));
 
-		metadata = (metadata_t*)getMetadata( bufferPointer );
+		metadata = (tossim_metadata_t*)getMetadata( bufferPointer );
 		metadata->crc = 1; /* always PASS crc */
 		metadata->lqi = 0;
 		metadata->rssi = metadata->strength;
@@ -311,7 +316,7 @@ async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) 
 }
 
 async command uint8_t RadioPacket.metadataLength(message_t* msg) {
-        return sizeof(metadata_t);
+        return sizeof(tossim_metadata_t);
 }
 
 async command void RadioPacket.clear(message_t* msg) {

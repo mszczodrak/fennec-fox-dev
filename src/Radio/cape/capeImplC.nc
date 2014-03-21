@@ -27,7 +27,7 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp
 
 implementation {
 
-components new SimpleFcfsArbiterC("cc2420xNew");
+components new SimpleFcfsArbiterC("cape");
 Resource = SimpleFcfsArbiterC.Resource;
 
 components new MetadataFlagsLayerC();
@@ -44,8 +44,7 @@ PacketTimeStampRadio = TimeStampingLayerC;
 PacketTimeStampMilli = TimeStampingLayerC;
 TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[TIME_STAMP_FLAG];
 
-
-//components CC2420XDriverLayerC as RadioDriverLayerC;
+components capeDriverLayerC as RadioDriverLayerC;
 
 components new RadioAlarmC();
 RadioAlarm = RadioAlarmC;

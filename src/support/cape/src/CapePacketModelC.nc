@@ -22,7 +22,11 @@ int destNode;
 sim_event_t sendEvent;
   
 message_t receiveBuffer;
-  
+
+tossim_metadata_t* getMetadata(message_t* msg) {
+	return (tossim_metadata_t*)(&msg->metadata);
+}
+
 task void startDoneTask() {
 	running = TRUE;
 	signal Control.startDone(SUCCESS);
@@ -49,7 +53,7 @@ command error_t Control.stop() {
 
 task void sendDoneTask() {
 	message_t* msg = sending;
-	metadata_t* meta = getMetadata(msg);
+	tossim_metadata_t* meta = getMetadata(msg);
 	meta->ack = 0;
 	meta->strength = 0;
 	meta->time = 0;
@@ -104,7 +108,7 @@ void start_radio() {
 
 void send_transmit(sim_event_t* evt) {
 	sim_time_t duration;
-	metadata_t* metadata = getMetadata(sending);
+	tossim_metadata_t* metadata = getMetadata(sending);
 
 	duration = 8 * sendingLength;
 	duration /= sim_radio_bits_per_symbol();
@@ -146,7 +150,7 @@ uint8_t error = 0;
   
 event void GainRadioModel.acked(message_t* msg) {
 	if (running) {
-		metadata_t* metadata = getMetadata(sending);
+		tossim_metadata_t* metadata = getMetadata(sending);
 		metadata->ack = 1;
 		if (msg != sending) {
 			error = 1;
