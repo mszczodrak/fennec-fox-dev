@@ -61,6 +61,9 @@ command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
 	return 0; 
 }
 
+command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) { }
+
+command uint16_t LowPowerListening.getLocalWakeupInterval() { return 0; }
 
 tasklet_async event void RadioCCA.done(error_t error) {
 
