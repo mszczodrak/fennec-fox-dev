@@ -89,8 +89,6 @@ task void stop_stack() {
 
 command error_t SplitControl.start() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.start()");
-	printf("starting\n");
-	printfflush();
 	privileged = call Fennec.getPrivilegedProcesses();
 	ordinary = call Fennec.getOrdinaryProcesses();
 	post start_stack();
