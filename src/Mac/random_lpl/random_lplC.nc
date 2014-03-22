@@ -101,9 +101,12 @@ MacPacket = ActiveMessageLayerC;
 
 
 ActiveMessageConfig = ActiveMessageLayerC.Config;
-ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
+ActiveMessageLayerC.SubSend -> random_lplP;
 ActiveMessageLayerC.SubReceive -> PacketLinkLayerC;
 ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
+
+random_lplP.SubSend -> AutoResourceAcquireLayerC;
+
 
 RadioResource = AutoResourceAcquireLayerC.Resource;
 AutoResourceAcquireLayerC.SubSend -> UniqueLayerC;
