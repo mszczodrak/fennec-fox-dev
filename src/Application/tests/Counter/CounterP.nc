@@ -112,7 +112,6 @@ void sendMessage() {
 	msg->seqno = seqno;
 
 	printf("send seq: %d\n", seqno);
-	printfflush();
 
 	if (call NetworkAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
@@ -133,7 +132,6 @@ void sendMessage() {
 }
 
 event void Timer.fired() {
-	printf("Timer.fired()\n");
 	if (!sendBusy) {
 		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
@@ -159,21 +157,9 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 				process, cm->seqno, cm->source); 
 
 	printf("rec seq %d from %d\n", cm->seqno, cm->source);
-	printfflush();
 
 	call Leds.set(cm->seqno);
-	if (cm->seqno > (seqno + 20)) {
-		if (call NetworkAMPacket.source(msg) == cm->source) {
-			dbgs(process, F_APPLICATION, S_ERROR, DBGS_ERROR,
-				cm->seqno, cm->source, len);
-		} else {
-			dbgs(process, F_APPLICATION, S_ERROR, DBGS_ERROR_RECEIVE, 
-				cm->source, call NetworkAMPacket.source(msg), len);
-		}
-	} else {
-		dbgs(process, F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source, len);
-	}
-
+	dbgs(process, F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source, len);
 	return msg;
 }
 
