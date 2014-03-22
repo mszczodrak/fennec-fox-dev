@@ -94,6 +94,10 @@ use mac nullMac $(FENNEC_FOX_LIB)/Mac/nullMac ()
 
 use mac rfx $(FENNEC_FOX_LIB)/Mac/rfx ()
 use mac csma $(FENNEC_FOX_LIB)/Mac/csma ()
+use mac random $(FENNEC_FOX_LIB)/Mac/random ()
+use mac random_lpl $(FENNEC_FOX_LIB)/Mac/random_lpl ()
+use mac slotted $(FENNEC_FOX_LIB)/Mac/slotted ()
+use mac slotted_lpl $(FENNEC_FOX_LIB)/Mac/slotted_lpl ()
 
 use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (
 		uint16_t sink_addr,

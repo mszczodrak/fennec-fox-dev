@@ -1,7 +1,7 @@
 #include <Fennec.h>
 
-generic module csmaP(process_t process) {
-uses interface csmaParams;
+generic module randomP(process_t process) {
+uses interface randomParams;
 uses interface PacketField<uint8_t> as PacketTransmitPower;
 uses interface PacketField<uint8_t> as PacketRSSI;
 uses interface PacketField<uint8_t> as PacketLinkQuality;

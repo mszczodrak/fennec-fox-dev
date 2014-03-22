@@ -1,29 +1,8 @@
-/*
- * Copyright (c) 2010, Vanderbilt University
- * All rights reserved.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- * 
- * IN NO EVENT SHALL THE VANDERBILT UNIVERSITY BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE VANDERBILT
- * UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * THE VANDERBILT UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE VANDERBILT UNIVERSITY HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- * Author: Janos Sallai, Miklos Maroti
- */
+
 
 #include <RadioConfig.h>
 
-generic configuration csmaC(process_t process) {
+generic configuration randomC(process_t process) {
 
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
@@ -34,7 +13,7 @@ provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
-uses interface csmaParams;
+uses interface randomParams;
 
 /* new */
 provides interface LowPowerListening;
@@ -85,17 +64,17 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as RadioPacketTimeStamp32khz;
 implementation
 {
 
-components new csmaP(process);
-csmaParams = csmaP.csmaParams;
-PacketTransmitPower = csmaP.PacketTransmitPower;
-PacketRSSI = csmaP.PacketRSSI;
-PacketLinkQuality = csmaP.PacketLinkQuality;
-TrafficMonitorConfig = csmaP.TrafficMonitorConfig;
-LowPowerListeningConfig = csmaP.LowPowerListeningConfig;
-CsmaConfig = csmaP.CsmaConfig;
-SlottedCollisionConfig = csmaP.SlottedCollisionConfig;
-DummyConfig = csmaP.DummyConfig;
-LocalTimeRadio = csmaP.LocalTimeRadio;
+components new randomP(process);
+randomParams = randomP.randomParams;
+PacketTransmitPower = randomP.PacketTransmitPower;
+PacketRSSI = randomP.PacketRSSI;
+PacketLinkQuality = randomP.PacketLinkQuality;
+TrafficMonitorConfig = randomP.TrafficMonitorConfig;
+LowPowerListeningConfig = randomP.LowPowerListeningConfig;
+CsmaConfig = randomP.CsmaConfig;
+SlottedCollisionConfig = randomP.SlottedCollisionConfig;
+DummyConfig = randomP.DummyConfig;
+LocalTimeRadio = randomP.LocalTimeRadio;
 
 Ieee154PacketLayer = Ieee154PacketLayerC;
 MacLinkPacketMetadata = RadioLinkPacketMetadata;
@@ -104,8 +83,6 @@ MacPacketTimeStampMilli = RadioPacketTimeStampMilli;
 MacPacketTimeStamp32khz = RadioPacketTimeStamp32khz;
 
 #define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
-
-// -------- Active Message
 
 components new ActiveMessageLayerC();
 components new AutoResourceAcquireLayerC();
@@ -138,13 +115,7 @@ PacketLinkLayerC -> LowPowerListeningLayerC.Send;
 PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
 PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
-// -------- Low Power Listening
-
-#ifdef LOW_POWER_LISTENING
-components new LowPowerListeningLayerC();
-#else	
 components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
-#endif
 LowPowerListeningConfig = LowPowerListeningLayerC.Config;
 LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
@@ -154,32 +125,19 @@ RadioPacket = LowPowerListeningLayerC.SubPacket;
 SplitControl = LowPowerListeningLayerC;
 LowPowerListening = LowPowerListeningLayerC;
 
-// -------- MessageBuffer
-
 components new MessageBufferLayerC();
 MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
 MessageBufferLayerC.RadioReceive -> UniqueLayerC;
 RadioState = MessageBufferLayerC.RadioState;
 RadioChannel = MessageBufferLayerC;
 
-// -------- UniqueLayer receive part (wired twice)
-
 UniqueLayerC.SubReceive -> CollisionAvoidanceLayerC;
 
-// -------- CollisionAvoidance
-
-#ifdef SLOTTED_MAC
-components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-SlottedCollisionConfig = CollisionAvoidanceLayerC.Config;
-#else
 components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
 RandomCollisionConfig = CollisionAvoidanceLayerC.Config;
-#endif
 CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
 RadioAlarm[unique(UQ_RADIO_ALARM)] = CollisionAvoidanceLayerC;
-
-// -------- SoftwareAcknowledgement
 
 components new SoftwareAckLayerC();
 AckReceivedFlag = SoftwareAckLayerC.AckReceivedFlag;
@@ -188,8 +146,6 @@ MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
 SoftwareAckConfig = SoftwareAckLayerC.Config;
 SoftwareAckLayerC.SubSend -> CsmaLayerC;
 SoftwareAckLayerC.SubReceive -> CsmaLayerC;
-
-// -------- Carrier Sense
 
 components new DummyLayerC() as CsmaLayerC;
 RadioSend = CsmaLayerC;
