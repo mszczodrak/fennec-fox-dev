@@ -13,7 +13,7 @@ include $(FENNEC_FOX_LIB)/support/make/Makerules
 include $(MAKERULES)
 
 #PFLAGS+=-D__DBGS__
-PFLAGS+=-DLOW_POWER_LISTENING
+#PFLAGS+=-DLOW_POWER_LISTENING
 
 # 2. TinyOS printf
 CFLAGS += -I$(TOSDIR)/lib/printf

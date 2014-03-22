@@ -38,9 +38,8 @@ uses interface Ieee154PacketLayer;
 
 implementation {
 
-components new cc2420xP(process);
-
-components CC2420XRadioP as RadioP;
+components new CC2420XRadioP() as RadioP;
+SplitControl = RadioP;
 SoftwareAckConfig = RadioP;
 UniqueConfig = RadioP;
 CsmaConfig = RadioP;
@@ -50,6 +49,7 @@ SlottedCollisionConfig = RadioP;
 ActiveMessageConfig = RadioP;
 DummyConfig = RadioP;
 LowPowerListeningConfig = RadioP;
+cc2420xParams = RadioP;
 
 Ieee154PacketLayer = RadioP;
 RadioP.RadioAlarm -> cc2420xImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
@@ -59,8 +59,6 @@ RadioResource = cc2420xImplC.Resource[process];
 RadioAlarm = cc2420xImplC;
 AckReceivedFlag = cc2420xImplC.PacketFlag[ACK_RECEIVED_FLAG];
 
-cc2420xParams = cc2420xP;
-SplitControl = cc2420xP;
 
 RadioState = cc2420xImplC.RadioState;
 RadioSend = cc2420xImplC.RadioSend;
