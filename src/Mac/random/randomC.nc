@@ -116,8 +116,6 @@ PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
 PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
 components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
-LowPowerListeningConfig = LowPowerListeningLayerC.Config;
-LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;

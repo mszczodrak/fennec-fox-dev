@@ -2,7 +2,7 @@
 
 #include <RadioConfig.h>
 
-generic configuration randomC(process_t process) {
+generic configuration random_lplC(process_t process) {
 
 provides interface SplitControl;
 provides interface AMSend as MacAMSend;
@@ -13,7 +13,7 @@ provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
-uses interface randomParams;
+uses interface random_lplParams;
 
 /* new */
 provides interface LowPowerListening;
@@ -64,17 +64,17 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as RadioPacketTimeStamp32khz;
 implementation
 {
 
-components new randomP(process);
-randomParams = randomP.randomParams;
-PacketTransmitPower = randomP.PacketTransmitPower;
-PacketRSSI = randomP.PacketRSSI;
-PacketLinkQuality = randomP.PacketLinkQuality;
-TrafficMonitorConfig = randomP.TrafficMonitorConfig;
-LowPowerListeningConfig = randomP.LowPowerListeningConfig;
-CsmaConfig = randomP.CsmaConfig;
-SlottedCollisionConfig = randomP.SlottedCollisionConfig;
-DummyConfig = randomP.DummyConfig;
-LocalTimeRadio = randomP.LocalTimeRadio;
+components new random_lplP(process);
+random_lplParams = random_lplP.random_lplParams;
+PacketTransmitPower = random_lplP.PacketTransmitPower;
+PacketRSSI = random_lplP.PacketRSSI;
+PacketLinkQuality = random_lplP.PacketLinkQuality;
+TrafficMonitorConfig = random_lplP.TrafficMonitorConfig;
+LowPowerListeningConfig = random_lplP.LowPowerListeningConfig;
+CsmaConfig = random_lplP.CsmaConfig;
+SlottedCollisionConfig = random_lplP.SlottedCollisionConfig;
+DummyConfig = random_lplP.DummyConfig;
+LocalTimeRadio = random_lplP.LocalTimeRadio;
 
 Ieee154PacketLayer = Ieee154PacketLayerC;
 MacLinkPacketMetadata = RadioLinkPacketMetadata;
