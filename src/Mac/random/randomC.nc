@@ -75,6 +75,9 @@ CsmaConfig = randomP.CsmaConfig;
 SlottedCollisionConfig = randomP.SlottedCollisionConfig;
 DummyConfig = randomP.DummyConfig;
 LocalTimeRadio = randomP.LocalTimeRadio;
+SplitControl = randomP.SplitControl;
+
+randomP.SubSplitControl -> LowPowerListeningLayerC;
 
 Ieee154PacketLayer = Ieee154PacketLayerC;
 MacLinkPacketMetadata = RadioLinkPacketMetadata;
@@ -120,7 +123,6 @@ LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
 RadioPacket = LowPowerListeningLayerC.SubPacket;
-SplitControl = LowPowerListeningLayerC;
 LowPowerListening = LowPowerListeningLayerC;
 
 components new MessageBufferLayerC();
