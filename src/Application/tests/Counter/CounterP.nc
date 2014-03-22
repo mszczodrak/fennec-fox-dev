@@ -111,6 +111,9 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
+	printf("send seq: %d\n", seqno);
+	printfflush();
+
 	if (call NetworkAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
 		dbgs(process, F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
@@ -130,6 +133,7 @@ void sendMessage() {
 }
 
 event void Timer.fired() {
+	printf("Timer.fired()\n");
 	if (!sendBusy) {
 		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
@@ -153,6 +157,9 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 				process,  msg, payload, len); 
 	dbg("Application", "[%d] Counter receive seqno: %d source: %d", 
 				process, cm->seqno, cm->source); 
+
+	printf("rec seq %d from %d\n", cm->seqno, cm->source);
+	printfflush();
 
 	call Leds.set(cm->seqno);
 	if (cm->seqno > (seqno + 20)) {

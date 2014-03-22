@@ -1,91 +1,84 @@
-/*
- * Copyright (c) 2014, Columbia University.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *  - Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  - Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *  - Neither the name of the Columbia University nor the
- *    names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL COLUMBIA UNIVERSITY BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+#include "CC2420.h"
 
-/**
-  * Fennec Fox cc2420x radio driver adaptation
-  *
-  * @author: Marcin K Szczodrak
-  * @updated: 01/05/2014
-  */
+generic configuration cc2420xC(process_t process) {
 
-
-generic configuration cc2420xC(process_t process_id) {
 provides interface SplitControl;
-provides interface RadioReceive;
-
 uses interface cc2420xParams;
 
-provides interface Resource as RadioResource;
-
-provides interface RadioPacket;
-provides interface RadioBuffer;
-provides interface RadioSend;
-
-provides interface PacketField<uint8_t> as PacketTransmitPower;
-provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint32_t> as PacketTimeSync;
-provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface ActiveMessageConfig;
+provides interface UniqueConfig;
+provides interface LowPowerListeningConfig;
+provides interface RandomCollisionConfig;
+provides interface SlottedCollisionConfig;
+provides interface SoftwareAckConfig;
+provides interface TrafficMonitorConfig;
+provides interface CsmaConfig;
+provides interface DummyConfig;
 
 provides interface RadioState;
-provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface RadioReceive;
+provides interface RadioSend;
+provides interface RadioPacket;
 provides interface RadioCCA;
+provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
+provides interface Resource as RadioResource;
+provides interface RadioAlarm[uint8_t id];
+provides interface LocalTime<TRadio> as LocalTimeRadio;
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketFlag as AckReceivedFlag;
+
+uses interface Ieee154PacketLayer;
+
 }
 
 implementation {
 
-components new cc2420xP(process_id);
-components cc2420xMultiC;
+components new cc2420xP(process);
 
-components new SimpleFcfsArbiterC("CC2420_RADIO_RESOURCE") as CC2420ResourceC;
+components CC2420XRadioP as RadioP;
+SoftwareAckConfig = RadioP;
+UniqueConfig = RadioP;
+CsmaConfig = RadioP;
+TrafficMonitorConfig = RadioP;
+RandomCollisionConfig = RadioP;
+SlottedCollisionConfig = RadioP;
+ActiveMessageConfig = RadioP;
+DummyConfig = RadioP;
+LowPowerListeningConfig = RadioP;
 
-SplitControl = cc2420xP;
+Ieee154PacketLayer = RadioP;
+RadioP.RadioAlarm -> cc2420xImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
+
+components cc2420xImplC;
+RadioResource = cc2420xImplC.Resource[process];
+RadioAlarm = cc2420xImplC;
+AckReceivedFlag = cc2420xImplC.PacketFlag[ACK_RECEIVED_FLAG];
+
 cc2420xParams = cc2420xP;
-RadioReceive = cc2420xMultiC.RadioReceive[process_id];
-RadioBuffer = cc2420xMultiC.RadioBuffer[process_id];
-RadioSend = cc2420xMultiC.RadioSend[process_id];
-RadioState = cc2420xP.RadioState;
+SplitControl = cc2420xP;
 
-RadioPacket = cc2420xMultiC.RadioPacket;
+RadioState = cc2420xImplC.RadioState;
+RadioSend = cc2420xImplC.RadioSend;
+RadioReceive = cc2420xImplC.RadioReceive;
+RadioCCA = cc2420xImplC.RadioCCA;
 
-RadioResource = cc2420xP.RadioResource;
-cc2420xP.SubRadioResource -> CC2420ResourceC.Resource[process_id];
-cc2420xP.SubRadioState -> cc2420xMultiC.RadioState[process_id];
+RadioPacket = cc2420xImplC.RadioPacket;
 
-cc2420xP.cc2420XDriverParams -> cc2420xMultiC.cc2420XDriverParams;
+PacketTransmitPower = cc2420xImplC.PacketTransmitPower;
+PacketRSSI = cc2420xImplC.PacketRSSI;
+PacketLinkQuality = cc2420xImplC.PacketLinkQuality;
 
-//RadioResource = cc2420xMultiC.RadioResource;
+PacketTimeStampRadio = cc2420xImplC.PacketTimeStampRadio;
+PacketTimeStampMilli = cc2420xImplC.PacketTimeStampMilli;
+PacketTimeStamp32khz = cc2420xImplC.PacketTimeStamp32khz;
 
-
-RadioCCA = cc2420xMultiC.RadioCCA[process_id];
-
-PacketTransmitPower = cc2420xMultiC.PacketTransmitPower;
-PacketLinkQuality = cc2420xMultiC.PacketLinkQuality;
-PacketRSSI = cc2420xMultiC.PacketRSSI;
-RadioLinkPacketMetadata = cc2420xMultiC;
-PacketTimeSync = cc2420xMultiC.PacketTimeSync;
+RadioLinkPacketMetadata = cc2420xImplC;
+LocalTimeRadio = cc2420xImplC;
+cc2420xImplC.CC2420XDriverConfig -> RadioP;
 
 }

@@ -142,11 +142,11 @@ PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
 
 #ifdef LOW_POWER_LISTENING
 components new LowPowerListeningLayerC();
+LowPowerListeningConfig = LowPowerListeningLayerC.Config;
+LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 #else	
 components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
 #endif
-LowPowerListeningConfig = LowPowerListeningLayerC.Config;
-LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;

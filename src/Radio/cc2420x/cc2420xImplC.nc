@@ -1,4 +1,4 @@
-configuration cc2420xNewImplC {
+configuration cc2420xImplC {
 provides interface Resource[uint8_t id];
 provides interface PacketFlag[uint8_t bit];
 provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
@@ -27,7 +27,7 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp
 
 implementation {
 
-components new SimpleFcfsArbiterC("cc2420xNew");
+components new SimpleFcfsArbiterC("cc2420x");
 Resource = SimpleFcfsArbiterC.Resource;
 
 components new MetadataFlagsLayerC();
