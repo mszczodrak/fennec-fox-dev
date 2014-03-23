@@ -97,7 +97,7 @@ task void stop_next_module() {
 command error_t NetworkProcess.start(process_t process_id) {
 	dbg("NetworkProcess", "[-] NetworkProcess NetworkProcess.start(%d)", process_id);
 	state = S_STARTING;
-	current_layer = F_RADIO;
+	current_layer = F_MAC;
 	current_process = process_id;
 	post start_next_module();
 	return 0;
@@ -159,10 +159,8 @@ void next_layer() {
                 if (current_layer == F_APPLICATION) current_layer = UNKNOWN_LAYER;
                 if (current_layer == F_NETWORK) current_layer = F_APPLICATION;
                 if (current_layer == F_MAC) current_layer = F_NETWORK;
-                if (current_layer == F_RADIO) current_layer = F_MAC;
         } else {
-                if (current_layer == F_RADIO) current_layer = UNKNOWN_LAYER;
-                if (current_layer == F_MAC) current_layer = F_RADIO;
+                if (current_layer == F_MAC) current_layer = UNKNOWN_LAYER;
                 if (current_layer == F_NETWORK) current_layer = F_MAC;
                 if (current_layer == F_APPLICATION) current_layer = F_NETWORK;
         }

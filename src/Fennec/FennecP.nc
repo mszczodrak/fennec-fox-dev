@@ -200,9 +200,6 @@ command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
 	case F_MAC:
 		return processes[ process_id ].mac;
 
-	case F_RADIO:
-		return processes[ process_id ].radio;
-
 	default:
 		dbg("Fennec", "[-] Fennec Fennec.getModuleId(%d, %d) - UNKNOWN", process_id, layer);
 		return UNKNOWN;
