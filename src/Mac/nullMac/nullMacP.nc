@@ -35,7 +35,8 @@ provides interface RadioChannel;
 
 implementation {
 
-message_t *m;
+norace message_t *m;
+norace error_t e;
 
 command error_t SplitControl.start() {
 	signal SplitControl.startDone(SUCCESS);
@@ -77,8 +78,12 @@ tasklet_async event void RadioSend.ready() {
 
 }
 
+task void sendDone() {
+	signal BareSend.sendDone(m, e);
+}
+
 tasklet_async event void RadioSend.sendDone(error_t error) {
-	signal BareSend.sendDone(m, error);
+	e = error;	
 }
 
 command error_t RadioChannel.setChannel(uint8_t channel) {
