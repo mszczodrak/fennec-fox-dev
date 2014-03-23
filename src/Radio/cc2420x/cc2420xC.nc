@@ -40,7 +40,9 @@ implementation {
 components cc2420xMultiC;
 SplitControl = cc2420xMultiC.SplitControl[process];
 cc2420xParams = cc2420xMultiC.cc2420xParams[process];
-
+RadioReceive = cc2420xMultiC.RadioReceive[process];
+RadioState = cc2420xMultiC.RadioState[process];
+RadioSend = cc2420xMultiC.RadioSend[process];
 
 components CC2420XRadioP as RadioP;
 SoftwareAckConfig = RadioP;
@@ -53,17 +55,12 @@ ActiveMessageConfig = RadioP;
 DummyConfig = RadioP;
 LowPowerListeningConfig = RadioP;
 
-RadioP.RadioAlarm -> cc2420xImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
-
 components cc2420xImplC;
 RadioResource = cc2420xImplC.Resource[process];
 RadioAlarm = cc2420xImplC;
 AckReceivedFlag = cc2420xImplC.PacketFlag[ACK_RECEIVED_FLAG];
 
 
-RadioState = cc2420xImplC.RadioState;
-RadioSend = cc2420xImplC.RadioSend;
-RadioReceive = cc2420xImplC.RadioReceive;
 RadioCCA = cc2420xImplC.RadioCCA;
 
 RadioPacket = cc2420xImplC.RadioPacket;

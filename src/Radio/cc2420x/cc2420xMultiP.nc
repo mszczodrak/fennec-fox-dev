@@ -1,9 +1,13 @@
 module cc2420xMultiP {
 provides interface SplitControl[process_t process_id];
-uses interface cc2420xParams[process_t process_id];
+provides interface RadioReceive[process_t process_id];
+provides interface RadioSend[process_t process_id];
+provides interface RadioState[process_t process_id];
 
-//provides interface RadioReceive[process_t process_id];
-//uses interface RadioReceive as SubRadioReceive;
+uses interface cc2420xParams[process_t process_id];
+uses interface RadioReceive as SubRadioReceive;
+uses interface RadioSend as SubRadioSend;
+uses interface RadioState as SubRadioState;
 }
 
 implementation {
@@ -33,18 +37,62 @@ command error_t SplitControl.stop[process_t process_id]() {
 	return SUCCESS;
 }
 
-/*
-tasklet_async event bool RadioReceive.header(message_t* msg) {
+
+async event bool SubRadioReceive.header(message_t* msg) {
 
 }
 
-tasklet_async event bool RadioReceive.receive(message_t* msg) {
+async event message_t* SubRadioReceive.receive(message_t* msg) {
 
 }
-*/
+
+tasklet_async command error_t RadioSend.send[process_t process_id](message_t* msg) {
+//	return call SubRadioSend.send(msg);
+}
+
+tasklet_async event void SubRadioSend.sendDone(error_t error) {
+//	signal RadioSend.sendDone(error);
+}
+
+tasklet_async event void SubRadioSend.ready() {
+//	signal RadioSend.ready();
+//
+}
+
+tasklet_async command error_t RadioState.turnOff[process_t process_id]() {
+
+}
+
+tasklet_async command error_t RadioState.standby[process_t process_id]() {
+
+}
+
+tasklet_async command error_t RadioState.turnOn[process_t process_id]() {
+
+}
+
+tasklet_async command error_t RadioState.setChannel[process_t process_id](uint8_t channel) {
+
+}
+
+tasklet_async command uint8_t RadioState.getChannel[process_t process_id]() {
+
+}
+
+tasklet_async event void SubRadioState.done() {
+
+}
+
 
 default event void SplitControl.startDone[process_t process_id](error_t error) {}
 default event void SplitControl.stopDone[process_t process_id](error_t error) {}
 
+default async event bool RadioReceive.header[process_t process_id](message_t *msg) { return FALSE; }
+default async event message_t* RadioReceive.receive[process_t process_id](message_t *msg) { return msg; }
+
+default tasklet_async event void RadioSend.sendDone[process_t process_id](error_t error) {}
+default tasklet_async event void RadioSend.ready[process_t process_id]() {}
+
+default tasklet_async event void RadioState.done[process_t process_id]() {}
 
 }

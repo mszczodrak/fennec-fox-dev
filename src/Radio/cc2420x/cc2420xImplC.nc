@@ -11,9 +11,6 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface LocalTime<TRadio> as LocalTimeRadio;
 provides interface RadioAlarm[uint8_t id];
 
-provides interface RadioState;
-provides interface RadioSend;
-provides interface RadioReceive;
 provides interface RadioCCA;
 provides interface RadioPacket;
 
@@ -50,6 +47,7 @@ Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
 
 RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC.Ieee154PacketLayer;
 
+
 components CC2420XDriverLayerC as RadioDriverLayerC;
 
 components new RadioAlarmC();
@@ -57,9 +55,11 @@ RadioAlarm = RadioAlarmC;
 
 RadioAlarmC.Alarm -> RadioDriverLayerC;
 
-RadioState = RadioDriverLayerC;
-RadioSend = RadioDriverLayerC;
-RadioReceive = RadioDriverLayerC;
+components cc2420xMultiC;
+cc2420xMultiC.SubRadioReceive -> RadioDriverLayerC.RadioReceive;
+cc2420xMultiC.SubRadioSend -> RadioDriverLayerC.RadioSend;
+cc2420xMultiC.SubRadioState -> RadioDriverLayerC.RadioState;
+
 RadioCCA = RadioDriverLayerC;
 
 RadioDriverLayerC.Config -> RadioP.CC2420XDriverConfig;

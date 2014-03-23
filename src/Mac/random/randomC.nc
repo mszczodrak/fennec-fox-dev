@@ -94,7 +94,6 @@ MacSnoop = ActiveMessageLayerC.Snoop[process];
 MacAMPacket = ActiveMessageLayerC.AMPacket;
 MacPacket = ActiveMessageLayerC;
 
-
 ActiveMessageConfig = ActiveMessageLayerC.Config;
 ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
 ActiveMessageLayerC.SubReceive -> LowPowerListeningLayerC.Receive;
@@ -133,11 +132,10 @@ RadioAlarm[unique(UQ_RADIO_ALARM)] = SoftwareAckLayerC.RadioAlarm;
 MacPacketAcknowledgements = SoftwareAckLayerC.PacketAcknowledgements;
 SoftwareAckConfig = SoftwareAckLayerC.Config;
 SoftwareAckLayerC.SubSend -> CsmaLayerC;
-SoftwareAckLayerC.SubReceive -> CsmaLayerC;
+RadioReceive = SoftwareAckLayerC.SubReceive;
 
 components new DummyLayerC() as CsmaLayerC;
 RadioSend = CsmaLayerC;
-RadioReceive = CsmaLayerC;
 RadioCCA = CsmaLayerC;
 
 
