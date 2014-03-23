@@ -38,7 +38,7 @@ uses interface Ieee154PacketLayer;
 
 implementation {
 
-components new CC2420XRadioP() as RadioP;
+components new CC2420XRadioP(process) as RadioP;
 SplitControl = RadioP;
 SoftwareAckConfig = RadioP;
 UniqueConfig = RadioP;
@@ -77,6 +77,6 @@ PacketTimeStamp32khz = cc2420xImplC.PacketTimeStamp32khz;
 
 RadioLinkPacketMetadata = cc2420xImplC;
 LocalTimeRadio = cc2420xImplC;
-cc2420xImplC.CC2420XDriverConfig -> RadioP;
+cc2420xImplC.CC2420XDriverConfig -> RadioP.CC2420XDriverConfig;
 
 }

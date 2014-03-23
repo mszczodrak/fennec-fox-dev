@@ -25,7 +25,7 @@
 #include <RadioConfig.h>
 #include <Tasklet.h>
 
-generic module CC2420XRadioP() {
+generic module CC2420XRadioP(process_t process) {
 
 provides interface SplitControl;
 	provides
