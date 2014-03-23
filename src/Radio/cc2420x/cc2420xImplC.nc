@@ -59,6 +59,7 @@ components cc2420xMultiC;
 cc2420xMultiC.SubRadioReceive -> RadioDriverLayerC.RadioReceive;
 cc2420xMultiC.SubRadioSend -> RadioDriverLayerC.RadioSend;
 cc2420xMultiC.SubRadioState -> RadioDriverLayerC.RadioState;
+cc2420xMultiC.CC2420XDriverConfig -> RadioP.CC2420XDriverConfig;
 
 RadioCCA = RadioDriverLayerC;
 

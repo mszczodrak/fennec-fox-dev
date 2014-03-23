@@ -60,9 +60,7 @@ RadioResource = cc2420xImplC.Resource[process];
 RadioAlarm = cc2420xImplC;
 AckReceivedFlag = cc2420xImplC.PacketFlag[ACK_RECEIVED_FLAG];
 
-
 RadioCCA = cc2420xImplC.RadioCCA;
-
 RadioPacket = cc2420xImplC.RadioPacket;
 
 PacketTransmitPower = cc2420xImplC.PacketTransmitPower;

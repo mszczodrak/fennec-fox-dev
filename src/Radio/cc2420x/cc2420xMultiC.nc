@@ -8,6 +8,7 @@ uses interface cc2420xParams[process_t process_id];
 uses interface RadioReceive as SubRadioReceive;
 uses interface RadioSend as SubRadioSend;
 uses interface RadioState as SubRadioState;
+uses interface CC2420XDriverConfig;
 }
 
 implementation {
@@ -15,6 +16,7 @@ implementation {
 components cc2420xMultiP;
 SplitControl = cc2420xMultiP;
 cc2420xParams = cc2420xMultiP;
+CC2420XDriverConfig = cc2420xMultiP;
 
 RadioReceive = cc2420xMultiP.RadioReceive;
 SubRadioReceive = cc2420xMultiP.SubRadioReceive;

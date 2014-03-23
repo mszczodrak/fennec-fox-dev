@@ -1,3 +1,6 @@
+
+#include "CC2420XDriverLayer.h"
+
 module cc2420xMultiP {
 provides interface SplitControl[process_t process_id];
 provides interface RadioReceive[process_t process_id];
@@ -8,11 +11,16 @@ uses interface cc2420xParams[process_t process_id];
 uses interface RadioReceive as SubRadioReceive;
 uses interface RadioSend as SubRadioSend;
 uses interface RadioState as SubRadioState;
+uses interface CC2420XDriverConfig;
 }
 
 implementation {
 
 process_t sp_proc = UNKNOWN;
+
+cc2420x_header_t* getHeader(message_t* msg) {
+	return ((void*)msg) + call CC2420XDriverConfig.headerLength(msg);
+}
 
 task void startDone() {
 	signal SplitControl.startDone[sp_proc](SUCCESS);
@@ -22,8 +30,6 @@ task void startDone() {
 task void stopDone() {
 	signal SplitControl.stopDone[sp_proc](SUCCESS);
 }
-
-
 
 command error_t SplitControl.start[process_t process_id]() {
 	sp_proc = process_id;
