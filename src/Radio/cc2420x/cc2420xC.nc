@@ -40,6 +40,7 @@ implementation {
 
 components cc2420xMultiC;
 SplitControl = cc2420xMultiC.SplitControl[process];
+cc2420xParams = cc2420xMultiC.cc2420xParams[process];
 
 
 components CC2420XRadioP as RadioP;
@@ -52,7 +53,6 @@ SlottedCollisionConfig = RadioP;
 ActiveMessageConfig = RadioP;
 DummyConfig = RadioP;
 LowPowerListeningConfig = RadioP;
-cc2420xParams = RadioP;
 
 Ieee154PacketLayer = RadioP;
 RadioP.RadioAlarm -> cc2420xImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
@@ -80,6 +80,5 @@ PacketTimeStamp32khz = cc2420xImplC.PacketTimeStamp32khz;
 
 RadioLinkPacketMetadata = cc2420xImplC;
 LocalTimeRadio = cc2420xImplC;
-cc2420xImplC.CC2420XDriverConfig -> RadioP.CC2420XDriverConfig;
 
 }

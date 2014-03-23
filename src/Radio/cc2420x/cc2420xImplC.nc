@@ -19,13 +19,14 @@ provides interface RadioPacket;
 
 provides interface LinkPacketMetadata as RadioLinkPacketMetadata;
 
-uses interface CC2420XDriverConfig;
-
 uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp32khz;
 
 }
 
 implementation {
+
+components CC2420XRadioP as RadioP;
+RadioP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
 components new SimpleFcfsArbiterC("cc2420x");
 Resource = SimpleFcfsArbiterC.Resource;
@@ -57,7 +58,7 @@ RadioSend = RadioDriverLayerC;
 RadioReceive = RadioDriverLayerC;
 RadioCCA = RadioDriverLayerC;
 
-CC2420XDriverConfig = RadioDriverLayerC.Config;
+RadioDriverLayerC.Config -> RadioP.CC2420XDriverConfig;
 PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;
 PacketLinkQuality = RadioDriverLayerC.PacketLinkQuality;
 PacketRSSI = RadioDriverLayerC.PacketRSSI;

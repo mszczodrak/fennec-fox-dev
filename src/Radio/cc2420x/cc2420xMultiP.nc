@@ -1,5 +1,7 @@
 module cc2420xMultiP {
 provides interface SplitControl[process_t process_id];
+uses interface cc2420xParams[process_t process_id];
+
 //provides interface RadioReceive[process_t process_id];
 //uses interface RadioReceive as SubRadioReceive;
 }
@@ -40,6 +42,9 @@ tasklet_async event bool RadioReceive.receive(message_t* msg) {
 
 }
 */
+
+default event void SplitControl.startDone[process_t process_id](error_t error) {}
+default event void SplitControl.stopDone[process_t process_id](error_t error) {}
 
 
 }
