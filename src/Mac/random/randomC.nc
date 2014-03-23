@@ -24,8 +24,6 @@ provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
 
 
 /* to Radio */
-provides interface Ieee154PacketLayer;
-
 uses interface RadioReceive;
 
 uses interface Resource as RadioResource;
@@ -79,7 +77,6 @@ SplitControl = randomP.SplitControl;
 
 randomP.SubSplitControl -> LowPowerListeningLayerC;
 
-Ieee154PacketLayer = Ieee154PacketLayerC;
 MacLinkPacketMetadata = RadioLinkPacketMetadata;
 MacPacketTimeStampRadio = RadioPacketTimeStampRadio;
 MacPacketTimeStampMilli = RadioPacketTimeStampMilli;
@@ -89,9 +86,7 @@ MacPacketTimeStamp32khz = RadioPacketTimeStamp32khz;
 
 components new ActiveMessageLayerC();
 components new AutoResourceAcquireLayerC();
-components new Ieee154PacketLayerC();
 components new UniqueLayerC();
-components new PacketLinkLayerC();
 
 MacAMSend = ActiveMessageLayerC.AMSend[process];
 MacReceive = ActiveMessageLayerC.Receive[process];
@@ -102,21 +97,14 @@ MacPacket = ActiveMessageLayerC;
 
 ActiveMessageConfig = ActiveMessageLayerC.Config;
 ActiveMessageLayerC.SubSend -> AutoResourceAcquireLayerC;
-ActiveMessageLayerC.SubReceive -> PacketLinkLayerC;
-ActiveMessageLayerC.SubPacket -> Ieee154PacketLayerC;
+ActiveMessageLayerC.SubReceive -> LowPowerListeningLayerC.Receive;
+ActiveMessageLayerC.SubPacket -> LowPowerListeningLayerC.RadioPacket;
 
 RadioResource = AutoResourceAcquireLayerC.Resource;
 AutoResourceAcquireLayerC.SubSend -> UniqueLayerC;
 
-Ieee154PacketLayerC.SubPacket -> PacketLinkLayerC;
-
 UniqueConfig = UniqueLayerC.Config;
-UniqueLayerC.SubSend -> PacketLinkLayerC;
-
-PacketLinkLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-PacketLinkLayerC -> LowPowerListeningLayerC.Send;
-PacketLinkLayerC -> LowPowerListeningLayerC.Receive;
-PacketLinkLayerC -> LowPowerListeningLayerC.RadioPacket;
+UniqueLayerC.SubSend -> LowPowerListeningLayerC.Send;
 
 components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
 LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;

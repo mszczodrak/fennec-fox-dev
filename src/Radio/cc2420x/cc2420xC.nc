@@ -32,7 +32,6 @@ provides interface PacketField<uint8_t> as PacketRSSI;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketFlag as AckReceivedFlag;
 
-uses interface Ieee154PacketLayer;
 
 }
 
@@ -54,7 +53,6 @@ ActiveMessageConfig = RadioP;
 DummyConfig = RadioP;
 LowPowerListeningConfig = RadioP;
 
-Ieee154PacketLayer = RadioP;
 RadioP.RadioAlarm -> cc2420xImplC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 
 components cc2420xImplC;

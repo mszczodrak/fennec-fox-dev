@@ -37,7 +37,6 @@ MetadataFlagsLayerC.SubPacket -> RadioDriverLayerC;
 
 components new TimeStampingLayerC();
 TimeStampingLayerC.LocalTimeRadio -> RadioDriverLayerC;
-RadioPacket = TimeStampingLayerC;
 
 
 TimeStampingLayerC.SubPacket -> MetadataFlagsLayerC;
@@ -45,6 +44,11 @@ PacketTimeStampRadio = TimeStampingLayerC;
 PacketTimeStampMilli = TimeStampingLayerC;
 TimeStampingLayerC.TimeStampFlag -> MetadataFlagsLayerC.PacketFlag[TIME_STAMP_FLAG];
 
+components new Ieee154PacketLayerC();
+RadioPacket = Ieee154PacketLayerC.RadioPacket;
+Ieee154PacketLayerC.SubPacket -> TimeStampingLayerC.RadioPacket;
+
+RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC.Ieee154PacketLayer;
 
 components CC2420XDriverLayerC as RadioDriverLayerC;
 
