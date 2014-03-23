@@ -54,7 +54,7 @@ typedef uint16_t state_t;
 typedef uint16_t module_t;
 typedef uint16_t layer_t;
 typedef uint16_t event_t;
-typedef uint16_t process_t;
+typedef uint8_t process_t;
 
 
 struct network_process {

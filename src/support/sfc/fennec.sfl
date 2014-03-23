@@ -128,26 +128,17 @@ use mac SyncMac $(FENNEC_FOX_LIB)/Mac/cuMac (
 #	uint8_t ack, uint8_t cca, uint8_t crc)
 #
 # RADIO
-use radio nullRadio $(FENNEC_FOX_LIB)/Radio/nullRadio ()
-
-use radio cc2420 $(FENNEC_FOX_LIB)/Radio/cc2420 (
+use mac cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
 		uint8_t ack=1,
 		uint8_t crc=1)
 
-use radio cc2420x $(FENNEC_FOX_LIB)/Radio/cc2420x (
+use mac cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
 	        uint8_t channel=26,
 		uint8_t power=31,
 		uint8_t lpl = 0
 )
-
-use radio rf212 $(FENNEC_FOX_LIB)/Radio/rf212 ()
-#use radio rf230 $(FENNEC_FOX_LIB)/Radio/rf230 ()
-
-# Cape Fox simulator radio
-use radio cape $(FENNEC_FOX_LIB)/Radio/cape ()
-
 
 # Events
 use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
