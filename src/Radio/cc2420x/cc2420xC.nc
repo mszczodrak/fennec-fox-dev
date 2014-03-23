@@ -38,8 +38,11 @@ uses interface Ieee154PacketLayer;
 
 implementation {
 
-components new CC2420XRadioP(process) as RadioP;
-SplitControl = RadioP;
+components cc2420xMultiC;
+SplitControl = cc2420xMultiC.SplitControl[process];
+
+
+components CC2420XRadioP as RadioP;
 SoftwareAckConfig = RadioP;
 UniqueConfig = RadioP;
 CsmaConfig = RadioP;
