@@ -73,6 +73,8 @@ use network nullNet $(FENNEC_FOX_LIB)/Network/nullNet ()
 
 use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
 
+use network ftsp $(FENNEC_FOX_LIB)/Network/ftsp ()
+
 use network trickle $(FENNEC_FOX_LIB)/Network/trickle (
 		uint16_t low = 1,
 		uint16_t high = 1024,
