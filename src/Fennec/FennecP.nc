@@ -132,6 +132,7 @@ event void Boot.booted() {
 }
 
 event void SplitControl.startDone(error_t err) {
+	printf("State startDone %d\n", err);
 	dbg("Fennec", "[-] Fennec SplitControl.startDone(%d)", err);
 	event_mask = 0;
 	dbg("Fennec", "[-] Fennec");
