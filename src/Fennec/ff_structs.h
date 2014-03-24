@@ -50,10 +50,10 @@
 
 #define RADIO_SEND_RESOURCE "RADIO_SEND_RESOURCE"
 
-typedef uint16_t state_t;
-typedef uint16_t module_t;
-typedef uint16_t layer_t;
-typedef uint16_t event_t;
+typedef uint8_t state_t;
+typedef uint8_t module_t;
+typedef uint8_t layer_t;
+typedef uint8_t event_t;
 typedef uint8_t process_t;
 
 
@@ -62,7 +62,12 @@ struct network_process {
 	uint8_t application;
 	uint8_t network;
 	uint8_t mac;
-	uint8_t radio;
+	void* application_params;
+	void* network_params;
+	void* mac_params;
+	uint8_t application_module;
+	uint8_t network_module;
+	uint8_t mac_module;
 };
 
 struct state {

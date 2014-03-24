@@ -62,9 +62,9 @@ enum {
 	SEQ_RAND		= 20,
 	SEQ_OFFSET		= 1,
 
+        UNKNOWN                 = 0xff,
 	NODE			= 0xfffa,
         BRIDGE                  = 0xfffc,
-        UNKNOWN                 = 0xfffd,
         BROADCAST               = 0xffff,
 
 	F_MINIMUM_STATE_LEVEL	= 0,
