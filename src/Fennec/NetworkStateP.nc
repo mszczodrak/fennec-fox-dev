@@ -47,18 +47,18 @@ struct network_process **daemons = NULL;
 struct network_process **ordinary = NULL;
 
 task void start_stack() {
-	if ((daemons != NULL) && (*daemons != NULL)) {
-		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (daemons)",
-						(*daemons)->process_id);
-		call NetworkProcess.start((*daemons)->process_id);		
-		return;
-	}
-
 	if ((ordinary != NULL) && (*ordinary != NULL)) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (ordinary)",
 						(*ordinary)->process_id);
 		call NetworkProcess.start((*ordinary)->process_id);		
 		return;	
+	}
+
+	if ((daemons != NULL) && (*daemons != NULL)) {
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (daemons)",
+						(*daemons)->process_id);
+		call NetworkProcess.start((*daemons)->process_id);		
+		return;
 	}
 
 	/* that's all folks, all processes are running */
@@ -67,19 +67,18 @@ task void start_stack() {
 }
 
 task void stop_stack() {
-	if ((daemons != NULL) && (*daemons != NULL)) {
-//		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (daemons)",
-//						(*daemons)->process_id);
-//		call NetworkProcess.stop((*daemons)->process_id);		
-		*daemons = NULL;
-//		return;
-	}
-
 	if ((ordinary != NULL) && (*ordinary != NULL)) {
 		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (ordinary)",
 						(*ordinary)->process_id);
 		call NetworkProcess.stop((*ordinary)->process_id);		
 		return;	
+	}
+
+	if ((daemons != NULL) && (*daemons != NULL)) {
+		dbg("NetworkState", "[-] NetworkState call NetworkProcess.stop(%d) (daemons)",
+						(*daemons)->process_id);
+		call NetworkProcess.stop((*daemons)->process_id);		
+		return;
 	}
 
 	/* that's all folks, all processes are running */
@@ -98,7 +97,6 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	dbg("NetworkState", "[-] NetworkState SplitControl.stop()");
 	daemons = call Fennec.getDaemonProcesses();
-	daemons = NULL;
 	ordinary = call Fennec.getOrdinaryProcesses();
 	post stop_stack();
 	return SUCCESS;
@@ -107,10 +105,10 @@ command error_t SplitControl.stop() {
 event void NetworkProcess.startDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.startDone(%d)", err);
         if (err == SUCCESS) {
-		if ((daemons) && (*daemons != NULL)) {
-			daemons++;
-		} else {
+		if ((ordinary) && (*ordinary != NULL)) {
 			ordinary++;
+		} else {
+			daemons++;
 		}
         }
 	post start_stack();
@@ -119,10 +117,10 @@ event void NetworkProcess.startDone(error_t err) {
 event void NetworkProcess.stopDone(error_t err) {
 	dbg("NetworkState", "[-] NetworkState NetworkProcess.stopDone(%d)", err);
         if (err == SUCCESS) {
-		if ((daemons) && (*daemons != NULL)) {
-			daemons++;
-		} else {
+		if ((ordinary) && (*ordinary != NULL)) {
 			ordinary++;
+		} else {
+			daemons++;
 		}
 	}
 	post stop_stack();
