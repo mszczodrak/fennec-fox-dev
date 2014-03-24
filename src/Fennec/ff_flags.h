@@ -39,7 +39,7 @@
 /* Fennec System Flags */
 #define F_APPLICATION           1
 #define F_NETWORK               2
-#define F_MAC                   3
+#define F_AM                    3
 #define F_ADDRESSING		5
 #define F_QOI                   6
 #define F_EVENTS                7

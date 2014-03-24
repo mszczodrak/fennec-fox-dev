@@ -90,51 +90,14 @@ use network tricklePlus $(FENNEC_FOX_LIB)/Network/tricklePlus (
 
 use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 
-# MAC Modules
-use mac nullMac $(FENNEC_FOX_LIB)/Mac/nullMac ()
-
-use mac rfx $(FENNEC_FOX_LIB)/Mac/rfx ()
-use mac csma $(FENNEC_FOX_LIB)/Mac/csma ()
-use mac random $(FENNEC_FOX_LIB)/Mac/random ()
-use mac random_lpl $(FENNEC_FOX_LIB)/Mac/random_lpl (
-		uint16_t sleepInterval = 0
-)
-
-use mac slotted $(FENNEC_FOX_LIB)/Mac/slotted ()
-use mac slotted_lpl $(FENNEC_FOX_LIB)/Mac/slotted_lpl ()
-
-use mac csmaca $(FENNEC_FOX_LIB)/Mac/csmaca (
-		uint16_t sink_addr,
-		uint16_t delay_after_receive, 
-		uint16_t backoff,
-		uint16_t min_backoff,
-		uint8_t ack,
-		uint8_t cca,
-		uint8_t crc)
-
-use mac SyncMac $(FENNEC_FOX_LIB)/Mac/cuMac (
-		uint16_t backoff=10,
-		uint16_t min_backoff=10,
-	        uint8_t ack=1,
-		uint8_t cca=1,
-		uint8_t crc=1)
-
-
-# Standard Fennec Fox Applications
-
-#use mac tdma $(FENNEC_FOX_LIB)/Mac/tdma (uint16_t root_addr,
-#	uint32_t active_time, uint32_t sleep_time,
-#	uint16_t backoff, uint16_t min_backoff,
-#	uint8_t ack, uint8_t cca, uint8_t crc)
-#
-# RADIO
-use mac cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
+# AM Modules
+use am cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
 		uint8_t ack=1,
 		uint8_t crc=1)
 
-use mac cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
+use am cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
 	        uint8_t channel=26,
 		uint8_t power=31,
 		uint8_t lpl = 0

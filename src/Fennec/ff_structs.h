@@ -56,19 +56,18 @@ typedef uint8_t layer_t;
 typedef uint8_t event_t;
 typedef uint8_t process_t;
 
-
 struct network_process {
 	process_t process_id;
 	uint8_t application;
 	uint8_t network;
-	uint8_t mac;
+	uint8_t am;
 	void* application_params;
 	void* network_params;
-	void* mac_params;
+	void* am_params;
 	uint8_t application_module;
 	uint8_t network_module;
-	uint8_t mac_module;
-	bool mac_level;
+	uint8_t am_module;
+	bool am_level;
 };
 
 struct state {
@@ -77,49 +76,10 @@ struct state {
 	uint8_t 		level;
 };
 
-/*
-typedef nx_struct metadata_t {
-	nx_uint8_t rssi;
-	nx_uint8_t lqi;
-	nx_uint8_t tx_power;
-#ifdef TOSSIM
-	nx_uint8_t crc;
-	nx_uint8_t ack;
-	nx_uint8_t strength;
-	nx_uint16_t time;
-	nx_uint8_t flags;
-#else
-	nx_uint8_t flags;
-	nx_bool crc;
-	nx_bool ack;
-#endif
-} metadata_t;
-*/
-
 struct event_process {
 	event_t 	event_id;
 	process_t	process_id;
 };
-
-/*
-struct default_params {
-	void 	*application_cache;
-	void 	*application_default_params;
-	int 	application_default_size;
-
-	void 	*network_cache;
-	void 	*network_default_params;
-	int 	network_default_size;
-
-	void 	*mac_cache;
-	void 	*mac_default_params;
-	int 	mac_default_size;
-
-	void 	*radio_cache;
-	void 	*radio_default_params;
-	int 	radio_default_size;
-};
-*/
 
 struct fennec_policy {
 	uint16_t  src_conf;

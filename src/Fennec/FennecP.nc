@@ -132,7 +132,6 @@ event void Boot.booted() {
 }
 
 event void SplitControl.startDone(error_t err) {
-	printf("State startDone %d\n", err);
 	dbg("Fennec", "[-] Fennec SplitControl.startDone(%d)", err);
 	event_mask = 0;
 	dbg("Fennec", "[-] Fennec");
@@ -198,8 +197,8 @@ command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
 	case F_NETWORK:
 		return processes[ process_id ].network;
 
-	case F_MAC:
-		return processes[ process_id ].mac;
+	case F_AM:
+		return processes[ process_id ].am;
 
 	default:
 		dbg("Fennec", "[-] Fennec Fennec.getModuleId(%d, %d) - UNKNOWN", process_id, layer);
@@ -294,8 +293,8 @@ command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 	struct network_process **np;
 	process_t process_id = UNKNOWN;
 	for (np = states[current_state].processes; np != NULL; np++) {
-		if ((*np)->mac_module == am_module_id) {
-			if ((*np)->mac_level) {
+		if ((*np)->am_module == am_module_id) {
+			if ((*np)->am_level) {
 				return (*np)->process_id;
 			}
 			process_id = (*np)->process_id;
