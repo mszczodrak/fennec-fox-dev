@@ -95,7 +95,7 @@ task void send_state_update() {
 bool validProcessId(process_t process_id) @C() {
 	struct network_process **npr;
 
-	for(npr = privileged_processes; (*npr) != NULL ; npr++) {
+	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			//printf("success privileged %d %d\n", npr->process_id, process_id);
 			//dbg("Fennec", "[-] Fennec validProcessId(%d) - privileged", process_id);
@@ -176,8 +176,8 @@ command void Event.report(process_t process, uint8_t status) {
 }
 
 /** Fennec interface **/
-command struct network_process** Fennec.getPrivilegedProcesses() {
-	return privileged_processes;
+command struct network_process** Fennec.getDaemonProcesses() {
+	return daemon_processes;
 }
 
 command struct network_process** Fennec.getOrdinaryProcesses() {
