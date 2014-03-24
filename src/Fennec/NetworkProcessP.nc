@@ -61,7 +61,7 @@ task void start_next_module() {
 	switch(err) {
 	case EALREADY:
 		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - EALREADY module: %d", module_id);
-		signal ModuleCtrl.startDone(module_id, SUCCESS);
+		signal ModuleCtrl.startDone(SUCCESS);
 		return;
 
 	case SUCCESS:
@@ -81,7 +81,7 @@ task void stop_next_module() {
 	switch(err) {
 	case EALREADY:
 		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - EALREADY module: %d", module_id);
-		signal ModuleCtrl.stopDone(module_id, SUCCESS);
+		signal ModuleCtrl.stopDone(SUCCESS);
 		return;
 
 	case SUCCESS:
@@ -112,8 +112,8 @@ command error_t NetworkProcess.stop(process_t process_id) {
 	return 0;
 }
 
-event void ModuleCtrl.startDone(module_t module_id, error_t error) {
-	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.startDone(%d, %d)", module_id, error);
+event void ModuleCtrl.startDone(error_t error) {
+	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.startDone(%d)", error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();
 		next_layer();
@@ -127,8 +127,8 @@ event void ModuleCtrl.startDone(module_t module_id, error_t error) {
 	}
 }
 
-event void ModuleCtrl.stopDone(module_t module_id, error_t error) {
-	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.stopDone(%d, %d)", module_id, error);
+event void ModuleCtrl.stopDone(error_t error) {
+	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.stopDone(%d)", error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();
 		next_layer();
