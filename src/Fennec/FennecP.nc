@@ -289,6 +289,20 @@ command void FennecState.resendDone(error_t error) {
 	}
 }
 
+command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
+	struct network_process **np;
+	process_t process_id = UNKNOWN;
+	for (np = states[current_state].processes; np != NULL; np++) {
+		if ((*np)->mac_module == am_module_id) {
+			if ((*np)->mac_level) {
+				return (*np)->process_id;
+			}
+			process_id = (*np)->process_id;
+		}
+	}
+	return process_id;
+}
+
 default event void FennecState.resend() {}
 
 }

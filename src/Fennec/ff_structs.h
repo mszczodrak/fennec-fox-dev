@@ -68,6 +68,7 @@ struct network_process {
 	uint8_t application_module;
 	uint8_t network_module;
 	uint8_t mac_module;
+	bool mac_level;
 };
 
 struct state {
