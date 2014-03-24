@@ -100,6 +100,7 @@ struct event_process {
 	process_t	process_id;
 };
 
+/*
 struct default_params {
 	void 	*application_cache;
 	void 	*application_default_params;
@@ -117,6 +118,7 @@ struct default_params {
 	void 	*radio_default_params;
 	int 	radio_default_size;
 };
+*/
 
 struct fennec_policy {
 	uint16_t  src_conf;
