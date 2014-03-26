@@ -75,6 +75,53 @@ command error_t Send.cancel(message_t *msg) {
 	}
 }
 
+async command error_t SendState.requestState(uint8_t reqSendState) {
+	if (useLpl) {
+
+	} else {
+		return call DummySendState.requestState(reqSendState);
+	}
+}
+
+async command void SendState.forceState(uint8_t reqSendState) {
+	if (useLpl) {
+
+	} else {
+		return call DummySendState.forceState(reqSendState);
+	}
+}
+
+async command void SendState.toIdle() {
+	if (useLpl) {
+
+	} else {
+		return call DummySendState.toIdle();
+	}
+}
+
+async command bool SendState.isIdle() {
+	if (useLpl) {
+
+	} else {
+		return call DummySendState.isIdle();
+	}
+}
+
+async command bool SendState.isState(uint8_t myState) {
+	if (useLpl) {
+
+	} else {
+		return call DummySendState.isState(myState);
+	}
+}
+
+async command uint8_t SendState.getState() {
+	if (useLpl) {
+
+	} else {
+		return call DummySendState.getState();
+	}
+}
 
 command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
 	if (useLpl) {
@@ -125,6 +172,23 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 
 	} else {
 		return signal DummySubReceive.receive(msg, payload, len);
+	}
+}
+
+
+event void SubControl.startDone(error_t error) {
+	if (useLpl) {
+
+	} else {
+		return signal DummySubControl.startDone(error);
+	}
+}
+
+event void SubControl.stopDone(error_t error) {
+	if (useLpl) {
+
+	} else {
+		return signal DummySubControl.stopDone(error);
 	}
 }
 
