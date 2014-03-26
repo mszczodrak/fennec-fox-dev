@@ -182,14 +182,9 @@ implementation
 
 // -------- Low Power Listening
 
-#ifdef LOW_POWER_LISTENING
-	#warning "*** USING LOW POWER LISTENING LAYER"
-	components new LowPowerListeningLayerC();
-	LowPowerListeningLayerC.Config -> RadioP;
+	components new cc2420xLowPowerListeningC() as LowPowerListeningLayerC;
+	LowPowerListeningLayerC.LowPowerListeningConfig -> RadioP.LowPowerListeningConfig;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-#else	
-	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
-#endif
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;

@@ -10,29 +10,32 @@ uses interface BareSend as SubSend;
 uses interface BareReceive as SubReceive;
 uses interface RadioPacket as SubPacket;
 
+uses interface LowPowerListeningConfig;
+uses interface PacketAcknowledgements;
+
 uses interface cc2420xParams;
 
 /* wire to LowPowerListeningDummyC */
 uses interface LowPowerListening as DummyLowPowerListening;
-uses interface Send as DummySend;
-uses interface Receive as DummyReceive;
+uses interface BareSend as DummySend;
+uses interface BareReceive as DummyReceive;
 uses interface SplitControl as DummySplitControl;
-uses interface State as DummySendState;
+uses interface RadioPacket as DummyRadioPacket;
 
-provides interface Send as DummySubSend;
-provides interface Receive as DummySubReceive;
+provides interface BareSend as DummySubSend;
+provides interface BareReceive as DummySubReceive;
 provides interface SplitControl as DummySubControl;
 provides interface RadioPacket as DummySubPacket;
 
 /* wire to LowPowerListeningLayerC */
 uses interface LowPowerListening as DefaultLowPowerListening;
-uses interface Send as DefaultSend;
-uses interface Receive as DefaultReceive;
+uses interface BareSend as DefaultSend;
+uses interface BareReceive as DefaultReceive;
 uses interface SplitControl as DefaultSplitControl;
-uses interface State as DefaultSendState;
+uses interface RadioPacket as DefaultRadioPacket;
 
-provides interface Send as DefaultSubSend;
-provides interface Receive as DefaultSubReceive;
+provides interface BareSend as DefaultSubSend;
+provides interface BareReceive as DefaultSubReceive;
 provides interface SplitControl as DefaultSubControl;
 provides interface RadioPacket as DefaultSubPacket;
 
@@ -43,7 +46,7 @@ implementation
 uint16_t sleepInterval = 0;
 
 command error_t SplitControl.start() {
-	sleepInterval = call cc2420Params.get_sleepInterval();
+	sleepInterval = call cc2420xParams.get_sleepInterval();
 
 	call LowPowerListening.setLocalWakeupInterval(sleepInterval);
 
@@ -62,28 +65,12 @@ command error_t SplitControl.stop() {
 	}
 }
 
-command error_t Send.send(message_t *msg, uint8_t len) {
+command error_t Send.send(message_t *msg) {
 	if (sleepInterval) {
 		call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
-		return call DefaultSend.send(msg, len);
+		return call DefaultSend.send(msg);
 	} else {
-		return call DummySend.send(msg, len);
-	}
-}
-
-command uint8_t Send.maxPayloadLength() {
-	if (sleepInterval) {
-		return call DefaultSend.maxPayloadLength();
-	} else {
-		return call DummySend.maxPayloadLength();
-	}
-}
-
-command void *Send.getPayload(message_t* msg, uint8_t len) {
-	if (sleepInterval) {
-		return call DefaultSend.getPayload(msg, len);
-	} else {
-		return call DummySend.getPayload(msg, len);
+		return call DummySend.send(msg);
 	}
 }
 
@@ -95,51 +82,51 @@ command error_t Send.cancel(message_t *msg) {
 	}
 }
 
-async command error_t SendState.requestState(uint8_t reqSendState) {
+async command uint8_t RadioPacket.headerLength(message_t* msg) {
 	if (sleepInterval) {
-		return call DefaultSendState.requestState(reqSendState);
+		return call DefaultRadioPacket.headerLength(msg);
 	} else {
-		return call DummySendState.requestState(reqSendState);
+		return call DummyRadioPacket.headerLength(msg);
 	}
 }
 
-async command void SendState.forceState(uint8_t reqSendState) {
+async command uint8_t RadioPacket.payloadLength(message_t* msg) {
 	if (sleepInterval) {
-		return call DefaultSendState.forceState(reqSendState);
+		return call DefaultRadioPacket.payloadLength(msg);
 	} else {
-		return call DummySendState.forceState(reqSendState);
+		return call DummyRadioPacket.payloadLength(msg);
 	}
 }
 
-async command void SendState.toIdle() {
+async command void RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {
 	if (sleepInterval) {
-		return call DefaultSendState.toIdle();
+		return call DefaultRadioPacket.setPayloadLength(msg, length);
 	} else {
-		return call DummySendState.toIdle();
+		return call DummyRadioPacket.setPayloadLength(msg, length);
 	}
 }
 
-async command bool SendState.isIdle() {
+async command uint8_t RadioPacket.maxPayloadLength() {
 	if (sleepInterval) {
-		return call DefaultSendState.isIdle();
+		return call DefaultRadioPacket.maxPayloadLength();
 	} else {
-		return call DummySendState.isIdle();
+		return call DummyRadioPacket.maxPayloadLength();
 	}
 }
 
-async command bool SendState.isState(uint8_t myState) {
+async command uint8_t RadioPacket.metadataLength(message_t* msg) {
 	if (sleepInterval) {
-		return call DefaultSendState.isState(myState);
+		return call DefaultRadioPacket.metadataLength(msg);
 	} else {
-		return call DummySendState.isState(myState);
+		return call DummyRadioPacket.metadataLength(msg);
 	}
 }
 
-async command uint8_t SendState.getState() {
+async command void RadioPacket.clear(message_t* msg) {
 	if (sleepInterval) {
-		return call DefaultSendState.getState();
+		return call DefaultRadioPacket.clear(msg);
 	} else {
-		return call DummySendState.getState();
+		return call DummyRadioPacket.clear(msg);
 	}
 }
 
@@ -225,16 +212,8 @@ command error_t DummySubControl.stop() {
 }
 
 
-command error_t DummySubSend.send(message_t *msg, uint8_t len) {
-	return call SubSend.send(msg, len);
-}
-
-command uint8_t DummySubSend.maxPayloadLength() {
-	return call SubSend.maxPayloadLength();
-}
-
-command void *DummySubSend.getPayload(message_t* msg, uint8_t len) {
-	return call SubSend.getPayload(msg, len);
+command error_t DummySubSend.send(message_t *msg) {
+	return call SubSend.send(msg);
 }
 
 command error_t DummySubSend.cancel(message_t *msg) {
@@ -275,16 +254,8 @@ command error_t DefaultSubControl.stop() {
 }
 
 
-command error_t DefaultSubSend.send(message_t *msg, uint8_t len) {
-	return call SubSend.send(msg, len);
-}
-
-command uint8_t DefaultSubSend.maxPayloadLength() {
-	return call SubSend.maxPayloadLength();
-}
-
-command void *DefaultSubSend.getPayload(message_t* msg, uint8_t len) {
-	return call SubSend.getPayload(msg, len);
+command error_t DefaultSubSend.send(message_t *msg) {
+	return call SubSend.send(msg);
 }
 
 command error_t DefaultSubSend.cancel(message_t *msg) {
