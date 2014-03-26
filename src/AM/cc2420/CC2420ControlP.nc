@@ -496,6 +496,7 @@ implementation {
    */
   void writeMdmctrl0() {
     atomic {
+      autoAckEnabled = call cc2420Params.get_autoAck();
       call MDMCTRL0.write( ( 1 << CC2420_MDMCTRL0_RESERVED_FRAME_MODE ) |
           ( ((addressRecognition && hwAddressRecognition) ? 1 : 0) << CC2420_MDMCTRL0_ADR_DECODE ) |
           ( 2 << CC2420_MDMCTRL0_CCA_HYST ) |
