@@ -8,6 +8,7 @@ uses interface RadioReceive as SubReceive;
 uses interface RadioAlarm;
 uses interface RandomCollisionConfig;
 uses interface SlottedCollisionConfig;
+uses interface cc2420xParams;
 
 }
 
@@ -21,7 +22,7 @@ SubReceive = cc2420xCollisionLayerP.SubReceive;
 RadioAlarm = cc2420xCollisionLayerP.RadioAlarm;
 RandomCollisionConfig = cc2420xCollisionLayerP.RandomCollisionConfig;
 SlottedCollisionConfig = cc2420xCollisionLayerP.SlottedCollisionConfig;
-
+cc2420xParams = cc2420xCollisionLayerP.cc2420xParams;
 
 /* wire to SlottedCollisionLayer */
 

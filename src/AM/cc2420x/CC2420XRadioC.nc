@@ -73,6 +73,7 @@ configuration CC2420XRadioC
 		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 	}
+uses interface cc2420xParams;
 }
 
 implementation
@@ -211,6 +212,7 @@ implementation
 // -------- CollisionAvoidance
 
 	components new cc2420xCollisionLayerC() as CollisionAvoidanceLayerC;
+	cc2420xParams = CollisionAvoidanceLayerC;
 	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
 	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;

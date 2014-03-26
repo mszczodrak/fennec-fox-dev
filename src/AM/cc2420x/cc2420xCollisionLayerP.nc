@@ -10,6 +10,7 @@ uses interface RadioReceive as SubReceive;
 uses interface RadioAlarm;
 uses interface RandomCollisionConfig;
 uses interface SlottedCollisionConfig;
+uses interface cc2420xParams;
 
 /* wire to Slotted */
 uses interface RadioSend as SlottedRadioSend;

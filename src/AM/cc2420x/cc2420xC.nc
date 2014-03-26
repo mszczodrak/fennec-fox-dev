@@ -45,4 +45,7 @@ MacPacketTimeStamp32khz = CC2420XActiveMessageC.PacketTimeStamp32khz;
 MacPacketAcknowledgements = CC2420XActiveMessageC.PacketAcknowledgements;
 MacLinkPacketMetadata = CC2420XActiveMessageC.LinkPacketMetadata;
 
+components CC2420XRadioC;
+cc2420xParams = CC2420XRadioC;
+
 }
