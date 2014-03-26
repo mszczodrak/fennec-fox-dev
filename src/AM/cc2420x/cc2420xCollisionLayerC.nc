@@ -26,23 +26,23 @@ SlottedCollisionConfig = cc2420xCollisionLayerP.SlottedCollisionConfig;
 /* wire to SlottedCollisionLayer */
 
 components new SlottedCollisionLayerC();
-c2420xCollisionLayerP.SlottedRadioSend -> SlottedCollisionLayerC.RadioSend;
-c2420xCollisionLayerP.SlottedRadioReceive -> SlottedCollisionLayerC.RadioReceive;
+cc2420xCollisionLayerP.SlottedRadioSend -> SlottedCollisionLayerC.RadioSend;
+cc2420xCollisionLayerP.SlottedRadioReceive -> SlottedCollisionLayerC.RadioReceive;
 
-SlottedCollisionLayerC.SubSend -> c2420xCollisionLayerP.SlottedSubSend;
-SlottedCollisionLayerC.SubReceive -> c2420xCollisionLayerP.SlottedSubReceive;
-SlottedCollisionLayerC.RadioAlarm -> c2420xCollisionLayerP.SlottedRadioAlarm;
+SlottedCollisionLayerC.SubSend -> cc2420xCollisionLayerP.SlottedSubSend;
+SlottedCollisionLayerC.SubReceive -> cc2420xCollisionLayerP.SlottedSubReceive;
+SlottedCollisionLayerC.RadioAlarm -> cc2420xCollisionLayerP.SlottedRadioAlarm;
 SlottedCollisionLayerC.Config -> cc2420xCollisionLayerP.SlottedConfig;
 
 /* wire to RandomCollisionLayer */
 
 components new RandomCollisionLayerC();
-c2420xCollisionLayerP.RandomRadioSend -> RandomCollisionLayerC.RadioSend;
-c2420xCollisionLayerP.RandomRadioReceive -> RandomCollisionLayerC.RadioReceive;
+cc2420xCollisionLayerP.RandomRadioSend -> RandomCollisionLayerC.RadioSend;
+cc2420xCollisionLayerP.RandomRadioReceive -> RandomCollisionLayerC.RadioReceive;
 
-RandomCollisionLayerC.SubSend -> c2420xCollisionLayerP.RandomSubSend;
-RandomCollisionLayerC.SubReceive -> c2420xCollisionLayerP.RandomSubReceive;
-RandomCollisionLayerC.RadioAlarm -> c2420xCollisionLayerP.RandomRadioAlarm;
-RandomCollisionLayerC.Config -> c2420xCollisionLayerP.RandomConfig;
+RandomCollisionLayerC.SubSend -> cc2420xCollisionLayerP.RandomSubSend;
+RandomCollisionLayerC.SubReceive -> cc2420xCollisionLayerP.RandomSubReceive;
+RandomCollisionLayerC.RadioAlarm -> cc2420xCollisionLayerP.RandomRadioAlarm;
+RandomCollisionLayerC.Config -> cc2420xCollisionLayerP.RandomConfig;
 
 }

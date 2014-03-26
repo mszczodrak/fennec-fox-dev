@@ -210,13 +210,9 @@ implementation
 
 // -------- CollisionAvoidance
 
-//#ifdef SLOTTED_MAC
-//	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-//#else
-//	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
-//#endif
 	components new cc2420xCollisionLayerC() as CollisionAvoidanceLayerC;
-	CollisionAvoidanceLayerC.Config -> RadioP;
+	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
+	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];

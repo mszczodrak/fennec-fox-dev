@@ -179,8 +179,21 @@ async command tradio_size RandomRadioAlarm.getNow() {
 	return call RadioAlarm.getNow();
 }
 
+async command uint16_t RandomConfig.getInitialBackoff(message_t* msg) {
+	return call RandomCollisionConfig.getInitialBackoff(msg);
+}
 
+async command uint16_t RandomConfig.getCongestionBackoff(message_t* msg) {
+	return call RandomCollisionConfig.getCongestionBackoff(msg);
+}
 
+async command uint16_t RandomConfig.getMinimumBackoff() {
+	return call RandomCollisionConfig.getMinimumBackoff();
+}
+
+async command uint16_t RandomConfig.getTransmitBarrier(message_t* msg) {
+	return call RandomCollisionConfig.getTransmitBarrier(msg);;
+}
 
 /*
 	Random Events
