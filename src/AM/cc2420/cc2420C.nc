@@ -31,8 +31,8 @@ implementation
 components cc2420P;
 cc2420Params = cc2420P;
 
-components MultiplexLplC;
-cc2420Params = MultiplexLplC;
+components CC2420MultiplexLplC;
+cc2420Params = CC2420MultiplexLplC;
 
 components CC2420ControlP;
 cc2420Params = CC2420ControlP;

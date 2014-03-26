@@ -73,7 +73,7 @@ implementation {
 //  components DummyLplC as LplC;
 //#endif
 
-components MultiplexLplC as LplC;
+components CC2420MultiplexLplC as LplC;
 
 #if defined(PACKET_LINK)
   components PacketLinkC as LinkC;

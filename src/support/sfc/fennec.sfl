@@ -79,13 +79,15 @@ use network trickle $(FENNEC_FOX_LIB)/Network/trickle (
 		uint16_t low = 1,
 		uint16_t high = 1024,
 		uint8_t k = 1,
-		uint8_t scale = 10)
+		uint8_t scale = 10
+)
 
 use network tricklePlus $(FENNEC_FOX_LIB)/Network/tricklePlus (
 		uint16_t low = 1,
 		uint16_t high = 1024,
 		uint8_t k = 1,
-		uint8_t scale = 10)
+		uint8_t scale = 10
+)
 
 
 use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
@@ -94,7 +96,9 @@ use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 use am cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
-		uint8_t lpl=0)
+		uint16_t sleepInterval=0,
+		bool autoAck = 1
+)
 
 use am cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
 	        uint8_t channel=26,

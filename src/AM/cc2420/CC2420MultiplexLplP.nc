@@ -1,4 +1,4 @@
-module MultiplexLplP {
+module CC2420MultiplexLplP {
 provides interface LowPowerListening;
 provides interface Send;
 provides interface Receive;
@@ -37,12 +37,12 @@ provides interface SplitControl as DefaultSubControl;
 
 implementation {
 
-bool useLpl = FALSE;
+uint16_t sleepInterval = FALSE;
 
 command error_t SplitControl.start() {
-	useLpl = call cc2420Params.get_lpl();
+	sleepInterval = call cc2420Params.get_sleepInterval();
 
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSplitControl.start();
 	} else {
 		return call DummySplitControl.start();
@@ -50,7 +50,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSplitControl.stop();
 	} else {
 		return call DummySplitControl.stop();
@@ -58,7 +58,7 @@ command error_t SplitControl.stop() {
 }
 
 command error_t Send.send(message_t *msg, uint8_t len) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSend.send(msg, len);
 	} else {
 		return call DummySend.send(msg, len);
@@ -66,7 +66,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 }
 
 command uint8_t Send.maxPayloadLength() {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSend.maxPayloadLength();
 	} else {
 		return call DummySend.maxPayloadLength();
@@ -74,7 +74,7 @@ command uint8_t Send.maxPayloadLength() {
 }
 
 command void *Send.getPayload(message_t* msg, uint8_t len) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSend.getPayload(msg, len);
 	} else {
 		return call DummySend.getPayload(msg, len);
@@ -82,7 +82,7 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
 }
 
 command error_t Send.cancel(message_t *msg) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSend.cancel(msg);
 	} else {
 		return call DummySend.cancel(msg);
@@ -90,7 +90,7 @@ command error_t Send.cancel(message_t *msg) {
 }
 
 async command error_t SendState.requestState(uint8_t reqSendState) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSendState.requestState(reqSendState);
 	} else {
 		return call DummySendState.requestState(reqSendState);
@@ -98,7 +98,7 @@ async command error_t SendState.requestState(uint8_t reqSendState) {
 }
 
 async command void SendState.forceState(uint8_t reqSendState) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSendState.forceState(reqSendState);
 	} else {
 		return call DummySendState.forceState(reqSendState);
@@ -106,7 +106,7 @@ async command void SendState.forceState(uint8_t reqSendState) {
 }
 
 async command void SendState.toIdle() {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSendState.toIdle();
 	} else {
 		return call DummySendState.toIdle();
@@ -114,7 +114,7 @@ async command void SendState.toIdle() {
 }
 
 async command bool SendState.isIdle() {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSendState.isIdle();
 	} else {
 		return call DummySendState.isIdle();
@@ -122,7 +122,7 @@ async command bool SendState.isIdle() {
 }
 
 async command bool SendState.isState(uint8_t myState) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSendState.isState(myState);
 	} else {
 		return call DummySendState.isState(myState);
@@ -130,7 +130,7 @@ async command bool SendState.isState(uint8_t myState) {
 }
 
 async command uint8_t SendState.getState() {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultSendState.getState();
 	} else {
 		return call DummySendState.getState();
@@ -138,7 +138,7 @@ async command uint8_t SendState.getState() {
 }
 
 command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultLowPowerListening.setLocalWakeupInterval(intervalMs);
 	} else {
 		return call DummyLowPowerListening.setLocalWakeupInterval(intervalMs);
@@ -146,7 +146,7 @@ command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
 }
 
 command uint16_t LowPowerListening.getLocalWakeupInterval() {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultLowPowerListening.getLocalWakeupInterval();
 	} else {
 		return call DummyLowPowerListening.getLocalWakeupInterval();
@@ -154,7 +154,7 @@ command uint16_t LowPowerListening.getLocalWakeupInterval() {
 }
 
 command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, uint16_t intervalMs) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultLowPowerListening.setRemoteWakeupInterval(msg, intervalMs);
 	} else {
 		return call DummyLowPowerListening.setRemoteWakeupInterval(msg, intervalMs);
@@ -162,7 +162,7 @@ command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, uint16_t 
 }
 
 command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return call DefaultLowPowerListening.getRemoteWakeupInterval(msg);
 	} else {
 		return call DummyLowPowerListening.getRemoteWakeupInterval(msg);
@@ -174,7 +174,7 @@ command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
 */
 
 event void SubSend.sendDone(message_t* msg, error_t error) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return signal DefaultSubSend.sendDone(msg, error);
 	} else {
 		return signal DummySubSend.sendDone(msg, error);
@@ -182,7 +182,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 }
 
 event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return signal DefaultSubReceive.receive(msg, payload, len);
 	} else {
 		return signal DummySubReceive.receive(msg, payload, len);
@@ -191,7 +191,7 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 
 
 event void SubControl.startDone(error_t error) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return signal DefaultSubControl.startDone(error);
 	} else {
 		return signal DummySubControl.startDone(error);
@@ -199,7 +199,7 @@ event void SubControl.startDone(error_t error) {
 }
 
 event void SubControl.stopDone(error_t error) {
-	if (useLpl) {
+	if (sleepInterval) {
 		return signal DefaultSubControl.stopDone(error);
 	} else {
 		return signal DummySubControl.stopDone(error);
