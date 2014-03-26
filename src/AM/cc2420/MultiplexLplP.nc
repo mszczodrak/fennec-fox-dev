@@ -21,6 +21,17 @@ provides interface Send as DummySubSend;
 provides interface Receive as DummySubReceive;
 provides interface SplitControl as DummySubControl;
 
+/* wire to DefaultLplC */
+uses interface LowPowerListening as DefaultLowPowerListening;
+uses interface Send as DefaultSend;
+uses interface Receive as DefaultReceive;
+uses interface SplitControl as DefaultSplitControl;
+uses interface State as DefaultSendState;
+
+provides interface Send as DefaultSubSend;
+provides interface Receive as DefaultSubReceive;
+provides interface SplitControl as DefaultSubControl;
+
 }
 
 implementation {
@@ -29,7 +40,7 @@ bool useLpl = FALSE;
 
 command error_t SplitControl.start() {
 	if (useLpl) {
-
+		return call DefaultSplitControl.start();
 	} else {
 		return call DummySplitControl.start();
 	}
@@ -37,7 +48,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	if (useLpl) {
-
+		return call DefaultSplitControl.stop();
 	} else {
 		return call DummySplitControl.stop();
 	}
@@ -45,7 +56,7 @@ command error_t SplitControl.stop() {
 
 command error_t Send.send(message_t *msg, uint8_t len) {
 	if (useLpl) {
-
+		return call DefaultSend.send(msg, len);
 	} else {
 		return call DummySend.send(msg, len);
 	}
@@ -53,7 +64,7 @@ command error_t Send.send(message_t *msg, uint8_t len) {
 
 command uint8_t Send.maxPayloadLength() {
 	if (useLpl) {
-
+		return call DefaultSend.maxPayloadLength();
 	} else {
 		return call DummySend.maxPayloadLength();
 	}
@@ -61,7 +72,7 @@ command uint8_t Send.maxPayloadLength() {
 
 command void *Send.getPayload(message_t* msg, uint8_t len) {
 	if (useLpl) {
-
+		return call DefaultSend.getPayload(msg, len);
 	} else {
 		return call DummySend.getPayload(msg, len);
 	}
@@ -69,7 +80,7 @@ command void *Send.getPayload(message_t* msg, uint8_t len) {
 
 command error_t Send.cancel(message_t *msg) {
 	if (useLpl) {
-
+		return call DefaultSend.cancel(msg);
 	} else {
 		return call DummySend.cancel(msg);
 	}
@@ -77,7 +88,7 @@ command error_t Send.cancel(message_t *msg) {
 
 async command error_t SendState.requestState(uint8_t reqSendState) {
 	if (useLpl) {
-
+		return call DefaultSendState.requestState(reqSendState);
 	} else {
 		return call DummySendState.requestState(reqSendState);
 	}
@@ -85,7 +96,7 @@ async command error_t SendState.requestState(uint8_t reqSendState) {
 
 async command void SendState.forceState(uint8_t reqSendState) {
 	if (useLpl) {
-
+		return call DefaultSendState.forceState(reqSendState);
 	} else {
 		return call DummySendState.forceState(reqSendState);
 	}
@@ -93,7 +104,7 @@ async command void SendState.forceState(uint8_t reqSendState) {
 
 async command void SendState.toIdle() {
 	if (useLpl) {
-
+		return call DefaultSendState.toIdle();
 	} else {
 		return call DummySendState.toIdle();
 	}
@@ -101,7 +112,7 @@ async command void SendState.toIdle() {
 
 async command bool SendState.isIdle() {
 	if (useLpl) {
-
+		return call DefaultSendState.isIdle();
 	} else {
 		return call DummySendState.isIdle();
 	}
@@ -109,7 +120,7 @@ async command bool SendState.isIdle() {
 
 async command bool SendState.isState(uint8_t myState) {
 	if (useLpl) {
-
+		return call DefaultSendState.isState(myState);
 	} else {
 		return call DummySendState.isState(myState);
 	}
@@ -117,7 +128,7 @@ async command bool SendState.isState(uint8_t myState) {
 
 async command uint8_t SendState.getState() {
 	if (useLpl) {
-
+		return call DefaultSendState.getState();
 	} else {
 		return call DummySendState.getState();
 	}
@@ -125,7 +136,7 @@ async command uint8_t SendState.getState() {
 
 command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
 	if (useLpl) {
-
+		return call DefaultLowPowerListening.setLocalWakeupInterval(intervalMs);
 	} else {
 		return call DummyLowPowerListening.setLocalWakeupInterval(intervalMs);
 	}
@@ -133,7 +144,7 @@ command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
 
 command uint16_t LowPowerListening.getLocalWakeupInterval() {
 	if (useLpl) {
-
+		return call DefaultLowPowerListening.getLocalWakeupInterval();
 	} else {
 		return call DummyLowPowerListening.getLocalWakeupInterval();
 	}
@@ -141,7 +152,7 @@ command uint16_t LowPowerListening.getLocalWakeupInterval() {
 
 command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, uint16_t intervalMs) {
 	if (useLpl) {
-
+		return call DefaultLowPowerListening.setRemoteWakeupInterval(msg, intervalMs);
 	} else {
 		return call DummyLowPowerListening.setRemoteWakeupInterval(msg, intervalMs);
 	}
@@ -149,7 +160,7 @@ command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, uint16_t 
 
 command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
 	if (useLpl) {
-
+		return call DefaultLowPowerListening.getRemoteWakeupInterval(msg);
 	} else {
 		return call DummyLowPowerListening.getRemoteWakeupInterval(msg);
 	}
@@ -161,7 +172,7 @@ command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
 
 event void SubSend.sendDone(message_t* msg, error_t error) {
 	if (useLpl) {
-
+		return signal DefaultSubSend.sendDone(msg, error);
 	} else {
 		return signal DummySubSend.sendDone(msg, error);
 	}
@@ -169,7 +180,7 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 
 event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	if (useLpl) {
-
+		return signal DefaultSubReceive.receive(msg, payload, len);
 	} else {
 		return signal DummySubReceive.receive(msg, payload, len);
 	}
@@ -178,7 +189,7 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 
 event void SubControl.startDone(error_t error) {
 	if (useLpl) {
-
+		return signal DefaultSubControl.startDone(error);
 	} else {
 		return signal DummySubControl.startDone(error);
 	}
@@ -186,7 +197,7 @@ event void SubControl.startDone(error_t error) {
 
 event void SubControl.stopDone(error_t error) {
 	if (useLpl) {
-
+		return signal DefaultSubControl.stopDone(error);
 	} else {
 		return signal DummySubControl.stopDone(error);
 	}
@@ -222,8 +233,6 @@ command error_t DummySubSend.cancel(message_t *msg) {
 }
 
 
-
-
 /* Dummy Events */
 
 event void DummySplitControl.startDone(error_t error) {
@@ -234,15 +243,61 @@ event void DummySplitControl.stopDone(error_t error) {
 	return signal SplitControl.stopDone(error);
 }
 
-
-
-
 event void DummySend.sendDone(message_t* msg, error_t error) {
 	return signal Send.sendDone(msg, error);
 }
 
 
 event message_t *DummyReceive.receive(message_t* msg, void* payload, uint8_t len) {
+	return signal Receive.receive(msg, payload, len);
+}
+
+/*
+	Default Commands
+*/
+
+command error_t DefaultSubControl.start() {
+	return call SubControl.start();
+}
+
+command error_t DefaultSubControl.stop() {
+	return call SubControl.stop();
+}
+
+
+command error_t DefaultSubSend.send(message_t *msg, uint8_t len) {
+	return call SubSend.send(msg, len);
+}
+
+command uint8_t DefaultSubSend.maxPayloadLength() {
+	return call SubSend.maxPayloadLength();
+}
+
+command void *DefaultSubSend.getPayload(message_t* msg, uint8_t len) {
+	return call SubSend.getPayload(msg, len);
+}
+
+command error_t DefaultSubSend.cancel(message_t *msg) {
+	return call SubSend.cancel(msg);
+}
+
+
+/* Default Events */
+
+event void DefaultSplitControl.startDone(error_t error) {
+	return signal SplitControl.startDone(error);
+}
+
+event void DefaultSplitControl.stopDone(error_t error) {
+	return signal SplitControl.stopDone(error);
+}
+
+event void DefaultSend.sendDone(message_t* msg, error_t error) {
+	return signal Send.sendDone(msg, error);
+}
+
+
+event message_t *DefaultReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	return signal Receive.receive(msg, payload, len);
 }
 

@@ -39,8 +39,17 @@ DummyLplC.SubSend -> MultiplexLplP.DummySubSend;
 DummyLplC.SubReceive -> MultiplexLplP.DummySubReceive;
 DummyLplC.SubControl -> MultiplexLplP.DummySubControl;
 
+/* wire to DefaultLplC */
+components DefaultLplC;
+MultiplexLplP.DefaultLowPowerListening -> DefaultLplC.LowPowerListening;
+MultiplexLplP.DefaultSend -> DefaultLplC.Send;
+MultiplexLplP.DefaultReceive -> DefaultLplC.Receive;
+MultiplexLplP.DefaultSplitControl -> DefaultLplC.SplitControl;
+MultiplexLplP.DefaultSendState -> DefaultLplC.SendState;
 
-
+DefaultLplC.SubSend -> MultiplexLplP.DefaultSubSend;
+DefaultLplC.SubReceive -> MultiplexLplP.DefaultSubReceive;
+DefaultLplC.SubControl -> MultiplexLplP.DefaultSubControl;
 
 
 
