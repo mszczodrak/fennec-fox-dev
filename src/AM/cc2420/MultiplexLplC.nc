@@ -14,7 +14,6 @@ uses interface SplitControl as SubControl;
 
 implementation {
 
-
 components MultiplexLplP;
 
 LowPowerListening = MultiplexLplP.LowPowerListening;
@@ -50,9 +49,5 @@ MultiplexLplP.DefaultSendState -> DefaultLplC.SendState;
 DefaultLplC.SubSend -> MultiplexLplP.DefaultSubSend;
 DefaultLplC.SubReceive -> MultiplexLplP.DefaultSubReceive;
 DefaultLplC.SubControl -> MultiplexLplP.DefaultSubControl;
-
-
-
-
 
 }
