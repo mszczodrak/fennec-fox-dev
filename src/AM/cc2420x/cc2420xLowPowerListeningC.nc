@@ -10,7 +10,7 @@ uses interface BareSend as SubSend;
 uses interface BareReceive as SubReceive;
 uses interface RadioPacket as SubPacket;
 
-uses interface LowPowerListeningConfig as Config;
+uses interface LowPowerListeningConfig;
 uses interface PacketAcknowledgements;
 
 uses interface cc2420xParams;
@@ -31,6 +31,7 @@ RadioPacket = cc2420xLowPowerListeningP.RadioPacket;
 SubSend = cc2420xLowPowerListeningP.SubSend;
 SubReceive = cc2420xLowPowerListeningP.SubReceive;
 SubControl = cc2420xLowPowerListeningP.SubControl;
+SubPacket = cc2420xLowPowerListeningP.SubPacket;
 
 LowPowerListeningConfig = cc2420xLowPowerListeningP.LowPowerListeningConfig;
 PacketAcknowledgements = cc2420xLowPowerListeningP.PacketAcknowledgements;
@@ -58,5 +59,8 @@ cc2420xLowPowerListeningP.DefaultRadioPacket -> DefaultLplC.RadioPacket;
 DefaultLplC.SubSend -> cc2420xLowPowerListeningP.DefaultSubSend;
 DefaultLplC.SubReceive -> cc2420xLowPowerListeningP.DefaultSubReceive;
 DefaultLplC.SubControl -> cc2420xLowPowerListeningP.DefaultSubControl;
+
+DefaultLplC.Config -> cc2420xLowPowerListeningP.DefaultLowPowerListeningConfig;
+DefaultLplC.PacketAcknowledgements -> cc2420xLowPowerListeningP.DefaultPacketAcknowledgements;
 
 }

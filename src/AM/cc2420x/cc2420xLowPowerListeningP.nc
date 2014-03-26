@@ -15,6 +15,7 @@ uses interface PacketAcknowledgements;
 
 uses interface cc2420xParams;
 
+
 /* wire to LowPowerListeningDummyC */
 uses interface LowPowerListening as DummyLowPowerListening;
 uses interface BareSend as DummySend;
@@ -26,6 +27,7 @@ provides interface BareSend as DummySubSend;
 provides interface BareReceive as DummySubReceive;
 provides interface SplitControl as DummySubControl;
 provides interface RadioPacket as DummySubPacket;
+
 
 /* wire to LowPowerListeningLayerC */
 uses interface LowPowerListening as DefaultLowPowerListening;
@@ -39,6 +41,8 @@ provides interface BareReceive as DefaultSubReceive;
 provides interface SplitControl as DefaultSubControl;
 provides interface RadioPacket as DefaultSubPacket;
 
+provides interface LowPowerListeningConfig as DefaultLowPowerListeningConfig;
+provides interface PacketAcknowledgements as DefaultPacketAcknowledgements;
 }
 
 implementation
@@ -306,6 +310,30 @@ async command uint8_t DefaultSubPacket.metadataLength(message_t* msg) {
 
 async command void DefaultSubPacket.clear(message_t* msg) {
 	return call SubPacket.clear(msg);
+}
+
+command bool DefaultLowPowerListeningConfig.needsAutoAckRequest(message_t* msg) {
+	return call LowPowerListeningConfig.needsAutoAckRequest(msg);
+}
+
+command bool DefaultLowPowerListeningConfig.ackRequested(message_t* msg) {
+	return call LowPowerListeningConfig.ackRequested(msg);
+}
+
+command uint16_t DefaultLowPowerListeningConfig.getListenLength() {
+	return call LowPowerListeningConfig.getListenLength();
+}
+
+async command error_t DefaultPacketAcknowledgements.requestAck( message_t* msg ) {
+	return call PacketAcknowledgements.requestAck(msg);
+}
+
+async command error_t DefaultPacketAcknowledgements.noAck( message_t* msg ) {
+	return call PacketAcknowledgements.noAck(msg);
+}
+
+async command bool DefaultPacketAcknowledgements.wasAcked(message_t* msg) {
+	return call PacketAcknowledgements.wasAcked(msg);
 }
 
 /*
