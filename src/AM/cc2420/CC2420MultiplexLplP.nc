@@ -42,6 +42,8 @@ uint16_t sleepInterval = FALSE;
 command error_t SplitControl.start() {
 	sleepInterval = call cc2420Params.get_sleepInterval();
 
+	call LowPowerListening.setLocalWakeupInterval(sleepInterval);
+
 	if (sleepInterval) {
 		return call DefaultSplitControl.start();
 	} else {
@@ -59,6 +61,7 @@ command error_t SplitControl.stop() {
 
 command error_t Send.send(message_t *msg, uint8_t len) {
 	if (sleepInterval) {
+		call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
 		return call DefaultSend.send(msg, len);
 	} else {
 		return call DummySend.send(msg, len);
