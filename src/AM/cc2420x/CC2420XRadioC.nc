@@ -210,11 +210,12 @@ implementation
 
 // -------- CollisionAvoidance
 
-#ifdef SLOTTED_MAC
-	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-#else
-	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
-#endif
+//#ifdef SLOTTED_MAC
+//	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
+//#else
+//	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
+//#endif
+	components new cc2420xCollisionLayerC() as CollisionAvoidanceLayerC;
 	CollisionAvoidanceLayerC.Config -> RadioP;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
