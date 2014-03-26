@@ -76,6 +76,7 @@ module CC2420ControlP @safe() {
   uses interface Resource as SyncResource;
 
   uses interface Leds;
+uses interface cc2420Params;
 
 }
 
@@ -480,7 +481,7 @@ implementation {
     uint8_t channel;
     
     atomic {
-      channel = m_channel;
+      channel = m_channel = call cc2420Params.get_channel();
     }
     
     call FSCTRL.write( ( 1 << CC2420_FSCTRL_LOCK_THR ) |
@@ -532,10 +533,11 @@ implementation {
 
   void writeTxctrl() {
     atomic {
+      m_tx_power = call cc2420Params.get_power();
       call TXCTRL.write( ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
 			 ( 3 << CC2420_TXCTRL_PA_CURRENT ) |
 			 ( 1 << CC2420_TXCTRL_RESERVED ) |
-			 ( (CC2420_DEF_RFPOWER & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
+			 ( (m_tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL ) );
     }
   }
   /***************** Defaults ****************/

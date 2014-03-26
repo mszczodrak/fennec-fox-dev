@@ -82,6 +82,7 @@ module CC2420TransmitP @safe() {
 
   uses interface CC2420Receive;
   uses interface Leds;
+uses interface cc2420Params;
 }
 
 implementation {
@@ -827,7 +828,7 @@ implementation {
     uint8_t tx_power = (call CC2420PacketBody.getMetadata( m_msg ))->tx_power;
 
     if ( !tx_power ) {
-      tx_power = CC2420_DEF_RFPOWER;
+      tx_power = call cc2420Params.get_power();
     }
     
     call CSN.clr();
