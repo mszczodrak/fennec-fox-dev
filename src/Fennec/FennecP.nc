@@ -289,7 +289,7 @@ command void FennecState.resendDone(error_t error) {
 	}
 }
 
-command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
+async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 	struct network_process **np;
 	process_t process_id = UNKNOWN;
 	for (np = states[current_state].processes; np != NULL; np++) {
