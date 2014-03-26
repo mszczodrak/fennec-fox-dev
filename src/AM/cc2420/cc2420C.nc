@@ -31,6 +31,9 @@ implementation
 components cc2420P;
 cc2420Params = cc2420P;
 
+components MultiplexLplC;
+cc2420Params = MultiplexLplC;
+
 /* hacking to be cc2420x compatible */
 RadioChannel = cc2420P;
 /*

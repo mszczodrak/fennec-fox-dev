@@ -10,11 +10,13 @@ uses interface Send as SubSend;
 uses interface Receive as SubReceive;
 uses interface SplitControl as SubControl;
 
+uses interface cc2420Params;
 }
 
 implementation {
 
 components MultiplexLplP;
+cc2420Params = MultiplexLplP;
 
 LowPowerListening = MultiplexLplP.LowPowerListening;
 Send = MultiplexLplP.Send;

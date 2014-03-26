@@ -94,8 +94,7 @@ use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
 use am cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
-		uint8_t ack=1,
-		uint8_t crc=1)
+		uint8_t lpl=0)
 
 use am cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
 	        uint8_t channel=26,

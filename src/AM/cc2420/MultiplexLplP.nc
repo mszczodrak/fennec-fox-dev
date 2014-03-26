@@ -9,6 +9,7 @@ uses interface Send as SubSend;
 uses interface Receive as SubReceive;
 uses interface SplitControl as SubControl;
 
+uses interface cc2420Params;
 
 /* wire to DummyLplC */
 uses interface LowPowerListening as DummyLowPowerListening;
@@ -39,6 +40,8 @@ implementation {
 bool useLpl = FALSE;
 
 command error_t SplitControl.start() {
+	useLpl = call cc2420Params.get_lpl();
+
 	if (useLpl) {
 		return call DefaultSplitControl.start();
 	} else {
