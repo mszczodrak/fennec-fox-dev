@@ -1,4 +1,4 @@
-generic module cc2420LowPowerListeningP() {
+generic module cc2420xLowPowerListeningP() {
 provides interface SplitControl;
 provides interface BareSend as Send;
 provides interface BareReceive as Receive;
@@ -174,11 +174,11 @@ event void SubSend.sendDone(message_t* msg, error_t error) {
 	}
 }
 
-event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
+event message_t *SubReceive.receive(message_t* msg) {
 	if (sleepInterval) {
-		return signal DefaultSubReceive.receive(msg, payload, len);
+		return signal DefaultSubReceive.receive(msg);
 	} else {
-		return signal DummySubReceive.receive(msg, payload, len);
+		return signal DummySubReceive.receive(msg);
 	}
 }
 
@@ -211,13 +211,36 @@ command error_t DummySubControl.stop() {
 	return call SubControl.stop();
 }
 
-
 command error_t DummySubSend.send(message_t *msg) {
 	return call SubSend.send(msg);
 }
 
 command error_t DummySubSend.cancel(message_t *msg) {
 	return call SubSend.cancel(msg);
+}
+
+async command uint8_t DummySubPacket.headerLength(message_t* msg) {
+	return call SubPacket.headerLength(msg);
+}
+
+async command uint8_t DummySubPacket.payloadLength(message_t* msg) {
+	return call SubPacket.payloadLength(msg);
+}
+
+async command void DummySubPacket.setPayloadLength(message_t* msg, uint8_t length) {
+	return call SubPacket.setPayloadLength(msg, length);
+}
+
+async command uint8_t DummySubPacket.maxPayloadLength() {
+	return call SubPacket.maxPayloadLength();
+}
+
+async command uint8_t DummySubPacket.metadataLength(message_t* msg) {
+	return call SubPacket.metadataLength(msg);
+}
+
+async command void DummySubPacket.clear(message_t* msg) {
+	return call SubPacket.clear(msg);
 }
 
 /*
@@ -237,8 +260,8 @@ event void DummySend.sendDone(message_t* msg, error_t error) {
 }
 
 
-event message_t *DummyReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	return signal Receive.receive(msg, payload, len);
+event message_t *DummyReceive.receive(message_t* msg) {
+	return signal Receive.receive(msg);
 }
 
 /*
@@ -253,7 +276,6 @@ command error_t DefaultSubControl.stop() {
 	return call SubControl.stop();
 }
 
-
 command error_t DefaultSubSend.send(message_t *msg) {
 	return call SubSend.send(msg);
 }
@@ -262,6 +284,29 @@ command error_t DefaultSubSend.cancel(message_t *msg) {
 	return call SubSend.cancel(msg);
 }
 
+async command uint8_t DefaultSubPacket.headerLength(message_t* msg) {
+	return call SubPacket.headerLength(msg);
+}
+
+async command uint8_t DefaultSubPacket.payloadLength(message_t* msg) {
+	return call SubPacket.payloadLength(msg);
+}
+
+async command void DefaultSubPacket.setPayloadLength(message_t* msg, uint8_t length) {
+	return call SubPacket.setPayloadLength(msg, length);
+}
+
+async command uint8_t DefaultSubPacket.maxPayloadLength() {
+	return call SubPacket.maxPayloadLength();
+}
+
+async command uint8_t DefaultSubPacket.metadataLength(message_t* msg) {
+	return call SubPacket.metadataLength(msg);
+}
+
+async command void DefaultSubPacket.clear(message_t* msg) {
+	return call SubPacket.clear(msg);
+}
 
 /*
 	Default Events
@@ -280,8 +325,8 @@ event void DefaultSend.sendDone(message_t* msg, error_t error) {
 }
 
 
-event message_t *DefaultReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	return signal Receive.receive(msg, payload, len);
+event message_t *DefaultReceive.receive(message_t* msg) {
+	return signal Receive.receive(msg);
 }
 
 
