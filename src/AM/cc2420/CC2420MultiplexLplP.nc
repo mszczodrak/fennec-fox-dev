@@ -37,7 +37,7 @@ provides interface SplitControl as DefaultSubControl;
 
 implementation {
 
-uint16_t sleepInterval = FALSE;
+uint16_t sleepInterval = 0;
 
 command error_t SplitControl.start() {
 	sleepInterval = call cc2420Params.get_sleepInterval();
