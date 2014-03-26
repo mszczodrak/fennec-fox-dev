@@ -238,8 +238,9 @@ command error_t DummySubSend.cancel(message_t *msg) {
 	return call SubSend.cancel(msg);
 }
 
-
-/* Dummy Events */
+/*
+	Dummy Events
+*/
 
 event void DummySplitControl.startDone(error_t error) {
 	return signal SplitControl.startDone(error);
@@ -288,7 +289,9 @@ command error_t DefaultSubSend.cancel(message_t *msg) {
 }
 
 
-/* Default Events */
+/*
+	Default Events
+*/
 
 event void DefaultSplitControl.startDone(error_t error) {
 	return signal SplitControl.startDone(error);
