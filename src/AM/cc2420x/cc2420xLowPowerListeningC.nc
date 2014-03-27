@@ -42,31 +42,33 @@ cc2420xLowPowerListeningP.StdControlCC2420XRadioP -> CC2420XRadioP.StdControl;
 components cc2420xCollisionLayerC;
 cc2420xLowPowerListeningP.StdControlcc2420xCollisionLayerC -> cc2420xCollisionLayerC.StdControl;
 
-/* wire to DummyLplC */
-components new LowPowerListeningDummyC() as DummyLplC;
-cc2420xLowPowerListeningP.DummyLowPowerListening -> DummyLplC.LowPowerListening;
-cc2420xLowPowerListeningP.DummySend -> DummyLplC.Send;
-cc2420xLowPowerListeningP.DummyReceive -> DummyLplC.Receive;
-cc2420xLowPowerListeningP.DummySplitControl -> DummyLplC.SplitControl;
-cc2420xLowPowerListeningP.DummyRadioPacket -> DummyLplC.RadioPacket;
+/* wire to LowPowerListeningDummyC */
+components new LowPowerListeningDummyC();
+cc2420xLowPowerListeningP.DummyLowPowerListening -> LowPowerListeningDummyC.LowPowerListening;
+cc2420xLowPowerListeningP.DummySend -> LowPowerListeningDummyC.Send;
+cc2420xLowPowerListeningP.DummyReceive -> LowPowerListeningDummyC.Receive;
+cc2420xLowPowerListeningP.DummySplitControl -> LowPowerListeningDummyC.SplitControl;
+cc2420xLowPowerListeningP.DummyRadioPacket -> LowPowerListeningDummyC.RadioPacket;
 
-DummyLplC.SubSend -> cc2420xLowPowerListeningP.DummySubSend;
-DummyLplC.SubReceive -> cc2420xLowPowerListeningP.DummySubReceive;
-DummyLplC.SubControl -> cc2420xLowPowerListeningP.DummySubControl;
+LowPowerListeningDummyC.SubSend -> cc2420xLowPowerListeningP.DummySubSend;
+LowPowerListeningDummyC.SubReceive -> cc2420xLowPowerListeningP.DummySubReceive;
+LowPowerListeningDummyC.SubControl -> cc2420xLowPowerListeningP.DummySubControl;
+LowPowerListeningDummyC.SubPacket -> cc2420xLowPowerListeningP.DummySubPacket;
 
-/* wire to DefaultLplC */
-components new LowPowerListeningLayerC() as DefaultLplC;
-cc2420xLowPowerListeningP.DefaultLowPowerListening -> DefaultLplC.LowPowerListening;
-cc2420xLowPowerListeningP.DefaultSend -> DefaultLplC.Send;
-cc2420xLowPowerListeningP.DefaultReceive -> DefaultLplC.Receive;
-cc2420xLowPowerListeningP.DefaultSplitControl -> DefaultLplC.SplitControl;
-cc2420xLowPowerListeningP.DefaultRadioPacket -> DefaultLplC.RadioPacket;
+/* wire to LowPowerListeningLayerC */
+components new LowPowerListeningLayerC();
+cc2420xLowPowerListeningP.DefaultLowPowerListening -> LowPowerListeningLayerC.LowPowerListening;
+cc2420xLowPowerListeningP.DefaultSend -> LowPowerListeningLayerC.Send;
+cc2420xLowPowerListeningP.DefaultReceive -> LowPowerListeningLayerC.Receive;
+cc2420xLowPowerListeningP.DefaultSplitControl -> LowPowerListeningLayerC.SplitControl;
+cc2420xLowPowerListeningP.DefaultRadioPacket -> LowPowerListeningLayerC.RadioPacket;
 
-DefaultLplC.SubSend -> cc2420xLowPowerListeningP.DefaultSubSend;
-DefaultLplC.SubReceive -> cc2420xLowPowerListeningP.DefaultSubReceive;
-DefaultLplC.SubControl -> cc2420xLowPowerListeningP.DefaultSubControl;
+LowPowerListeningLayerC.SubSend -> cc2420xLowPowerListeningP.DefaultSubSend;
+LowPowerListeningLayerC.SubReceive -> cc2420xLowPowerListeningP.DefaultSubReceive;
+LowPowerListeningLayerC.SubControl -> cc2420xLowPowerListeningP.DefaultSubControl;
+LowPowerListeningLayerC.SubPacket -> cc2420xLowPowerListeningP.DefaultSubPacket;
 
-DefaultLplC.Config -> cc2420xLowPowerListeningP.DefaultLowPowerListeningConfig;
-DefaultLplC.PacketAcknowledgements -> cc2420xLowPowerListeningP.DefaultPacketAcknowledgements;
+LowPowerListeningLayerC.Config -> cc2420xLowPowerListeningP.DefaultLowPowerListeningConfig;
+LowPowerListeningLayerC.PacketAcknowledgements -> cc2420xLowPowerListeningP.DefaultPacketAcknowledgements;
 
 }
