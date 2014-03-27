@@ -45,19 +45,19 @@ enum {
 	SEQ_RAND		= 20,
 	SEQ_OFFSET		= 1,
 	SEQ_OVERLAP		= 10,
-	SEQ_MAX			= 100,
+	SEQ_MAX			= 0xFFDC,
 
-        UNKNOWN                 = 0xff,
-	NODE			= 0xfffa,
-        BRIDGE                  = 0xfffc,
-        BROADCAST               = 0xffff,
+        UNKNOWN                 = 0xFF,
+	NODE			= 0xFFFA,
+        BRIDGE                  = 0xFFFA,
+        BROADCAST               = 0xFFFF,
 
 	F_MINIMUM_STATE_LEVEL	= 0,
 
 	ANY			= 253,
-        UNKNOWN_CONFIGURATION   = 0xfff9,
+        UNKNOWN_CONFIGURATION   = 0xFFF9,
         UNKNOWN_LAYER           = 255,
-	UNKNOWN_ID		= 0xfff0,
+	UNKNOWN_ID		= 0xFFF0,
 
 };
 

@@ -97,15 +97,12 @@ bool validProcessId(process_t process_id) @C() {
 
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
-			//printf("success privileged %d %d\n", npr->process_id, process_id);
-			//dbg("Fennec", "[-] Fennec validProcessId(%d) - privileged", process_id);
 			return TRUE;
 		}
 	}
 
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
-			//printf("success ordinary %d %d\n", npr->process_id, process_id);
 			//dbg("Fennec", "[-] Fennec validProcessId(%d) - ordinary", process_id);
 			return TRUE;
 		}
@@ -266,14 +263,14 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	}
 
 	/* Some mote is still in the old state, resend control message */
-	if (check_sequence(new_seq, current_seq) < 1) {
+	if (check_sequence(new_seq, current_seq) < 0) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - old state", new_state, new_seq);
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 
 	/* Network State sequnce has increased */
-	if ((check_sequence(new_seq, current_seq) > 1) && (new_state == current_state)) {
+	if ((check_sequence(new_seq, current_seq) > 0) && (new_state == current_state)) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - update sequence", new_state, new_seq);
 		current_seq = new_seq;
 		signal FennecState.resend();
@@ -281,7 +278,7 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	}
 
 	/* Receive information about a new network state */
-	if (check_sequence(new_seq, current_seq) > 1) {
+	if (check_sequence(new_seq, current_seq) > 0) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - new state", new_state, new_seq);
 		next_state = new_state;
 		next_seq = new_seq;
