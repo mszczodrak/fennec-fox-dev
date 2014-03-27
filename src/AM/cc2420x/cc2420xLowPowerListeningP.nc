@@ -57,9 +57,8 @@ command error_t SplitControl.start() {
 	call StdControlCC2420XRadioP.start();
 	call StdControlcc2420xCollisionLayerC.start();
 
-	call LowPowerListening.setLocalWakeupInterval(sleepInterval);
-
 	if (sleepInterval) {
+		call LowPowerListening.setLocalWakeupInterval(sleepInterval);
 		return call DefaultSplitControl.start();
 	} else {
 		return call DummySplitControl.start();
