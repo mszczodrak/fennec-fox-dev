@@ -30,15 +30,16 @@ implementation {
 
 /* Parameters:
 uint8_t repeat = 1,
-uint8_t delay = 1
+float delay = 1
 */
 
-error_t send(am_addr_t addr, message_t* msg, uint8_t len) {
-	return call MacAMSend.send(addr, msg, len);
-}
+bool busy = FALSE;
+uint8_t pkt_len;
+am_addr_t pkt_addr;
 
 command error_t SplitControl.start() {
 	dbg("Network", "[%d] rebroadcast SplitControl.start()", process);
+	busy = FALSE;
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -50,32 +51,47 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
-
 }
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	nx_struct rebroadcast_header *hdr;
+	error_t err;
 
 	dbg("Network", "[%d] rebroadcast NetworkAMSend.send(%d, 0x%1x, %d )",
 		process, addr, msg, len);
 
-	hdr = (nx_struct rebroadcast_header*) call MacAMSend.getPayload(msg,
-				len + sizeof(nx_struct rebroadcast_header));
+	if (busy)
+		return EBUSY;
+
+	busy = TRUE;
+	pkt_len = len + sizeof(nx_struct rebroadcast_header);
+	pkt_addr = addr;
+
+	hdr = (nx_struct rebroadcast_header*) call MacAMSend.getPayload(msg, pkt_len);
 
 	hdr->repeat = call rebroadcastParams.get_repeat();
 
-	if ((addr == TOS_NODE_ID)) {
+	if (pkt_addr == TOS_NODE_ID) {
 		dbg("Network", "[%d] rebroadcast NetworkAMSend.sendDone(0x%1x, %d )", process, msg, SUCCESS);
+		hdr->repeat = 0;
 		signal NetworkAMSend.sendDone(msg, SUCCESS);
 		signal MacReceive.receive(msg, 
-			call NetworkAMSend.getPayload(msg, len + 
-				sizeof(nx_struct rebroadcast_header)), 
-		len + sizeof(nx_struct rebroadcast_header));
+			call NetworkAMSend.getPayload(msg, pkt_len), pkt_len);
+		busy = FALSE;
 		return SUCCESS;
 	}
 
-	return call MacAMSend.send(addr, msg, len +
-				sizeof(nx_struct rebroadcast_header));
+	if (call LowPowerListening.getLocalWakeupInterval() > 0) {
+		call Timer.startOneShot(call LowPowerListening.getLocalWakeupInterval() * 
+			call rebroadcastParams.get_delay());
+	}
+
+	err = call MacAMSend.send(pkt_addr, msg, pkt_len);
+
+	if (err != SUCCESS)
+		busy = FALSE;
+
+	return err;
 }
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
@@ -99,12 +115,33 @@ command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	nx_struct rebroadcast_header *hdr;
+	error_t err = error;
+
+	if (err != SUCCESS) {
+		signal NetworkAMSend.sendDone(msg, err);
+		busy = FALSE;
+		return;
+	}
 
 	dbg("Network", "[%d] rebroadcast NetworkAMSend.sendDone(0x%1x, %d )", process, msg, error);
 
-	
+	hdr = (nx_struct rebroadcast_header*) call MacAMSend.getPayload(msg, pkt_len);
 
-	signal NetworkAMSend.sendDone(msg, error);
+	if (hdr->repeat > 0)
+		hdr->repeat--;
+
+	if ((hdr->repeat > 0) || call Timer.isRunning()) {
+		err = call MacAMSend.send(pkt_addr, msg, pkt_len);
+
+		if (err != SUCCESS) {
+			signal NetworkAMSend.sendDone(msg, err);
+			busy = FALSE;
+		}
+		return;
+	}
+
+	busy = FALSE;
+	signal NetworkAMSend.sendDone(msg, err);
 }
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
