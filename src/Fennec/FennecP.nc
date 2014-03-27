@@ -218,6 +218,19 @@ command uint16_t FennecState.getStateSeq() {
 //	return current_seq;
 }
 
+int8_t check_sequence(uint16_t received, uint16_t current) {
+	if (received == current)
+		return 0;
+
+	if (received < current)
+		return -1;
+
+	if (received > current)
+		return 1;
+
+	return 1;
+}
+
 command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 	dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
 	/* check if there is ongoing reconfiguration */
@@ -232,20 +245,20 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	}
 
 	/* Nothing new, receive current information */
-	if ((new_seq == current_seq) && (new_state == current_state)) {
+	if ((check_sequence(new_seq, current_seq) == 0)  && (new_state == current_state)) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - nothing new", new_state, new_seq);
 		return SUCCESS;
 	}
 
 	/* Some mote is still in the old state, resend control message */
-	if (new_seq < current_seq) {
+	if (check_sequence(new_seq, current_seq) < 1) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - old state", new_state, new_seq);
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 
 	/* Network State sequnce has increased */
-	if ((new_seq > current_seq) && (new_state == current_state)) {
+	if ((check_sequence(new_seq, current_seq) > 1) && (new_state == current_state)) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - update sequence", new_state, new_seq);
 		current_seq = new_seq;
 		signal FennecState.resend();
@@ -253,7 +266,7 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 	}
 
 	/* Receive information about a new network state */
-	if (new_seq > current_seq) {
+	if (check_sequence(new_seq, current_seq) > 1) {
 		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - new state", new_state, new_seq);
 		next_state = new_state;
 		next_seq = new_seq;
