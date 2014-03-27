@@ -53,6 +53,8 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
 }
 
 implementation {
@@ -74,6 +76,8 @@ MacAMPacket = trickleP.MacAMPacket;
 MacPacket = trickleP.MacPacket;
 MacPacketAcknowledgements = trickleP.MacPacketAcknowledgements;
 MacLinkPacketMetadata = trickleP.MacLinkPacketMetadata;
+LowPowerListening = trickleP.LowPowerListening;
+RadioChannel = trickleP.RadioChannel;
 
 components new TrickleTimerMilliC(1, 1024, 1, 1);
 trickleP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];

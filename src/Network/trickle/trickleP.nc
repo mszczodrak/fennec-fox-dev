@@ -54,6 +54,8 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
 
 uses interface TrickleTimer[uint16_t key];
 provides interface TrickleTimerParams;
@@ -324,6 +326,8 @@ command error_t TrickleTimerParams.set_scale(uint8_t new_scale) {
 	return call trickleParams.set_scale(new_scale);
 }
 
+event void RadioChannel.setChannelDone() {
+}
 
 default command error_t TrickleTimer.start[uint16_t key]() { return FAIL; }
 default command void TrickleTimer.stop[uint16_t key]() { }

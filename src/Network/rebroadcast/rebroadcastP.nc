@@ -19,6 +19,11 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
+
+uses interface Leds;
+uses interface Timer<TMilli>;
 }
 
 implementation {
@@ -27,6 +32,10 @@ implementation {
 uint8_t repeat = 1,
 uint8_t delay = 1
 */
+
+error_t send(am_addr_t addr, message_t* msg, uint8_t len) {
+	return call MacAMSend.send(addr, msg, len);
+}
 
 command error_t SplitControl.start() {
 	dbg("Network", "[%d] rebroadcast SplitControl.start()", process);
@@ -40,22 +49,33 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
+event void Timer.fired() {
+
+}
+
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	nx_struct rebroadcast_header *hdr;
+
 	dbg("Network", "[%d] rebroadcast NetworkAMSend.send(%d, 0x%1x, %d )",
 		process, addr, msg, len);
+
+	hdr = (nx_struct rebroadcast_header*) call MacAMSend.getPayload(msg,
+				len + sizeof(nx_struct rebroadcast_header));
+
+	hdr->repeat = call rebroadcastParams.get_repeat();
 
 	if ((addr == TOS_NODE_ID)) {
 		dbg("Network", "[%d] rebroadcast NetworkAMSend.sendDone(0x%1x, %d )", process, msg, SUCCESS);
 		signal NetworkAMSend.sendDone(msg, SUCCESS);
 		signal MacReceive.receive(msg, 
-		call NetworkAMSend.getPayload(msg, len + 
+			call NetworkAMSend.getPayload(msg, len + 
 				sizeof(nx_struct rebroadcast_header)), 
 		len + sizeof(nx_struct rebroadcast_header));
 		return SUCCESS;
 	}
 
-	return call MacAMSend.send(addr, msg, len + 
-		sizeof(nx_struct rebroadcast_header));
+	return call MacAMSend.send(addr, msg, len +
+				sizeof(nx_struct rebroadcast_header));
 }
 
 command error_t NetworkAMSend.cancel(message_t* msg) {
@@ -78,7 +98,12 @@ command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void MacAMSend.sendDone(message_t *msg, error_t error) {
+	nx_struct rebroadcast_header *hdr;
+
 	dbg("Network", "[%d] rebroadcast NetworkAMSend.sendDone(0x%1x, %d )", process, msg, error);
+
+	
+
 	signal NetworkAMSend.sendDone(msg, error);
 }
 
@@ -179,5 +204,9 @@ async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
 async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 	return call MacPacketAcknowledgements.wasAcked(msg);
 }
+
+event void RadioChannel.setChannelDone() {
+}
+
 
 }

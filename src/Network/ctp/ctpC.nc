@@ -56,6 +56,8 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
 }
 
 implementation {
@@ -98,6 +100,8 @@ MacSnoop = CtpActiveMessageC.MacSnoop;
 MacAMPacket = CtpActiveMessageC.MacAMPacket;
 MacPacket = CtpActiveMessageC.MacPacket;
 MacPacketAcknowledgements = CtpActiveMessageC.MacPacketAcknowledgements;
+LowPowerListening = ctpP;
+RadioChannel = ctpP;
 
 ctpP.RoutingControl -> Forwarder.StdControl;
 

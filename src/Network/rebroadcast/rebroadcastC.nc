@@ -18,6 +18,8 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
 }
 
 implementation {
@@ -39,4 +41,13 @@ MacAMPacket = rebroadcastP.MacAMPacket;
 MacPacket = rebroadcastP.MacPacket;
 MacPacketAcknowledgements = rebroadcastP.MacPacketAcknowledgements;
 MacLinkPacketMetadata = rebroadcastP.MacLinkPacketMetadata;
+LowPowerListening = rebroadcastP.LowPowerListening;
+RadioChannel = rebroadcastP.RadioChannel;
+
+components LedsC;
+components new TimerMilliC();
+
+rebroadcastP.Leds -> LedsC;
+rebroadcastP.Timer -> TimerMilliC;
+
 }

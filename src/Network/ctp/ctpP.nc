@@ -53,6 +53,8 @@ uses interface Send as CtpSend;
 uses interface AMPacket as CtpAMPacket;
 uses interface Packet as CtpPacket;
 uses interface PacketAcknowledgements as CtpPacketAcknowledgements;
+uses interface LowPowerListening;
+uses interface RadioChannel;
 }
 
 implementation {
@@ -171,5 +173,9 @@ async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
 async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
 	return call CtpPacketAcknowledgements.wasAcked(msg);
 }
+
+event void RadioChannel.setChannelDone() {
+}
+
 
 }

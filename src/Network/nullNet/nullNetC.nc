@@ -49,6 +49,8 @@ uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
 }
 
 implementation {
@@ -70,4 +72,6 @@ MacAMPacket = nullNetP.MacAMPacket;
 MacPacket = nullNetP.MacPacket;
 MacPacketAcknowledgements = nullNetP.MacPacketAcknowledgements;
 MacLinkPacketMetadata = nullNetP.MacLinkPacketMetadata;
+LowPowerListening = nullNetP.LowPowerListening;
+RadioChannel = nullNetP.RadioChannel;
 }
