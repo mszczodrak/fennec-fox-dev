@@ -63,7 +63,7 @@ task void check_event() {
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == current_state) && (policies[i].event_mask == event_mask)) {
 			dbg("Fennec", "[-] Fennec found matching rule #%d", i);
-			call FennecState.setStateAndSeq(policies[i].dst_conf, current_seq + 1);
+			call FennecState.setStateAndSeq(policies[i].dst_conf, (current_seq + 1) % SEQ_MAX);
 			return;
 		}
 	}
@@ -218,10 +218,25 @@ command uint16_t FennecState.getStateSeq() {
 //	return current_seq;
 }
 
+/* compares received sequence with the current local one
+	returns:
+	0  - when sequences are equal
+	1  - when the received sequence is newer
+	-1 - when the current sequence is newer
+*/
 int8_t check_sequence(uint16_t received, uint16_t current) {
 	if (received == current)
 		return 0;
 
+	/* Test overlap, where received is ahead of time */
+	if ((SEQ_MAX - current < SEQ_OVERLAP) && (received < SEQ_OVERLAP))
+		return 1;
+
+	/* Test overlap, where current is ahead of time */
+	if ((SEQ_MAX - received < SEQ_OVERLAP) && (current < SEQ_OVERLAP))
+		return -1;
+
+	/* A this point we do not consider overlaps anymore */
 	if (received < current)
 		return -1;
 
