@@ -36,31 +36,16 @@
 #ifndef FF_CONSTANTS_H
 #define FF_CONSTANTS_H
 
-
-#define TYPE_NONE	0
-#define TYPE_SECOND	1
-#define TYPE_MINUTE	2
-#define TYPE_HOUR	3
-#define TYPE_DAY	4
-
-#define UQ_RADIO_ALARM          "UQ_CC2420X_RADIO_ALARM"
-
-
 enum {
         OFF                     = 0,
         ON                      = 1,
-
-        EQ                      = 1,
-        NQ                      = 2,
-        LT                      = 3,
-        LE                      = 4,
-        GT                      = 5,
-        GE                      = 6,
 
 	MAX_NUM_EVENTS		= 32,
 
 	SEQ_RAND		= 20,
 	SEQ_OFFSET		= 1,
+	SEQ_OVERLAP		= 10,
+	SEQ_MAX			= 100,
 
         UNKNOWN                 = 0xff,
 	NODE			= 0xfffa,
@@ -74,12 +59,6 @@ enum {
         UNKNOWN_LAYER           = 255,
 	UNKNOWN_ID		= 0xfff0,
 
-                /* Panic Levels */
-	F_SYSTEM		= 23,
-	F_MEMORY		= 24,
-	F_SENSOR		= 25,
-
-	FENNEC_MSG_DATA_LEN	= 128,
 };
 
 #endif
