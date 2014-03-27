@@ -93,6 +93,7 @@ implementation
 	RadioP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	RadioP.PacketTimeStamp -> TimeStampingLayerC;
 	RadioP.CC2420XPacket -> RadioDriverLayerC;
+	cc2420xParams = RadioP;
 
 // -------- RadioAlarm
 
@@ -182,7 +183,7 @@ implementation
 
 // -------- Low Power Listening
 
-	components new cc2420xLowPowerListeningC() as LowPowerListeningLayerC;
+	components cc2420xLowPowerListeningC as LowPowerListeningLayerC;
 	LowPowerListeningLayerC.LowPowerListeningConfig -> RadioP.LowPowerListeningConfig;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
@@ -191,6 +192,7 @@ implementation
 	LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
 	SplitControl = LowPowerListeningLayerC;
 	LowPowerListening = LowPowerListeningLayerC;
+	cc2420xParams = LowPowerListeningLayerC;
 
 // -------- MessageBuffer
 
@@ -206,7 +208,7 @@ implementation
 
 // -------- CollisionAvoidance
 
-	components new cc2420xCollisionLayerC() as CollisionAvoidanceLayerC;
+	components cc2420xCollisionLayerC as CollisionAvoidanceLayerC;
 	cc2420xParams = CollisionAvoidanceLayerC;
 	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
 	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;

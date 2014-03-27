@@ -1,4 +1,4 @@
-generic configuration cc2420xLowPowerListeningC() {
+configuration cc2420xLowPowerListeningC {
 provides interface SplitControl;
 provides interface BareSend as Send;
 provides interface BareReceive as Receive;
@@ -19,7 +19,7 @@ uses interface cc2420xParams;
 
 implementation {
 
-components new cc2420xLowPowerListeningP();
+components cc2420xLowPowerListeningP;
 cc2420xParams = cc2420xLowPowerListeningP;
 
 LowPowerListening = cc2420xLowPowerListeningP.LowPowerListening;
@@ -35,6 +35,12 @@ SubPacket = cc2420xLowPowerListeningP.SubPacket;
 
 LowPowerListeningConfig = cc2420xLowPowerListeningP.LowPowerListeningConfig;
 PacketAcknowledgements = cc2420xLowPowerListeningP.PacketAcknowledgements;
+
+components CC2420XRadioP;
+cc2420xLowPowerListeningP.StdControlCC2420XRadioP -> CC2420XRadioP.StdControl;
+
+components cc2420xCollisionLayerC;
+cc2420xLowPowerListeningP.StdControlcc2420xCollisionLayerC -> cc2420xCollisionLayerC.StdControl;
 
 /* wire to DummyLplC */
 components new LowPowerListeningDummyC() as DummyLplC;

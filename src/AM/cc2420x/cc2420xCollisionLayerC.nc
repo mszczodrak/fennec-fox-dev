@@ -1,4 +1,4 @@
-generic configuration cc2420xCollisionLayerC() {
+configuration cc2420xCollisionLayerC {
 
 provides interface StdControl;
 provides interface RadioSend;
@@ -15,7 +15,7 @@ uses interface cc2420xParams;
 
 implementation {
 
-components new cc2420xCollisionLayerP();
+components cc2420xCollisionLayerP;
 StdControl = cc2420xCollisionLayerP.StdControl;
 RadioSend = cc2420xCollisionLayerP.RadioSend;
 RadioReceive = cc2420xCollisionLayerP.RadioReceive;

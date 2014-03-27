@@ -1,6 +1,6 @@
 #include <Tasklet.h>
 
-generic module cc2420xCollisionLayerP() {
+module cc2420xCollisionLayerP {
 provides interface StdControl;
 provides interface RadioSend;
 provides interface RadioReceive;
@@ -35,7 +35,7 @@ provides interface RandomCollisionConfig as RandomConfig;
 
 implementation {
 
-bool slotted = FALSE;
+norace bool slotted = FALSE;
 
 command error_t StdControl.start() {
 	slotted = call cc2420xParams.get_slotted();

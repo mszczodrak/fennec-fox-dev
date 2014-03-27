@@ -49,10 +49,25 @@ module CC2420XRadioP
 
 		interface PacketTimeStamp<TRadio, uint32_t>;
 	}
+
+provides interface StdControl;
+uses interface cc2420xParams;
 }
 
 implementation
 {
+
+norace bool withLpl = FALSE;
+
+command error_t StdControl.start() {
+	withLpl = (call cc2420xParams.get_sleepInterval() > 0);
+	return SUCCESS;
+}
+
+command error_t StdControl.stop() {
+	return SUCCESS;
+}
+
 
 /*----------------- CC2420XDriverConfig -----------------*/
 
@@ -220,25 +235,30 @@ implementation
 	 * initial backoff = 0x1F * CC2420_BACKOFF_PERIOD = 310 jiffies = 9920 microsec
 	 * congestion backoff = 0x7 * CC2420_BACKOFF_PERIOD = 70 jiffies = 2240 microsec
 	 */
-
-#ifndef LOW_POWER_LISTENING
-
-	async command uint16_t RandomCollisionConfig.getMinimumBackoff()
-	{
+async command uint16_t RandomCollisionConfig.getMinimumBackoff() {
+	if (withLpl) {
+		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
+	} else {
 		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
 	}
+}
 
-	async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg)
-	{
+async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg) {
+	if (withLpl) {
+		return (uint16_t)(1600 * RADIO_ALARM_MICROSEC);
+	} else {
 		return (uint16_t)(9920 * RADIO_ALARM_MICROSEC);
 	}
+}
 
-	async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg)
-	{
+async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg) {
+	if (withLpl) {
+		return (uint16_t)(3200 * RADIO_ALARM_MICROSEC);
+	} else {
 		return (uint16_t)(2240 * RADIO_ALARM_MICROSEC);
 	}
+}
 
-#endif
 
 	async command uint16_t RandomCollisionConfig.getTransmitBarrier(message_t* msg)
 	{
@@ -297,7 +317,6 @@ implementation
 
 /*----------------- LowPowerListening -----------------*/
 
-#ifdef LOW_POWER_LISTENING
 
 	command bool LowPowerListeningConfig.needsAutoAckRequest(message_t* msg)
 	{
@@ -314,21 +333,5 @@ implementation
 		return 5;
 	}
 
-	async command uint16_t RandomCollisionConfig.getMinimumBackoff()
-	{
-		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
-	}
-
-	async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg)
-	{
-		return (uint16_t)(1600 * RADIO_ALARM_MICROSEC);
-	}
-
-	async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg)
-	{
-		return (uint16_t)(3200 * RADIO_ALARM_MICROSEC);
-	}
-
-#endif
 
 }

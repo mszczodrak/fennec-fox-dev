@@ -1,4 +1,4 @@
-generic module cc2420xLowPowerListeningP() {
+module cc2420xLowPowerListeningP {
 provides interface SplitControl;
 provides interface BareSend as Send;
 provides interface BareReceive as Receive;
@@ -15,6 +15,8 @@ uses interface PacketAcknowledgements;
 
 uses interface cc2420xParams;
 
+uses interface StdControl as StdControlCC2420XRadioP;
+uses interface StdControl as StdControlcc2420xCollisionLayerC;
 
 /* wire to LowPowerListeningDummyC */
 uses interface LowPowerListening as DummyLowPowerListening;
@@ -45,12 +47,15 @@ provides interface LowPowerListeningConfig as DefaultLowPowerListeningConfig;
 provides interface PacketAcknowledgements as DefaultPacketAcknowledgements;
 }
 
-implementation
-{
-uint16_t sleepInterval = 0;
+implementation {
+
+norace uint16_t sleepInterval = 0;
 
 command error_t SplitControl.start() {
 	sleepInterval = call cc2420xParams.get_sleepInterval();
+
+	call StdControlCC2420XRadioP.start();
+	call StdControlcc2420xCollisionLayerC.start();
 
 	call LowPowerListening.setLocalWakeupInterval(sleepInterval);
 
@@ -62,6 +67,9 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
+	call StdControlCC2420XRadioP.stop();
+	call StdControlcc2420xCollisionLayerC.stop();
+
 	if (sleepInterval) {
 		return call DefaultSplitControl.stop();
 	} else {
