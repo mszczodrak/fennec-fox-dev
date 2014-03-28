@@ -55,6 +55,13 @@ uses interface Leds;
 implementation {
 
 message_t packet;
+uint8_t resend = 0;
+
+
+task void schedule_send() {
+	call Timer.startOneShot((call Random.rand16() % 
+		call StateSynchronizationParams.get_send_delay()) + 1);
+}
 
 task void send_msg() {
 	nx_struct fennec_network_state *state_msg;
@@ -81,12 +88,13 @@ task void send_msg() {
 
 event void FennecState.resend() {
 	printf("resend\n");
+	resend = call StateSynchronizationParams.get_resend();
 	post send_msg();
 }
 
 command error_t SplitControl.start() {
 	dbg("StateSynchronization", "[%d] StateSynchronizationP SplitControl.start()", process);
-	post send_msg();
+	post schedule_send();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -108,11 +116,17 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	printf("resendDone %d\n", error);
-	call FennecState.resendDone(error);
+	if ((error != SUCCESS) && (resend > 0)) {
+		resend--;
+		post schedule_send();
+	} else {
+		printf("resendDone %d %d\n", error, resend);
+		call FennecState.resendDone(error);
+	}
 }
 
 event void Timer.fired() {
+	post send_msg();
 }
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {

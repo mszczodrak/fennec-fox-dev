@@ -1,9 +1,12 @@
 #include <Fennec.h>
 
 module cc2420P {
-uses interface cc2420Params;
-
+provides interface SplitControl;
 provides interface RadioChannel;
+
+uses interface cc2420Params;
+uses interface SplitControl as SubSplitControl;
+uses interface Resource as RadioResource;
 
 /*
 provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
@@ -15,12 +18,30 @@ provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
 
 implementation {
 	
-task void test() {
+command error_t SplitControl.start() {
+	return call SubSplitControl.start();
+}
+
+command error_t SplitControl.stop() {
+	return call SubSplitControl.stop();
+}
+
+event void SubSplitControl.startDone(error_t error) {
+	return signal SplitControl.startDone(error);
+}
+
+event void SubSplitControl.stopDone(error_t error) {
+	if (call RadioResource.isOwner()) {
+		call RadioResource.release();
+	}
+	return signal SplitControl.stopDone(error);
+}
+
+command error_t RadioChannel.setChannel(uint8_t channel) {
 
 }
 
-
-command error_t RadioChannel.setChannel(uint8_t channel) {
+event void RadioResource.granted() {
 
 }
 

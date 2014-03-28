@@ -308,12 +308,9 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 command void FennecState.resendDone(error_t error) {
 	if (state_transitioning) {
 		if (error == SUCCESS) {
-			dbg("Fennec", "[-] Fennec FennecState.resendDone(%d)", error);
-			post stop_state();
-		} else {
-			dbg("Fennec", "[-] Fennec FennecState.resendDone(%d) - resend", error);
-			signal FennecState.resend();
 		}
+		dbg("Fennec", "[-] Fennec FennecState.resendDone(%d)", error);
+		post stop_state();
 	}
 }
 

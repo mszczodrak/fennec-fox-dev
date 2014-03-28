@@ -30,6 +30,7 @@ implementation
 
 components cc2420P;
 cc2420Params = cc2420P;
+SplitControl = cc2420P.SplitControl;
 
 components CC2420MultiplexLplC;
 cc2420Params = CC2420MultiplexLplC;
@@ -52,22 +53,50 @@ MacPacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
 MacPacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
 MacPacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
 
-components CC2420ActiveMessageC;
-SplitControl = CC2420ActiveMessageC;
+enum {
+    CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
+};
 
-MacAMSend = CC2420ActiveMessageC.AMSend;
-MacReceive = CC2420ActiveMessageC.Receive;
-MacSnoop = CC2420ActiveMessageC.Snoop;
+components CC2420RadioC as Radio;
+components CC2420ActiveMessageP as AM;
+components ActiveMessageAddressC;
+components CC2420CsmaC as CsmaC;
+components CC2420ControlC;
+components CC2420PacketC;
 
-MacPacket = CC2420ActiveMessageC.Packet;
-MacAMPacket = CC2420ActiveMessageC.AMPacket;
+cc2420P.SubSplitControl -> Radio;
+// RadioBackoff = AM;
+MacPacket = AM.Packet;
+MacAMSend = AM.AMSend;
+// SendNotifier = AM;
+MacReceive = AM.Receive;
+MacSnoop = AM.Snoop;
+MacAMPacket = AM.AMPacket;
+// PacketLink = Radio;
+LowPowerListening = Radio.LowPowerListening;
+// CC2420Packet = Radio;
+MacPacketAcknowledgements = Radio;
+MacLinkPacketMetadata = Radio.LinkPacketMetadata;
 
-LowPowerListening = CC2420ActiveMessageC.LowPowerListening;
+// Radio resource for the AM layer
+AM.RadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
+cc2420P.RadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
+AM.SubSend -> Radio.ActiveSend;
+AM.SubReceive -> Radio.ActiveReceive;
+
+AM.ActiveMessageAddress -> ActiveMessageAddressC;
+AM.CC2420Packet -> CC2420PacketC;
+AM.CC2420PacketBody -> CC2420PacketC;
+AM.CC2420Config -> CC2420ControlC;
+
+AM.SubBackoff -> CsmaC;
+
+components LedsC;
+AM.Leds -> LedsC;
+
 //RadioChannel = CC2420ActiveMessageC.RadioChannel;
 //MacPacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
 //MacPacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
 //MacPacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
-MacPacketAcknowledgements = CC2420ActiveMessageC.PacketAcknowledgements;
-MacLinkPacketMetadata = CC2420ActiveMessageC.LinkPacketMetadata;
 
 }

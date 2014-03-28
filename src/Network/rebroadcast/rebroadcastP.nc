@@ -53,7 +53,6 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
-	printf("fired\n");
 }
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
