@@ -80,6 +80,7 @@ task void send_msg() {
 }
 
 event void FennecState.resend() {
+	printf("resend\n");
 	post send_msg();
 }
 
@@ -107,6 +108,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+	printf("resendDone %d\n", error);
 	call FennecState.resendDone(error);
 }
 
