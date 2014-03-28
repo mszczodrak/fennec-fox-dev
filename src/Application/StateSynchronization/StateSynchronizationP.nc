@@ -55,12 +55,6 @@ uses interface Leds;
 implementation {
 
 message_t packet;
-uint8_t resend;
-
-task void schedule_send_msg() {
-	call Timer.startOneShot(call Random.rand16() % 
-		call StateSynchronizationParams.get_send_delay() + 1);
-}
 
 task void send_msg() {
 	nx_struct fennec_network_state *state_msg;
@@ -86,7 +80,6 @@ task void send_msg() {
 }
 
 event void FennecState.resend() {
-	resend = call StateSynchronizationParams.get_resend(); 
 	post send_msg();
 }
 
@@ -114,17 +107,10 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	if (resend > 0) {
-		resend--;
-		post schedule_send_msg();
-	} else {
-		call FennecState.resendDone(error);
-	}
+	call FennecState.resendDone(error);
 }
 
 event void Timer.fired() {
-	dbg("StateSynchronization", "[%d] StateSynchronizationP Timer.fired()", process);
-	post send_msg();
 }
 
 event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {

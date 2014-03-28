@@ -46,11 +46,14 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	dbg("Network", "[%d] rebroadcast SplitControl.stop()", process);
+	busy = FALSE;
+	call Timer.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 event void Timer.fired() {
+	printf("fired\n");
 }
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
@@ -131,6 +134,7 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 		hdr->repeat--;
 
 	if ((hdr->repeat > 0) || call Timer.isRunning()) {
+		printf("rebroadcast: %d %d\n", hdr->repeat, call Timer.isRunning());
 		err = call MacAMSend.send(pkt_addr, msg, pkt_len);
 
 		if (err != SUCCESS) {
@@ -140,12 +144,14 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 		return;
 	}
 
+	printf("that's all %d\n", err);
 	busy = FALSE;
 	signal NetworkAMSend.sendDone(msg, err);
 }
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
+
 	dbg("Network", "[%d] rebroadcast NetworkReceive.receive(0x%1x, 0x%1x, %d )",
 			process, msg, 
 			ptr + sizeof(nx_struct rebroadcast_header), 
