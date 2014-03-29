@@ -75,7 +75,8 @@ use network ftsp $(FENNEC_FOX_LIB)/Network/ftsp ()
 
 use network rebroadcast $(FENNEC_FOX_LIB)/Network/rebroadcast (
 	uint8_t repeat = 1,
-	uint8_t retry = 9
+	uint8_t retry = 9,
+	uint16_t retry_delay = 25
 )
 
 use network trickle $(FENNEC_FOX_LIB)/Network/trickle (

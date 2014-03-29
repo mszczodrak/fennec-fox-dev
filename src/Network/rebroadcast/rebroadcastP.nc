@@ -57,9 +57,6 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
-}
-
-task void signalSendDone() {
 	signal MacAMSend.sendDone(pkt_msg, pkt_err);
 }
 
@@ -95,7 +92,7 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 	pkt_err = call MacAMSend.send(pkt_addr, pkt_msg, pkt_len);
 
 	if (pkt_err != SUCCESS)
-		post signalSendDone();
+		call Timer.startOneShot(call rebroadcastParams.get_retry_delay());
 
 	return SUCCESS;
 }
@@ -141,7 +138,7 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	pkt_err = call MacAMSend.send(pkt_addr, msg, pkt_len);
 
 	if (pkt_err != SUCCESS)
-		post signalSendDone();
+		call Timer.startOneShot(call rebroadcastParams.get_retry_delay());
 }
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
