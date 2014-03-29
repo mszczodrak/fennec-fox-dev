@@ -101,6 +101,7 @@ use am cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
 		uint16_t sleepInterval=0,
+		uint16_t sleepDelay=100,
 		bool autoAck = 1
 )
 
