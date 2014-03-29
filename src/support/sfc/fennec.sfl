@@ -24,6 +24,7 @@ use application dbgs $(FENNEC_FOX_LIB)/Application/tests/Dbgs ()
 use application printf $(FENNEC_FOX_LIB)/Application/tests/PrintfApp ()
 
 use application readSensor $(FENNEC_FOX_LIB)/Application/tests/ReadSensor (uint16_t sampling_rate = 1024)
+
 use application rwIO $(FENNEC_FOX_LIB)/Application/tests/readWriteIO (
 		uint16_t sampling_rate = 1024,
 		uint16_t actuating_rate = 2048)
@@ -61,8 +62,7 @@ use application maxTest $(FENNEC_FOX_LIB)/Application/tests/maxTest (
 #use application buttonLed $(FENNEC_FOX_LIB)/Application/tests/ButtonToLed ()
 
 use application StateSync $(FENNEC_FOX_LIB)/Application/StateSynchronization (
-		uint8_t resend = 30,
-		uint8_t send_delay = 100
+		uint8_t send_delay = 1000
 )
 
 # Network Modules
