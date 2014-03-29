@@ -62,7 +62,7 @@ use application maxTest $(FENNEC_FOX_LIB)/Application/tests/maxTest (
 #use application buttonLed $(FENNEC_FOX_LIB)/Application/tests/ButtonToLed ()
 
 use application StateSync $(FENNEC_FOX_LIB)/Application/StateSynchronization (
-		uint8_t send_delay = 1000
+		uint16_t send_delay = 1000
 )
 
 # Network Modules
