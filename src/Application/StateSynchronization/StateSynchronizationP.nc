@@ -55,8 +55,6 @@ uses interface Leds;
 implementation {
 
 message_t packet;
-uint8_t resend = 0;
-
 
 task void schedule_send() {
 	call Timer.startOneShot((call Random.rand16() % 
@@ -87,8 +85,6 @@ task void send_msg() {
 }
 
 event void FennecState.resend() {
-	printf("resend\n");
-	resend = call StateSynchronizationParams.get_resend();
 	post send_msg();
 }
 
@@ -116,13 +112,8 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	if ((error != SUCCESS) && (resend > 0)) {
-		resend--;
-		post schedule_send();
-	} else {
-		printf("resendDone %d %d\n", error, resend);
-		call FennecState.resendDone(error);
-	}
+	printf("resendDone %d\n", error);
+	call FennecState.resendDone(error);
 }
 
 event void Timer.fired() {

@@ -83,11 +83,6 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 		return SUCCESS;
 	}
 
-	if (call LowPowerListening.getLocalWakeupInterval() > 0) {
-		call Timer.startOneShot(call LowPowerListening.getLocalWakeupInterval() * 
-			call rebroadcastParams.get_delay());
-	}
-
 	err = call MacAMSend.send(pkt_addr, msg, pkt_len);
 
 	if (err != SUCCESS)
@@ -133,7 +128,6 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 		hdr->repeat--;
 
 	if ((hdr->repeat > 0) || call Timer.isRunning()) {
-		printf("rebroadcast: %d %d\n", hdr->repeat, call Timer.isRunning());
 		err = call MacAMSend.send(pkt_addr, msg, pkt_len);
 
 		if (err != SUCCESS) {
@@ -143,7 +137,6 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 		return;
 	}
 
-	printf("that's all %d\n", err);
 	busy = FALSE;
 	signal NetworkAMSend.sendDone(msg, err);
 }
