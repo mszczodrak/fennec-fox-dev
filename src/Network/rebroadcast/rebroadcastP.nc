@@ -73,7 +73,7 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 		return EBUSY;
 
 	busy = TRUE;
-	retry = 10;
+	retry = call rebroadcastParams.get_retry();
 	pkt_len = len + sizeof(nx_struct rebroadcast_header);
 	pkt_addr = addr;
 	pkt_msg = msg;
@@ -133,7 +133,7 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	}
 
 	if ((retry == 0) || (hdr->repeat == 0)) {
-		signal NetworkAMSend.sendDone(msg, eror);
+		signal NetworkAMSend.sendDone(msg, error);
 		busy = FALSE;
 		return;
 	}
@@ -141,7 +141,7 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	pkt_err = call MacAMSend.send(pkt_addr, msg, pkt_len);
 
 	if (pkt_err != SUCCESS)
-		signal MacAMSend.sendDone(msg, err);
+		post signalSendDone();
 }
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {

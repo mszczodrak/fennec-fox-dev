@@ -63,7 +63,8 @@ task void check_event() {
 	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
 		if ((policies[i].src_conf == current_state) && (policies[i].event_mask == event_mask)) {
 			dbg("Fennec", "[-] Fennec found matching rule #%d", i);
-			printf("New Event\n");
+			printf("New Event, goto state %d with sequence %d\n",
+				policies[i].dst_conf, (current_seq + 1) % SEQ_MAX);
 			call FennecState.setStateAndSeq(policies[i].dst_conf, (current_seq + 1) % SEQ_MAX);
 			return;
 		}
@@ -71,7 +72,6 @@ task void check_event() {
 }
 
 task void stop_state() {
-	printf("Stopping\n");
 	call SplitControl.stop();
 }
 
@@ -83,7 +83,7 @@ task void stop_done() {
 	event_mask = 0;
 	current_state = next_state;
 	current_seq = next_seq;
-	printf("into %d %d\n", current_state, current_seq);
+	printf("New state %d with sequence %d\n", current_state, current_seq);
 	post start_state();
 }
 
