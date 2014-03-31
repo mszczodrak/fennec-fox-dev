@@ -98,8 +98,10 @@ configuration CtpP {
   }
 
 uses interface SplitControl as RadioControl;
-uses interface AMPacket;
-uses interface LinkPacketMetadata;
+uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMPacket as MacAMPacket;
+uses interface Packet as MacPacket;
+uses interface PacketAcknowledgements as MacPacketAcknowledgements;
 }
 
 implementation {
@@ -157,7 +159,7 @@ implementation {
 
   Router.CompareBit -> Estimator.CompareBit;
 
-AMPacket = Router.AMPacket;
+MacAMPacket = Router.AMPacket;
 RadioControl = Router.RadioControl;
   Router.BeaconTimer -> RoutingBeaconTimer;
   Router.RouteTimer -> RouteUpdateTimer;
@@ -179,12 +181,12 @@ RadioControl = Router.RadioControl;
   Forwarder.SubSend -> AMSenderC;
   Forwarder.SubReceive -> AMReceiverC;
   Forwarder.SubSnoop -> AMSnooperC;
-  Forwarder.SubPacket -> AMSenderC;
+MacPacket = Forwarder.SubPacket;
   Forwarder.RootControl -> Router;
   Forwarder.UnicastNameFreeRouting -> Router.Routing;
 RadioControl = Forwarder.RadioControl;
-  Forwarder.PacketAcknowledgements -> AMSenderC.Acks;
-  Forwarder.AMPacket -> AMSenderC;
+MacPacketAcknowledgements = Forwarder.PacketAcknowledgements;
+MacAMPacket = Forwarder.AMPacket;
   Forwarder.Leds -> LedsC;
   
   components new AMSenderC(AM_CTP_ROUTING) as SendControl;
@@ -196,13 +198,10 @@ RadioControl = Forwarder.RadioControl;
 
   Estimator.AMSend -> SendControl;
   Estimator.SubReceive -> ReceiveControl;
-  Estimator.SubPacket -> SendControl;
-  Estimator.SubAMPacket -> SendControl;
+MacPacket = Estimator.SubPacket;
+MacAMPacket = Estimator.SubAMPacket;
 
-LinkPacketMetadata = Estimator.LinkPacketMetadata;
-
-  // eventually
-  //  Estimator.LinkPacketMetadata -> ActiveMessageC;
+MacLinkPacketMetadata = Estimator.LinkPacketMetadata;
 
   MainC.SoftwareInit -> Estimator;
 }

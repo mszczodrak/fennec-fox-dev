@@ -59,8 +59,9 @@ ctpP.CtpSend -> CollectionSenderC.Send;
 
 components CtpP;
 CtpP.RadioControl -> ctpP.FakeRadioControl;
-MacAMPacket = CtpP.AMPacket;
-MacLinkPacketMetadata = CtpP.LinkPacketMetadata;
-
+MacAMPacket = CtpP.MacAMPacket;
+MacPacket = CtpP.MacPacket;
+MacLinkPacketMetadata = CtpP.MacLinkPacketMetadata;
+MacPacketAcknowledgements = CtpP.MacPacketAcknowledgements;
 
 }
