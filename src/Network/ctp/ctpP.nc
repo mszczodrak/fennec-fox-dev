@@ -26,6 +26,8 @@ uses interface RadioChannel;
 
 /* Wiring to CTP */
 
+provides interface SplitControl as FakeRadioControl;
+
 uses interface StdControl as RoutingControl;
 uses interface RootControl;
 uses interface CollectionPacket;
@@ -48,14 +50,19 @@ command error_t SplitControl.start() {
 	}
 	dbg("Network", "[%d] ctp SplitControl.start()", process);
 	signal SplitControl.startDone(SUCCESS);
+	signal FakeRadioControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	dbg("Network", "[%d] ctp SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
+	signal FakeRadioControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
+
+command error_t FakeRadioControl.start() { return SUCCESS; }
+command error_t FakeRadioControl.stop() { return SUCCESS; }
 
 command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	return call CtpSend.send(msg, len);
@@ -83,8 +90,6 @@ event void MacAMSend.sendDone(message_t *msg, error_t error) {
 	dbg("Network", "[%d] ctp NetworkAMSend.sendDone(0x%1x, %d )", process, msg, error);
 	signal NetworkAMSend.sendDone(msg, error);
 }
-
-
 
 event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;

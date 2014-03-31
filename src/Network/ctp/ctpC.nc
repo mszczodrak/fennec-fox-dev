@@ -25,7 +25,7 @@ uses interface RadioChannel;
 implementation {
 
 components new ctpP(process);
-SplitControl = ctpP;
+SplitControl = ctpP.SplitControl;
 ctpParams = ctpP;
 NetworkAMSend = ctpP.NetworkAMSend;
 NetworkReceive = ctpP.NetworkReceive;
@@ -56,6 +56,11 @@ components new CollectionSenderC(process);
 ctpP.CtpSend -> CollectionSenderC.Send;
 //ctpP.CtpReveive -> Collector.Receive[process];
 
+
+components CtpP;
+CtpP.RadioControl -> ctpP.FakeRadioControl;
+MacAMPacket = CtpP.AMPacket;
+MacLinkPacketMetadata = CtpP.LinkPacketMetadata;
 
 
 }
