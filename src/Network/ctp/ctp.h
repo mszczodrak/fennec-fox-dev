@@ -1,7 +1,7 @@
 #ifndef __ctp_H_
 #define __ctp_H_
 
-nx_struct ctp_header {
-};
+#define CTP_DATA_MSG 0
+#define CTP_ROUTING_BEACON 1
 
 #endif

@@ -99,9 +99,13 @@ configuration CtpP {
 
 uses interface SplitControl as RadioControl;
 uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as MacAMSend;
 uses interface AMPacket as MacAMPacket;
 uses interface Packet as MacPacket;
 uses interface PacketAcknowledgements as MacPacketAcknowledgements;
+uses interface Receive as MacReceive;
+uses interface Receive as MacSnoop;
+
 }
 
 implementation {
@@ -143,10 +147,6 @@ implementation {
   components LinkEstimatorP as Estimator;
   Forwarder.LinkEstimator -> Estimator;
 
-  components new AMSenderC(AM_CTP_DATA);
-  components new AMReceiverC(AM_CTP_DATA);
-  components new AMSnooperC(AM_CTP_DATA);
-
   components new CtpRoutingEngineP(TREE_ROUTING_TABLE_SIZE, 128, 512000) as Router;
 
   StdControl = Router;
@@ -158,6 +158,7 @@ implementation {
   Router.LinkEstimator -> Estimator.LinkEstimator;
 
   Router.CompareBit -> Estimator.CompareBit;
+
 
 MacAMPacket = Router.AMPacket;
 RadioControl = Router.RadioControl;
@@ -178,9 +179,9 @@ RadioControl = Router.RadioControl;
   Forwarder.Random -> RandomC;
 
   MainC.SoftwareInit -> Forwarder;
-  Forwarder.SubSend -> AMSenderC;
-  Forwarder.SubReceive -> AMReceiverC;
-  Forwarder.SubSnoop -> AMSnooperC;
+  Forwarder.SubSend -> CtpMultiplexC.AMSend[AM_CTP_DATA];
+  Forwarder.SubReceive -> CtpMultiplexC.Receive[AM_CTP_DATA];
+  Forwarder.SubSnoop -> CtpMultiplexC.Snoop[AM_CTP_DATA];
 MacPacket = Forwarder.SubPacket;
   Forwarder.RootControl -> Router;
   Forwarder.UnicastNameFreeRouting -> Router.Routing;
@@ -189,19 +190,31 @@ MacPacketAcknowledgements = Forwarder.PacketAcknowledgements;
 MacAMPacket = Forwarder.AMPacket;
   Forwarder.Leds -> LedsC;
   
-  components new AMSenderC(AM_CTP_ROUTING) as SendControl;
-  components new AMReceiverC(AM_CTP_ROUTING) as ReceiveControl;
-
   LinkEstimator = Estimator;
   
   Estimator.Random -> RandomC;
 
-  Estimator.AMSend -> SendControl;
-  Estimator.SubReceive -> ReceiveControl;
+  Estimator.AMSend -> CtpMultiplexC.AMSend[AM_CTP_ROUTING];
+  Estimator.SubReceive -> CtpMultiplexC.Receive[AM_CTP_ROUTING];
 MacPacket = Estimator.SubPacket;
 MacAMPacket = Estimator.SubAMPacket;
 
 MacLinkPacketMetadata = Estimator.LinkPacketMetadata;
 
   MainC.SoftwareInit -> Estimator;
+
+components CtpMultiplexC;
+MacAMSend = CtpMultiplexC.MacAMSend;
+MacAMPacket = CtpMultiplexC.MacAMPacket;
+MacPacket = CtpMultiplexC.MacPacket;
+MacReceive = CtpMultiplexC.MacReceive;
+MacSnoop = CtpMultiplexC.MacSnoop;
+
+components new AMQueueImplP(2);
+AMQueueImplP.AMSend -> CtpMultiplexC.SubQueueAMSend;
+MacAMPacket = AMQueueImplP.AMPacket;
+MacPacket = AMQueueImplP.Packet;
+
+CtpMultiplexC.QueueSend -> AMQueueImplP;
+
 }
