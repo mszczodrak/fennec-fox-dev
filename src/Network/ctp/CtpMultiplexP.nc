@@ -119,5 +119,9 @@ command void* SubQueueAMSend.getPayload[uint8_t id](message_t* m, uint8_t len) {
 	return call MacAMSend.getPayload(m, len);
 }
 
+default event message_t* Snoop.receive[uint8_t id](message_t* msg, void* payload, uint8_t len) { return msg; }
+default event message_t* Receive.receive[uint8_t id](message_t* msg, void* payload, uint8_t len) { return msg; }
+default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t error) {}
+
 }
 

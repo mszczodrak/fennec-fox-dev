@@ -9,12 +9,6 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 
 #PFLAGS=-v 
 
-CFLAGS += -I$(TOSDIR)/lib/net \
-          -I$(TOSDIR)/lib/net/drip \
-          -I$(TOSDIR)/lib/net/4bitle \
-          -I$(TOSDIR)/lib/net/ctp -DNO_DEBUG
-
-
 include $(FENNEC_FOX_LIB)/support/make/Makerules
 include $(MAKERULES)
 

@@ -8,21 +8,9 @@ provides interface SplitControl;
 provides interface AMSend as NetworkAMSend;
 provides interface Receive as NetworkReceive;
 provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
 uses interface ctpParams;
 
-/*
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
-*/
 uses interface LowPowerListening;
 uses interface RadioChannel;
 
@@ -36,6 +24,9 @@ uses interface CollectionPacket;
 uses interface CtpInfo;
 uses interface CtpCongestion;
 uses interface Send as CtpSend;
+uses interface Receive as CtpReceive;
+uses interface Receive as CtpSnoop;
+uses interface Packet;
 
 }
 
@@ -85,5 +76,12 @@ event void CtpSend.sendDone(message_t *msg, error_t error) {
 event void RadioChannel.setChannelDone() {
 }
 
+event message_t* CtpReceive.receive(message_t* msg, void* payload, uint8_t len) {
+	return signal NetworkReceive.receive(msg, payload, len);
+}
+
+event message_t* CtpSnoop.receive(message_t* msg, void* payload, uint8_t len) {
+	return signal NetworkSnoop.receive(msg, payload, len);
+}
 
 }

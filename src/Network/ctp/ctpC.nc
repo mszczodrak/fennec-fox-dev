@@ -30,17 +30,9 @@ ctpParams = ctpP;
 NetworkAMSend = ctpP.NetworkAMSend;
 NetworkReceive = ctpP.NetworkReceive;
 NetworkSnoop = ctpP.NetworkSnoop;
-NetworkAMPacket = ctpP.NetworkAMPacket;
-NetworkPacket = ctpP.NetworkPacket;
-NetworkPacketAcknowledgements = ctpP.NetworkPacketAcknowledgements;
 
-//MacAMSend = ctpP;
-//MacReceive = ctpP.MacReceive;
-//MacSnoop = ctpP.MacSnoop;
-//MacAMPacket = ctpP.MacAMPacket;
-//MacPacket = ctpP.MacPacket;
-//MacPacketAcknowledgements = ctpP.MacPacketAcknowledgements;
-//MacLinkPacketMetadata = ctpP.MacLinkPacketMetadata;
+NetworkPacketAcknowledgements = MacPacketAcknowledgements;
+NetworkAMPacket = MacAMPacket;
 LowPowerListening = ctpP.LowPowerListening;
 RadioChannel = ctpP.RadioChannel;
 
@@ -54,7 +46,10 @@ ctpP.CtpCongestion -> Collector;
 
 components new CollectionSenderC(process);
 ctpP.CtpSend -> CollectionSenderC.Send;
-//ctpP.CtpReveive -> Collector.Receive[process];
+ctpP.CtpReceive -> Collector.Receive[process];
+ctpP.CtpSnoop -> Collector.Snoop[process];
+
+NetworkPacket = CollectionSenderC.Packet;
 
 components CtpP;
 CtpP.RadioControl -> ctpP.FakeRadioControl;
