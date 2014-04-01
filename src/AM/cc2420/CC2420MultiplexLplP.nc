@@ -196,7 +196,6 @@ event message_t *SubReceive.receive(message_t* msg, void* payload, uint8_t len) 
 	}
 }
 
-
 event void SubControl.startDone(error_t error) {
 	if (sleepInterval) {
 		return signal DefaultSubControl.startDone(error);
@@ -258,7 +257,6 @@ event void DummySend.sendDone(message_t* msg, error_t error) {
 	return signal Send.sendDone(msg, error);
 }
 
-
 event message_t *DummyReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	return signal Receive.receive(msg, payload, len);
 }
@@ -308,7 +306,6 @@ event void DefaultSplitControl.stopDone(error_t error) {
 event void DefaultSend.sendDone(message_t* msg, error_t error) {
 	return signal Send.sendDone(msg, error);
 }
-
 
 event message_t *DefaultReceive.receive(message_t* msg, void* payload, uint8_t len) {
 	return signal Receive.receive(msg, payload, len);

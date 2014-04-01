@@ -120,7 +120,6 @@ bool validProcessId(process_t process_id) @C() {
 }
 
 event void Boot.booted() {
-	call Leds.led0On();
 	event_mask = 0;
 	current_seq = 0;
 	current_state = active_state;
