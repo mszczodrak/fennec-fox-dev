@@ -33,6 +33,7 @@ uses interface Packet;
 implementation {
 
 command error_t SplitControl.start() {
+	call RoutingControl.start();
 	if (call ctpParams.get_root() == TOS_NODE_ID) {
 		call LowPowerListening.setLocalWakeupInterval(0);
 		call RootControl.setRoot();
@@ -44,6 +45,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
+	call RoutingControl.stop();
 	dbg("Network", "[%d] ctp SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	signal FakeRadioControl.stopDone(SUCCESS);
