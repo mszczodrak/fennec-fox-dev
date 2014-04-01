@@ -45,6 +45,9 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
+	if (call ctpParams.get_root() == TOS_NODE_ID) {
+		call RootControl.unsetRoot();
+	}
 	call RoutingControl.stop();
 	dbg("Network", "[%d] ctp SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
