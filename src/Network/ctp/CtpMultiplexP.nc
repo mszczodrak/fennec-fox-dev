@@ -70,6 +70,7 @@ command void* AMSend.getPayload[uint8_t id](message_t* m, uint8_t len) {
 
 event void QueueSend.sendDone[uint8_t sid](message_t* m, error_t err) {
 	if (sid == CTP_ROUTING_BEACON) {
+		clearOption(m, CTP_ROUTING_BEACON);
 		signal AMSend.sendDone[AM_CTP_ROUTING](m, err);
 	} else {
 		signal AMSend.sendDone[AM_CTP_DATA](m, err);
@@ -96,7 +97,7 @@ event message_t* MacSnoop.receive(message_t *m, void *payload, uint8_t len) {
 
 event void MacAMSend.sendDone(message_t* m, error_t err) {
 	if (option(m, CTP_ROUTING_BEACON)) {
-		clearOption(m, CTP_ROUTING_BEACON);
+		//clearOption(m, CTP_ROUTING_BEACON);
 		return signal SubQueueAMSend.sendDone[AM_CTP_ROUTING](m, err);
 	} else {
 		return signal SubQueueAMSend.sendDone[AM_CTP_DATA](m, err);
