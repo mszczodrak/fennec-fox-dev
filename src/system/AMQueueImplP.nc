@@ -75,6 +75,16 @@ implementation {
     }
 
     event void AMControl.stopDone(error_t error) {
+      for(current = 0; current < numClients; current++) {
+         queue[current].msg = NULL;
+      }
+
+      for(current = 0; current < (numClients/8 + 1); current++) {
+         cancelMask[current] = 0;
+      }
+
+      current = numClients;
+
       signal SplitControl.stopDone(error);
     }
 
@@ -236,4 +246,7 @@ implementation {
     default command error_t AMSend.send[uint8_t id](am_addr_t am_id, message_t* msg, uint8_t len) {
         return FAIL;
     }
+
+    default event void SplitControl.startDone(error_t error) {}
+    default event void SplitControl.stopDone(error_t error) {}
 }

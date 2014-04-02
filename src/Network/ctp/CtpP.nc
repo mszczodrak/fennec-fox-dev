@@ -214,6 +214,7 @@ components new AMQueueImplP(2);
 AMQueueImplP.AMSend -> CtpMultiplexC.SubQueueAMSend;
 MacAMPacket = AMQueueImplP.AMPacket;
 MacPacket = AMQueueImplP.Packet;
+RadioControl = AMQueueImplP.AMControl;
 
 CtpMultiplexC.QueueSend -> AMQueueImplP;
 
