@@ -71,7 +71,6 @@ uint16_t seqno;
 command error_t SplitControl.start() {
 	uint32_t send_delay = call CounterParams.get_delay() * 
 		call CounterParams.get_delay_scale();
-	//call Leds.led0On();
 	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0, 0);
 	dbg("Application", "[%d] Counter SplitControl.start()", process);
 
@@ -83,7 +82,6 @@ command error_t SplitControl.start() {
 
 	if ((call CounterParams.get_src() == BROADCAST) || 
 	(call CounterParams.get_src() == TOS_NODE_ID)) {
-		call Leds.led1On();
 		call Timer.startPeriodic(send_delay);
 	}
 
@@ -102,8 +100,6 @@ command error_t SplitControl.stop() {
 void sendMessage() {
 	CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
-
-	call Leds.led1Toggle();
 	if (msg == NULL) {
 		return;
 	}
