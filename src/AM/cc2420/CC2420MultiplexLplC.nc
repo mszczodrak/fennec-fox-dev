@@ -52,7 +52,4 @@ DefaultLplC.SubSend -> CC2420MultiplexLplP.DefaultSubSend;
 DefaultLplC.SubReceive -> CC2420MultiplexLplP.DefaultSubReceive;
 DefaultLplC.SubControl -> CC2420MultiplexLplP.DefaultSubControl;
 
-/* System LowPowerListening Confs */
-components SystemLowPowerListeningC;
-CC2420MultiplexLplP.SystemLowPowerListening -> SystemLowPowerListeningC;
 }

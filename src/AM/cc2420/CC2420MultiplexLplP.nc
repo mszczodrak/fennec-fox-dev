@@ -10,7 +10,6 @@ uses interface Receive as SubReceive;
 uses interface SplitControl as SubControl;
 
 uses interface cc2420Params;
-uses interface SystemLowPowerListening;
 
 /* wire to DummyLplC */
 uses interface LowPowerListening as DummyLowPowerListening;
@@ -42,11 +41,6 @@ norace uint16_t sleepInterval = 0;
 
 command error_t SplitControl.start() {
 	sleepInterval = call cc2420Params.get_sleepInterval();
-
-	call SystemLowPowerListening.setDefaultRemoteWakeupInterval(sleepInterval);
-	call SystemLowPowerListening.setDelayAfterReceive(call cc2420Params.get_sleepDelay());
-
-	call LowPowerListening.setLocalWakeupInterval(sleepInterval);
 
 	if (sleepInterval) {
 		return call DefaultSplitControl.start();
@@ -145,6 +139,7 @@ async command uint8_t SendState.getState() {
 }
 
 command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
+	printf("calls lpl\n");
 	if (sleepInterval) {
 		return call DefaultLowPowerListening.setLocalWakeupInterval(intervalMs);
 	} else {

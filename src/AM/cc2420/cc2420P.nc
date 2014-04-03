@@ -7,6 +7,8 @@ provides interface RadioChannel;
 uses interface cc2420Params;
 uses interface SplitControl as SubSplitControl;
 uses interface Resource as RadioResource;
+uses interface SystemLowPowerListening;
+uses interface LowPowerListening;
 
 /*
 provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
@@ -27,10 +29,16 @@ command error_t SplitControl.stop() {
 }
 
 event void SubSplitControl.startDone(error_t error) {
+	if (error == SUCCESS) {
+        	call SystemLowPowerListening.setDefaultRemoteWakeupInterval(call cc2420Params.get_sleepInterval());
+	        call SystemLowPowerListening.setDelayAfterReceive(call cc2420Params.get_sleepDelay());
+        	call LowPowerListening.setLocalWakeupInterval(call cc2420Params.get_sleepInterval());
+	}
 	return signal SplitControl.startDone(error);
 }
 
 event void SubSplitControl.stopDone(error_t error) {
+	printf("git stop done\n");
 	if (call RadioResource.isOwner()) {
 		call RadioResource.release();
 	}

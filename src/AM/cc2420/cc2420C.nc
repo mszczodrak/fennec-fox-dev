@@ -99,4 +99,9 @@ AM.Leds -> LedsC;
 //MacPacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
 //MacPacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
 
+/* System LowPowerListening Confs */
+components SystemLowPowerListeningC;
+cc2420P.SystemLowPowerListening -> SystemLowPowerListeningC;
+cc2420P.LowPowerListening -> Radio.LowPowerListening;
+
 }
