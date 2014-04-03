@@ -36,22 +36,20 @@ bool option(message_t *msg, ctp_options_t opt) {
 
 command error_t AMSend.send[uint8_t id](am_addr_t dest, message_t* m, uint8_t len) {
 	call MacAMPacket.setDestination(m, dest);
+	call MacAMPacket.setType(m, id);
 	if (id == AM_CTP_ROUTING) {
-		call MacAMPacket.setType(m, AM_CTP_ROUTING);
 		setOption(m, CTP_ROUTING_BEACON);
 		return call QueueSend.send[CTP_ROUTING_BEACON](m, len);
 	} else {
-		call MacAMPacket.setType(m, AM_CTP_DATA);
 		return call QueueSend.send[CTP_DATA_MSG](m, len);
 	}
 }
 
 command error_t AMSend.cancel[uint8_t id](message_t* m) {
+	call MacAMPacket.setType(m, id);
 	if (id == AM_CTP_ROUTING) {
-		call MacAMPacket.setType(m, AM_CTP_ROUTING);
 		return call QueueSend.cancel[CTP_ROUTING_BEACON](m);
 	} else {
-		call MacAMPacket.setType(m, AM_CTP_DATA);
 		return call QueueSend.cancel[CTP_DATA_MSG](m);
 	}
 }
@@ -65,11 +63,10 @@ command uint8_t AMSend.maxPayloadLength[uint8_t id]() {
 }
 
 command void* AMSend.getPayload[uint8_t id](message_t* m, uint8_t len) {
+	call MacAMPacket.setType(m, id);
 	if (id == AM_CTP_ROUTING) {
-		call MacAMPacket.setType(m, AM_CTP_ROUTING);
 		return call QueueSend.getPayload[CTP_ROUTING_BEACON](m, len);
 	} else {
-		call MacAMPacket.setType(m, AM_CTP_DATA);
 		return call QueueSend.getPayload[CTP_DATA_MSG](m, len);
 	}
 }
