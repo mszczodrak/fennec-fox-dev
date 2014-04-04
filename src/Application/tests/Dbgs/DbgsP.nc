@@ -79,7 +79,7 @@ event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len
 
 event void Timer.fired() {
 	call Leds.set(c++);
-	dbgs(F_APPLICATION, S_NONE, 0 , c, c);
+	dbgs(F_APPLICATION, S_NONE, 0 , c, c, c, c);
 }
 
 }
