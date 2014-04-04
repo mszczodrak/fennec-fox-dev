@@ -113,6 +113,9 @@ use am cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
 		bool slotted = 0
 )
 
+use am nullAM $(FENNEC_FOX_LIB)/AM/nullAM ()
+
+
 # Events
 use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
 use source timerSecondE $(FENNEC_FOX_LIB)/Application/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)

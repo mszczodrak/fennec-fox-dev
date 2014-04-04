@@ -31,69 +31,57 @@
   */
 #include "nullAM.h"
 
-generic configuration nullAMC() {
+configuration nullAMC {
+
 provides interface SplitControl;
-provides interface AMSend as MacAMSend;
-provides interface Receive as MacReceive;
-provides interface Receive as MacSnoop;
+provides interface AMSend as MacAMSend[process_t process_id];
+provides interface Receive as MacReceive[process_t process_id];
+provides interface Receive as MacSnoop[process_t process_id];
 provides interface AMPacket as MacAMPacket;
 provides interface Packet as MacPacket;
 provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface nullAMParams;
-uses interface RadioReceive;
 
-uses interface Resource as RadioResource;
-uses interface SplitControl as RadioControl;
-uses interface RadioPacket;
-uses interface RadioBuffer;
-uses interface RadioSend;
+provides interface LowPowerListening;
+provides interface RadioChannel;
+//provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as MacPacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
 
-uses interface PacketField<uint8_t> as PacketTransmitPower;
-uses interface PacketField<uint8_t> as PacketRSSI;
-uses interface PacketField<uint32_t> as PacketTimeSync;
-uses interface PacketField<uint8_t> as PacketLinkQuality;
-uses interface RadioCCA;
-uses interface RadioState;
-uses interface LinkPacketMetadata as RadioLinkPacketMetadata;
+//uses interface PacketTimeStamp<TRadio, uint32_t> as UnimplementedPacketTimeStampRadio;
+uses interface PacketTimeStamp<TMilli, uint32_t> as UnimplementedPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp32khz;
 
 }
 
 implementation {
 
-components new nullAMP();
-SplitControl = nullAMP;
-MacAMSend = nullAMP.MacAMSend;
-MacReceive = nullAMP.MacReceive;
-MacSnoop = nullAMP.MacSnoop;
-MacPacket = nullAMP.MacPacket;
-MacAMPacket = nullAMP.MacAMPacket;
-MacPacketAcknowledgements = nullAMP.MacPacketAcknowledgements;
-MacLinkPacketMetadata = nullAMP.MacLinkPacketMetadata;
+components nullAMP;
 
 nullAMParams = nullAMP;
+SplitControl = nullAMP.SplitControl;
 
-RadioResource = nullAMP.RadioResource;
-RadioPacket = nullAMP.RadioPacket;
-RadioBuffer = nullAMP.RadioBuffer;
-RadioSend = nullAMP.RadioSend;
-RadioControl = nullAMP.RadioControl;
-RadioReceive = nullAMP.RadioReceive;
+LowPowerListening = nullAMP;
+RadioChannel = nullAMP;
+MacAMSend = nullAMP;
+MacReceive = nullAMP.MacReceive;
+MacSnoop = nullAMP.MacSnoop;
+MacAMPacket = nullAMP;
+MacPacket = nullAMP;
+MacPacketAcknowledgements = nullAMP;
+MacLinkPacketMetadata = nullAMP;
 
-RadioState = nullAMP.RadioState;
-RadioLinkPacketMetadata = nullAMP.RadioLinkPacketMetadata;
-RadioCCA = nullAMP.RadioCCA;
+//MacPacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
+MacPacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
+MacPacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
 
-components RandomC;
-nullAMP.Random -> RandomC;
-components new StateC();
-nullAMP.SplitControlState -> StateC;
 
-PacketTransmitPower = nullAMP.PacketTransmitPower;
-PacketRSSI = nullAMP.PacketRSSI;
-PacketTimeSync = nullAMP.PacketTimeSync;
-PacketLinkQuality = nullAMP.PacketLinkQuality;
+
+
+
+
 
 }
 
