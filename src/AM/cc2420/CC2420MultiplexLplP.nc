@@ -139,7 +139,6 @@ async command uint8_t SendState.getState() {
 }
 
 command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {
-	printf("calls lpl\n");
 	if (sleepInterval) {
 		return call DefaultLowPowerListening.setLocalWakeupInterval(intervalMs);
 	} else {
