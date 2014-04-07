@@ -4,6 +4,7 @@ module cc2420P {
 provides interface SplitControl;
 provides interface RadioChannel;
 
+uses interface StdControl as AMQueueControl;
 uses interface cc2420Params;
 uses interface SplitControl as SubSplitControl;
 uses interface Resource as RadioResource;
@@ -21,10 +22,12 @@ provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
 implementation {
 	
 command error_t SplitControl.start() {
+	call AMQueueControl.start();
 	return call SubSplitControl.start();
 }
 
 command error_t SplitControl.stop() {
+	call AMQueueControl.stop();
 	return call SubSplitControl.stop();
 }
 
@@ -38,7 +41,6 @@ event void SubSplitControl.startDone(error_t error) {
 }
 
 event void SubSplitControl.stopDone(error_t error) {
-	printf("git stop done\n");
 	if (call RadioResource.isOwner()) {
 		call RadioResource.release();
 	}

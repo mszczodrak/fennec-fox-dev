@@ -43,13 +43,12 @@
 #include "AM.h"
 
 generic module AMQueueImplP(int numClients) @safe() {
-    provides interface SplitControl;
+    provides interface StdControl;
     provides interface Send[uint8_t client];
     uses{
         interface AMSend[am_id_t id];
         interface AMPacket;
         interface Packet;
-	interface SplitControl as AMControl;
     }
 }
 
@@ -62,19 +61,13 @@ implementation {
     queue_entry_t queue[numClients];
     uint8_t cancelMask[numClients/8 + 1];
 
-    command error_t SplitControl.start() {
-      return call AMControl.start();
+    command error_t StdControl.start() {
+      return SUCCESS;
     }
 
-    command error_t SplitControl.stop() {
-      return call AMControl.stop();
-    }
+    command error_t StdControl.stop() {
 
-    event void AMControl.startDone(error_t error) {
-      signal SplitControl.startDone(error);
-    }
-
-    event void AMControl.stopDone(error_t error) {
+atomic {
       for(current = 0; current < numClients; current++) {
          queue[current].msg = NULL;
       }
@@ -84,8 +77,9 @@ implementation {
       }
 
       current = numClients;
-
-      signal SplitControl.stopDone(error);
+}
+	printf("Q %d stop\n", numClients);
+      return SUCCESS;
     }
 
     void tryToSend();
@@ -118,9 +112,11 @@ implementation {
     command error_t Send.send[uint8_t clientId](message_t* msg,
                                                 uint8_t len) {
         if (clientId >= numClients) {
+            printf("Queue %d FAIL\n", numClients);
             return FAIL;
         }
         if (queue[clientId].msg != NULL) {
+            printf("Queue %d EBUSY\n", numClients);
             return EBUSY;
         }
         dbg("AMQueue", "AMQueue: request to send from %hhu (%p): passed checks\n", clientId, msg);
@@ -141,7 +137,7 @@ implementation {
                 dbg("AMQueue", "%s: underlying send failed.\n", __FUNCTION__);
                 current = numClients;
                 queue[clientId].msg = NULL;
-                
+                printf("Queue %d  - %d\n", numClients, err);
             }
             return err;
         }
@@ -247,6 +243,4 @@ implementation {
         return FAIL;
     }
 
-    default event void SplitControl.startDone(error_t error) {}
-    default event void SplitControl.stopDone(error_t error) {}
 }
