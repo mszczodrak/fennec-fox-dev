@@ -71,9 +71,13 @@ implementation {
 
     command error_t StdControl.stop() {
       if (running == FALSE) return SUCCESS;
+      running = FALSE;
 
       for(current = 0; current < numClients; current++) {
-         queue[current].msg = NULL;
+         if (queue[current].msg != NULL) {
+           signal Send.sendDone[call AMPacket.type(queue[current].msg)](queue[current].msg, FAIL);
+           queue[current].msg = NULL;
+         }
       }
 
       for(current = 0; current < (numClients/8 + 1); current++) {
@@ -81,7 +85,6 @@ implementation {
       }
 
       current = numClients;
-      running = FALSE;
       printf("Q %d stop\n", numClients);
       return SUCCESS;
     }
@@ -115,13 +118,14 @@ implementation {
      */
     command error_t Send.send[uint8_t clientId](message_t* msg,
                                                 uint8_t len) {
+ 
         if (clientId >= numClients) {
             printf("Queue %d FAIL\n", numClients);
             return FAIL;
         }
 
 	if (running == FALSE) {
-            printf("Queue %d STOPPED\n", numClients);
+            printf("Queue %d STOPPED on %d\n", numClients, clientId);
             return EOFF;
 	}
 
@@ -134,7 +138,7 @@ implementation {
         
         queue[clientId].msg = msg;
         call Packet.setPayloadLength(msg, len);
-    
+   
         if (current >= numClients) { // queue empty
             error_t err;
             am_id_t amId = call AMPacket.type(msg);
@@ -150,6 +154,7 @@ implementation {
                 queue[clientId].msg = NULL;
                 printf("under busy Queue %d  - %d\n", numClients, err);
             }
+            //printf("Send send %d -> %d\n", numClients, err);
             return err;
         }
         else {
@@ -207,18 +212,23 @@ implementation {
 
     // NOTE: Increments current!
     void tryToSend() {
-        nextPacket();
-        if (current < numClients) { // queue not empty
-            error_t nextErr;
-            message_t* nextMsg = queue[current].msg;
-            am_id_t nextId = call AMPacket.type(nextMsg);
-            am_addr_t nextDest = call AMPacket.destination(nextMsg);
-            uint8_t len = call Packet.payloadLength(nextMsg);
-            nextErr = call AMSend.send[nextId](nextDest, nextMsg, len);
-            if(nextErr != SUCCESS) {
-                post errorTask();
-            }
-        }
+      if (running == FALSE) {
+        printf("Q %d sendDone - FALSE\n", numClients);
+        return;
+      }
+
+      nextPacket();
+      if (current < numClients) { // queue not empty
+         error_t nextErr;
+         message_t* nextMsg = queue[current].msg;
+         am_id_t nextId = call AMPacket.type(nextMsg);
+         am_addr_t nextDest = call AMPacket.destination(nextMsg);
+         uint8_t len = call Packet.payloadLength(nextMsg);
+         nextErr = call AMSend.send[nextId](nextDest, nextMsg, len);
+         if(nextErr != SUCCESS) {
+             post errorTask();
+         }
+      }
     }
   
     event void AMSend.sendDone[am_id_t id](message_t* msg, error_t err) {
@@ -230,11 +240,6 @@ implementation {
 
       if (current >= numClients) {
 	return;
-      }
-
-      if (running == FALSE) {
-        printf("Q %d sendDone - FALSE\n", numClients);
-        return;
       }
 
       if(queue[current].msg == msg) {
