@@ -128,7 +128,6 @@ void sendMessage() {
 
 event void Timer.fired() {
 	if (!sendBusy) {
-		printf("sending seq: %d\n", seqno);
 		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
 	}
@@ -154,7 +153,6 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 	call Leds.set(cm->seqno);
 	dbgs(process, F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source, len);
-	printf("receive %d %d\n", cm->seqno, cm->source);
 	return msg;
 }
 

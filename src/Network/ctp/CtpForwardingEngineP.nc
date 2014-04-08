@@ -298,10 +298,8 @@ implementation {
     fe_queue_entry_t *qe;
     dbg("Forwarder", "%s: sending packet from client %hhu: %x, len %hhu\n", __FUNCTION__, client, msg, len);
 
-    printf("CTP send\n");
-
-    if (!hasState(ROUTING_ON)) { printf("CTP send EOFF\n"); return EOFF;}
-    if (len > call Send.maxPayloadLength[client]()) {printf("CTP send ESIZE\n"); return ESIZE;}
+    if (!hasState(ROUTING_ON)) {return EOFF;}
+    if (len > call Send.maxPayloadLength[client]()) {return ESIZE;}
    
     call Packet.setPayloadLength(msg, len);
     hdr = getHeader(msg);
@@ -311,7 +309,6 @@ implementation {
     hdr->thl = 0;
 
     if (clientPtrs[client] == NULL) {
-      printf("CTP send - EBUSY\n");
       dbg("Forwarder", "%s: send failed as client is busy.\n", __FUNCTION__);
       return EBUSY;
     }
@@ -338,7 +335,6 @@ implementation {
       call CollectionDebug.logEvent(NET_C_FE_SEND_QUEUE_FULL);
 
       // Return the pool entry, as it's not for me...
-      printf("CTP send - FAIL\n");
       return FAIL;
     }
   }
@@ -396,7 +392,6 @@ implementation {
       dbg("Forwarder", "%s: no route, don't send, try again in %i.\n", __FUNCTION__, NO_ROUTE_RETRY);
       call RetxmitTimer.startOneShot(NO_ROUTE_RETRY);
       call CollectionDebug.logEvent(NET_C_FE_NO_ROUTE);
-           printf("Ctp sendTask NO_ROUTE_ENTRY\n");
       return;
     }
     else {
@@ -420,7 +415,6 @@ implementation {
 	if (call QEntryPool.put(qe) != SUCCESS) 
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR); 
 	  
-           printf("Ctp sendTask DUPLICATE\n");
         post sendTask();
         return;
       }
@@ -469,10 +463,8 @@ implementation {
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
 	  post sendTask();
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
-           printf("Ctp sendTask TO_BIG\n");
 	}
 	else {
-           printf("Ctp sendTask FAIL %d\n", subsendResult);
 	  dbg("Forwarder", "%s: subsend failed from %i\n", __FUNCTION__, (int)subsendResult);
 	}
       }

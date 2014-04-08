@@ -81,7 +81,6 @@ implementation {
       }
 
       current = numClients;
-      printf("Q %d stop\n", numClients);
       return SUCCESS;
     }
 
@@ -116,17 +115,14 @@ implementation {
                                                 uint8_t len) {
  
         if (clientId >= numClients) {
-            printf("Queue %d FAIL\n", numClients);
             return FAIL;
         }
 
 	if (running == FALSE) {
-            printf("Queue %d STOPPED on %d\n", numClients, clientId);
             return EOFF;
 	}
 
         if (queue[clientId].msg != NULL) {
-            printf("Queue %d EBUSY\n", numClients);
             return EBUSY;
         }
 
@@ -148,7 +144,6 @@ implementation {
                 dbg("AMQueue", "%s: underlying send failed.\n", __FUNCTION__);
                 current = numClients;
                 queue[clientId].msg = NULL;
-                printf("under busy Queue %d  - %d\n", numClients, err);
             }
             return err;
         }

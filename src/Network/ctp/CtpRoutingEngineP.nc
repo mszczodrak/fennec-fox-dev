@@ -400,10 +400,7 @@ implementation {
     task void sendBeaconTask() {
         error_t eval;
         if (sending) {
-            printf("sendBeaconTask - busy\n");
             return;
-        } else {
-          printf("sending Beacon\n");
         }
 
         beaconMsg->options = 0;
@@ -726,6 +723,7 @@ implementation {
         uint8_t idx;
         uint16_t  linkEtx;
         linkEtx = call LinkEstimator.getLinkQuality(from);
+
 
         idx = routingTableFind(from);
         if (idx == routingTableSize) {
