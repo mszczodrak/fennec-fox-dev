@@ -73,10 +73,7 @@ implementation {
       running = FALSE;
 
       for(current = 0; current < numClients; current++) {
-         if (queue[current].msg != NULL) {
-           signal Send.sendDone[call AMPacket.type(queue[current].msg)](queue[current].msg, FAIL);
-           queue[current].msg = NULL;
-         }
+        queue[current].msg = NULL;
       }
 
       for(current = 0; current < (numClients/8 + 1); current++) {

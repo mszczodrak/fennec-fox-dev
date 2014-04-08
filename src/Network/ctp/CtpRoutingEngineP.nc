@@ -211,7 +211,9 @@ implementation {
     }
 
     command error_t Init.init() {
+#ifdef TOSSIM
         uint8_t maxLength;
+#endif
         radioOn = FALSE;
         running = FALSE;
         parentChanges = 0;
@@ -219,9 +221,11 @@ implementation {
         routeInfoInit(&routeInfo);
         routingTableInit();
         beaconMsg = call BeaconSend.getPayload(&beaconMsgBuffer, call BeaconSend.maxPayloadLength());
+#ifdef TOSSIM
         maxLength = call BeaconSend.maxPayloadLength();
         dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
               sizeof(beaconMsg), maxLength);
+#endif
         return SUCCESS;
     }
 
@@ -239,6 +243,12 @@ implementation {
 
     command error_t StdControl.stop() {
         running = FALSE;
+        sending = FALSE;
+        justEvicted = FALSE;
+        radioOn = FALSE;
+        running = FALSE;
+        parentChanges = 0;
+        state_is_root = 0;
         dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
         return SUCCESS;
     } 
@@ -390,7 +400,10 @@ implementation {
     task void sendBeaconTask() {
         error_t eval;
         if (sending) {
+            printf("sendBeaconTask - busy\n");
             return;
+        } else {
+          printf("sending Beacon\n");
         }
 
         beaconMsg->options = 0;
