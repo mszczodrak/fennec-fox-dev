@@ -57,17 +57,21 @@ implementation {
         message_t* ONE_NOK msg;
     } queue_entry_t;
   
-    uint8_t current = numClients; // mark as empty
-    queue_entry_t queue[numClients];
-    uint8_t cancelMask[numClients/8 + 1];
+    norace uint8_t current = numClients; // mark as empty
+    norace queue_entry_t queue[numClients];
+    norace uint8_t cancelMask[numClients/8 + 1];
+    norace bool running = FALSE;
 
     command error_t StdControl.start() {
+      if (running == TRUE) return SUCCESS;
+      running = TRUE;
+      printf("Q %d start\n", numClients);
       return SUCCESS;
     }
 
     command error_t StdControl.stop() {
+      if (running == FALSE) return SUCCESS;
 
-atomic {
       for(current = 0; current < numClients; current++) {
          queue[current].msg = NULL;
       }
@@ -77,8 +81,8 @@ atomic {
       }
 
       current = numClients;
-}
-	printf("Q %d stop\n", numClients);
+      running = FALSE;
+      printf("Q %d stop\n", numClients);
       return SUCCESS;
     }
 
@@ -115,10 +119,17 @@ atomic {
             printf("Queue %d FAIL\n", numClients);
             return FAIL;
         }
+
+	if (running == FALSE) {
+            printf("Queue %d STOPPED\n", numClients);
+            return EOFF;
+	}
+
         if (queue[clientId].msg != NULL) {
             printf("Queue %d EBUSY\n", numClients);
             return EBUSY;
         }
+
         dbg("AMQueue", "AMQueue: request to send from %hhu (%p): passed checks\n", clientId, msg);
         
         queue[clientId].msg = msg;
@@ -137,7 +148,7 @@ atomic {
                 dbg("AMQueue", "%s: underlying send failed.\n", __FUNCTION__);
                 current = numClients;
                 queue[clientId].msg = NULL;
-                printf("Queue %d  - %d\n", numClients, err);
+                printf("under busy Queue %d  - %d\n", numClients, err);
             }
             return err;
         }
@@ -216,9 +227,16 @@ atomic {
       // on the mica2.
       // Note that since all AM packets go through this queue, this
       // means that the radio has a problem. -pal
+
       if (current >= numClients) {
 	return;
       }
+
+      if (running == FALSE) {
+        printf("Q %d sendDone - FALSE\n", numClients);
+        return;
+      }
+
       if(queue[current].msg == msg) {
 	sendDone(current, msg, err);
       }
