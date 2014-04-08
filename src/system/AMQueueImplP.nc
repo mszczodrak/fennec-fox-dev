@@ -65,7 +65,6 @@ implementation {
     command error_t StdControl.start() {
       if (running == TRUE) return SUCCESS;
       running = TRUE;
-      printf("Q %d start\n", numClients);
       return SUCCESS;
     }
 
@@ -138,7 +137,7 @@ implementation {
         
         queue[clientId].msg = msg;
         call Packet.setPayloadLength(msg, len);
-   
+
         if (current >= numClients) { // queue empty
             error_t err;
             am_id_t amId = call AMPacket.type(msg);
@@ -154,7 +153,6 @@ implementation {
                 queue[clientId].msg = NULL;
                 printf("under busy Queue %d  - %d\n", numClients, err);
             }
-            //printf("Send send %d -> %d\n", numClients, err);
             return err;
         }
         else {
@@ -213,7 +211,6 @@ implementation {
     // NOTE: Increments current!
     void tryToSend() {
       if (running == FALSE) {
-        printf("Q %d sendDone - FALSE\n", numClients);
         return;
       }
 
