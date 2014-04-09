@@ -135,7 +135,7 @@ command error_t StdControl.stop() {
 
 	async command uint16_t SoftwareAckConfig.getAckTimeout()
 	{
-		return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC);
+		return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC * 15);
 	}
 
 	tasklet_async command void SoftwareAckConfig.reportChannelError()

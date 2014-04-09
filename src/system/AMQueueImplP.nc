@@ -125,7 +125,7 @@ implementation {
         if (queue[clientId].msg != NULL) {
             return EBUSY;
         }
-
+	
         dbg("AMQueue", "AMQueue: request to send from %hhu (%p): passed checks\n", clientId, msg);
         
         queue[clientId].msg = msg;
