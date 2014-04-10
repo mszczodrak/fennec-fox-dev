@@ -60,8 +60,6 @@ FennecSerialDbgC.Boot -> MainC;
 FennecP.SplitControl -> NetworkStateC;
 FennecP.Random -> RandomC;
 
-
-
 #ifdef FENNEC_TOS_PRINTF
 components PrintfC;
 components SerialStartC;
