@@ -42,7 +42,7 @@
 
 #include "AM.h"
 
-generic module AMQueueImplP(int numClients) @safe() {
+generic module RadioAMQueueImplP(int numClients) @safe() {
     provides interface StdControl;
     provides interface Send[uint8_t client];
     uses{
