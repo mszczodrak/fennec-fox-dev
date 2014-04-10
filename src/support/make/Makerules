@@ -6,5 +6,6 @@ PFLAGS+=-I$(FENNEC_FOX_LIB)/Events
 include $(FENNEC_FOX_LIB)/sensors/sensors.extra
 include $(FENNEC_FOX_LIB)/libs/libs.extra
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
+include $(FENNEC_FOX_LIB)/support/make/tinyos.extra
 
 TOSMAKE_PATH+=$(FENNEC_FOX_LIB)/support/make
