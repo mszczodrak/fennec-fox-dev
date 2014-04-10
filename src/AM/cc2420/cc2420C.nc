@@ -12,7 +12,6 @@ provides interface PacketAcknowledgements as MacPacketAcknowledgements;
 provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 
 uses interface cc2420Params;
-uses interface StdControl as AMQueueControl;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
@@ -32,7 +31,6 @@ implementation
 components cc2420P;
 cc2420Params = cc2420P;
 SplitControl = cc2420P.SplitControl;
-AMQueueControl = cc2420P.AMQueueControl;
 
 components CC2420MultiplexLplC;
 cc2420Params = CC2420MultiplexLplC;
