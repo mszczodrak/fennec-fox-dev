@@ -210,11 +210,12 @@ MacPacket = CtpMultiplexC.MacPacket;
 MacReceive = CtpMultiplexC.MacReceive;
 MacSnoop = CtpMultiplexC.MacSnoop;
 
-components new AMQueueImplP(2);
-AMQueueImplP.AMSend -> CtpMultiplexC.SubQueueAMSend;
-MacAMPacket = AMQueueImplP.AMPacket;
-MacPacket = AMQueueImplP.Packet;
+components new AMQueueCtrlP(2);
+AMQueueCtrlP.AMSend -> CtpMultiplexC.SubQueueAMSend;
+MacAMPacket = AMQueueCtrlP.AMPacket;
+MacPacket = AMQueueCtrlP.Packet;
 
-CtpMultiplexC.QueueSend -> AMQueueImplP;
+CtpMultiplexC.QueueSend -> AMQueueCtrlP;
+StdControl = AMQueueCtrlP;
 
 }

@@ -5,6 +5,7 @@ provides interface SplitControl;
 provides interface RadioChannel;
 
 uses interface cc2420Params;
+uses interface StdControl as AMQueueControl;
 uses interface SplitControl as SubSplitControl;
 uses interface Resource as RadioResource;
 uses interface SystemLowPowerListening;
@@ -30,6 +31,7 @@ command error_t SplitControl.stop() {
 
 event void SubSplitControl.startDone(error_t error) {
 	if (error == SUCCESS) {
+		call AMQueueControl.start();
         	call SystemLowPowerListening.setDefaultRemoteWakeupInterval(call cc2420Params.get_sleepInterval());
 	        call SystemLowPowerListening.setDelayAfterReceive(call cc2420Params.get_sleepDelay());
         	call LowPowerListening.setLocalWakeupInterval(call cc2420Params.get_sleepInterval());
@@ -40,6 +42,9 @@ event void SubSplitControl.startDone(error_t error) {
 event void SubSplitControl.stopDone(error_t error) {
 	if (call RadioResource.isOwner()) {
 		call RadioResource.release();
+	}
+	if (error == SUCCESS) {
+		call AMQueueControl.stop();
 	}
 	return signal SplitControl.stopDone(error);
 }
