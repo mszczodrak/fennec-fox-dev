@@ -133,6 +133,7 @@ implementation {
 	}
 
         if (queue[clientId].msg != NULL) {
+	    printf("EBUSY\n");
             return EBUSY;
         }
 	
