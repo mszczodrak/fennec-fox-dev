@@ -319,7 +319,8 @@ implementation {
     qe->retries = MAX_RETRIES;
     dbg("Forwarder", "%s: queue entry for %hhu is %hhu deep\n", __FUNCTION__, client, call SendQueue.size());
     if (call SendQueue.enqueue(qe) == SUCCESS) {
-	printf("add2 for %d - size %d\n", call AMPacket.source(qe->msg), call SendQueue.size());
+	printf("add2 for %d.%d to %d - size %d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo,
+		call UnicastNameFreeRouting.nextHop(), call SendQueue.size());
       if (hasState(RADIO_ON) && !hasState(SENDING)) {
 	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
         post sendTask();
@@ -411,7 +412,7 @@ implementation {
 	 * forwarded branch for freeing the buffer. */
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE_AT_SEND);
         call SendQueue.dequeue();
-	printf("deq1 for %d - size %d\n", call AMPacket.source(qe->msg), call SendQueue.size());
+	printf("deq1 for %d - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
 	if (call MessagePool.put(qe->msg) != SUCCESS) 
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR); 
 	if (call QEntryPool.put(qe) != SUCCESS) 
@@ -441,7 +442,7 @@ implementation {
         signal SubSend.sendDone(qe->msg, SUCCESS);
       }
       else {
-	printf("\nctp forwarding for %d  - size %d\n", call AMPacket.source(qe->msg), call SendQueue.size());
+	printf("\nctp forwarding for %d  - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
 	/* The basic forwarding/sending case. */
 	call CtpPacket.setEtx(qe->msg, gradient);
 	call CtpPacket.clearOption(qe->msg, CTP_OPT_ECN | CTP_OPT_PULL);
@@ -533,7 +534,12 @@ implementation {
   event void SubSend.sendDone(message_t* msg, error_t error) {
     fe_queue_entry_t *qe = call SendQueue.head();
     dbg("Forwarder", "%s to %hu and %hhu\n", __FUNCTION__, call AMPacket.destination(msg), error);
+    if (!forwardingState) {
+      printf("sendDone here?\n");
+      return;
+    }
 
+    printf("sendDone %d:%d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo);
     if (error != SUCCESS) {
       /* The radio wasn't able to send the packet: retransmit it. */
       dbg("Forwarder", "%s: send failed\n", __FUNCTION__);
@@ -541,7 +547,7 @@ implementation {
 				       call CollectionPacket.getSequenceNumber(msg), 
 				       call CollectionPacket.getOrigin(msg), 
 				       call AMPacket.destination(msg));
-	printf("sendDone != SUCCESS\n");
+      printf("sendDone != SUCCESS\n");
       startRetxmitTimer(SENDDONE_FAIL_WINDOW, SENDDONE_FAIL_OFFSET);
     }
     else if (hasState(ACK_PENDING) && !call PacketAcknowledgements.wasAcked(msg)) {
@@ -554,12 +560,12 @@ implementation {
 					 call CollectionPacket.getSequenceNumber(msg), 
 					 call CollectionPacket.getOrigin(msg), 
                                          call AMPacket.destination(msg));
-	printf("sendDone not ACKed\n");
+	printf("sendDone not ACKed %d:%d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo);
         startRetxmitTimer(SENDDONE_NOACK_WINDOW, SENDDONE_NOACK_OFFSET);
       } else {
 	/* Hit max retransmit threshold: drop the packet. */
 	call SendQueue.dequeue();
-	printf("deq2 for %d - size %d\n", call AMPacket.source(qe->msg), call SendQueue.size());
+	printf("deq2 for %d - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
         clearState(SENDING);
         startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
 	
@@ -575,7 +581,7 @@ implementation {
       clearState(SENDING);
       startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
       call LinkEstimator.txAck(call AMPacket.destination(msg));
-      printf("deq3 sendDone for %d - size %d\n", call AMPacket.source(qe->msg), call SendQueue.size());
+      printf("deq3 sendDone for %d - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
       packetComplete(qe, msg, TRUE);
     }
   }
@@ -626,7 +632,8 @@ implementation {
       if (call SendQueue.enqueue(qe) == SUCCESS) {
         dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
         // Loop-detection code:
-	printf("add1 for %d - size %d\n", call AMPacket.source(qe->msg), call SendQueue.size());
+	printf("add1 for %d.%d to %d - size %d\n", getHeader(qe->msg)->origin, getHeader(qe->msg)->originSeqNo,
+		call UnicastNameFreeRouting.nextHop(), call SendQueue.size());
         if (call CtpInfo.getEtx(&gradient) == SUCCESS) {
           // We only check for loops if we know our own metric
           if (call CtpPacket.getEtx(m) <= gradient) {
@@ -642,8 +649,6 @@ implementation {
 					 call CollectionPacket.getOrigin(m), 
                                          call AMPacket.destination(m));
           }
-        } else {
-		printf("cannot detect a loop\n");
 	}
 
         if (!call RetxmitTimer.isRunning()) {
@@ -687,6 +692,12 @@ implementation {
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
+    if (!forwardingState) {
+      printf("receive here?\n");
+      return msg;
+    }
+
+    printf("Rec from %d to %d  --  %d.%d, with len %d\n", call AMPacket.source(msg), call AMPacket.destination(msg), getHeader(msg)->origin, getHeader(msg)->originSeqNo, len);
 
     collectid = call CtpPacket.getType(msg);
 

@@ -73,14 +73,6 @@ implementation {
         return SUCCESS;
       }
       running = TRUE;
-      return SUCCESS;
-    }
-
-    command error_t StdControl.stop() {
-      if (!running) {
-        return SUCCESS;
-      }
-      running = FALSE;
 
       for(current = 0; current < numClients; current++) {
         queue[current].msg = NULL;
@@ -91,6 +83,16 @@ implementation {
       }
 
       current = numClients;
+
+      return SUCCESS;
+    }
+
+    command error_t StdControl.stop() {
+      if (!running) {
+        return SUCCESS;
+      }
+      running = FALSE;
+
       return SUCCESS;
     }
 
@@ -133,12 +135,11 @@ implementation {
 	}
 
         if (queue[clientId].msg != NULL) {
-	    printf("EBUSY\n");
             return EBUSY;
         }
 	
         dbg("AMQueue", "AMQueue: request to send from %hhu (%p): passed checks\n", clientId, msg);
-        
+       
         queue[clientId].msg = msg;
         call Packet.setPayloadLength(msg, len);
 
