@@ -297,10 +297,9 @@ implementation {
     ctp_data_header_t* hdr;
     fe_queue_entry_t *qe;
     dbg("Forwarder", "%s: sending packet from client %hhu: %x, len %hhu\n", __FUNCTION__, client, msg, len);
-
     if (!hasState(ROUTING_ON)) {return EOFF;}
     if (len > call Send.maxPayloadLength[client]()) {return ESIZE;}
-   
+    
     call Packet.setPayloadLength(msg, len);
     hdr = getHeader(msg);
     hdr->origin = TOS_NODE_ID;
@@ -310,6 +309,7 @@ implementation {
 
     if (clientPtrs[client] == NULL) {
       dbg("Forwarder", "%s: send failed as client is busy.\n", __FUNCTION__);
+      printf("EBUSY\n");      
       return EBUSY;
     }
 
@@ -449,7 +449,7 @@ implementation {
 	  call CtpPacket.setOption(qe->msg, CTP_OPT_ECN); 
 	  clearState(QUEUE_CONGESTED);
 	}
-
+	
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.
@@ -614,6 +614,7 @@ implementation {
       qe->client = 0xff;
       qe->retries = MAX_RETRIES;
 
+      
       if (call SendQueue.enqueue(qe) == SUCCESS) {
         dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
         // Loop-detection code:
@@ -631,7 +632,7 @@ implementation {
 					 call CollectionPacket.getOrigin(m), 
                                          call AMPacket.destination(m));
           }
-	}
+        }
 
         if (!call RetxmitTimer.isRunning()) {
           // sendTask is only immediately posted if we don't detect a
@@ -674,8 +675,8 @@ implementation {
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
-    collectid = call CtpPacket.getType(msg);
 
+    collectid = call CtpPacket.getType(msg);
 
     // Update the THL here, since it has lived another hop, and so
     // that the root sees the correct THL.
