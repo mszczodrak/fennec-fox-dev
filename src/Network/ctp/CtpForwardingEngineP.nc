@@ -243,7 +243,6 @@ implementation {
       setState(RADIO_ON);
       if (!call SendQueue.empty()) {
 	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-        printf("sendTask() 1\n");
         post sendTask();
       }
     }
@@ -264,7 +263,6 @@ implementation {
    */ 
   event void UnicastNameFreeRouting.routeFound() {
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-        printf("sendTask() 2 - queue empty %d\n", call SendQueue.empty());
     post sendTask();
   }
 
@@ -320,11 +318,9 @@ implementation {
     qe->client = client;
     qe->retries = MAX_RETRIES;
     dbg("Forwarder", "%s: queue entry for %hhu is %hhu deep\n", __FUNCTION__, client, call SendQueue.size());
-    printf("Forwarder send.send() and enqueue\n");
     if (call SendQueue.enqueue(qe) == SUCCESS) {
       if (hasState(RADIO_ON) && !hasState(SENDING)) {
 	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-        printf("sendTask() 3\n");
         post sendTask();
       }
       clientPtrs[client] = NULL;
@@ -419,7 +415,6 @@ implementation {
 	if (call QEntryPool.put(qe) != SUCCESS) 
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR); 
 	  
-        printf("sendTask() 4\n");
         post sendTask();
         return;
       }
@@ -455,7 +450,6 @@ implementation {
 	  clearState(QUEUE_CONGESTED);
 	}
 
-	printf("Forwarder SubSend.send from %d with len %d\n", getHeader(qe->msg)->origin, payloadLen);
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.
@@ -467,7 +461,6 @@ implementation {
 	else if (subsendResult == ESIZE) {
 	  dbg("Forwarder", "%s: subsend failed from ESIZE: truncate packet.\n", __FUNCTION__);
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
-        printf("sendTask() 5\n");
 	  post sendTask();
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
 	}
@@ -538,7 +531,6 @@ implementation {
     fe_queue_entry_t *qe = call SendQueue.head();
     dbg("Forwarder", "%s to %hu and %hhu\n", __FUNCTION__, call AMPacket.destination(msg), error);
 
-    printf("Forwarder sendDone %d:%d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo);
     if (error != SUCCESS) {
       /* The radio wasn't able to send the packet: retransmit it. */
       dbg("Forwarder", "%s: send failed\n", __FUNCTION__);
@@ -622,14 +614,12 @@ implementation {
       qe->client = 0xff;
       qe->retries = MAX_RETRIES;
 
-      printf("enqueue 1\n"); 
       if (call SendQueue.enqueue(qe) == SUCCESS) {
         dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
         // Loop-detection code:
         if (call CtpInfo.getEtx(&gradient) == SUCCESS) {
           // We only check for loops if we know our own metric
           if (call CtpPacket.getEtx(m) <= gradient) {
-		//printf("detected loop: %d <= %d\n", call CtpPacket.getEtx(m), gradient);
             // If our etx metric is less than or equal to the etx value
 	    // on the packet (etx of the previous hop node), then we believe
 	    // we are in a loop.
@@ -647,7 +637,6 @@ implementation {
           // sendTask is only immediately posted if we don't detect a
           // loop.
 	  dbg("FHangBug", "%s: posted sendTask.\n", __FUNCTION__);
-        printf("sendTask() 6\n");
           post sendTask();
         }
         
@@ -687,7 +676,6 @@ implementation {
 
     collectid = call CtpPacket.getType(msg);
 
-    printf("Forwarder received from %d\n", call AMPacket.source(msg));
 
     // Update the THL here, since it has lived another hop, and so
     // that the root sees the correct THL.
@@ -760,7 +748,6 @@ implementation {
   event void RetxmitTimer.fired() {
     clearState(SENDING);
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
-        printf("sendTask() 8\n");
     post sendTask();
   }
 
