@@ -17,39 +17,46 @@ provides interface AMSend as SubQueueAMSend[uint8_t id];
 }
 implementation {
 
-ctp_routing_header_t* getHeader(message_t* ONE m) {
+ctp_routing_header_t* getRoutingHeader(message_t* ONE m) {
 	return (ctp_routing_header_t*)call MacAMSend.getPayload(m,
 					call MacAMSend.maxPayloadLength());
 }
 
-void setOption(message_t *msg, ctp_options_t opt) {
-	getHeader(msg)->options |= opt;
+ctp_data_header_t* getDataHeader(message_t* ONE m) {
+	return (ctp_data_header_t*)call MacAMSend.getPayload(m,
+					call MacAMSend.maxPayloadLength());
 }
 
-void clearOption(message_t *msg, ctp_options_t opt) {
-	getHeader(msg)->options &= ~opt;
+
+void setOption(message_t *msg, uint8_t opt) {
+	getRoutingHeader(msg)->am = opt;
 }
 
-bool option(message_t *msg, ctp_options_t opt) {
-	return ((getHeader(msg)->options & opt) == opt) ? TRUE : FALSE;
+bool option(message_t *msg, uint8_t opt) {
+	return getRoutingHeader(msg)->am == opt;
 }
 
 command error_t AMSend.send[uint8_t id](am_addr_t dest, message_t* m, uint8_t len) {
 	call MacAMPacket.setDestination(m, dest);
-	call MacAMPacket.setType(m, id);
+	setOption(m, id);
 	if (id == AM_CTP_ROUTING) {
-		setOption(m, CTP_ROUTING_BEACON);
+		call MacAMPacket.setType(m, CTP_ROUTING_BEACON);
+		printf("Sending routing len %d  am: %d\n", len, getDataHeader(m)->am);
 		return call QueueSend.send[CTP_ROUTING_BEACON](m, len);
 	} else {
+		call MacAMPacket.setType(m, CTP_DATA_MSG);
+		printf("Sending data len %d   am: %d\n", len, getDataHeader(m)->am);
 		return call QueueSend.send[CTP_DATA_MSG](m, len);
 	}
 }
 
 command error_t AMSend.cancel[uint8_t id](message_t* m) {
-	call MacAMPacket.setType(m, id);
+//	call MacAMPacket.setType(m, id);
 	if (id == AM_CTP_ROUTING) {
+		call MacAMPacket.setType(m, CTP_ROUTING_BEACON);
 		return call QueueSend.cancel[CTP_ROUTING_BEACON](m);
 	} else {
+		call MacAMPacket.setType(m, CTP_DATA_MSG);
 		return call QueueSend.cancel[CTP_DATA_MSG](m);
 	}
 }
@@ -63,7 +70,7 @@ command uint8_t AMSend.maxPayloadLength[uint8_t id]() {
 }
 
 command void* AMSend.getPayload[uint8_t id](message_t* m, uint8_t len) {
-	call MacAMPacket.setType(m, id);
+//	call MacAMPacket.setType(m, id);
 	if (id == AM_CTP_ROUTING) {
 		return call QueueSend.getPayload[CTP_ROUTING_BEACON](m, len);
 	} else {
@@ -73,7 +80,6 @@ command void* AMSend.getPayload[uint8_t id](message_t* m, uint8_t len) {
 
 event void QueueSend.sendDone[uint8_t sid](message_t* m, error_t err) {
 	if (sid == CTP_ROUTING_BEACON) {
-		clearOption(m, CTP_ROUTING_BEACON);
 		call MacAMPacket.setType(m, AM_CTP_ROUTING);
 		signal AMSend.sendDone[AM_CTP_ROUTING](m, err);
 	} else {
@@ -83,8 +89,7 @@ event void QueueSend.sendDone[uint8_t sid](message_t* m, error_t err) {
 }
 
 event message_t* MacReceive.receive(message_t *m, void *payload, uint8_t len) {
-	if (option(m, CTP_ROUTING_BEACON)) {
-		clearOption(m, CTP_ROUTING_BEACON);
+	if (option(m, AM_CTP_ROUTING)) {
 		call MacAMPacket.setType(m, AM_CTP_ROUTING);
 		return signal Receive.receive[AM_CTP_ROUTING](m, payload, len);
 	} else {
@@ -94,8 +99,7 @@ event message_t* MacReceive.receive(message_t *m, void *payload, uint8_t len) {
 }
 
 event message_t* MacSnoop.receive(message_t *m, void *payload, uint8_t len) {
-	if (option(m, CTP_ROUTING_BEACON)) {
-		clearOption(m, CTP_ROUTING_BEACON);
+	if (option(m, AM_CTP_ROUTING)) {
 		call MacAMPacket.setType(m, AM_CTP_ROUTING);
 		return signal Snoop.receive[AM_CTP_ROUTING](m, payload, len);
 	} else {
@@ -105,16 +109,17 @@ event message_t* MacSnoop.receive(message_t *m, void *payload, uint8_t len) {
 }
 
 event void MacAMSend.sendDone(message_t* m, error_t err) {
-	if (option(m, CTP_ROUTING_BEACON)) {
-		call MacAMPacket.setType(m, AM_CTP_ROUTING);
-		return signal SubQueueAMSend.sendDone[AM_CTP_ROUTING](m, err);
+	if (option(m, AM_CTP_ROUTING)) {
+		call MacAMPacket.setType(m, CTP_ROUTING_BEACON);
+		return signal SubQueueAMSend.sendDone[CTP_ROUTING_BEACON](m, err);
 	} else {
-		call MacAMPacket.setType(m, AM_CTP_DATA);
-		return signal SubQueueAMSend.sendDone[AM_CTP_DATA](m, err);
+		call MacAMPacket.setType(m, CTP_DATA_MSG);
+		return signal SubQueueAMSend.sendDone[CTP_DATA_MSG](m, err);
 	}
 }
 
 command error_t SubQueueAMSend.send[uint8_t id](am_addr_t dest, message_t* m, uint8_t len) {
+	printf("Subsending from %d for %d   _ am: %d\n", call MacAMPacket.source(m), getDataHeader(m)->origin, getDataHeader(m)->am);
 	return call MacAMSend.send(dest, m, len);
 }
 

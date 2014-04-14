@@ -76,6 +76,7 @@ implementation {
     cc2420_header_t* header = call CC2420PacketBody.getHeader( pending_message );
 
     signal SendNotifier.aboutToSend[header->type](header->dest, pending_message);
+	printf("[%d] ActiveMessage Send.send - 2   len %d\n",  header->type, pending_length);
     rc = call SubSend.send( pending_message, pending_length );
     if (rc != SUCCESS) {
       call RadioResource.release();
@@ -106,7 +107,10 @@ implementation {
       error_t rc;
       signal SendNotifier.aboutToSend[id](addr, msg);
       
+	printf("[%d] ActiveMessage Send.send - 1   len %d\n", id, len);
+
       rc = call SubSend.send( msg, len );
+
       if (rc != SUCCESS) {
         call RadioResource.release();
       }
@@ -219,6 +223,7 @@ implementation {
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
 
     if (!validProcessId(call AMPacket.type(msg))) {
+      printf("[%d] Not valid process id\n", call AMPacket.type(msg));
       return msg;
     }   
  

@@ -427,7 +427,7 @@ implementation {
                   beaconMsg->etx);
         call CollectionDebug.logEventRoute(NET_C_TREE_SENT_BEACON, beaconMsg->parent, 0, beaconMsg->etx);
 
-	printf("\nctp beacon\n");
+	//printf("\nctp beacon\n");
 
         eval = call BeaconSend.send(AM_BROADCAST_ADDR, 
                                     &beaconMsgBuffer, 
