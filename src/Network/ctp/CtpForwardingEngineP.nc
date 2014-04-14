@@ -243,6 +243,7 @@ implementation {
       setState(RADIO_ON);
       if (!call SendQueue.empty()) {
 	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+        printf("sendTask() 1\n");
         post sendTask();
       }
     }
@@ -263,6 +264,7 @@ implementation {
    */ 
   event void UnicastNameFreeRouting.routeFound() {
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+        printf("sendTask() 2 - queue empty %d\n", call SendQueue.empty());
     post sendTask();
   }
 
@@ -318,10 +320,11 @@ implementation {
     qe->client = client;
     qe->retries = MAX_RETRIES;
     dbg("Forwarder", "%s: queue entry for %hhu is %hhu deep\n", __FUNCTION__, client, call SendQueue.size());
+    printf("Forwarder send.send() and enqueue\n");
     if (call SendQueue.enqueue(qe) == SUCCESS) {
-	//printf("add2 for %d.%d to %d - size %d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo, call UnicastNameFreeRouting.nextHop(), call SendQueue.size());
       if (hasState(RADIO_ON) && !hasState(SENDING)) {
 	dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+        printf("sendTask() 3\n");
         post sendTask();
       }
       clientPtrs[client] = NULL;
@@ -411,12 +414,12 @@ implementation {
 	 * forwarded branch for freeing the buffer. */
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE_AT_SEND);
         call SendQueue.dequeue();
-	//printf("deq1 for %d - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
 	if (call MessagePool.put(qe->msg) != SUCCESS) 
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR); 
 	if (call QEntryPool.put(qe) != SUCCESS) 
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR); 
 	  
+        printf("sendTask() 4\n");
         post sendTask();
         return;
       }
@@ -441,7 +444,6 @@ implementation {
         signal SubSend.sendDone(qe->msg, SUCCESS);
       }
       else {
-	//printf("\nctp forwarding for %d toward %d size %d\n", getHeader(qe->msg)->origin, call UnicastNameFreeRouting.nextHop(), call SendQueue.size());
 	/* The basic forwarding/sending case. */
 	call CtpPacket.setEtx(qe->msg, gradient);
 	call CtpPacket.clearOption(qe->msg, CTP_OPT_ECN | CTP_OPT_PULL);
@@ -453,7 +455,7 @@ implementation {
 	  clearState(QUEUE_CONGESTED);
 	}
 
-	//printf("SubSend.send from %d\n", getHeader(qe->msg)->origin);
+	printf("Forwarder SubSend.send from %d with len %d\n", getHeader(qe->msg)->origin, payloadLen);
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.
@@ -465,6 +467,7 @@ implementation {
 	else if (subsendResult == ESIZE) {
 	  dbg("Forwarder", "%s: subsend failed from ESIZE: truncate packet.\n", __FUNCTION__);
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
+        printf("sendTask() 5\n");
 	  post sendTask();
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
 	}
@@ -535,7 +538,7 @@ implementation {
     fe_queue_entry_t *qe = call SendQueue.head();
     dbg("Forwarder", "%s to %hu and %hhu\n", __FUNCTION__, call AMPacket.destination(msg), error);
 
-    //printf("sendDone %d:%d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo);
+    printf("Forwarder sendDone %d:%d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo);
     if (error != SUCCESS) {
       /* The radio wasn't able to send the packet: retransmit it. */
       dbg("Forwarder", "%s: send failed\n", __FUNCTION__);
@@ -555,16 +558,13 @@ implementation {
 					 call CollectionPacket.getSequenceNumber(msg), 
 					 call CollectionPacket.getOrigin(msg), 
                                          call AMPacket.destination(msg));
-	//printf("sendDone not ACKed %d:%d\n", getHeader(msg)->origin, getHeader(msg)->originSeqNo);
         startRetxmitTimer(SENDDONE_NOACK_WINDOW, SENDDONE_NOACK_OFFSET);
       } else {
 	/* Hit max retransmit threshold: drop the packet. */
 	call SendQueue.dequeue();
-	//printf("deq2 for %d - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
         clearState(SENDING);
         startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
 	
-	//printf("give up - left %d\n", call SendQueue.size());
 	packetComplete(qe, msg, FALSE);
       }
     }
@@ -576,7 +576,6 @@ implementation {
       clearState(SENDING);
       startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
       call LinkEstimator.txAck(call AMPacket.destination(msg));
-      //printf("deq3 sendDone for %d - size %d\n", getHeader(qe->msg)->origin, call SendQueue.size());
       packetComplete(qe, msg, TRUE);
     }
   }
@@ -623,11 +622,10 @@ implementation {
       qe->client = 0xff;
       qe->retries = MAX_RETRIES;
 
-      
+      printf("enqueue 1\n"); 
       if (call SendQueue.enqueue(qe) == SUCCESS) {
         dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
         // Loop-detection code:
-	//printf("add1 for %d.%d to %d - size %d\n", getHeader(qe->msg)->origin, getHeader(qe->msg)->originSeqNo, call UnicastNameFreeRouting.nextHop(), call SendQueue.size());
         if (call CtpInfo.getEtx(&gradient) == SUCCESS) {
           // We only check for loops if we know our own metric
           if (call CtpPacket.getEtx(m) <= gradient) {
@@ -649,6 +647,7 @@ implementation {
           // sendTask is only immediately posted if we don't detect a
           // loop.
 	  dbg("FHangBug", "%s: posted sendTask.\n", __FUNCTION__);
+        printf("sendTask() 6\n");
           post sendTask();
         }
         
@@ -686,9 +685,9 @@ implementation {
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
-    //printf("Rec from %d to %d  --  %d.%d, with len %d\n", call AMPacket.source(msg), call AMPacket.destination(msg), getHeader(msg)->origin, getHeader(msg)->originSeqNo, len);
-
     collectid = call CtpPacket.getType(msg);
+
+    printf("Forwarder received from %d\n", call AMPacket.source(msg));
 
     // Update the THL here, since it has lived another hop, and so
     // that the root sees the correct THL.
@@ -761,6 +760,7 @@ implementation {
   event void RetxmitTimer.fired() {
     clearState(SENDING);
     dbg("FHangBug", "%s posted sendTask.\n", __FUNCTION__);
+        printf("sendTask() 8\n");
     post sendTask();
   }
 
