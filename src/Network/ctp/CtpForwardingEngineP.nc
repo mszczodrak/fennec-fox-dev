@@ -309,7 +309,6 @@ implementation {
 
     if (clientPtrs[client] == NULL) {
       dbg("Forwarder", "%s: send failed as client is busy.\n", __FUNCTION__);
-      printf("EBUSY\n");      
       return EBUSY;
     }
 
