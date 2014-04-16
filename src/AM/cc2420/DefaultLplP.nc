@@ -47,7 +47,6 @@
 
 module DefaultLplP {
   provides {
-    interface Init;
     interface LowPowerListening;
     interface Send;
     interface Receive;
@@ -111,11 +110,6 @@ implementation {
   
   void initializeSend();
   void startOffTimer();
-  
-  /***************** Init Commands ***************/
-  command error_t Init.init() {
-    return SUCCESS;
-  }
   
   /***************** LowPowerListening Commands ***************/
   /**
