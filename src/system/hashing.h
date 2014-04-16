@@ -111,8 +111,9 @@ static inline uint16_t crc16_byte(uint16_t crc, const uint8_t data) {
 }
 
 uint16_t crc16(uint16_t crc, uint8_t const *buffer, uint16_t len) {
-        while (len--)
+        while (len--) {
                 crc = crc16_byte(crc, *buffer++);
+	}
         return crc;
 }
 

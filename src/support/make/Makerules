@@ -4,7 +4,6 @@ PFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec
 PFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc
 PFLAGS+=-I$(FENNEC_FOX_LIB)/Events
 include $(FENNEC_FOX_LIB)/sensors/sensors.extra
-include $(FENNEC_FOX_LIB)/libs/libs.extra
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 include $(FENNEC_FOX_LIB)/support/make/tinyos.extra
 

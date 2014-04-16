@@ -34,6 +34,7 @@
 
 
 #include <Fennec.h>
+#include "hashing.h"
 
 generic module StateSynchronizationP(process_t process) @safe() {
 provides interface SplitControl;
@@ -75,6 +76,9 @@ task void send_msg() {
 
 	state_msg->seq = (nx_uint16_t) call FennecState.getStateSeq();
 	state_msg->state_id = (nx_uint16_t) call FennecState.getStateId();
+	state_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
+		sizeof(nx_struct fennec_network_state) - 
+		sizeof(((nx_struct fennec_network_state *)0)->crc));
 
 	if (call NetworkAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
 		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - FAIL", process);
@@ -106,6 +110,12 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	nx_struct fennec_network_state *state_msg = (nx_struct fennec_network_state*) payload;
 	dbg("StateSynchronization", "[%d] StateSynchronizationP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
+
+	if (state_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
+		len - sizeof(((nx_struct fennec_network_state *)0)->crc)) ) {
+		printf("failed\n");
+		return msg;
+	}
 
 	call FennecState.setStateAndSeq(state_msg->state_id, state_msg->seq);
 	return msg;
