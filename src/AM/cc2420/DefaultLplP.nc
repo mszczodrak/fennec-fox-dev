@@ -81,9 +81,6 @@ implementation {
   /** The length of the current send message */
   uint8_t currentSendLen;
   
-  /** TRUE if the radio is duty cycling and not always on */
-  bool dutyCycling;
-
   /**
    * Radio Power State
    */
@@ -117,7 +114,6 @@ implementation {
   
   /***************** Init Commands ***************/
   command error_t Init.init() {
-    dutyCycling = FALSE;
     return SUCCESS;
   }
   
@@ -268,12 +264,10 @@ implementation {
   event void SubControl.stopDone(error_t error) {
     if(call SplitControlState.isState(S_OFF) || 
       call SplitControlState.isState(S_TURNING_OFF)) {
-      if (! call SendState.isIdle() ) {
-	call OffTimer.stop();
-	call SendDoneTimer.stop();
-        call SendState.toIdle();
-        signal Send.sendDone(currentSendMsg, FAIL);
-      }
+      call OffTimer.stop();
+      call SendDoneTimer.stop();
+      call SendState.toIdle();
+      return;
     }
 
     if(!error) {
@@ -292,6 +286,12 @@ implementation {
   
   /***************** SubSend Events ***************/
   event void SubSend.sendDone(message_t* msg, error_t error) {
+    if(call SplitControlState.isState(S_OFF) || 
+      call SplitControlState.isState(S_TURNING_OFF)) {
+      signal Send.sendDone(msg, error);
+      return;
+    }
+
     switch(call SendState.getState()) {
     case S_LPL_SENDING:
       if(call SendDoneTimer.isRunning()) {
@@ -339,8 +339,8 @@ implementation {
      * or if the duty cycle is on and our sleep interval is not 0
      */
     if(call SplitControlState.getState() == S_OFF
-        || (call PowerCycle.getSleepInterval() > 0
-            && call SplitControlState.getState() != S_OFF
+        || (call PowerCycle.getSleepInterval() > 0 
+                && call SplitControlState.getState() != S_OFF
                 && call SendState.getState() == S_LPL_NOT_SENDING)) { 
       post stopRadio();
     }
@@ -402,8 +402,8 @@ implementation {
   
   /***************** Functions ***************/
   void initializeSend() {
-    if(call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) 
-      > ONE_MESSAGE) {
+    if(call PowerCycle.getSleepInterval() > 0 && 
+	call LowPowerListening.getRemoteWakeupInterval(currentSendMsg) > ONE_MESSAGE) {
     
       if((call CC2420PacketBody.getHeader(currentSendMsg))->dest == IEEE154_BROADCAST_ADDR) {
         call PacketAcknowledgements.noAck(currentSendMsg);
@@ -421,7 +421,9 @@ implementation {
   
   
   void startOffTimer() {
-    call OffTimer.startOneShot(call SystemLowPowerListening.getDelayAfterReceive());
+    if (call PowerCycle.getSleepInterval() > 0) {
+      call OffTimer.startOneShot(call SystemLowPowerListening.getDelayAfterReceive());
+    }
   }
   
 }

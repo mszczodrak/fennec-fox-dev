@@ -56,7 +56,7 @@ implementation {
       new TimerMilliC() as OnTimerC,
       new TimerMilliC() as CheckTimerC;
 
-  components CC2420MultiplexLplC as LplC;
+  components DefaultLplC as LplC;
 
   PowerCycle = PowerCycleP;
   SplitControl = PowerCycleP;

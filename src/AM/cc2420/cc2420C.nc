@@ -34,9 +34,6 @@ cc2420Params = cc2420P;
 SplitControl = cc2420P.SplitControl;
 AMQueueControl = cc2420P.AMQueueControl;
 
-components CC2420MultiplexLplC;
-cc2420Params = CC2420MultiplexLplC;
-
 components CC2420ControlP;
 cc2420Params = CC2420ControlP;
 

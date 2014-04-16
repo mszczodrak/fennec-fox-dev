@@ -26,11 +26,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	error_t err = call SubSplitControl.stop();
-	if (err == SUCCESS) {
-        	call LowPowerListening.setLocalWakeupInterval(0);
-	}
-	return err;
+	return call SubSplitControl.stop();
 }
 
 event void SubSplitControl.startDone(error_t error) {
@@ -47,6 +43,7 @@ event void SubSplitControl.stopDone(error_t error) {
 	if (call RadioResource.isOwner()) {
 		call RadioResource.release();
 	}
+        call LowPowerListening.setLocalWakeupInterval(0);
 	if (error == SUCCESS) {
 		call AMQueueControl.stop();
 	}
