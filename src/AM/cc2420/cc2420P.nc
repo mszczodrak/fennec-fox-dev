@@ -26,7 +26,11 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	return call SubSplitControl.stop();
+	error_t err = call SubSplitControl.stop();
+	if (err == SUCCESS) {
+        	call LowPowerListening.setLocalWakeupInterval(0);
+	}
+	return err;
 }
 
 event void SubSplitControl.startDone(error_t error) {
