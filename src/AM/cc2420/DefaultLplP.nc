@@ -262,6 +262,9 @@ implementation {
   }
     
   event void SubControl.stopDone(error_t error) {
+    /* This check distinguishes the LPL sleep interval from
+     * the whole AM radio stack stop 
+     */
     if(call SplitControlState.isState(S_OFF) || 
       call SplitControlState.isState(S_TURNING_OFF)) {
       call OffTimer.stop();
@@ -286,6 +289,9 @@ implementation {
   
   /***************** SubSend Events ***************/
   event void SubSend.sendDone(message_t* msg, error_t error) {
+    /* Prevent resending routine when the radio AM
+     * is getting completely turned off 
+     */
     if(call SplitControlState.isState(S_OFF) || 
       call SplitControlState.isState(S_TURNING_OFF)) {
       signal Send.sendDone(msg, error);
@@ -297,6 +303,9 @@ implementation {
       if(call SendDoneTimer.isRunning()) {
         if(call PowerCycle.getSleepInterval() > 0 && 
           !call PacketAcknowledgements.wasAcked(msg)) {
+          /* Continue resending when duty-cycling and when last
+	   * message was not acknowledged.
+           */
           post resend();
           return;
         }
