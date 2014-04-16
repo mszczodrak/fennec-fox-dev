@@ -295,7 +295,8 @@ implementation {
     switch(call SendState.getState()) {
     case S_LPL_SENDING:
       if(call SendDoneTimer.isRunning()) {
-        if(!call PacketAcknowledgements.wasAcked(msg)) {
+        if(call PowerCycle.getSleepInterval() > 0 && 
+          !call PacketAcknowledgements.wasAcked(msg)) {
           post resend();
           return;
         }
