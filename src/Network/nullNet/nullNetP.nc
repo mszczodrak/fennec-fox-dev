@@ -34,22 +34,22 @@
 
 generic module nullNetP(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface AMSend as AMSend;
+provides interface Receive as Receive;
+provides interface Receive as Snoop;
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
 
 uses interface nullNetParams;
 
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
 }
@@ -57,155 +57,155 @@ uses interface RadioChannel;
 implementation {
 
 command error_t SplitControl.start() {
-	dbg("Network", "[%d] nullNet SplitControl.start()", process);
+	dbg("", "[%d] nullNet SplitControl.start()", process);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("Network", "[%d] nullNet SplitControl.stop()", process);
+	dbg("", "[%d] nullNet SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
-command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	dbg("Network", "[%d] nullNet NetworkAMSend.send(%d, 0x%1x, %d )",
+command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	dbg("", "[%d] nullNet AMSend.send(%d, 0x%1x, %d )",
 		process, addr, msg, len);
 
 	if ((addr == TOS_NODE_ID)) {
-		dbg("Network", "[%d] nullNet NetworkAMSend.sendDone(0x%1x, %d )", process, msg, SUCCESS);
-		signal NetworkAMSend.sendDone(msg, SUCCESS);
-		signal MacReceive.receive(msg, 
-		call NetworkAMSend.getPayload(msg, len + 
+		dbg("", "[%d] nullNet AMSend.sendDone(0x%1x, %d )", process, msg, SUCCESS);
+		signal AMSend.sendDone(msg, SUCCESS);
+		signal SubReceive.receive(msg, 
+		call AMSend.getPayload(msg, len + 
 				sizeof(nx_struct nullNet_header)), 
 		len + sizeof(nx_struct nullNet_header));
 		return SUCCESS;
 	}
 
-	return call MacAMSend.send(addr, msg, len + 
+	return call SubAMSend.send(addr, msg, len + 
 		sizeof(nx_struct nullNet_header));
 }
 
-command error_t NetworkAMSend.cancel(message_t* msg) {
-	dbg("Network", "[%d] nullNet NetworkAMSend.cancel(0x%1x)", process, msg);
-	return call MacAMSend.cancel(msg);
+command error_t AMSend.cancel(message_t* msg) {
+	dbg("", "[%d] nullNet AMSend.cancel(0x%1x)", process, msg);
+	return call SubAMSend.cancel(msg);
 }
 
-command uint8_t NetworkAMSend.maxPayloadLength() {
-	dbg("Network", "[%d] nullNet NetworkAMSend.maxPayloadLength()", process);
-	return (call MacAMSend.maxPayloadLength() - 
+command uint8_t AMSend.maxPayloadLength() {
+	dbg("", "[%d] nullNet AMSend.maxPayloadLength()", process);
+	return (call SubAMSend.maxPayloadLength() - 
 		sizeof(nx_struct nullNet_header));
 }
 
-command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
+command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr; 
-	dbg("Network", "[%d] nullNet NetworkAMSend.getpayload(0x%1x, %d )", process, msg, len);
-	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
+	dbg("", "[%d] nullNet AMSend.getpayload(0x%1x, %d )", process, msg, len);
+	ptr = (uint8_t*) call SubAMSend.getPayload(msg, 
 				len + sizeof(nx_struct nullNet_header));
 	return (void*) (ptr + sizeof(nx_struct nullNet_header));
 }
 
-event void MacAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Network", "[%d] nullNet NetworkAMSend.sendDone(0x%1x, %d )", process, msg, error);
-	signal NetworkAMSend.sendDone(msg, error);
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	dbg("", "[%d] nullNet AMSend.sendDone(0x%1x, %d )", process, msg, error);
+	signal AMSend.sendDone(msg, error);
 }
 
-event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "[%d] nullNet NetworkReceive.receive(0x%1x, 0x%1x, %d )",
+	dbg("", "[%d] nullNet Receive.receive(0x%1x, 0x%1x, %d )",
 			process, msg, 
 			ptr + sizeof(nx_struct nullNet_header), 
 			len - sizeof(nx_struct nullNet_header));
-	return signal NetworkReceive.receive(msg, 
+	return signal Receive.receive(msg, 
 			ptr + sizeof(nx_struct nullNet_header), 
 			len - sizeof(nx_struct nullNet_header));
 }
 
-event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "[%d] nullNet NetworkSnoop.receive(0x%1x, 0x%1x, %d )",
+	dbg("", "[%d] nullNet Snoop.receive(0x%1x, 0x%1x, %d )",
 			process, msg, 
 			ptr + sizeof(nx_struct nullNet_header), 
 			len - sizeof(nx_struct nullNet_header));
-	return signal NetworkSnoop.receive(msg, 
+	return signal Snoop.receive(msg, 
 			ptr + sizeof(nx_struct nullNet_header), 
 			len - sizeof(nx_struct nullNet_header));
 }
 
-command am_addr_t NetworkAMPacket.address() {
-	return call MacAMPacket.address();
+command am_addr_t AMPacket.address() {
+	return call SubAMPacket.address();
 }
 
-command am_addr_t NetworkAMPacket.destination(message_t* amsg) {
-	return call MacAMPacket.destination(amsg);
+command am_addr_t AMPacket.destination(message_t* amsg) {
+	return call SubAMPacket.destination(amsg);
 }
 
-command am_addr_t NetworkAMPacket.source(message_t* amsg) {
-	return call MacAMPacket.source(amsg);
+command am_addr_t AMPacket.source(message_t* amsg) {
+	return call SubAMPacket.source(amsg);
 }
 
-command void NetworkAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-	return call MacAMPacket.setDestination(amsg, addr);
+command void AMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+	return call SubAMPacket.setDestination(amsg, addr);
 }
 
-command void NetworkAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-	return call MacAMPacket.setSource(amsg, addr);
+command void AMPacket.setSource(message_t* amsg, am_addr_t addr) {
+	return call SubAMPacket.setSource(amsg, addr);
 }
 
-command bool NetworkAMPacket.isForMe(message_t* amsg) {
-	return call MacAMPacket.isForMe(amsg);
+command bool AMPacket.isForMe(message_t* amsg) {
+	return call SubAMPacket.isForMe(amsg);
 }
 
-command am_id_t NetworkAMPacket.type(message_t* amsg) {
-	return call MacAMPacket.type(amsg);
+command am_id_t AMPacket.type(message_t* amsg) {
+	return call SubAMPacket.type(amsg);
 }
 
-command void NetworkAMPacket.setType(message_t* amsg, am_id_t t) {
-	return call MacAMPacket.setType(amsg, t);
+command void AMPacket.setType(message_t* amsg, am_id_t t) {
+	return call SubAMPacket.setType(amsg, t);
 }
 
-command am_group_t NetworkAMPacket.group(message_t* amsg) {
-	return call MacAMPacket.group(amsg);
+command am_group_t AMPacket.group(message_t* amsg) {
+	return call SubAMPacket.group(amsg);
 }
 
-command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-	return call MacAMPacket.setGroup(amsg, grp);
+command void AMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	return call SubAMPacket.setGroup(amsg, grp);
 }
 
-command am_group_t NetworkAMPacket.localGroup() {
-	return call MacAMPacket.localGroup();
+command am_group_t AMPacket.localGroup() {
+	return call SubAMPacket.localGroup();
 }
 
-command void NetworkPacket.clear(message_t* msg) {
-	return call MacPacket.clear(msg);
+command void Packet.clear(message_t* msg) {
+	return call SubPacket.clear(msg);
 }
 
-command uint8_t NetworkPacket.payloadLength(message_t* msg) {
-	return call MacPacket.payloadLength(msg);
+command uint8_t Packet.payloadLength(message_t* msg) {
+	return call SubPacket.payloadLength(msg);
 }
 
-command void NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	return call MacPacket.setPayloadLength(msg, len);
+command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
+	return call SubPacket.setPayloadLength(msg, len);
 }
 
-command uint8_t NetworkPacket.maxPayloadLength() {
-	return call MacPacket.maxPayloadLength();
+command uint8_t Packet.maxPayloadLength() {
+	return call SubPacket.maxPayloadLength();
 }
 
-command void* NetworkPacket.getPayload(message_t* msg, uint8_t len) {
-	return call MacPacket.getPayload(msg, len);
+command void* Packet.getPayload(message_t* msg, uint8_t len) {
+	return call SubPacket.getPayload(msg, len);
 }
 
-async command error_t NetworkPacketAcknowledgements.requestAck( message_t* msg ) {
-	return call MacPacketAcknowledgements.requestAck(msg);
+async command error_t PacketAcknowledgements.requestAck( message_t* msg ) {
+	return call SubPacketAcknowledgements.requestAck(msg);
 }
 
-async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
-	return call MacPacketAcknowledgements.noAck(msg);
+async command error_t PacketAcknowledgements.noAck( message_t* msg ) {
+	return call SubPacketAcknowledgements.noAck(msg);
 }
 
-async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
-	return call MacPacketAcknowledgements.wasAcked(msg);
+async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
+	return call SubPacketAcknowledgements.wasAcked(msg);
 }
 
 event void RadioChannel.setChannelDone() {

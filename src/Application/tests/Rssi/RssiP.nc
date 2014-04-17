@@ -41,12 +41,16 @@ provides interface SplitControl;
 
 uses interface RssiParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli> as SendTimer;
@@ -81,13 +85,13 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 }
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 #ifdef FENNEC_TOS_PRINTF
-	printf("%d %u %u\n", (int8_t)getMetadata(msg)->rssi, getMetadata(msg)->lqi, getMetadata(msg)->crc);
+	printf("%d %u\n", (int8_t)call SubPacketRSSI.get(msg), call SubPacketLinkQuality(msg));
 	printfflush();
 #endif
 
@@ -95,25 +99,25 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 
 	call Leds.led0On();
 
-	if ( ((int8_t)getMetadata(msg)->rssi) > call RssiParams.get_threshold_1() ) {
+	if ( ((int8_t)call SubPacketRSSI.get(msg)) > call RssiParams.get_threshold_1() ) {
 		call Leds.led1On();
 	}
 
-	if ( ((int8_t)getMetadata(msg)->rssi) > call RssiParams.get_threshold_2() ) {
+	if ( ((int8_t)call SubPacketRSSI.get(msg)) > call RssiParams.get_threshold_2() ) {
 		call Leds.led2On();
 	}
 
 	return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 
 event void SendTimer.fired() {
 	if (!busy) {
 		busy = TRUE;
-		call NetworkAMSend.send(BROADCAST, &packet, 40);
+		call SubAMSend.send(BROADCAST, &packet, 40);
 	}
 }
 

@@ -3,13 +3,13 @@
 configuration cc2420C {
 
 provides interface SplitControl;
-provides interface AMSend as MacAMSend[process_t process_id];
-provides interface Receive as MacReceive[process_t process_id];
-provides interface Receive as MacSnoop[process_t process_id];
-provides interface AMPacket as MacAMPacket;
-provides interface Packet as MacPacket;
-provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-provides interface LinkPacketMetadata as MacLinkPacketMetadata;
+provides interface AMSend as AMSend[process_t process_id];
+provides interface Receive as Receive[process_t process_id];
+provides interface Receive as Snoop[process_t process_id];
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
+provides interface LinkPacketMetadata as LinkPacketMetadata;
 
 uses interface cc2420Params;
 uses interface StdControl as AMQueueControl;
@@ -20,9 +20,9 @@ provides interface PacketField<uint8_t> as PacketRSSI;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
-provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
-provides interface PacketTimeStamp<TMilli, uint32_t> as MacPacketTimeStampMilli;
-provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface PacketTimeStamp<TRadio, uint32_t> as UnimplementedPacketTimeStampRadio;
 uses interface PacketTimeStamp<TMilli, uint32_t> as UnimplementedPacketTimeStampMilli;
@@ -38,6 +38,10 @@ cc2420Params = cc2420P;
 SplitControl = cc2420P.SplitControl;
 AMQueueControl = cc2420P.AMQueueControl;
 
+PacketLinkQuality = cc2420P.PacketLinkQuality;
+PacketTransmitPower = cc2420P.PacketTransmitPower;
+PacketRSSI = cc2420P.PacketRSSI;
+
 components CC2420ControlP;
 cc2420Params = CC2420ControlP;
 
@@ -47,14 +51,14 @@ cc2420Params = CC2420TransmitP;
 /* hacking to be cc2420x compatible */
 RadioChannel = cc2420P;
 /*
-MacPacketTimeStampRadio = cc2420P.MacPacketTimeStampRadio;
-MacPacketTimeStampMilli = cc2420P.MacPacketTimeStampMilli;
-MacPacketTimeStamp32khz = cc2420P.MacPacketTimeStamp32khz;
+PacketTimeStampRadio = cc2420P.PacketTimeStampRadio;
+PacketTimeStampMilli = cc2420P.PacketTimeStampMilli;
+PacketTimeStamp32khz = cc2420P.PacketTimeStamp32khz;
 */
 
-MacPacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
-MacPacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
-MacPacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
+PacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
+PacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
+PacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
 
 enum {
     CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
@@ -68,18 +72,19 @@ components CC2420ControlC;
 components CC2420PacketC;
 
 cc2420P.SubSplitControl -> Radio;
+cc2420P.CC2420Packet -> Radio;
+
 // RadioBackoff = AM;
-MacPacket = AM.Packet;
-MacAMSend = AM.AMSend;
+Packet = AM.Packet;
+AMSend = AM.AMSend;
 // SendNotifier = AM;
-MacReceive = AM.Receive;
-MacSnoop = AM.Snoop;
-MacAMPacket = AM.AMPacket;
+Receive = AM.Receive;
+Snoop = AM.Snoop;
+AMPacket = AM.AMPacket;
 // PacketLink = Radio;
 LowPowerListening = Radio.LowPowerListening;
-// CC2420Packet = Radio;
-MacPacketAcknowledgements = Radio;
-MacLinkPacketMetadata = Radio.LinkPacketMetadata;
+PacketAcknowledgements = Radio;
+LinkPacketMetadata = Radio.LinkPacketMetadata;
 
 // Radio resource for the AM layer
 AM.RadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
@@ -98,9 +103,9 @@ components LedsC;
 AM.Leds -> LedsC;
 
 //RadioChannel = CC2420ActiveMessageC.RadioChannel;
-//MacPacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
-//MacPacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
-//MacPacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
+//PacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
+//PacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
+//PacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
 
 /* System LowPowerListening Confs */
 components SystemLowPowerListeningC;

@@ -11,11 +11,17 @@ uses interface Resource as RadioResource;
 uses interface SystemLowPowerListening;
 uses interface LowPowerListening;
 
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+
 /*
-provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;
-provides interface PacketTimeStamp<TMilli, uint32_t> as MacPacketTimeStampMilli;
-provides interface PacketTimeStamp<T32khz, uint32_t> as MacPacketTimeStamp32khz;
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 */
+
+uses interface CC2420Packet;
 
 }
 
@@ -65,6 +71,65 @@ event void RadioResource.granted() {
 command uint8_t RadioChannel.getChannel() {
 	return 0;
 }
+
+async command bool PacketLinkQuality.isSet(message_t* msg) {
+	return TRUE;
+}
+
+async command uint8_t PacketLinkQuality.get(message_t* msg) {
+	return call CC2420Packet.getLqi(msg);
+}
+
+async command void PacketLinkQuality.clear(message_t* msg) {
+
+}
+
+async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
+
+}
+
+
+
+
+async command bool PacketTransmitPower.isSet(message_t* msg) {
+	return TRUE;
+}
+
+async command uint8_t PacketTransmitPower.get(message_t* msg) {
+	return call CC2420Packet.getPower(msg);
+
+}
+
+async command void PacketTransmitPower.clear(message_t* msg) {
+
+}
+
+async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
+	return call CC2420Packet.setPower(msg, value);
+}
+
+
+
+async command bool PacketRSSI.isSet(message_t* msg) {
+	return TRUE;
+}
+
+async command uint8_t PacketRSSI.get(message_t* msg) {
+	return (uint8_t) call CC2420Packet.getRssi(msg);
+}
+
+async command void PacketRSSI.clear(message_t* msg) {
+
+}
+
+async command void PacketRSSI.set(message_t* msg, uint8_t value) {
+
+}
+
+
+
+
+
 
 /*
 async command bool PacketTimeStampRadio.isValid(message_t* msg) {

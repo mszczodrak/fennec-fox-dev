@@ -33,24 +33,33 @@
 
 generic configuration nullNetC(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface AMSend as AMSend;
+provides interface Receive as Receive;
+provides interface Receive as Snoop;
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
+
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
 
 uses interface nullNetParams;
 
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 }
 
 implementation {
@@ -58,20 +67,24 @@ implementation {
 components new nullNetP(process);
 SplitControl = nullNetP;
 nullNetParams = nullNetP;
-NetworkAMSend = nullNetP.NetworkAMSend;
-NetworkReceive = nullNetP.NetworkReceive;
-NetworkSnoop = nullNetP.NetworkSnoop;
-NetworkAMPacket = nullNetP.NetworkAMPacket;
-NetworkPacket = nullNetP.NetworkPacket;
-NetworkPacketAcknowledgements = nullNetP.NetworkPacketAcknowledgements;
+AMSend = nullNetP.AMSend;
+Receive = nullNetP.Receive;
+Snoop = nullNetP.Snoop;
+AMPacket = nullNetP.AMPacket;
+Packet = nullNetP.Packet;
+PacketAcknowledgements = nullNetP.PacketAcknowledgements;
 
-MacAMSend = nullNetP;
-MacReceive = nullNetP.MacReceive;
-MacSnoop = nullNetP.MacSnoop;
-MacAMPacket = nullNetP.MacAMPacket;
-MacPacket = nullNetP.MacPacket;
-MacPacketAcknowledgements = nullNetP.MacPacketAcknowledgements;
-MacLinkPacketMetadata = nullNetP.MacLinkPacketMetadata;
+SubAMSend = nullNetP;
+SubReceive = nullNetP.SubReceive;
+SubSnoop = nullNetP.SubSnoop;
+SubAMPacket = nullNetP.SubAMPacket;
+SubPacket = nullNetP.SubPacket;
+SubPacketAcknowledgements = nullNetP.SubPacketAcknowledgements;
+SubLinkPacketMetadata = nullNetP.SubLinkPacketMetadata;
 LowPowerListening = nullNetP.LowPowerListening;
 RadioChannel = nullNetP.RadioChannel;
+
+PacketLinkQuality = SubPacketLinkQuality;
+PacketTransmitPower = SubPacketTransmitPower;
+PacketRSSI = SubPacketRSSI;
 }
