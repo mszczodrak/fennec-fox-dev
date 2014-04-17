@@ -14,6 +14,10 @@ provides interface LinkPacketMetadata as MacLinkPacketMetadata;
 uses interface cc2420xParams;
 uses interface StdControl as AMQueueControl;
 
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
+
 provides interface LowPowerListening;
 provides interface RadioChannel;
 provides interface PacketTimeStamp<TRadio, uint32_t> as MacPacketTimeStampRadio;

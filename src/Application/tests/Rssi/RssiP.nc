@@ -58,6 +58,10 @@ implementation {
 message_t packet;
 bool busy;
 
+message_metadata_t* getMetadata(message_t *msg) {
+	return (message_metadata_t*)msg->metadata;
+}
+
 task void reset_led_timer() {
 	call LedTimer.startOneShot(2 * call RssiParams.get_tx_delay());
 }

@@ -81,7 +81,7 @@ task void stop_done() {
 	event_mask = 0;
 	current_state = next_state;
 	current_seq = next_seq;
-	printf("Fennec Reconfiguration        v %d                -> %d\n", next_seq, next_state);
+	//printf("Fennec Reconfiguration        v %d                -> %d\n", next_seq, next_state);
 	post start_state();
 }
 
