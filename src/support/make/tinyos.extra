@@ -2,4 +2,7 @@ CFLAGS += -I$(TOSDIR)/lib/net/
 CFLAGS += -I$(TOSDIR)/lib/net/ctp  
 CFLAGS += -I$(TOSDIR)/lib/net/drip  
 CFLAGS += -I$(TOSDIR)/lib/net/4bitle
+CFLAGS += -I$(TOSDIR)/lib/rfxlink
+CFLAGS += -I$(TOSDIR)/lib/rfxlink/util
+CFLAGS += -I$(TOSDIR)/lib/rfxlink/layers
 
