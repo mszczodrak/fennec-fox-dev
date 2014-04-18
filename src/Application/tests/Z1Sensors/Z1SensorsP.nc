@@ -40,12 +40,16 @@ provides interface SplitControl;
 
 uses interface Z1SensorsParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 /* Serial Interfaces */
 uses interface AMSend as SerialAMSend;
@@ -100,13 +104,13 @@ uint16_t dest;
 
 task void report_measurements() {
 	call Leds.led1Toggle();
-	dbgs(F_APPLICATION, S_NONE, data->temp, data->adc[0], data->adc[1]);
-	dbgs(F_APPLICATION, S_NONE, data->accel[0], data->accel[1], data->accel[2]);
+	dbgs(F_APPLICATION, S_NONE, data->temp, data->adc[0], data->adc[1], 0, 0);
+	dbgs(F_APPLICATION, S_NONE, data->accel[0], data->accel[1], data->accel[2], 0, 0);
 
-	if (call NetworkAMSend.send(dest, &network_packet,
+	if (call SubAMSend.send(dest, &network_packet,
 			sizeof(z1_sensors_t)) != SUCCESS) {
 		call Leds.led0On();
-		signal NetworkAMSend.sendDone(&network_packet, FAIL);
+		signal SubAMSend.sendDone(&network_packet, FAIL);
 	}
 }
 
@@ -119,7 +123,7 @@ task void send_serial_message() {
 }
 
 command error_t SplitControl.start() {
-	data = (z1_sensors_t*)call NetworkAMSend.getPayload(&network_packet,
+	data = (z1_sensors_t*)call SubAMSend.getPayload(&network_packet,
 							sizeof(z1_sensors_t));
 	data->seq = 0;
 	data->src = TOS_NODE_ID;
@@ -150,9 +154,9 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+event void SubAMSend.sendDone(message_t *msg, error_t error) {}
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 #ifdef TOSSIM
 	z1_sensors_t *d = (z1_sensors_t*)payload;
 	dbg("Application", "Z1Sensors Temperature %d  Acceleration %d-%d-%d   Adcs[0,1,3,7] %d %d %d %d", 
@@ -166,7 +170,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 

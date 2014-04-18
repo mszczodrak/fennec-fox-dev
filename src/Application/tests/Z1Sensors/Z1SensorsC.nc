@@ -42,12 +42,17 @@ provides interface SplitControl;
 
 uses interface Z1SensorsParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 }
 
 implementation {
@@ -56,12 +61,16 @@ SplitControl = Z1SensorsP;
 
 Z1SensorsParams = Z1SensorsP;
 
-NetworkAMSend = Z1SensorsP.NetworkAMSend;
-NetworkReceive = Z1SensorsP.NetworkReceive;
-NetworkSnoop = Z1SensorsP.NetworkSnoop;
-NetworkAMPacket = Z1SensorsP.NetworkAMPacket;
-NetworkPacket = Z1SensorsP.NetworkPacket;
-NetworkPacketAcknowledgements = Z1SensorsP.NetworkPacketAcknowledgements;
+SubAMSend = Z1SensorsP.SubAMSend;
+SubReceive = Z1SensorsP.SubReceive;
+SubSnoop = Z1SensorsP.SubSnoop;
+SubAMPacket = Z1SensorsP.SubAMPacket;
+SubPacket = Z1SensorsP.SubPacket;
+SubPacketAcknowledgements = Z1SensorsP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = Z1SensorsP.SubPacketLinkQuality;
+SubPacketTransmitPower = Z1SensorsP.SubPacketTransmitPower;
+SubPacketRSSI = Z1SensorsP.SubPacketRSSI;
 
 components SerialActiveMessageC;
 components new SerialAMSenderC(100);
