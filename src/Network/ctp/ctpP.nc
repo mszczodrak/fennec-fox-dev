@@ -5,9 +5,9 @@
 generic module ctpP(process_t process) {
 /* All layer interfaces */
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
+provides interface AMSend as AMSend;
+provides interface Receive as Receive;
+provides interface Receive as Snoop;
 
 uses interface ctpParams;
 
@@ -38,7 +38,7 @@ command error_t SplitControl.start() {
 		call LowPowerListening.setLocalWakeupInterval(0);
 		call RootControl.setRoot();
 	}
-	dbg("Network", "[%d] ctp SplitControl.start()", process);
+	dbg("", "[%d] ctp SplitControl.start()", process);
 	signal SplitControl.startDone(SUCCESS);
 	signal FakeRadioControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -49,7 +49,7 @@ command error_t SplitControl.stop() {
 		call RootControl.unsetRoot();
 	}
 	call RoutingControl.stop();
-	dbg("Network", "[%d] ctp SplitControl.stop()", process);
+	dbg("", "[%d] ctp SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	signal FakeRadioControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -58,35 +58,35 @@ command error_t SplitControl.stop() {
 command error_t FakeRadioControl.start() { return SUCCESS; }
 command error_t FakeRadioControl.stop() { return SUCCESS; }
 
-command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	return call CtpSend.send(msg, len);
 }
 
-command error_t NetworkAMSend.cancel(message_t* msg) {
+command error_t AMSend.cancel(message_t* msg) {
 	return call CtpSend.cancel(msg);
 }
 
-command uint8_t NetworkAMSend.maxPayloadLength() {
+command uint8_t AMSend.maxPayloadLength() {
 	return call CtpSend.maxPayloadLength();
 }
 
-command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
+command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 	return call CtpSend.getPayload(msg, len);
 }
 
 event void CtpSend.sendDone(message_t *msg, error_t error) {
-	signal NetworkAMSend.sendDone(msg, error);
+	signal AMSend.sendDone(msg, error);
 }
 
 event void RadioChannel.setChannelDone() {
 }
 
 event message_t* CtpReceive.receive(message_t* msg, void* payload, uint8_t len) {
-	return signal NetworkReceive.receive(msg, payload, len);
+	return signal Receive.receive(msg, payload, len);
 }
 
 event message_t* CtpSnoop.receive(message_t* msg, void* payload, uint8_t len) {
-	return signal NetworkSnoop.receive(msg, payload, len);
+	return signal Snoop.receive(msg, payload, len);
 }
 
 }

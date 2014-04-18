@@ -98,13 +98,13 @@ configuration CtpP {
   }
 
 uses interface SplitControl as RadioControl;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
-uses interface AMSend as MacAMSend;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
 
 }
 
@@ -160,7 +160,7 @@ implementation {
   Router.CompareBit -> Estimator.CompareBit;
 
 
-MacAMPacket = Router.AMPacket;
+SubAMPacket = Router.AMPacket;
 RadioControl = Router.RadioControl;
   Router.BeaconTimer -> RoutingBeaconTimer;
   Router.RouteTimer -> RouteUpdateTimer;
@@ -182,12 +182,12 @@ RadioControl = Router.RadioControl;
   Forwarder.SubSend -> CtpMultiplexC.AMSend[AM_CTP_DATA];
   Forwarder.SubReceive -> CtpMultiplexC.Receive[AM_CTP_DATA];
   Forwarder.SubSnoop -> CtpMultiplexC.Snoop[AM_CTP_DATA];
-MacPacket = Forwarder.SubPacket;
+SubPacket = Forwarder.SubPacket;
   Forwarder.RootControl -> Router;
   Forwarder.UnicastNameFreeRouting -> Router.Routing;
 RadioControl = Forwarder.RadioControl;
-MacPacketAcknowledgements = Forwarder.PacketAcknowledgements;
-MacAMPacket = Forwarder.AMPacket;
+SubPacketAcknowledgements = Forwarder.PacketAcknowledgements;
+SubAMPacket = Forwarder.AMPacket;
   Forwarder.Leds -> LedsC;
   
   LinkEstimator = Estimator;
@@ -196,24 +196,24 @@ MacAMPacket = Forwarder.AMPacket;
 
   Estimator.AMSend -> CtpMultiplexC.AMSend[AM_CTP_ROUTING];
   Estimator.SubReceive -> CtpMultiplexC.Receive[AM_CTP_ROUTING];
-MacPacket = Estimator.SubPacket;
-MacAMPacket = Estimator.SubAMPacket;
+SubPacket = Estimator.SubPacket;
+SubAMPacket = Estimator.SubAMPacket;
 
-MacLinkPacketMetadata = Estimator.LinkPacketMetadata;
+SubLinkPacketMetadata = Estimator.LinkPacketMetadata;
 
   MainC.SoftwareInit -> Estimator;
 
 components CtpMultiplexC;
-MacAMSend = CtpMultiplexC.MacAMSend;
-MacAMPacket = CtpMultiplexC.MacAMPacket;
-MacPacket = CtpMultiplexC.MacPacket;
-MacReceive = CtpMultiplexC.MacReceive;
-MacSnoop = CtpMultiplexC.MacSnoop;
+SubAMSend = CtpMultiplexC.SubAMSend;
+SubAMPacket = CtpMultiplexC.SubAMPacket;
+SubPacket = CtpMultiplexC.SubPacket;
+SubReceive = CtpMultiplexC.SubReceive;
+SubSnoop = CtpMultiplexC.SubSnoop;
 
 components new AMQueueCtrlP(2);
 AMQueueCtrlP.AMSend -> CtpMultiplexC.SubQueueAMSend;
-MacAMPacket = AMQueueCtrlP.AMPacket;
-MacPacket = AMQueueCtrlP.Packet;
+SubAMPacket = AMQueueCtrlP.AMPacket;
+SubPacket = AMQueueCtrlP.Packet;
 
 CtpMultiplexC.QueueSend -> AMQueueCtrlP;
 StdControl = AMQueueCtrlP;

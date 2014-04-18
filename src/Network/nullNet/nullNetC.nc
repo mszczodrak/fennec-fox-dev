@@ -33,12 +33,12 @@
 
 generic configuration nullNetC(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as AMSend;
-provides interface Receive as Receive;
+provides interface AMSend;
+provides interface Receive;
 provides interface Receive as Snoop;
-provides interface AMPacket as AMPacket;
-provides interface Packet as Packet;
-provides interface PacketAcknowledgements as PacketAcknowledgements;
+provides interface AMPacket;
+provides interface Packet;
+provides interface PacketAcknowledgements;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;

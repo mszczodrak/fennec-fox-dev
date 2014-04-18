@@ -2,24 +2,32 @@
 
 generic configuration ctpC(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface AMSend as AMSend;
+provides interface Receive as Receive;
+provides interface Receive as Snoop;
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
+
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
 
 uses interface ctpParams;
 
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -27,12 +35,12 @@ implementation {
 components new ctpP(process);
 SplitControl = ctpP.SplitControl;
 ctpParams = ctpP;
-NetworkAMSend = ctpP.NetworkAMSend;
-NetworkReceive = ctpP.NetworkReceive;
-NetworkSnoop = ctpP.NetworkSnoop;
+AMSend = ctpP.AMSend;
+Receive = ctpP.Receive;
+Snoop = ctpP.Snoop;
 
-NetworkPacketAcknowledgements = MacPacketAcknowledgements;
-NetworkAMPacket = MacAMPacket;
+PacketAcknowledgements = SubPacketAcknowledgements;
+AMPacket = SubAMPacket;
 LowPowerListening = ctpP.LowPowerListening;
 RadioChannel = ctpP.RadioChannel;
 
@@ -49,16 +57,20 @@ ctpP.CtpSend -> CollectionSenderC.Send;
 ctpP.CtpReceive -> Collector.Receive[process];
 ctpP.CtpSnoop -> Collector.Snoop[process];
 
-NetworkPacket = CollectionSenderC.Packet;
+Packet = CollectionSenderC.Packet;
 
 components CtpP;
 CtpP.RadioControl -> ctpP.FakeRadioControl;
-MacAMSend = CtpP.MacAMSend;
-MacAMPacket = CtpP.MacAMPacket;
-MacPacket = CtpP.MacPacket;
-MacLinkPacketMetadata = CtpP.MacLinkPacketMetadata;
-MacPacketAcknowledgements = CtpP.MacPacketAcknowledgements;
-MacReceive = CtpP.MacReceive;
-MacSnoop = CtpP.MacSnoop;
+SubAMSend = CtpP.SubAMSend;
+SubAMPacket = CtpP.SubAMPacket;
+SubPacket = CtpP.SubPacket;
+SubLinkPacketMetadata = CtpP.SubLinkPacketMetadata;
+SubPacketAcknowledgements = CtpP.SubPacketAcknowledgements;
+SubReceive = CtpP.SubReceive;
+SubSnoop = CtpP.SubSnoop;
+
+PacketLinkQuality = SubPacketLinkQuality;
+PacketTransmitPower = SubPacketTransmitPower;
+PacketRSSI = SubPacketRSSI;
 
 }

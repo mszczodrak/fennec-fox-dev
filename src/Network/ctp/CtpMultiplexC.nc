@@ -5,11 +5,11 @@ provides interface AMSend[uint8_t id];
 provides interface Receive[uint8_t id];
 provides interface Receive as Snoop[uint8_t id];
 
-uses interface AMSend as MacAMSend;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
+uses interface AMSend as SubAMSend;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
 
 provides interface AMSend as SubQueueAMSend[uint8_t id];
 
@@ -26,11 +26,11 @@ Snoop = CtpMultiplexP.Snoop;
 
 QueueSend = CtpMultiplexP.QueueSend;
 
-MacReceive = CtpMultiplexP.MacReceive;
-MacSnoop = CtpMultiplexP.MacSnoop;
-MacAMSend = CtpMultiplexP.MacAMSend;
-MacAMPacket = CtpMultiplexP.MacAMPacket;
-MacPacket = CtpMultiplexP.MacPacket;
+SubReceive = CtpMultiplexP.SubReceive;
+SubSnoop = CtpMultiplexP.SubSnoop;
+SubAMSend = CtpMultiplexP.SubAMSend;
+SubAMPacket = CtpMultiplexP.SubAMPacket;
+SubPacket = CtpMultiplexP.SubPacket;
 
 SubQueueAMSend = CtpMultiplexP.SubQueueAMSend;
 

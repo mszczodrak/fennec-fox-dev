@@ -38,12 +38,16 @@ provides interface SplitControl;
 
 uses interface UARTBridgeParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -52,12 +56,16 @@ SplitControl = UARTBridgeP;
 
 UARTBridgeParams = UARTBridgeP;
 
-NetworkAMSend = UARTBridgeP.NetworkAMSend;
-NetworkReceive = UARTBridgeP.NetworkReceive;
-NetworkSnoop = UARTBridgeP.NetworkSnoop;
-NetworkAMPacket = UARTBridgeP.NetworkAMPacket;
-NetworkPacket = UARTBridgeP.NetworkPacket;
-NetworkPacketAcknowledgements = UARTBridgeP.NetworkPacketAcknowledgements;
+SubAMSend = UARTBridgeP.SubAMSend;
+SubReceive = UARTBridgeP.SubReceive;
+SubSnoop = UARTBridgeP.SubSnoop;
+SubAMPacket = UARTBridgeP.SubAMPacket;
+SubPacket = UARTBridgeP.SubPacket;
+SubPacketAcknowledgements = UARTBridgeP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = UARTBridgeP.SubPacketLinkQuality;
+SubPacketTransmitPower = UARTBridgeP.SubPacketTransmitPower;
+SubPacketRSSI = UARTBridgeP.SubPacketRSSI;
 
 components LedsC;
 UARTBridgeP.Leds -> LedsC;
