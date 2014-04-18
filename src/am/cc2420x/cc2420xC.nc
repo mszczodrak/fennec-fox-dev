@@ -53,6 +53,11 @@ PacketTimeStamp32khz = CC2420XActiveMessageC.PacketTimeStamp32khz;
 PacketAcknowledgements = CC2420XActiveMessageC.PacketAcknowledgements;
 LinkPacketMetadata = CC2420XActiveMessageC.LinkPacketMetadata;
 
+
+PacketLinkQuality = CC2420XActiveMessageC.PacketLinkQuality;
+PacketTransmitPower = CC2420XActiveMessageC.PacketTransmitPower;
+PacketRSSI = CC2420XActiveMessageC.PacketRSSI;
+
 components CC2420XRadioC;
 cc2420xParams = CC2420XRadioC;
 
