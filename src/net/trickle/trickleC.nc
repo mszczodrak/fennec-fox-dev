@@ -26,7 +26,7 @@
  */
 
 /**
-  * Fennec Fox Trickle Network Protocol adaptation
+  * Fennec Fox Trickle  Protocol adaptation
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/18/2010
@@ -37,24 +37,33 @@
 
 generic configuration trickleC(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface AMSend as AMSend;
+provides interface Receive as Receive;
+provides interface Receive as Snoop;
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
+
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
 
 uses interface trickleParams;
 
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 }
 
 implementation {
@@ -62,20 +71,20 @@ implementation {
 components new trickleP(process);
 SplitControl = trickleP;
 trickleParams = trickleP;
-NetworkAMSend = trickleP.NetworkAMSend;
-NetworkReceive = trickleP.NetworkReceive;
-NetworkSnoop = trickleP.NetworkSnoop;
-NetworkAMPacket = trickleP.NetworkAMPacket;
-NetworkPacket = trickleP.NetworkPacket;
-NetworkPacketAcknowledgements = trickleP.NetworkPacketAcknowledgements;
+AMSend = trickleP.AMSend;
+Receive = trickleP.Receive;
+Snoop = trickleP.Snoop;
+AMPacket = trickleP.AMPacket;
+Packet = trickleP.Packet;
+PacketAcknowledgements = trickleP.PacketAcknowledgements;
 
-MacAMSend = trickleP;
-MacReceive = trickleP.MacReceive;
-MacSnoop = trickleP.MacSnoop;
-MacAMPacket = trickleP.MacAMPacket;
-MacPacket = trickleP.MacPacket;
-MacPacketAcknowledgements = trickleP.MacPacketAcknowledgements;
-MacLinkPacketMetadata = trickleP.MacLinkPacketMetadata;
+SubAMSend = trickleP;
+SubReceive = trickleP.SubReceive;
+SubSnoop = trickleP.SubSnoop;
+SubAMPacket = trickleP.SubAMPacket;
+SubPacket = trickleP.SubPacket;
+SubPacketAcknowledgements = trickleP.SubPacketAcknowledgements;
+SubLinkPacketMetadata = trickleP.SubLinkPacketMetadata;
 LowPowerListening = trickleP.LowPowerListening;
 RadioChannel = trickleP.RadioChannel;
 
@@ -83,5 +92,9 @@ components new TrickleTimerMilliC(1, 1024, 1, 1);
 trickleP.TrickleTimer[TRICKLE_ID] -> TrickleTimerMilliC.TrickleTimer[TRICKLE_ID];
 
 TrickleTimerMilliC -> trickleP.TrickleTimerParams;
+
+PacketLinkQuality = SubPacketLinkQuality;
+PacketTransmitPower = SubPacketTransmitPower;
+PacketRSSI = SubPacketRSSI;
 
 }

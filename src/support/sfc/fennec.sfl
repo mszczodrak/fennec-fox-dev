@@ -1,92 +1,92 @@
 
 # Fennec Fox Module Library
 
-# Applications Modules
+# appss Modules
 
-use application nullApp $(FENNEC_FOX_LIB)/Application/nullApp ()
+use application nullApp $(FENNEC_FOX_LIB)/apps/nullApp ()
 
-use application bridge $(FENNEC_FOX_LIB)/Application/UARTBridge ()
+use application bridge $(FENNEC_FOX_LIB)/apps/UARTBridge ()
 
-use application pbridge $(FENNEC_FOX_LIB)/Application/PrintfBridge ()
+use application pbridge $(FENNEC_FOX_LIB)/apps/PrintfBridge ()
 
-use application blink $(FENNEC_FOX_LIB)/Application/tests/Blink ( 
+use application blink $(FENNEC_FOX_LIB)/apps/tests/Blink ( 
 		uint8_t led=1, 
 		uint16_t delay=1024 )
 
-use application counter $(FENNEC_FOX_LIB)/Application/tests/Counter ( 
+use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter ( 
 		uint16_t delay,
 		uint16_t delay_scale,
 		uint16_t src,
 		uint16_t dest )
 
-use application dbgs $(FENNEC_FOX_LIB)/Application/tests/Dbgs ()
+use application dbgs $(FENNEC_FOX_LIB)/apps/tests/Dbgs ()
 
-use application printf $(FENNEC_FOX_LIB)/Application/tests/PrintfApp ()
+use application printf $(FENNEC_FOX_LIB)/apps/tests/PrintfApp ()
 
-use application readSensor $(FENNEC_FOX_LIB)/Application/tests/ReadSensor (uint16_t sampling_rate = 1024)
+use application readSensor $(FENNEC_FOX_LIB)/apps/tests/ReadSensor (uint16_t sampling_rate = 1024)
 
-use application rwIO $(FENNEC_FOX_LIB)/Application/tests/readWriteIO (
+use application rwIO $(FENNEC_FOX_LIB)/apps/tests/readWriteIO (
 		uint16_t sampling_rate = 1024,
 		uint16_t actuating_rate = 2048)
 
-use application telosSens $(FENNEC_FOX_LIB)/Application/tests/TelosbSensors (
+use application telosSens $(FENNEC_FOX_LIB)/apps/tests/TelosbSensors (
 		uint16_t dest = 0,
 		uint16_t sampling_rate = 1024)
 
-use application z1Sens $(FENNEC_FOX_LIB)/Application/tests/Z1Sensors (
+use application z1Sens $(FENNEC_FOX_LIB)/apps/tests/Z1Sensors (
 		uint16_t dest = 0,
 		uint16_t sampling_rate = 1024)
 
-use application randBeacon $(FENNEC_FOX_LIB)/Application/tests/RandomBeacon ( 
+use application randBeacon $(FENNEC_FOX_LIB)/apps/tests/RandomBeacon ( 
 		uint16_t delay,
 		uint16_t delay_scale)
 
-use application rssi $(FENNEC_FOX_LIB)/Application/tests/Rssi (
+use application rssi $(FENNEC_FOX_LIB)/apps/tests/Rssi (
 		uint16_t tx_delay = 200,
 		int8_t threshold_1 = -45,
 		int8_t threshold_2 = -30)
 
-use application testSerial $(FENNEC_FOX_LIB)/Application/tests/TestSerial ( 
+use application testSerial $(FENNEC_FOX_LIB)/apps/tests/TestSerial ( 
 		uint8_t led=1,
 		uint16_t delay=1024)
 
-use application throughput $(FENNEC_FOX_LIB)/Application/tests/Throughput (
+use application throughput $(FENNEC_FOX_LIB)/apps/tests/Throughput (
 		uint8_t size = 10,
 		uint32_t freq = 1024,
 		uint16_t destination = 0)
 
-use application maxTest $(FENNEC_FOX_LIB)/Application/tests/maxTest ( 
+use application maxTest $(FENNEC_FOX_LIB)/apps/tests/maxTest ( 
 		uint32_t val = 0,
 		uint32_t delay = 0 )
 
-#use application buttonLed $(FENNEC_FOX_LIB)/Application/tests/ButtonToLed ()
+use application buttonLed $(FENNEC_FOX_LIB)/apps/tests/ButtonToLed ()
 
-use application StateSync $(FENNEC_FOX_LIB)/Application/StateSynchronization (
+use application StateSync $(FENNEC_FOX_LIB)/apps/StateSynchronization (
 		uint16_t send_delay = 1000
 )
 
-# Network Modules
+# net Modules
 
-use network nullNet $(FENNEC_FOX_LIB)/Network/nullNet ()
+use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
 
-use network ctp $(FENNEC_FOX_LIB)/Network/ctp (uint16_t root)
+use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root)
 
-use network ftsp $(FENNEC_FOX_LIB)/Network/ftsp ()
+use network ftsp $(FENNEC_FOX_LIB)/net/ftsp ()
 
-use network rebroadcast $(FENNEC_FOX_LIB)/Network/rebroadcast (
+use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 	uint8_t repeat = 1,
 	uint8_t retry = 9,
 	uint16_t retry_delay = 25
 )
 
-use network trickle $(FENNEC_FOX_LIB)/Network/trickle (
+use network trickle $(FENNEC_FOX_LIB)/net/trickle (
 		uint16_t low = 1,
 		uint16_t high = 1024,
 		uint8_t k = 1,
 		uint8_t scale = 10
 )
 
-use network tricklePlus $(FENNEC_FOX_LIB)/Network/tricklePlus (
+use network tricklePlus $(FENNEC_FOX_LIB)/net/tricklePlus (
 		uint16_t low = 1,
 		uint16_t high = 1024,
 		uint8_t k = 1,
@@ -94,10 +94,10 @@ use network tricklePlus $(FENNEC_FOX_LIB)/Network/tricklePlus (
 )
 
 
-use network SyncNet $(FENNEC_FOX_LIB)/Network/cuNet ()
+use network SyncNet $(FENNEC_FOX_LIB)/net/cuNet ()
 
-# AM Modules
-use am cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
+# am Modules
+use am cc2420 $(FENNEC_FOX_LIB)/am/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
 		uint16_t sleepInterval=0,
@@ -105,7 +105,7 @@ use am cc2420 $(FENNEC_FOX_LIB)/AM/cc2420 (
 		bool autoAck = 1
 )
 
-use am cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
+use am cc2420x $(FENNEC_FOX_LIB)/am/cc2420x (
 		uint8_t channel=26,
 		uint8_t power=31, 
 		uint16_t sleepInterval=0,
@@ -114,9 +114,9 @@ use am cc2420x $(FENNEC_FOX_LIB)/AM/cc2420x (
 		bool slotted = 0
 )
 
-use am nullAM $(FENNEC_FOX_LIB)/AM/nullAM ()
+use am nullam $(FENNEC_FOX_LIB)/am/nullam ()
 
 
 # Events
-use source timerMilliE $(FENNEC_FOX_LIB)/Application/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
-use source timerSecondE $(FENNEC_FOX_LIB)/Application/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)
+use source timerMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
+use source timerSecondE $(FENNEC_FOX_LIB)/apps/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)

@@ -40,12 +40,16 @@ provides interface SplitControl;
 
 uses interface ButtonToLedParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli>;
@@ -62,7 +66,7 @@ bool turn_off = FALSE;
 
 task void send_message() {
 
-	ButtonToLedMsg *msg = (ButtonToLedMsg*)call NetworkAMSend.getPayload(&packet,
+	ButtonToLedMsg *msg = (ButtonToLedMsg*)call SubAMSend.getPayload(&packet,
 							sizeof(ButtonToLedMsg));
 
 	if (msg == NULL) {
@@ -71,14 +75,14 @@ task void send_message() {
 
 	msg->counter = counter;
 
-	if (call NetworkAMSend.send(BROADCAST, &packet, 
+	if (call SubAMSend.send(BROADCAST, &packet, 
 				sizeof(ButtonToLedMsg)) != SUCCESS) {
-                dbgs(F_APPLICATION, S_ERROR, DBGS_SEND_DATA, counter, counter);
+                dbgs(F_APPLICATION, S_ERROR, DBGS_SEND_DATA, counter, counter, 0, 0);
                 dbg("Application", "ButtonToLed sendMessage() counter: %d - FAILED",
                                         		msg->counter);
         } else {
-                dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, counter, counter);
-                dbg("Application", "ButtonToLed call NetworkAMSend.send(%d, 0x%1x, %d)",
+                dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, counter, counter, 0, 0);
+                dbg("Application", "ButtonToLed call SubAMSend.send(%d, 0x%1x, %d)",
                                         BROADCAST, &packet, sizeof(ButtonToLedMsg));
                 call Leds.set(counter);
         }
@@ -101,19 +105,19 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {}
+event void SubAMSend.sendDone(message_t *msg, error_t error) {}
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	ButtonToLedMsg* c = (ButtonToLedMsg*)payload;
 	call Leds.set(c->counter);
-	dbg("Application", "ButtonToLed event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
+	dbg("Application", "ButtonToLed event SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
 	dbg("Application", "ButtonToLed receive counter: %d", c->counter);
 	turn_off = TRUE;
 	call Timer.startOneShot(LED_TURNOFF_TIME);
 	return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 

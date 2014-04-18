@@ -26,7 +26,7 @@
  */
 
 /**
-  * Fennec Fox Trickle Network Protocol adaptation
+  * Fennec Fox Trickle  Protocol adaptation
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/18/2010
@@ -38,22 +38,22 @@
 
 generic module trickleP(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface AMSend as AMSend;
+provides interface Receive as Receive;
+provides interface Receive as Snoop;
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
 
 uses interface trickleParams;
 
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
 
@@ -72,33 +72,33 @@ nx_uint32_t seqno;
 
 task void send_message() {
 	nx_struct trickle_net_header *header;
-	dbg("Network", "trickleP send_message");
+	dbg("", "trickleP send_message");
 	if (tx_busy == TRUE) {
-		dbg("Network", "trickleP send_message -> tx_busy == TRUE");
+		dbg("", "trickleP send_message -> tx_busy == TRUE");
 		return;
 	}
 
 	header = (nx_struct trickle_net_header*)
-		call MacAMSend.getPayload(&data_msg, data_len + sizeof(nx_struct trickle_net_header));
+		call SubAMSend.getPayload(&data_msg, data_len + sizeof(nx_struct trickle_net_header));
 
 	if (header == NULL) {
-		dbg("Network", "trickleP send_message -> header == NULL");
+		dbg("", "trickleP send_message -> header == NULL");
 		return;
 	}
 
 	header->seq = seqno;
 
-	if (call MacAMSend.send(BROADCAST, &data_msg, data_len) == SUCCESS) {
+	if (call SubAMSend.send(BROADCAST, &data_msg, data_len) == SUCCESS) {
 		tx_busy = TRUE;
 		return;
 	}
-	dbg("Network", "trickleP send_message MacAMSend.send(%d, 0x%1x, %d) != SUCCESS",
+	dbg("", "trickleP send_message SubAMSend.send(%d, 0x%1x, %d) != SUCCESS",
 			BROADCAST, &data_msg, data_len + sizeof(nx_struct trickle_net_header));
 }
 
 
 command error_t SplitControl.start() {
-	dbg("Network", "trickleP SplitControl.start()");
+	dbg("", "trickleP SplitControl.start()");
 	tx_busy = FALSE;
 	app_data = NULL;
 	data_len = 0;
@@ -110,15 +110,15 @@ command error_t SplitControl.start() {
 
 
 command error_t SplitControl.stop() {
-	dbg("Network", "trickleP SplitControl.stop()");
+	dbg("", "trickleP SplitControl.stop()");
 	call TrickleTimer.stop[TRICKLE_ID]();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 
-command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	dbg("Network", "trickleP NetworkAMSend.send(%d, 0x%1x, %d )", addr, msg, len);
+command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
+	dbg("", "trickleP AMSend.send(%d, 0x%1x, %d )", addr, msg, len);
 
 	memcpy(&data_msg, msg, sizeof(message_t));
 	data_len = len + sizeof(nx_struct trickle_net_header);
@@ -137,43 +137,43 @@ command error_t NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) 
 }
 
 
-command error_t NetworkAMSend.cancel(message_t* msg) {
-	dbg("Network", "trickleP NetworkAMSend.cancel(0x%1x)", msg);
-	return call MacAMSend.cancel(msg);
+command error_t AMSend.cancel(message_t* msg) {
+	dbg("", "trickleP AMSend.cancel(0x%1x)", msg);
+	return call SubAMSend.cancel(msg);
 }
 
 
-command uint8_t NetworkAMSend.maxPayloadLength() {
-	dbg("Network", "trickleP NetworkAMSend.maxPayloadLength()");
-	return (call MacAMSend.maxPayloadLength() - 
+command uint8_t AMSend.maxPayloadLength() {
+	dbg("", "trickleP AMSend.maxPayloadLength()");
+	return (call SubAMSend.maxPayloadLength() - 
 		sizeof(nx_struct trickle_net_header));
 }
 
 
-command void* NetworkAMSend.getPayload(message_t* msg, uint8_t len) {
+command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr; 
-	dbg("Network", "trickleP NetworkAMSend.getpayload(0x%1x, %d )", msg, len);
-	ptr = (uint8_t*) call MacAMSend.getPayload(msg, 
+	dbg("", "trickleP AMSend.getpayload(0x%1x, %d )", msg, len);
+	ptr = (uint8_t*) call SubAMSend.getPayload(msg, 
 				len + sizeof(nx_struct trickle_net_header));
 	return (void*) (ptr + sizeof(nx_struct trickle_net_header));
 }
 
 
-event void MacAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Network", "trickleP NetworkAMSend.sendDone(0x%1x, %d )", msg, error);
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	dbg("", "trickleP AMSend.sendDone(0x%1x, %d )", msg, error);
 	tx_busy = FALSE;
 	if (app_data != NULL) {
-		signal NetworkAMSend.sendDone(app_data, error);
+		signal AMSend.sendDone(app_data, error);
 		app_data = NULL;
 	}
 }
 
 
-event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct trickle_net_header *header = (nx_struct trickle_net_header*) payload;
 	uint8_t *ptr = (uint8_t*) payload;
 
-	dbg("Network", "trickleP receive_data(0x%1x, 0x%1x, %d )", msg, payload, len);
+	dbg("", "trickleP receive_data(0x%1x, 0x%1x, %d )", msg, payload, len);
 
 	if ((int32_t)(header->seq - seqno) < 0) {
 		call TrickleTimer.reset[TRICKLE_ID]();
@@ -183,13 +183,13 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if ( (int32_t)(header->seq - seqno) == 0) {
 		call TrickleTimer.incrementCounter[TRICKLE_ID]();
-		return signal NetworkSnoop.receive(msg, 
+		return signal Snoop.receive(msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
 
 	}
 
-	dbg("Network", "trickleP NetworkReceive.receive(0x%1x, 0x%1x, %d )", msg, 
+	dbg("", "trickleP Receive.receive(0x%1x, 0x%1x, %d )", msg, 
 		ptr + sizeof(nx_struct trickle_net_header), 
 		len - sizeof(nx_struct trickle_net_header));
 
@@ -198,96 +198,96 @@ event message_t* MacReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	seqno = header->seq;
 	call TrickleTimer.reset[ TRICKLE_ID ]();
 
-	return signal NetworkReceive.receive(msg, 
+	return signal Receive.receive(msg, 
 		ptr + sizeof(nx_struct trickle_net_header), 
 		len - sizeof(nx_struct trickle_net_header));
 }
 
 
-event message_t* MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "trickleP NetworkSnoop.receive(0x%1x, 0x%1x, %d )", msg, 
+	dbg("", "trickleP Snoop.receive(0x%1x, 0x%1x, %d )", msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
-	return signal NetworkSnoop.receive(msg, 
+	return signal Snoop.receive(msg, 
 			ptr + sizeof(nx_struct trickle_net_header), 
 			len - sizeof(nx_struct trickle_net_header));
 }
 
-command am_addr_t NetworkAMPacket.address() {
-	return call MacAMPacket.address();
+command am_addr_t AMPacket.address() {
+	return call SubAMPacket.address();
 }
 
-command am_addr_t NetworkAMPacket.destination(message_t* amsg) {
-	return call MacAMPacket.destination(amsg);
+command am_addr_t AMPacket.destination(message_t* amsg) {
+	return call SubAMPacket.destination(amsg);
 }
 
-command am_addr_t NetworkAMPacket.source(message_t* amsg) {
-	return call MacAMPacket.source(amsg);
+command am_addr_t AMPacket.source(message_t* amsg) {
+	return call SubAMPacket.source(amsg);
 }
 
-command void NetworkAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
-	return call MacAMPacket.setDestination(amsg, addr);
+command void AMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+	return call SubAMPacket.setDestination(amsg, addr);
 }
 
-command void NetworkAMPacket.setSource(message_t* amsg, am_addr_t addr) {
-	return call MacAMPacket.setSource(amsg, addr);
+command void AMPacket.setSource(message_t* amsg, am_addr_t addr) {
+	return call SubAMPacket.setSource(amsg, addr);
 }
 
-command bool NetworkAMPacket.isForMe(message_t* amsg) {
-	return call MacAMPacket.isForMe(amsg);
+command bool AMPacket.isForMe(message_t* amsg) {
+	return call SubAMPacket.isForMe(amsg);
 }
 
-command am_id_t NetworkAMPacket.type(message_t* amsg) {
-	return call MacAMPacket.type(amsg);
+command am_id_t AMPacket.type(message_t* amsg) {
+	return call SubAMPacket.type(amsg);
 }
 
-command void NetworkAMPacket.setType(message_t* amsg, am_id_t t) {
-	return call MacAMPacket.setType(amsg, t);
+command void AMPacket.setType(message_t* amsg, am_id_t t) {
+	return call SubAMPacket.setType(amsg, t);
 }
 
-command am_group_t NetworkAMPacket.group(message_t* amsg) {
-	return call MacAMPacket.group(amsg);
+command am_group_t AMPacket.group(message_t* amsg) {
+	return call SubAMPacket.group(amsg);
 }
 
-command void NetworkAMPacket.setGroup(message_t* amsg, am_group_t grp) {
-	return call MacAMPacket.setGroup(amsg, grp);
+command void AMPacket.setGroup(message_t* amsg, am_group_t grp) {
+	return call SubAMPacket.setGroup(amsg, grp);
 }
 
-command am_group_t NetworkAMPacket.localGroup() {
-	return call MacAMPacket.localGroup();
+command am_group_t AMPacket.localGroup() {
+	return call SubAMPacket.localGroup();
 }
 
-command void NetworkPacket.clear(message_t* msg) {
-	return call MacPacket.clear(msg);
+command void Packet.clear(message_t* msg) {
+	return call SubPacket.clear(msg);
 }
 
-command uint8_t NetworkPacket.payloadLength(message_t* msg) {
-	return call MacPacket.payloadLength(msg);
+command uint8_t Packet.payloadLength(message_t* msg) {
+	return call SubPacket.payloadLength(msg);
 }
 
-command void NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {
-	return call MacPacket.setPayloadLength(msg, len);
+command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
+	return call SubPacket.setPayloadLength(msg, len);
 }
 
-command uint8_t NetworkPacket.maxPayloadLength() {
-	return call MacPacket.maxPayloadLength();
+command uint8_t Packet.maxPayloadLength() {
+	return call SubPacket.maxPayloadLength();
 }
 
-command void* NetworkPacket.getPayload(message_t* msg, uint8_t len) {
-	return call MacPacket.getPayload(msg, len);
+command void* Packet.getPayload(message_t* msg, uint8_t len) {
+	return call SubPacket.getPayload(msg, len);
 }
 
-async command error_t NetworkPacketAcknowledgements.requestAck( message_t* msg ) {
-	return call MacPacketAcknowledgements.requestAck(msg);
+async command error_t PacketAcknowledgements.requestAck( message_t* msg ) {
+	return call SubPacketAcknowledgements.requestAck(msg);
 }
 
-async command error_t NetworkPacketAcknowledgements.noAck( message_t* msg ) {
-	return call MacPacketAcknowledgements.noAck(msg);
+async command error_t PacketAcknowledgements.noAck( message_t* msg ) {
+	return call SubPacketAcknowledgements.noAck(msg);
 }
 
-async command bool NetworkPacketAcknowledgements.wasAcked(message_t* msg) {
-	return call MacPacketAcknowledgements.wasAcked(msg);
+async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
+	return call SubPacketAcknowledgements.wasAcked(msg);
 }
 
 event void TrickleTimer.fired[ uint16_t key ]() {
@@ -299,7 +299,8 @@ command uint16_t TrickleTimerParams.get_low() {
 }
 
 command error_t TrickleTimerParams.set_low(uint16_t new_low) {
-	return call trickleParams.set_low(new_low);
+	call trickleParams.set_low(new_low);
+	return SUCCESS;
 }
 
 command uint16_t TrickleTimerParams.get_high() {
@@ -307,7 +308,7 @@ command uint16_t TrickleTimerParams.get_high() {
 }
 
 command error_t TrickleTimerParams.set_high(uint16_t new_high) {
-	return call trickleParams.set_high(new_high);
+	call trickleParams.set_high(new_high);
 }
 
 command uint8_t TrickleTimerParams.get_k() {
@@ -315,7 +316,7 @@ command uint8_t TrickleTimerParams.get_k() {
 }
 
 command error_t TrickleTimerParams.set_k(uint8_t new_k) {
-	return call trickleParams.set_k(new_k);
+	call trickleParams.set_k(new_k);
 }
 
 command uint8_t TrickleTimerParams.get_scale() {
@@ -323,7 +324,7 @@ command uint8_t TrickleTimerParams.get_scale() {
 }
 
 command error_t TrickleTimerParams.set_scale(uint8_t new_scale) {
-	return call trickleParams.set_scale(new_scale);
+	call trickleParams.set_scale(new_scale);
 }
 
 event void RadioChannel.setChannelDone() {
