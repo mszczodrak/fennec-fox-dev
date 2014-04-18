@@ -40,12 +40,16 @@ generic configuration StateSynchronizationC(process_t process) {
 provides interface SplitControl;
 
 uses interface StateSynchronizationParams;
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -54,12 +58,16 @@ components new StateSynchronizationP(process);
 SplitControl = StateSynchronizationP;
 StateSynchronizationParams = StateSynchronizationP;
 
-NetworkAMSend = StateSynchronizationP;
-NetworkReceive = StateSynchronizationP.NetworkReceive;
-NetworkSnoop = StateSynchronizationP.NetworkSnoop;
-NetworkAMPacket = StateSynchronizationP.NetworkAMPacket;
-NetworkPacket = StateSynchronizationP.NetworkPacket;
-NetworkPacketAcknowledgements = StateSynchronizationP.NetworkPacketAcknowledgements;
+SubAMSend = StateSynchronizationP;
+SubReceive = StateSynchronizationP.SubReceive;
+SubSnoop = StateSynchronizationP.SubSnoop;
+SubAMPacket = StateSynchronizationP.SubAMPacket;
+SubPacket = StateSynchronizationP.SubPacket;
+SubPacketAcknowledgements = StateSynchronizationP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = StateSynchronizationP.SubPacketLinkQuality;
+SubPacketTransmitPower = StateSynchronizationP.SubPacketTransmitPower;
+SubPacketRSSI = StateSynchronizationP.SubPacketRSSI;
 
 components FennecC;
 StateSynchronizationP.FennecState -> FennecC;

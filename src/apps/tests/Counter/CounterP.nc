@@ -41,12 +41,16 @@ provides interface SplitControl;
 
 uses interface CounterParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli>;
@@ -98,7 +102,7 @@ command error_t SplitControl.stop() {
 }
 
 void sendMessage() {
-	CounterMsg* msg = (CounterMsg*)call NetworkAMSend.getPayload(&packet,
+	CounterMsg* msg = (CounterMsg*)call SubAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
 	if (msg == NULL) {
 		return;
@@ -108,7 +112,7 @@ void sendMessage() {
 	msg->seqno = seqno;
 
 
-	if (call NetworkAMSend.send(call CounterParams.get_dest(), &packet, 
+	if (call SubAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
 		dbgs(process, F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
 					call CounterParams.get_dest(), sizeof(CounterMsg));
@@ -118,7 +122,7 @@ void sendMessage() {
 		sendBusy = TRUE;
 		dbgs(process, F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
 					call CounterParams.get_dest(), sizeof(CounterMsg));
-		dbg("Application", "[%d] Counter call NetworkAMSend.send(%d, 0x%1x, %d)",
+		dbg("Application", "[%d] Counter call SubAMSend.send(%d, 0x%1x, %d)",
 					process, 
 					call CounterParams.get_dest(), &packet,
 					sizeof(CounterMsg));
@@ -134,19 +138,19 @@ event void Timer.fired() {
 	seqno++;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	//CounterMsg* cm = (CounterMsg*)call NetworkAMSend.getPayload(msg,
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	//CounterMsg* cm = (CounterMsg*)call SubAMSend.getPayload(msg,
 	//						sizeof(CounterMsg));
-	dbg("Application", "[%d] Counter event NetworkAMSend.sendDone(0x%1x, %d)",
+	dbg("Application", "[%d] Counter event SubAMSend.sendDone(0x%1x, %d)",
 				process, msg, error);
 	sendBusy = FALSE;
 }
 
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
 
-	dbg("Application", "[%d] Counter event NetworkReceive.receive(0x%1x, 0x%1x, %d)",
+	dbg("Application", "[%d] Counter event SubReceive.receive(0x%1x, 0x%1x, %d)",
 				process,  msg, payload, len); 
 	dbg("Application", "[%d] Counter receive seqno: %d source: %d", 
 				process, cm->seqno, cm->source); 
@@ -156,7 +160,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 

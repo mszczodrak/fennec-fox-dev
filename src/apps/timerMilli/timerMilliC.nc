@@ -36,12 +36,16 @@ provides interface SplitControl;
 
 uses interface timerMilliParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Event;
 }
@@ -52,12 +56,16 @@ SplitControl = timerMilliP;
 
 timerMilliParams = timerMilliP;
 
-NetworkAMSend = timerMilliP.NetworkAMSend;
-NetworkReceive = timerMilliP.NetworkReceive;
-NetworkSnoop = timerMilliP.NetworkSnoop;
-NetworkAMPacket = timerMilliP.NetworkAMPacket;
-NetworkPacket = timerMilliP.NetworkPacket;
-NetworkPacketAcknowledgements = timerMilliP.NetworkPacketAcknowledgements;
+SubAMSend = timerMilliP.SubAMSend;
+SubReceive = timerMilliP.SubReceive;
+SubSnoop = timerMilliP.SubSnoop;
+SubAMPacket = timerMilliP.SubAMPacket;
+SubPacket = timerMilliP.SubPacket;
+SubPacketAcknowledgements = timerMilliP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = timerMilliP.SubPacketLinkQuality;
+SubPacketTransmitPower = timerMilliP.SubPacketTransmitPower;
+SubPacketRSSI = timerMilliP.SubPacketRSSI;
 
 Event = timerMilliP;
 

@@ -35,7 +35,7 @@
 # @updated: November 26 2012
 #
 
-BASE_EXAMPLE="nullMac"
+BASE_EXAMPLE="nullAM"
 NEW_MODULE=$1
 
 PP="_"

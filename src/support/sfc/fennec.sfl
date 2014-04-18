@@ -114,7 +114,7 @@ use am cc2420x $(FENNEC_FOX_LIB)/am/cc2420x (
 		bool slotted = 0
 )
 
-use am nullam $(FENNEC_FOX_LIB)/am/nullam ()
+use am nullAM $(FENNEC_FOX_LIB)/am/nullAM ()
 
 
 # Events

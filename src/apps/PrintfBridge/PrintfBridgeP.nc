@@ -39,12 +39,16 @@ provides interface SplitControl;
 
 uses interface PrintfBridgeParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 
@@ -99,10 +103,10 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
 }
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	msg_queue_t sm;
 
 	call Leds.led2Toggle();
@@ -123,7 +127,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 

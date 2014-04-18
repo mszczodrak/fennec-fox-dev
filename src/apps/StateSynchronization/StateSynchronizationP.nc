@@ -40,12 +40,16 @@ generic module StateSynchronizationP(process_t process) @safe() {
 provides interface SplitControl;
 
 uses interface StateSynchronizationParams;
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface FennecState;
 uses interface Random;
@@ -67,10 +71,10 @@ task void send_msg() {
 	dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg()", process);
 
 	state_msg = (nx_struct fennec_network_state*) 
-	call NetworkAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_state));
+	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_state));
    
 	if (state_msg == NULL) {
-		signal NetworkAMSend.sendDone(&packet, FAIL);
+		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
 	}
 
@@ -80,9 +84,9 @@ task void send_msg() {
 		sizeof(nx_struct fennec_network_state) - 
 		sizeof(((nx_struct fennec_network_state *)0)->crc));
 
-	if (call NetworkAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
+	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
 		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - FAIL", process);
-		signal NetworkAMSend.sendDone(&packet, FAIL);
+		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - SUCCESS", process);
 	}
@@ -106,9 +110,9 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_state *state_msg = (nx_struct fennec_network_state*) payload;
-	dbg("StateSynchronization", "[%d] StateSynchronizationP NetworkReceive.receive(0x%1x, 0x%1x, %d)",
+	dbg("StateSynchronization", "[%d] StateSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
 	if (state_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
@@ -121,7 +125,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 	return msg;
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call FennecState.resendDone(error);
 }
 
@@ -129,7 +133,7 @@ event void Timer.fired() {
 	post send_msg();
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_state *state_msg = (nx_struct fennec_network_state*) payload;
 	call FennecState.setStateAndSeq(state_msg->state_id, state_msg->seq);
 	return msg;

@@ -2,24 +2,32 @@
 
 generic configuration rebroadcastC(process_t process) {
 provides interface SplitControl;
-provides interface AMSend as NetworkAMSend;
-provides interface Receive as NetworkReceive;
-provides interface Receive as NetworkSnoop;
-provides interface AMPacket as NetworkAMPacket;
-provides interface Packet as NetworkPacket;
-provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+provides interface AMSend;
+provides interface Receive;
+provides interface Receive as Snoop;
+provides interface AMPacket;
+provides interface Packet;
+provides interface PacketAcknowledgements;
+
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
 
 uses interface rebroadcastParams;
 
-uses interface AMSend as MacAMSend;
-uses interface Receive as MacReceive;
-uses interface Receive as MacSnoop;
-uses interface AMPacket as MacAMPacket;
-uses interface Packet as MacPacket;
-uses interface PacketAcknowledgements as MacPacketAcknowledgements;
-uses interface LinkPacketMetadata as MacLinkPacketMetadata;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -27,20 +35,20 @@ implementation {
 components new rebroadcastP(process);
 SplitControl = rebroadcastP;
 rebroadcastParams = rebroadcastP;
-NetworkAMSend = rebroadcastP.NetworkAMSend;
-NetworkReceive = rebroadcastP.NetworkReceive;
-NetworkSnoop = rebroadcastP.NetworkSnoop;
-NetworkAMPacket = rebroadcastP.NetworkAMPacket;
-NetworkPacket = rebroadcastP.NetworkPacket;
-NetworkPacketAcknowledgements = rebroadcastP.NetworkPacketAcknowledgements;
+AMSend = rebroadcastP.AMSend;
+Receive = rebroadcastP.Receive;
+Snoop = rebroadcastP.Snoop;
+AMPacket = rebroadcastP.AMPacket;
+Packet = rebroadcastP.Packet;
+PacketAcknowledgements = rebroadcastP.PacketAcknowledgements;
 
-MacAMSend = rebroadcastP;
-MacReceive = rebroadcastP.MacReceive;
-MacSnoop = rebroadcastP.MacSnoop;
-MacAMPacket = rebroadcastP.MacAMPacket;
-MacPacket = rebroadcastP.MacPacket;
-MacPacketAcknowledgements = rebroadcastP.MacPacketAcknowledgements;
-MacLinkPacketMetadata = rebroadcastP.MacLinkPacketMetadata;
+SubAMSend = rebroadcastP;
+SubReceive = rebroadcastP.SubReceive;
+SubSnoop = rebroadcastP.SubSnoop;
+SubAMPacket = rebroadcastP.SubAMPacket;
+SubPacket = rebroadcastP.SubPacket;
+SubPacketAcknowledgements = rebroadcastP.SubPacketAcknowledgements;
+SubLinkPacketMetadata = rebroadcastP.SubLinkPacketMetadata;
 LowPowerListening = rebroadcastP.LowPowerListening;
 RadioChannel = rebroadcastP.RadioChannel;
 
@@ -50,4 +58,7 @@ components new TimerMilliC();
 rebroadcastP.Leds -> LedsC;
 rebroadcastP.Timer -> TimerMilliC;
 
+PacketLinkQuality = SubPacketLinkQuality;
+PacketTransmitPower = SubPacketTransmitPower;
+PacketRSSI = SubPacketRSSI;
 }
