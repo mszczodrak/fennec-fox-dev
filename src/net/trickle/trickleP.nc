@@ -299,8 +299,7 @@ command uint16_t TrickleTimerParams.get_low() {
 }
 
 command error_t TrickleTimerParams.set_low(uint16_t new_low) {
-	call trickleParams.set_low(new_low);
-	return SUCCESS;
+	return call trickleParams.set_low(new_low);
 }
 
 command uint16_t TrickleTimerParams.get_high() {
@@ -308,7 +307,7 @@ command uint16_t TrickleTimerParams.get_high() {
 }
 
 command error_t TrickleTimerParams.set_high(uint16_t new_high) {
-	call trickleParams.set_high(new_high);
+	return call trickleParams.set_high(new_high);
 }
 
 command uint8_t TrickleTimerParams.get_k() {
@@ -316,7 +315,7 @@ command uint8_t TrickleTimerParams.get_k() {
 }
 
 command error_t TrickleTimerParams.set_k(uint8_t new_k) {
-	call trickleParams.set_k(new_k);
+	return call trickleParams.set_k(new_k);
 }
 
 command uint8_t TrickleTimerParams.get_scale() {
@@ -324,7 +323,7 @@ command uint8_t TrickleTimerParams.get_scale() {
 }
 
 command error_t TrickleTimerParams.set_scale(uint8_t new_scale) {
-	call trickleParams.set_scale(new_scale);
+	return call trickleParams.set_scale(new_scale);
 }
 
 event void RadioChannel.setChannelDone() {
