@@ -36,12 +36,17 @@ provides interface SplitControl;
 
 uses interface ReadSensorParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 }
 
 implementation {
@@ -50,12 +55,16 @@ SplitControl = ReadSensorP;
 
 ReadSensorParams = ReadSensorP;
 
-NetworkAMSend = ReadSensorP.NetworkAMSend;
-NetworkReceive = ReadSensorP.NetworkReceive;
-NetworkSnoop = ReadSensorP.NetworkSnoop;
-NetworkAMPacket = ReadSensorP.NetworkAMPacket;
-NetworkPacket = ReadSensorP.NetworkPacket;
-NetworkPacketAcknowledgements = ReadSensorP.NetworkPacketAcknowledgements;
+SubAMSend = ReadSensorP.SubAMSend;
+SubReceive = ReadSensorP.SubReceive;
+SubSnoop = ReadSensorP.SubSnoop;
+SubAMPacket = ReadSensorP.SubAMPacket;
+SubPacket = ReadSensorP.SubPacket;
+SubPacketAcknowledgements = ReadSensorP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = ReadSensorP.SubPacketLinkQuality;
+SubPacketTransmitPower = ReadSensorP.SubPacketTransmitPower;
+SubPacketRSSI = ReadSensorP.SubPacketRSSI;
 
 components new TimerMilliC();
 ReadSensorP.Timer -> TimerMilliC;

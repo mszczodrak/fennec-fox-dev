@@ -42,12 +42,16 @@ provides interface SplitControl;
 
 uses interface RandomBeaconParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli>;
@@ -95,7 +99,7 @@ command error_t SplitControl.stop() {
 }
 
 void sendMessage() {
-	RandomBeaconMsg* msg = (RandomBeaconMsg*)call NetworkAMSend.getPayload(&packet,
+	RandomBeaconMsg* msg = (RandomBeaconMsg*)call SubAMSend.getPayload(&packet,
 							sizeof(RandomBeaconMsg));
 	call Leds.led1Toggle();
 	if (msg == NULL) {
@@ -108,10 +112,10 @@ void sendMessage() {
 	dbg("Application", "RandomBeacon sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
 	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, msg->seqno, msg->source);
 
-	if (call NetworkAMSend.send(BROADCAST, &packet, 
+	if (call SubAMSend.send(BROADCAST, &packet, 
 					sizeof(RandomBeaconMsg)) != SUCCESS) {
 	} else {
-		dbg("Application", "RandomBeacon call NetworkAMSend.send(%d, 0x%1x, %d)",
+		dbg("Application", "RandomBeacon call SubAMSend.send(%d, 0x%1x, %d)",
 					BROADCAST, &packet,
 					sizeof(RandomBeaconMsg));
 		sendBusy = TRUE;
@@ -126,24 +130,24 @@ event void Timer.fired() {
 	post set_timer();
 }
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Application", "RandomBeacon event NetworkAMSend.sendDone(0x%1x, %d)",
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	dbg("Application", "RandomBeacon event SubAMSend.sendDone(0x%1x, %d)",
 					msg, error);
 	sendBusy = FALSE;
 }
 
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	RandomBeaconMsg* cm = (RandomBeaconMsg*)payload;
 
-	dbg("Application", "RandomBeacon event NetworkReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
+	dbg("Application", "RandomBeacon event SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
 	dbg("Application", "RandomBeacon receive seqno: %d source: %d", cm->seqno, cm->source); 
 	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	call Leds.set(cm->seqno);
 	return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 

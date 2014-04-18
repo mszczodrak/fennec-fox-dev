@@ -38,14 +38,19 @@ provides interface Module;
 
 uses interface ThroughputParams ;
 
-/* Network interfaces */
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
+/* Sub interfaces */
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface ModuleStatus as SubStatus;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 
 /* Serial Interfaces */ 
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
@@ -59,8 +64,8 @@ uses interface SplitControl as SerialSplitControl;
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
 
-/* Network Queue */
-uses interface Queue<msg_queue_t> as NetworkQueue;
+/* Sub Queue */
+uses interface Queue<msg_queue_t> as SubQueue;
 
 /* Serial Queue */
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
@@ -124,11 +129,11 @@ command error_t SplitControl.stop() {
 }
 
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
         /* we do not check for error, if failed to send a message, we drop
          * that message anyway
          */
-        msg_queue_t nm = call NetworkQueue.dequeue();
+        msg_queue_t nm = call SubQueue.dequeue();
         call MessagePool.put(nm.msg);
         nm.msg = NULL;
         nm.len = 0;
@@ -137,7 +142,7 @@ event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
         post send_network_message();
 }
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
         message_t *serial_message;
         app_data_t *serial_data_payload;
@@ -187,7 +192,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
         return msg;
 }
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 
@@ -219,7 +224,7 @@ event void Timer.fired() {
 	prepare_network_message();
 }
 
-event void NetworkStatus.status(uint8_t layer, uint8_t status_flag) {}
+event void SubStatus.status(uint8_t layer, uint8_t status_flag) {}
 
 void prepare_network_message() {
         message_t *network_message;
@@ -240,7 +245,7 @@ void prepare_network_message() {
         }
 
         network_data_payload = (app_data_t*)
-                call NetworkAMSend.getPayload(network_message, sizeof(app_data_t)
+                call SubAMSend.getPayload(network_message, sizeof(app_data_t)
                                         + call ThroughputParams.get_size());
 
         /* set network message content */
@@ -250,7 +255,7 @@ void prepare_network_message() {
         memset(network_data_payload->data, 0, call ThroughputParams.get_size());
 
         /* Check if there is a space in queue */
-        if (call NetworkQueue.full()) {
+        if (call SubQueue.full()) {
                 /* Queue is full, give up sending the serial message */
                 call Leds.led0On();
                 call MessagePool.put(network_message);
@@ -261,7 +266,7 @@ void prepare_network_message() {
         nm.msg = network_message;
         nm.len = sizeof(app_data_t) + call ThroughputParams.get_size();
         nm.addr = call ThroughputParams.get_destination();
-        call NetworkQueue.enqueue(nm);
+        call SubQueue.enqueue(nm);
 
         post send_network_message();
 }
@@ -297,15 +302,15 @@ task void send_network_message() {
         msg_queue_t *nm;
 
         /* Check if there is anything to send */
-        if (call NetworkQueue.empty()) {
+        if (call SubQueue.empty()) {
                 return;
         }
 
-        nm = call NetworkQueue.headptr();
+        nm = call SubQueue.headptr();
 
-        if (call NetworkAMSend.send(nm->addr, nm->msg, nm->len) != SUCCESS) {
+        if (call SubAMSend.send(nm->addr, nm->msg, nm->len) != SUCCESS) {
                 /* Failed to send */
-                signal NetworkAMSend.sendDone(nm->msg, FAIL);
+                signal SubAMSend.sendDone(nm->msg, FAIL);
         }
 }
 

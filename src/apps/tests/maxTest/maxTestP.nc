@@ -40,12 +40,16 @@ provides interface SplitControl;
 
 uses interface maxTestParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Random;
 uses interface Leds;
@@ -60,7 +64,7 @@ bool send_busy = FALSE;
 
 task void send_msg() {
 	nx_struct maxMsg *out_msg = (nx_struct maxMsg*)
-		call NetworkAMSend.getPayload(&packet, sizeof(nx_struct maxMsg));
+		call SubAMSend.getPayload(&packet, sizeof(nx_struct maxMsg));
 
 	if (out_msg == NULL) {
 		return;
@@ -68,7 +72,7 @@ task void send_msg() {
 
 	out_msg->max_value = max_value;
 	
-	if (call NetworkAMSend.send(BROADCAST, &packet, 
+	if (call SubAMSend.send(BROADCAST, &packet, 
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
 		dbg("Application", "maxTest send_msg() - cannot send");
 	} else {
@@ -106,16 +110,16 @@ command error_t SplitControl.stop() {
 }
 
 
-event void NetworkAMSend.sendDone(message_t *msg, error_t error) {
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	send_busy = FALSE;
 }
 
 
-event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct maxMsg *in_msg = (nx_struct maxMsg*) payload;
 	if (in_msg->max_value > max_value) {
 		max_value = in_msg->max_value;
-		dbg("Application", "maxTest NetworkReceive.receive() - got new max: %d", max_value);
+		dbg("Application", "maxTest SubReceive.receive() - got new max: %d", max_value);
 		post send_msg();
 		dbgs(F_APPLICATION, S_RECEIVING, 0, (uint16_t) (max_value >> 16), 
 							(uint16_t) (max_value & 0x0000FFFFuL) );
@@ -129,7 +133,7 @@ event message_t* NetworkReceive.receive(message_t *msg, void* payload, uint8_t l
 }
 
 
-event message_t* NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 

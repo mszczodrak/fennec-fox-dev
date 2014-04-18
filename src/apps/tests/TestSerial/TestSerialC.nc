@@ -37,12 +37,17 @@ provides interface SplitControl;
 
 uses interface TestSerialParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 }
 
 implementation {
@@ -51,12 +56,16 @@ SplitControl = TestSerialP;
 
 TestSerialParams = TestSerialP;
 
-NetworkAMSend = TestSerialP.NetworkAMSend;
-NetworkReceive = TestSerialP.NetworkReceive;
-NetworkSnoop = TestSerialP.NetworkSnoop;
-NetworkAMPacket = TestSerialP.NetworkAMPacket;
-NetworkPacket = TestSerialP.NetworkPacket;
-NetworkPacketAcknowledgements = TestSerialP.NetworkPacketAcknowledgements;
+SubAMSend = TestSerialP.SubAMSend;
+SubReceive = TestSerialP.SubReceive;
+SubSnoop = TestSerialP.SubSnoop;
+SubAMPacket = TestSerialP.SubAMPacket;
+SubPacket = TestSerialP.SubPacket;
+SubPacketAcknowledgements = TestSerialP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = TestSerialP.SubPacketLinkQuality;
+SubPacketTransmitPower = TestSerialP.SubPacketTransmitPower;
+SubPacketRSSI = TestSerialP.SubPacketRSSI;
 
 components LedsC;
 TestSerialP.Leds -> LedsC;

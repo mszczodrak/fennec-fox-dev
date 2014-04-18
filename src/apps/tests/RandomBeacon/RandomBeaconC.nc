@@ -37,12 +37,16 @@ provides interface SplitControl;
 
 uses interface RandomBeaconParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -52,12 +56,16 @@ SplitControl = RandomBeaconP;
 
 RandomBeaconParams = RandomBeaconP;
 
-NetworkAMSend = RandomBeaconP.NetworkAMSend;
-NetworkReceive = RandomBeaconP.NetworkReceive;
-NetworkSnoop = RandomBeaconP.NetworkSnoop;
-NetworkAMPacket = RandomBeaconP.NetworkAMPacket;
-NetworkPacket = RandomBeaconP.NetworkPacket;
-NetworkPacketAcknowledgements = RandomBeaconP.NetworkPacketAcknowledgements;
+SubAMSend = RandomBeaconP.SubAMSend;
+SubReceive = RandomBeaconP.SubReceive;
+SubSnoop = RandomBeaconP.SubSnoop;
+SubAMPacket = RandomBeaconP.SubAMPacket;
+SubPacket = RandomBeaconP.SubPacket;
+SubPacketAcknowledgements = RandomBeaconP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = RandomBeaconP.SubPacketLinkQuality;
+SubPacketTransmitPower = RandomBeaconP.SubPacketTransmitPower;
+SubPacketRSSI = RandomBeaconP.SubPacketRSSI;
 
 components LedsC;
 components new TimerMilliC();

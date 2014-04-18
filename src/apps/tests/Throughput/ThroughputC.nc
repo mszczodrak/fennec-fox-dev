@@ -40,13 +40,18 @@ provides interface Module;
 
 uses interface ThroughputParams;
    
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
-uses interface ModuleStatus as NetworkStatus;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface ModuleStatus as SubStatus;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+
 }
 
 implementation {
@@ -64,8 +69,8 @@ components new TimerMilliC() as TimerImp;
 ThroughputP.Timer -> TimerImp;
 
 /* Creating a queue for sending messages over the network interface */
-components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as NetworkQueueC;
-ThroughputP.NetworkQueue -> NetworkQueueC;
+components new QueueC(msg_queue_t, APP_NETWORK_QUEUE_SIZE) as SubQueueC;
+ThroughputP.SubQueue -> SubQueueC;
 
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 /* Creating a queue for sending messages over the serial interface */
@@ -91,13 +96,17 @@ ThroughputP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
 ThroughputP.SerialReceive -> SerialAMReceiverC.Receive;
 #endif
  
-NetworkAMSend = ThroughputP.NetworkAMSend;
-NetworkReceive = ThroughputP.NetworkReceive;
-NetworkSnoop = ThroughputP.NetworkSnoop;
-NetworkAMPacket = ThroughputP.NetworkAMPacket;
-NetworkPacket = ThroughputP.NetworkPacket;
-NetworkPacketAcknowledgements = ThroughputP.NetworkPacketAcknowledgements;
-NetworkStatus = ThroughputP.NetworkStatus;
+SubAMSend = ThroughputP.SubAMSend;
+SubReceive = ThroughputP.SubReceive;
+SubSnoop = ThroughputP.SubSnoop;
+SubAMPacket = ThroughputP.SubAMPacket;
+SubPacket = ThroughputP.SubPacket;
+SubPacketAcknowledgements = ThroughputP.SubPacketAcknowledgements;
+SubStatus = ThroughputP.SubStatus;
+
+SubPacketLinkQuality = ThroughputP.SubPacketLinkQuality;
+SubPacketTransmitPower = ThroughputP.SubPacketTransmitPower;
+SubPacketRSSI = ThroughputP.SubPacketRSSI;
 
 }
 
