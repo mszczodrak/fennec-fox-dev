@@ -38,12 +38,16 @@ provides interface SplitControl;
 
 uses interface DbgsParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -53,12 +57,16 @@ SplitControl = DbgsP;
 
 DbgsParams = DbgsP;
 
-NetworkAMSend = DbgsP.NetworkAMSend;
-NetworkReceive = DbgsP.NetworkReceive;
-NetworkSnoop = DbgsP.NetworkSnoop;
-NetworkAMPacket = DbgsP.NetworkAMPacket;
-NetworkPacket = DbgsP.NetworkPacket;
-NetworkPacketAcknowledgements = DbgsP.NetworkPacketAcknowledgements;
+SubAMSend = DbgsP.SubAMSend;
+SubReceive = DbgsP.SubReceive;
+SubSnoop = DbgsP.SubSnoop;
+SubAMPacket = DbgsP.SubAMPacket;
+SubPacket = DbgsP.SubPacket;
+SubPacketAcknowledgements = DbgsP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = DbgsP.SubPacketLinkQuality;
+SubPacketTransmitPower = DbgsP.SubPacketTransmitPower;
+SubPacketRSSI = DbgsP.SubPacketRSSI;
 
 components new TimerMilliC() as Timer;
 DbgsP.Timer -> Timer;

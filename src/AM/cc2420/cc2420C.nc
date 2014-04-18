@@ -3,13 +3,13 @@
 configuration cc2420C {
 
 provides interface SplitControl;
-provides interface AMSend as AMSend[process_t process_id];
-provides interface Receive as Receive[process_t process_id];
+provides interface AMSend[process_t process_id];
+provides interface Receive[process_t process_id];
 provides interface Receive as Snoop[process_t process_id];
-provides interface AMPacket as AMPacket;
-provides interface Packet as Packet;
-provides interface PacketAcknowledgements as PacketAcknowledgements;
-provides interface LinkPacketMetadata as LinkPacketMetadata;
+provides interface AMPacket;
+provides interface Packet;
+provides interface PacketAcknowledgements;
+provides interface LinkPacketMetadata;
 
 uses interface cc2420Params;
 uses interface StdControl as AMQueueControl;

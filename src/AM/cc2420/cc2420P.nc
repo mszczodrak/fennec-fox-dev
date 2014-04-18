@@ -88,9 +88,6 @@ async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
 
 }
 
-
-
-
 async command bool PacketTransmitPower.isSet(message_t* msg) {
 	return TRUE;
 }
@@ -107,8 +104,6 @@ async command void PacketTransmitPower.clear(message_t* msg) {
 async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
 	return call CC2420Packet.setPower(msg, value);
 }
-
-
 
 async command bool PacketRSSI.isSet(message_t* msg) {
 	return TRUE;

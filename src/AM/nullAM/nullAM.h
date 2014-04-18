@@ -44,6 +44,11 @@ typedef nx_struct nullAM_header_t {
         nxle_uint16_t src;
 } nullAM_header_t;
 
+#ifndef __RADIOCONFIG_H__
+typedef T32khz TRadio;
+typedef uint16_t tradio_size;
+#endif
+
 
 #endif
 

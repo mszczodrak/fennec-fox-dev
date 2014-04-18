@@ -37,12 +37,16 @@ provides interface SplitControl;
 
 uses interface nullAppParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -51,10 +55,14 @@ SplitControl = nullAppP;
 
 nullAppParams = nullAppP;
 
-NetworkAMSend = nullAppP.NetworkAMSend;
-NetworkReceive = nullAppP.NetworkReceive;
-NetworkSnoop = nullAppP.NetworkSnoop;
-NetworkAMPacket = nullAppP.NetworkAMPacket;
-NetworkPacket = nullAppP.NetworkPacket;
-NetworkPacketAcknowledgements = nullAppP.NetworkPacketAcknowledgements;
+SubAMSend = nullAppP.SubAMSend;
+SubReceive = nullAppP.SubReceive;
+SubSnoop = nullAppP.SubSnoop;
+SubAMPacket = nullAppP.SubAMPacket;
+SubPacket = nullAppP.SubPacket;
+SubPacketAcknowledgements = nullAppP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = nullAppP.SubPacketLinkQuality;
+SubPacketTransmitPower = nullAppP.SubPacketTransmitPower;
+SubPacketRSSI = nullAppP.SubPacketRSSI;
 }

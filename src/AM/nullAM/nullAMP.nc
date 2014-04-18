@@ -34,18 +34,23 @@
 
 module nullAMP {
 provides interface SplitControl;
-provides interface AMSend as MacAMSend[process_t process_id];
-provides interface Receive as MacReceive[process_t process_id];
-provides interface Receive as MacSnoop[process_t process_id];
-provides interface AMPacket as MacAMPacket;
-provides interface Packet as MacPacket;
-provides interface PacketAcknowledgements as MacPacketAcknowledgements;
-provides interface LinkPacketMetadata as MacLinkPacketMetadata;
+provides interface AMSend as AMSend[process_t process_id];
+provides interface Receive as Receive[process_t process_id];
+provides interface Receive as Snoop[process_t process_id];
+provides interface AMPacket as AMPacket;
+provides interface Packet as Packet;
+provides interface PacketAcknowledgements as PacketAcknowledgements;
+provides interface LinkPacketMetadata as LinkPacketMetadata;
 
 uses interface nullAMParams;
+uses interface StdControl as AMQueueControl;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
+
+provides interface PacketField<uint8_t> as PacketLinkQuality;
+provides interface PacketField<uint8_t> as PacketTransmitPower;
+provides interface PacketField<uint8_t> as PacketRSSI;
 
 }
 
@@ -65,7 +70,7 @@ task void stopDone() {
 }
 
 task void sendDone() {
-	signal MacAMSend.sendDone[n_id](n_msg, SUCCESS);
+	signal AMSend.sendDone[n_id](n_msg, SUCCESS);
 }	
 
 command error_t SplitControl.start() {
@@ -101,12 +106,12 @@ command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
 	return 0;
 }
 
-command error_t MacAMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
+command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
 
 	n_msg = msg;
 	n_id = id;
 
-	if (len > call MacPacket.maxPayloadLength()) {
+	if (len > call Packet.maxPayloadLength()) {
 		return ESIZE;
 	}
 
@@ -115,91 +120,134 @@ command error_t MacAMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8
 }
 
 
-command error_t MacAMSend.cancel[am_id_t id](message_t* msg) {
+command error_t AMSend.cancel[am_id_t id](message_t* msg) {
 	return SUCCESS;
 }
 
-command uint8_t MacAMSend.maxPayloadLength[am_id_t id]() {
-	return call MacPacket.maxPayloadLength();
+command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
+	return call Packet.maxPayloadLength();
 }
 
-command void* MacAMSend.getPayload[am_id_t id](message_t* m, uint8_t len) {
-	return call MacPacket.getPayload(m, len);
+command void* AMSend.getPayload[am_id_t id](message_t* m, uint8_t len) {
+	return call Packet.getPayload(m, len);
 }
 
-command am_addr_t MacAMPacket.address() {
+command am_addr_t AMPacket.address() {
 	return TOS_NODE_ID;
 }
 
-command am_addr_t MacAMPacket.destination(message_t* amsg) {
+command am_addr_t AMPacket.destination(message_t* amsg) {
 	return 0;
 }
 
-command am_addr_t MacAMPacket.source(message_t* amsg) {
+command am_addr_t AMPacket.source(message_t* amsg) {
 	return 0;
 }
 
-command void MacAMPacket.setDestination(message_t* amsg, am_addr_t addr) {
+command void AMPacket.setDestination(message_t* amsg, am_addr_t addr) {
 }
 
-command void MacAMPacket.setSource(message_t* amsg, am_addr_t addr) {
+command void AMPacket.setSource(message_t* amsg, am_addr_t addr) {
 }
 
-command bool MacAMPacket.isForMe(message_t* amsg) {
+command bool AMPacket.isForMe(message_t* amsg) {
 	return TRUE;
 }
 
-command am_id_t MacAMPacket.type(message_t* amsg) {
+command am_id_t AMPacket.type(message_t* amsg) {
 	return n_id;
 }
 
-command void MacAMPacket.setType(message_t* amsg, am_id_t type) {
+command void AMPacket.setType(message_t* amsg, am_id_t type) {
 	n_id = type;
 }
 
-command am_group_t MacAMPacket.group(message_t* amsg) {
+command am_group_t AMPacket.group(message_t* amsg) {
 	return 0;
 }
 
-command void MacAMPacket.setGroup(message_t* amsg, am_group_t grp) {
+command void AMPacket.setGroup(message_t* amsg, am_group_t grp) {
 }
 
-command am_group_t MacAMPacket.localGroup() {
+command am_group_t AMPacket.localGroup() {
 }
 
-command void MacPacket.clear(message_t* msg) {
+command void Packet.clear(message_t* msg) {
     memset(msg, 0x0, sizeof(message_t));
 }
 
-command uint8_t MacPacket.payloadLength(message_t* msg) {
+command uint8_t Packet.payloadLength(message_t* msg) {
 	return 120;
 }
 
-command void MacPacket.setPayloadLength(message_t* msg, uint8_t len) {
+command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
 }
 
-command uint8_t MacPacket.maxPayloadLength() {
+command uint8_t Packet.maxPayloadLength() {
 	return 120;
 }
 
-command void* MacPacket.getPayload(message_t* msg, uint8_t len) {
+command void* Packet.getPayload(message_t* msg, uint8_t len) {
 	return msg->data;
 }
 
-async command error_t MacPacketAcknowledgements.requestAck( message_t* p_msg ) {
+async command error_t PacketAcknowledgements.requestAck( message_t* p_msg ) {
 	return SUCCESS;
 }
 
-async command error_t MacPacketAcknowledgements.noAck( message_t* p_msg ) {
+async command error_t PacketAcknowledgements.noAck( message_t* p_msg ) {
 	return SUCCESS;
 }
 
-async command bool MacPacketAcknowledgements.wasAcked( message_t* p_msg ) {
+async command bool PacketAcknowledgements.wasAcked( message_t* p_msg ) {
 	return TRUE;
 }
 
-async command bool MacLinkPacketMetadata.highChannelQuality(message_t* msg) {
+async command bool LinkPacketMetadata.highChannelQuality(message_t* msg) {
 	return TRUE;
 }
+
+async command bool PacketLinkQuality.isSet(message_t* msg) {
+        return TRUE;
+}
+
+async command uint8_t PacketLinkQuality.get(message_t* msg) {
+	return 0;
+}
+
+async command void PacketLinkQuality.clear(message_t* msg) {
+}
+
+async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
+}
+
+async command bool PacketTransmitPower.isSet(message_t* msg) {
+        return TRUE;
+}
+
+async command uint8_t PacketTransmitPower.get(message_t* msg) {
+	return 0;
+}
+
+async command void PacketTransmitPower.clear(message_t* msg) {
+}
+
+async command void PacketTransmitPower.set(message_t* msg, uint8_t value) {
+}
+
+async command bool PacketRSSI.isSet(message_t* msg) {
+        return TRUE;
+}
+
+async command uint8_t PacketRSSI.get(message_t* msg) {
+	return 0;
+}
+
+async command void PacketRSSI.clear(message_t* msg) {
+}
+
+async command void PacketRSSI.set(message_t* msg, uint8_t value) {
+}
+
 
 }

@@ -40,12 +40,16 @@ provides interface SplitControl;
 
 uses interface BlinkParams;
 
-uses interface AMSend as NetworkAMSend;
-uses interface Receive as NetworkReceive;
-uses interface Receive as NetworkSnoop;
-uses interface AMPacket as NetworkAMPacket;
-uses interface Packet as NetworkPacket;
-uses interface PacketAcknowledgements as NetworkPacketAcknowledgements;
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -54,12 +58,16 @@ SplitControl = BlinkP;
 
 BlinkParams = BlinkP;
 
-NetworkAMSend = BlinkP.NetworkAMSend;
-NetworkReceive = BlinkP.NetworkReceive;
-NetworkSnoop = BlinkP.NetworkSnoop;
-NetworkAMPacket = BlinkP.NetworkAMPacket;
-NetworkPacket = BlinkP.NetworkPacket;
-NetworkPacketAcknowledgements = BlinkP.NetworkPacketAcknowledgements;
+SubAMSend = BlinkP.SubAMSend;
+SubReceive = BlinkP.SubReceive;
+SubSnoop = BlinkP.SubSnoop;
+SubAMPacket = BlinkP.SubAMPacket;
+SubPacket = BlinkP.SubPacket;
+SubPacketAcknowledgements = BlinkP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = BlinkP.SubPacketLinkQuality;
+SubPacketTransmitPower = BlinkP.SubPacketTransmitPower;
+SubPacketRSSI = BlinkP.SubPacketRSSI;
 
 components LedsC;
 BlinkP.Leds -> LedsC;
