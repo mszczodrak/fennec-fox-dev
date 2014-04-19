@@ -62,13 +62,11 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp
 
 }
 
-implementation
-{
+implementation {
 
 components cc2420P;
 components CC2420ControlC;
 components CC2420ActiveMessageC as AM;
-
 
 cc2420Params = cc2420P;
 SplitControl = cc2420P.SplitControl;
