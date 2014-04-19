@@ -34,11 +34,13 @@ cc2420xParams = cc2420xP;
 SplitControl = cc2420xP.SplitControl;
 AMQueueControl = cc2420xP.AMQueueControl;
 cc2420xP.SubSplitControl -> CC2420XActiveMessageC;
+cc2420xP.PacketTransmitPower -> CC2420XActiveMessageC.PacketTransmitPower;
+cc2420xP.RadioChannel -> CC2420XActiveMessageC.RadioChannel;
+AMSend = cc2420xP.AMSend;
 
 components CC2420XActiveMessageC;
-//SplitControl = CC2420XActiveMessageC;
 
-AMSend = CC2420XActiveMessageC.AMSend;
+cc2420xP.SubAMSend -> CC2420XActiveMessageC.AMSend;
 Receive = CC2420XActiveMessageC.Receive;
 Snoop = CC2420XActiveMessageC.Snoop;
 
@@ -59,8 +61,6 @@ PacketTransmitPower = CC2420XActiveMessageC.PacketTransmitPower;
 PacketRSSI = CC2420XActiveMessageC.PacketRSSI;
 
 components CC2420XRadioC;
-cc2420xParams = CC2420XRadioC;
-
 components SystemLowPowerListeningC;
 cc2420xP.SystemLowPowerListening -> SystemLowPowerListeningC;
 cc2420xP.LowPowerListening -> CC2420XActiveMessageC.LowPowerListening;
