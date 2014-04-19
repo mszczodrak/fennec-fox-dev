@@ -1,3 +1,35 @@
+/*
+ * Copyright (c) 2014, Columbia University.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of the Columbia University nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL COLUMBIA UNIVERSITY BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/**
+  * Fennec Fox cc2420 adaptation
+  *
+  * @author: Marcin K Szczodrak
+  */
+
 #include <RadioConfig.h>
 
 configuration cc2420C {
@@ -34,6 +66,10 @@ implementation
 {
 
 components cc2420P;
+components CC2420ControlC;
+components CC2420ActiveMessageC as AM;
+
+
 cc2420Params = cc2420P;
 SplitControl = cc2420P.SplitControl;
 AMQueueControl = cc2420P.AMQueueControl;
@@ -41,75 +77,44 @@ AMQueueControl = cc2420P.AMQueueControl;
 PacketLinkQuality = cc2420P.PacketLinkQuality;
 PacketTransmitPower = cc2420P.PacketTransmitPower;
 PacketRSSI = cc2420P.PacketRSSI;
+AMSend = cc2420P;
+Receive = cc2420P.Receive;
+Snoop = cc2420P.Snoop;
 
-components CC2420ControlP;
-cc2420Params = CC2420ControlP;
+cc2420P.CC2420Config -> CC2420ControlC;
 
-components CC2420TransmitP;
-cc2420Params = CC2420TransmitP;
-
-/* hacking to be cc2420x compatible */
 RadioChannel = cc2420P;
+
+PacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
+PacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
+PacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
+
+cc2420P.CC2420Packet -> AM.CC2420Packet;
+cc2420P.SubSplitControl -> AM.SplitControl;
+cc2420P.SubAMSend -> AM.AMSend;
+cc2420P.SubReceive -> AM.Receive;
+cc2420P.SubSnoop -> AM.Snoop;
+cc2420P.AMPacket -> AM.AMPacket;
+
+Packet = AM.Packet;
+AMPacket = AM.AMPacket;
+LowPowerListening = AM.LowPowerListening;
+PacketAcknowledgements = AM;
+LinkPacketMetadata = AM.LinkPacketMetadata;
+
+//PacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
+//PacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
+//PacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
+
 /*
 PacketTimeStampRadio = cc2420P.PacketTimeStampRadio;
 PacketTimeStampMilli = cc2420P.PacketTimeStampMilli;
 PacketTimeStamp32khz = cc2420P.PacketTimeStamp32khz;
 */
 
-PacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
-PacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
-PacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
-
-enum {
-    CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
-};
-
-components CC2420RadioC as Radio;
-components CC2420ActiveMessageP as AM;
-components ActiveMessageAddressC;
-components CC2420CsmaC as CsmaC;
-components CC2420ControlC;
-components CC2420PacketC;
-
-cc2420P.SubSplitControl -> Radio;
-cc2420P.CC2420Packet -> Radio;
-
-// RadioBackoff = AM;
-Packet = AM.Packet;
-AMSend = AM.AMSend;
-// SendNotifier = AM;
-Receive = AM.Receive;
-Snoop = AM.Snoop;
-AMPacket = AM.AMPacket;
-// PacketLink = Radio;
-LowPowerListening = Radio.LowPowerListening;
-PacketAcknowledgements = Radio;
-LinkPacketMetadata = Radio.LinkPacketMetadata;
-
-// Radio resource for the AM layer
-AM.RadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
-cc2420P.RadioResource -> Radio.Resource[CC2420_AM_SEND_ID];
-AM.SubSend -> Radio.ActiveSend;
-AM.SubReceive -> Radio.ActiveReceive;
-
-AM.ActiveMessageAddress -> ActiveMessageAddressC;
-AM.CC2420Packet -> CC2420PacketC;
-AM.CC2420PacketBody -> CC2420PacketC;
-AM.CC2420Config -> CC2420ControlC;
-
-AM.SubBackoff -> CsmaC;
-
-components LedsC;
-AM.Leds -> LedsC;
-
-//RadioChannel = CC2420ActiveMessageC.RadioChannel;
-//PacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
-//PacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
-//PacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
-
 /* System LowPowerListening Confs */
 components SystemLowPowerListeningC;
 cc2420P.SystemLowPowerListening -> SystemLowPowerListeningC;
-cc2420P.LowPowerListening -> Radio.LowPowerListening;
+cc2420P.LowPowerListening -> AM.LowPowerListening;
 
 }
