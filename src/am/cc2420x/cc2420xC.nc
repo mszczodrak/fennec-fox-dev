@@ -1,3 +1,35 @@
+/*
+ * Copyright (c) 2014, Columbia University.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of the Columbia University nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL COLUMBIA UNIVERSITY BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/**
+  * Fennec Fox cc2420x adaptation
+  *
+  * @author: Marcin K Szczodrak
+  */
+
 #include <RadioConfig.h>
 
 configuration cc2420xC {
@@ -30,39 +62,36 @@ implementation
 {
 
 components cc2420xP;
+components CC2420XActiveMessageC as AM;
+
 cc2420xParams = cc2420xP;
 SplitControl = cc2420xP.SplitControl;
 AMQueueControl = cc2420xP.AMQueueControl;
-cc2420xP.SubSplitControl -> CC2420XActiveMessageC;
-cc2420xP.PacketTransmitPower -> CC2420XActiveMessageC.PacketTransmitPower;
-cc2420xP.RadioChannel -> CC2420XActiveMessageC.RadioChannel;
 AMSend = cc2420xP.AMSend;
+Receive = cc2420xP.Receive;
+Snoop = cc2420xP.Snoop;
 
-components CC2420XActiveMessageC;
+cc2420xP.SubSplitControl -> AM.SplitControl;
+cc2420xP.PacketTransmitPower -> AM.PacketTransmitPower;
+cc2420xP.RadioChannel -> AM.RadioChannel;
+cc2420xP.SubAMSend -> AM.AMSend;
+cc2420xP.SubReceive -> AM.Receive;
+cc2420xP.SubSnoop -> AM.Snoop;
+cc2420xP.AMPacket -> AM.AMPacket;
+cc2420xP.LowPowerListening -> AM.LowPowerListening;
 
-cc2420xP.SubAMSend -> CC2420XActiveMessageC.AMSend;
-Receive = CC2420XActiveMessageC.Receive;
-Snoop = CC2420XActiveMessageC.Snoop;
+Packet = AM.Packet;
+AMPacket = AM.AMPacket;
+LowPowerListening = AM.LowPowerListening;
+RadioChannel = AM.RadioChannel;
+PacketTimeStampRadio = AM.PacketTimeStampRadio;
+PacketTimeStampMilli = AM.PacketTimeStampMilli;
+PacketTimeStamp32khz = AM.PacketTimeStamp32khz;
+PacketAcknowledgements = AM.PacketAcknowledgements;
+LinkPacketMetadata = AM.LinkPacketMetadata;
+PacketLinkQuality = AM.PacketLinkQuality;
+PacketTransmitPower = AM.PacketTransmitPower;
+PacketRSSI = AM.PacketRSSI;
 
-Packet = CC2420XActiveMessageC.Packet;
-AMPacket = CC2420XActiveMessageC.AMPacket;
-
-LowPowerListening = CC2420XActiveMessageC.LowPowerListening;
-RadioChannel = CC2420XActiveMessageC.RadioChannel;
-PacketTimeStampRadio = CC2420XActiveMessageC.PacketTimeStampRadio;
-PacketTimeStampMilli = CC2420XActiveMessageC.PacketTimeStampMilli;
-PacketTimeStamp32khz = CC2420XActiveMessageC.PacketTimeStamp32khz;
-PacketAcknowledgements = CC2420XActiveMessageC.PacketAcknowledgements;
-LinkPacketMetadata = CC2420XActiveMessageC.LinkPacketMetadata;
-
-
-PacketLinkQuality = CC2420XActiveMessageC.PacketLinkQuality;
-PacketTransmitPower = CC2420XActiveMessageC.PacketTransmitPower;
-PacketRSSI = CC2420XActiveMessageC.PacketRSSI;
-
-components CC2420XRadioC;
-components SystemLowPowerListeningC;
-cc2420xP.SystemLowPowerListening -> SystemLowPowerListeningC;
-cc2420xP.LowPowerListening -> CC2420XActiveMessageC.LowPowerListening;
 
 }
