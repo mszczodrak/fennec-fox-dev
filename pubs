@@ -9,9 +9,12 @@ src/Serial
 src/Fennec
 src/apps/create.sh
 src/apps/nullApp
+src/apps/timerMilli
+src/apps/timerSecond
 src/apps/StateSynchronization
 src/apps/UARTBridge
 src/apps/tests/Blink
+src/apps/tests/ButtonToLed
 src/apps/tests/Counter
 src/apps/tests/Dbgs
 src/apps/tests/maxTest
@@ -19,12 +22,13 @@ src/apps/tests/PrintfApp
 src/apps/tests/RandomBeacon
 src/apps/tests/Rssi
 src/apps/tests/TestSerial
-src/apps/tests/Z1Sensors
 src/apps/tests/TelosbSensors
 src/apps/tests/Throughput
+src/apps/tests/Z1Sensors
 src/net/create.sh
 src/net/nullNet
 src/net/ctp
+src/net/rebroadcast
 src/net/trickle
 src/am/create.sh
 src/am/nullAM
