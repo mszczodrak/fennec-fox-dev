@@ -183,16 +183,19 @@ implementation
 
 // -------- Low Power Listening
 
-        components new LowPowerListeningLayerC();
-        LowPowerListeningLayerC.Config -> RadioP;
-        LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-        LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
-        LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
-        LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
-        LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
-        SplitControl = LowPowerListeningLayerC;
-        LowPowerListening = LowPowerListeningLayerC;
-	//cc2420xParams = LowPowerListeningLayerC;
+#ifdef LOW_POWER_LISTENING
+	components new LowPowerListeningLayerC();
+	LowPowerListeningLayerC.Config -> RadioP;
+	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
+#else  
+	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
+#endif
+	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
+	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
+	LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
+	LowPowerListeningLayerC.SubPacket -> TimeStampingLayerC;
+	SplitControl = LowPowerListeningLayerC;
+	LowPowerListening = LowPowerListeningLayerC;
 
 // -------- MessageBuffer
 
