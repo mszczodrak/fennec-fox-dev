@@ -15,7 +15,7 @@ src/apps/tests/Blink
 src/apps/tests/Counter
 src/apps/tests/Dbgs
 src/apps/tests/maxTest
-src/apps/tests/Printf
+src/apps/tests/PrintfApp
 src/apps/tests/RandomBeacon
 src/apps/tests/Rssi
 src/apps/tests/TestSerial
