@@ -2,7 +2,6 @@ install.sh
 README
 README.md
 src/interfaces
-src/libs
 src/Makefile
 src/system
 src/support
@@ -28,5 +27,5 @@ src/net/nullNet
 src/net/ctp
 src/net/trickle
 src/am/create.sh
-src/am/nullam
+src/am/nullAM
 src/am/cc2420
