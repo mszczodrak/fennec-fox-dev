@@ -6,3 +6,10 @@ CFLAGS += -I$(TOSDIR)/lib/rfxlink
 CFLAGS += -I$(TOSDIR)/lib/rfxlink/util
 CFLAGS += -I$(TOSDIR)/lib/rfxlink/layers
 
+#if defined(PLATFORM_TELOSB)
+PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
+PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
+PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x
+PFLAGS+=-I$(TOSDIR)/chips/cc2420x
+#elif defined(PLATFORM_MICAZ)
+#endif

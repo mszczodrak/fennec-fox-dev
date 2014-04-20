@@ -53,8 +53,7 @@ uses interface AMSend as SubAMSend[process_t process_id];
 uses interface AMPacket;
 uses interface Receive as SubReceive[process_t process_id];
 uses interface Receive as SubSnoop[process_t process_id];
-
-
+uses interface PacketAcknowledgements;
 }
 
 implementation {
@@ -68,6 +67,7 @@ command error_t SplitControl.stop() {
 }
 
 task void setChannel() {
+	return;
 	if (call RadioChannel.getChannel() == call cc2420xParams.get_channel()) {
 		return;
 	}
@@ -80,16 +80,12 @@ task void setChannel() {
 event void SubSplitControl.startDone(error_t error) {
 	if (error == SUCCESS) {
 		call AMQueueControl.start();
-        	call LowPowerListening.setLocalWakeupInterval(call cc2420xParams.get_sleepInterval());
 	}
-
-	post setChannel();
 
 	return signal SplitControl.startDone(error);
 }
 
 event void SubSplitControl.stopDone(error_t error) {
-	call LowPowerListening.setLocalWakeupInterval(0);
 	if (error == SUCCESS) {
 		call AMQueueControl.stop();
 	}
@@ -98,11 +94,12 @@ event void SubSplitControl.stopDone(error_t error) {
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
 	//call LowPowerListening.setRemoteWakeupInterval(msg, call cc2420xParams.get_sleepInterval());
-	call PacketTransmitPower.set(msg, call cc2420xParams.get_power());
+	//call PacketTransmitPower.set(msg, call cc2420xParams.get_power());
 	return call SubAMSend.send[id](addr, msg, len);
 }
 
 event void SubAMSend.sendDone[am_id_t id](message_t* msg, error_t error) {
+	printf("ack %d\n", call PacketAcknowledgements.wasAcked(msg));
 	signal AMSend.sendDone[id](msg, error);
 }
 
@@ -119,16 +116,20 @@ command void* AMSend.getPayload[am_id_t id](message_t* msg, uint8_t len) {
 }
 
 event message_t * SubReceive.receive[process_t id](message_t* msg, void* payload, uint8_t len) {
+/*
 	if (!validProcessId(call AMPacket.type(msg))) {
 		return msg;
 	}
+*/
 	return signal Receive.receive[id](msg, payload, len);
 }
 
 event message_t * SubSnoop.receive[process_t id](message_t* msg, void* payload, uint8_t len) {
+/*
 	if (!validProcessId(call AMPacket.type(msg))) {
 		return msg;
 	}
+*/
 	return signal Snoop.receive[id](msg, payload, len);
 }
 
