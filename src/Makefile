@@ -9,8 +9,6 @@ include $(MAKERULES)
 
 #PFLAGS+=-D__DBGS__
 
-
-
 # 2. TinyOS printf
 CFLAGS += -I$(TOSDIR)/lib/printf
 #CFLAGS += -DPRINTF_BUFFER_SIZE=200
