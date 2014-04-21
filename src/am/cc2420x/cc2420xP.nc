@@ -51,6 +51,7 @@ uses interface RadioChannel;
 
 uses interface AMSend as SubAMSend[process_t process_id];
 uses interface AMPacket;
+uses interface Packet;
 uses interface Receive as SubReceive[process_t process_id];
 uses interface Receive as SubSnoop[process_t process_id];
 
@@ -104,7 +105,7 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t 
 
 event void SubAMSend.sendDone[am_id_t id](message_t* msg, error_t error) {
 	//printf("ack %d\n", call PacketAcknowledgements.wasAcked(msg));
-	dbgs(id, F_AM, 0, 0, 0, 0, call PacketAcknowledgements.wasAcked(msg));
+	//dbgs(id, F_AM, 0, 0, 0, call Packet.payloadLength(msg), call PacketAcknowledgements.wasAcked(msg));
 	signal AMSend.sendDone[id](msg, error);
 }
 

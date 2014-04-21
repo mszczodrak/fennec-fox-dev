@@ -75,7 +75,7 @@ uint16_t seqno;
 command error_t SplitControl.start() {
 	uint32_t send_delay = call CounterParams.get_delay() * 
 		call CounterParams.get_delay_scale();
-	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0, 0);
+	dbgs(process, F_APPLICATION, S_NONE, 0, 0);
 	dbg("Application", "[%d] Counter SplitControl.start()", process);
 
 	dbg("Application", "[%d] Counter starting delay: %d", process, send_delay);
@@ -96,7 +96,7 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 	dbg("Application", "[%d] Counter SplitControl.stop()", process);
-	dbgs(process, F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0, 0);
+	dbgs(process, F_APPLICATION, DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -114,14 +114,12 @@ void sendMessage() {
 
 	if (call SubAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
-		dbgs(process, F_APPLICATION, S_ERROR, DBGS_SEND_DATA, seqno,
-					call CounterParams.get_dest(), sizeof(CounterMsg));
+		dbgs(process, F_APPLICATION, DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
 		dbg("Application", "[%d] Counter sendMessage() seqno: %d source: %d - FAILED", 
 					process, msg->seqno, msg->source); 
 	} else {
 		sendBusy = TRUE;
-		dbgs(process, F_APPLICATION, S_NONE, DBGS_SEND_DATA, seqno,
-					call CounterParams.get_dest(), sizeof(CounterMsg));
+		dbgs(process, F_APPLICATION, DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
 		dbg("Application", "[%d] Counter call SubAMSend.send(%d, 0x%1x, %d)",
 					process, 
 					call CounterParams.get_dest(), &packet,
@@ -156,7 +154,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 				process, cm->seqno, cm->source); 
 
 	call Leds.set(cm->seqno);
-	dbgs(process, F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source, len);
+	dbgs(process, F_APPLICATION, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	return msg;
 }
 

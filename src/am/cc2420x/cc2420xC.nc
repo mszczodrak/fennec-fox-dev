@@ -78,6 +78,7 @@ cc2420xP.SubAMSend -> AM.AMSend;
 cc2420xP.SubReceive -> AM.Receive;
 cc2420xP.SubSnoop -> AM.Snoop;
 cc2420xP.AMPacket -> AM.AMPacket;
+cc2420xP.Packet -> AM.Packet;
 cc2420xP.LowPowerListening -> AM.LowPowerListening;
 cc2420xP.PacketAcknowledgements -> AM.PacketAcknowledgements;
 

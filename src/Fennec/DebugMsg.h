@@ -42,10 +42,8 @@ struct debug_msg {
 	process_t process;
 	uint8_t layer;
 	uint8_t state;
-	uint16_t action;
 	uint16_t d0;
 	uint16_t d1;
-	uint16_t d2;
 };
 
 enum {

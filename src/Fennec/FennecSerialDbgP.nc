@@ -98,8 +98,7 @@ event void SplitControl.stopDone(error_t err) {
 }
 #endif
 
-bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t action,
-			uint16_t d0, uint16_t d1, uint16_t d2) @C() {
+bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t d0, uint16_t d1) @C() {
 	dbg("Dbgs", "Dbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
 #ifdef __DBGS__
 #ifndef PRINTF_DBG
@@ -111,17 +110,15 @@ bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t action,
 		msg->process = process;
 		msg->layer = layer;
 		msg->state = dbg_state;
-		msg->action = action;
 		msg->d0 = d0;
 		msg->d1 = d1;
-		msg->d2 = d2;
 		call Queue.enqueue(*msg);
 
 		post send_msg();
 	}
 
 #else
-	printf("%d %d %d %d %d %d %d\n", process, layer, dbg_state, action, d0, d1, d2);
+	printf("%d %d %d %d %d %d %d\n", process, layer, dbg_state, d0, d1);
 	printfflush();
 #endif
 
