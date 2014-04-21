@@ -43,6 +43,7 @@ use application randBeacon $(FENNEC_FOX_LIB)/apps/tests/RandomBeacon (
 
 use application rssi $(FENNEC_FOX_LIB)/apps/tests/Rssi (
 		uint16_t tx_delay = 200,
+		float rssi_scale = 1,
 		int8_t rssi_offset = -45,
 		int8_t threshold_1 = -80,
 		int8_t threshold_2 = -50)
