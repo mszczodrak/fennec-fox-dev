@@ -73,7 +73,6 @@ configuration CC2420XRadioC
 		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 	}
-uses interface cc2420xParams;
 }
 
 implementation
@@ -93,7 +92,6 @@ implementation
 	RadioP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	RadioP.PacketTimeStamp -> TimeStampingLayerC;
 	RadioP.CC2420XPacket -> RadioDriverLayerC;
-	cc2420xParams = RadioP;
 
 // -------- RadioAlarm
 
@@ -184,10 +182,11 @@ implementation
 // -------- Low Power Listening
 
 #ifdef LOW_POWER_LISTENING
+	#warning "*** USING LOW POWER LISTENING LAYER"
 	components new LowPowerListeningLayerC();
 	LowPowerListeningLayerC.Config -> RadioP;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-#else  
+#else	
 	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
 #endif
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
@@ -211,8 +210,8 @@ implementation
 
 // -------- CollisionAvoidance
 
-	components cc2420xCollisionLayerC as CollisionAvoidanceLayerC;
-	cc2420xParams = CollisionAvoidanceLayerC;
+	components CollisionAvoidanceLayerC;
+	CollisionAvoidanceLayerC.CollisionAvoidanceConfig -> RadioP.CollisionAvoidanceConfig;
 	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
 	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;

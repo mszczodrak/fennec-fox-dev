@@ -59,14 +59,20 @@ implementation
 {
 
 norace bool withLpl = FALSE;
+norace bool isSlotted = FALSE;
 
 command error_t StdControl.start() {
 	withLpl = (call cc2420xParams.get_sleepInterval() > 0);
+	isSlotted = call cc2420xParams.get_slotted() > 0 ? TRUE : FALSE;
 	return SUCCESS;
 }
 
 command error_t StdControl.stop() {
 	return SUCCESS;
+}
+
+command bool CollisionAvoidanceConfig.isSlotted() {
+	return isSlotted;
 }
 
 

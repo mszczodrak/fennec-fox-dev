@@ -128,7 +128,7 @@ command error_t StdControl.stop() {
 }
 
 command bool CollisionAvoidanceConfig.isSlotted() {
-	return call rf212Params.get_slotted();
+	return isSlotted;
 }
 
 /*----------------- RF212DriverConfig -----------------*/
