@@ -132,6 +132,8 @@ event void Timer.fired() {
 	if (!sendBusy) {
 		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
+	} else {
+		dbgs(process, F_APPLICATION, DBGS_BUSY, seqno, call CounterParams.get_dest());
 	}
 	seqno++;
 }
@@ -139,6 +141,9 @@ event void Timer.fired() {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	//CounterMsg* cm = (CounterMsg*)call SubAMSend.getPayload(msg,
 	//						sizeof(CounterMsg));
+	if (error != SUCCESS) {
+		dbgs(process, F_APPLICATION, DBGS_ERROR_SEND_DONE, seqno, call CounterParams.get_dest());
+	}
 	dbg("Application", "[%d] Counter event SubAMSend.sendDone(0x%1x, %d)",
 				process, msg, error);
 	sendBusy = FALSE;

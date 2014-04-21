@@ -97,6 +97,9 @@
 #define DBGS_ERROR_SEND_DONE			131
 #define DBGS_ERROR_RECEIVE			132
 
+#define DBGS_TIMER_FIRED			160
+#define DBGS_BUSY				161
+
 #define DBGS_TEST_SIGNAL	32767
 
 #endif

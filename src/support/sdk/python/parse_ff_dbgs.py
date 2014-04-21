@@ -21,7 +21,7 @@ for line in f.readlines():
 
 	process = int("%s"%(l[0]))
 	layer = int("%s"%(l[1]))
-	state = int("%s"%(l[2]))
+	action = int("%s"%(l[2]))
 	d0 = int("%s"%(l[3]))
 	d1 = int("%s"%(l[4]))
 
@@ -39,6 +39,6 @@ for line in f.readlines():
 
 	print "Layer: {:<13} ".format(get_layer(layer)),
 
-	print "State: {:<9} ".format(get_state(state)),
+	print "Action: {:<9} ".format(get_action(action)),
 
 	print "Data: [ {:>4}  {:>4} ]".format(l[3], l[4]) 
