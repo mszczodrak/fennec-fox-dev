@@ -7,12 +7,12 @@
 public class DebugMsg extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 12;
+    public static final int DEFAULT_MESSAGE_SIZE = 8;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 100;
 
-    /** Create a new DebugMsg of size 12. */
+    /** Create a new DebugMsg of size 8. */
     public DebugMsg() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -94,16 +94,10 @@ public class DebugMsg extends net.tinyos.message.Message {
         s += "  [state=0x"+Long.toHexString(get_state())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [action=0x"+Long.toHexString(get_action())+"]\n";
-      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
-      try {
         s += "  [d0=0x"+Long.toHexString(get_d0())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [d1=0x"+Long.toHexString(get_d1())+"]\n";
-      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
-      try {
-        s += "  [d2=0x"+Long.toHexString(get_d2())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
@@ -112,9 +106,9 @@ public class DebugMsg extends net.tinyos.message.Message {
 
     /////////////////////////////////////////////////////////
     // Accessor methods for field: process
-    //   Field type: int, unsigned
+    //   Field type: short, unsigned
     //   Offset (bits): 0
-    //   Size (bits): 16
+    //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
@@ -146,37 +140,37 @@ public class DebugMsg extends net.tinyos.message.Message {
     }
 
     /**
-     * Return the value (as a int) of the field 'process'
+     * Return the value (as a short) of the field 'process'
      */
-    public int get_process() {
-        return (int)getUIntElement(offsetBits_process(), 16);
+    public short get_process() {
+        return (short)getUIntElement(offsetBits_process(), 8);
     }
 
     /**
      * Set the value of the field 'process'
      */
-    public void set_process(int value) {
-        setUIntElement(offsetBits_process(), 16, value);
+    public void set_process(short value) {
+        setUIntElement(offsetBits_process(), 8, value);
     }
 
     /**
      * Return the size, in bytes, of the field 'process'
      */
     public static int size_process() {
-        return (16 / 8);
+        return (8 / 8);
     }
 
     /**
      * Return the size, in bits, of the field 'process'
      */
     public static int sizeBits_process() {
-        return 16;
+        return 8;
     }
 
     /////////////////////////////////////////////////////////
     // Accessor methods for field: layer
     //   Field type: short, unsigned
-    //   Offset (bits): 16
+    //   Offset (bits): 8
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -198,14 +192,14 @@ public class DebugMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'layer'
      */
     public static int offset_layer() {
-        return (16 / 8);
+        return (8 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'layer'
      */
     public static int offsetBits_layer() {
-        return 16;
+        return 8;
     }
 
     /**
@@ -239,7 +233,7 @@ public class DebugMsg extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: state
     //   Field type: short, unsigned
-    //   Offset (bits): 24
+    //   Offset (bits): 16
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -261,14 +255,14 @@ public class DebugMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'state'
      */
     public static int offset_state() {
-        return (24 / 8);
+        return (16 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'state'
      */
     public static int offsetBits_state() {
-        return 24;
+        return 16;
     }
 
     /**
@@ -300,72 +294,9 @@ public class DebugMsg extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: action
-    //   Field type: int, unsigned
-    //   Offset (bits): 32
-    //   Size (bits): 16
-    /////////////////////////////////////////////////////////
-
-    /**
-     * Return whether the field 'action' is signed (false).
-     */
-    public static boolean isSigned_action() {
-        return false;
-    }
-
-    /**
-     * Return whether the field 'action' is an array (false).
-     */
-    public static boolean isArray_action() {
-        return false;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'action'
-     */
-    public static int offset_action() {
-        return (32 / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'action'
-     */
-    public static int offsetBits_action() {
-        return 32;
-    }
-
-    /**
-     * Return the value (as a int) of the field 'action'
-     */
-    public int get_action() {
-        return (int)getUIntElement(offsetBits_action(), 16);
-    }
-
-    /**
-     * Set the value of the field 'action'
-     */
-    public void set_action(int value) {
-        setUIntElement(offsetBits_action(), 16, value);
-    }
-
-    /**
-     * Return the size, in bytes, of the field 'action'
-     */
-    public static int size_action() {
-        return (16 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of the field 'action'
-     */
-    public static int sizeBits_action() {
-        return 16;
-    }
-
-    /////////////////////////////////////////////////////////
     // Accessor methods for field: d0
     //   Field type: int, unsigned
-    //   Offset (bits): 48
+    //   Offset (bits): 32
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -387,14 +318,14 @@ public class DebugMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd0'
      */
     public static int offset_d0() {
-        return (48 / 8);
+        return (32 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd0'
      */
     public static int offsetBits_d0() {
-        return 48;
+        return 32;
     }
 
     /**
@@ -428,7 +359,7 @@ public class DebugMsg extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d1
     //   Field type: int, unsigned
-    //   Offset (bits): 64
+    //   Offset (bits): 48
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -450,14 +381,14 @@ public class DebugMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd1'
      */
     public static int offset_d1() {
-        return (64 / 8);
+        return (48 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd1'
      */
     public static int offsetBits_d1() {
-        return 64;
+        return 48;
     }
 
     /**
@@ -485,69 +416,6 @@ public class DebugMsg extends net.tinyos.message.Message {
      * Return the size, in bits, of the field 'd1'
      */
     public static int sizeBits_d1() {
-        return 16;
-    }
-
-    /////////////////////////////////////////////////////////
-    // Accessor methods for field: d2
-    //   Field type: int, unsigned
-    //   Offset (bits): 80
-    //   Size (bits): 16
-    /////////////////////////////////////////////////////////
-
-    /**
-     * Return whether the field 'd2' is signed (false).
-     */
-    public static boolean isSigned_d2() {
-        return false;
-    }
-
-    /**
-     * Return whether the field 'd2' is an array (false).
-     */
-    public static boolean isArray_d2() {
-        return false;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'd2'
-     */
-    public static int offset_d2() {
-        return (80 / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'd2'
-     */
-    public static int offsetBits_d2() {
-        return 80;
-    }
-
-    /**
-     * Return the value (as a int) of the field 'd2'
-     */
-    public int get_d2() {
-        return (int)getUIntElement(offsetBits_d2(), 16);
-    }
-
-    /**
-     * Set the value of the field 'd2'
-     */
-    public void set_d2(int value) {
-        setUIntElement(offsetBits_d2(), 16, value);
-    }
-
-    /**
-     * Return the size, in bytes, of the field 'd2'
-     */
-    public static int size_d2() {
-        return (16 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of the field 'd2'
-     */
-    public static int sizeBits_d2() {
         return 16;
     }
 

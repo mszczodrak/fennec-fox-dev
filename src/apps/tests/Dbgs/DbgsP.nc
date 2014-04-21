@@ -83,7 +83,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Timer.fired() {
 	call Leds.set(c++);
-	dbgs(F_APPLICATION, S_NONE, 0 , c, c, c, c);
+	dbgs(process, F_APPLICATION, S_NONE, c, c);
 }
 
 }
