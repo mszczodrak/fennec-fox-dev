@@ -30,7 +30,7 @@
   * @author: Marcin K Szczodrak
   */
 
-#include <RadioConfig.h>
+#include "cc2420.h"
 
 configuration cc2420C {
 
