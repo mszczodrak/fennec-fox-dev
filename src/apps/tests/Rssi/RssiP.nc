@@ -91,7 +91,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 #ifdef FENNEC_TOS_PRINTF
-	printf("%d\n", (int8_t)call SubPacketRSSI.get(msg));
+	printf("RSSI: %d  LQI: %d\n", call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
 	printf("\t%d\n", (int8_t)call SubPacketRSSI.get(msg) + call RssiParams.get_rssi_offset());
 	printf("\t\t\t%d %d\n", call RssiParams.get_threshold_1(), call RssiParams.get_threshold_2()   );
 	printfflush();

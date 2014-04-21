@@ -6,6 +6,7 @@ CFLAGS += -DLOW_POWER_LISTENING
 
 include $(FENNEC_FOX_LIB)/support/make/Makerules
 include $(MAKERULES)
+include $(FENNEC_FOX_LIB)/support/make/tinyos.extra
 
 #PFLAGS+=-D__DBGS__
 
