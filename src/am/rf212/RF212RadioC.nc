@@ -1,29 +1,40 @@
 /*
- * Copyright (c) 2010, Vanderbilt University
+ * Copyright (c) 2007, Vanderbilt University
  * All rights reserved.
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- * 
- * IN NO EVENT SHALL THE VANDERBILT UNIVERSITY BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE VANDERBILT
- * UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * THE VANDERBILT UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE VANDERBILT UNIVERSITY HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * Author: Janos Sallai, Miklos Maroti
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holder nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Miklos Maroti
  */
 
 #include <RadioConfig.h>
 
-configuration CC2420XRadioC
+configuration RF212RadioC
 {
 	provides 
 	{
@@ -73,17 +84,16 @@ configuration CC2420XRadioC
 		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 	}
-uses interface rf212Params;
 }
 
 implementation
 {
-	#define UQ_METADATA_FLAGS	"UQ_CC2420X_METADATA_FLAGS"
-	#define UQ_RADIO_ALARM		"UQ_CC2420X_RADIO_ALARM"
+	#define UQ_METADATA_FLAGS	"UQ_RF212_METADATA_FLAGS"
+	#define UQ_RADIO_ALARM		"UQ_RF212_RADIO_ALARM"
 
 // -------- RadioP
 
-	components CC2420XRadioP as RadioP;
+	components RF212RadioP as RadioP;
 
 #ifdef RADIO_DEBUG
 	components AssertC;
@@ -92,8 +102,7 @@ implementation
 	RadioP.Ieee154PacketLayer -> Ieee154PacketLayerC;
 	RadioP.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	RadioP.PacketTimeStamp -> TimeStampingLayerC;
-	RadioP.CC2420XPacket -> RadioDriverLayerC;
-	rf212Params = RadioP;
+	RadioP.RF212Packet -> RadioDriverLayerC;
 
 // -------- RadioAlarm
 
@@ -184,10 +193,11 @@ implementation
 // -------- Low Power Listening
 
 #ifdef LOW_POWER_LISTENING
+	#warning "*** USING LOW POWER LISTENING LAYER"
 	components new LowPowerListeningLayerC();
 	LowPowerListeningLayerC.Config -> RadioP;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-#else  
+#else	
 	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
 #endif
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
@@ -211,8 +221,8 @@ implementation
 
 // -------- CollisionAvoidance
 
-	components rf212CollisionLayerC as CollisionAvoidanceLayerC;
-	rf212Params = CollisionAvoidanceLayerC;
+	components CollisionAvoidanceLayerC;
+	CollisionAvoidanceLayerC.CollisionAvoidanceConfig -> RadioP.CollisionAvoidanceConfig;
 	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
 	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
@@ -266,7 +276,7 @@ implementation
 
 // -------- Driver
 
-	components CC2420XDriverLayerC as RadioDriverLayerC;
+	components RF212DriverLayerC as RadioDriverLayerC;
 	RadioDriverLayerC.Config -> RadioP;
 	RadioDriverLayerC.PacketTimeStamp -> TimeStampingLayerC;
 	PacketTransmitPower = RadioDriverLayerC.PacketTransmitPower;

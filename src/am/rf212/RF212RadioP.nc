@@ -1,35 +1,48 @@
 /*
- * Copyright (c) 2010, Vanderbilt University
+ * Copyright (c) 2007, Vanderbilt University
+ * Copyright (c) 2011, University of Szeged
  * All rights reserved.
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- * 
- * IN NO EVENT SHALL THE VANDERBILT UNIVERSITY BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE VANDERBILT
- * UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * THE VANDERBILT UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE VANDERBILT UNIVERSITY HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * Author: Miklos Maroti, Janos Sallai
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holder nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Miklos Maroti
+ * Author: Andras Biro
  */
 
-#include <CC2420XRadio.h>
+#include <RF212Radio.h>
 #include <RadioConfig.h>
 #include <Tasklet.h>
 
-module CC2420XRadioP
+module RF212RadioP
 {
 	provides
 	{
-		interface CC2420XDriverConfig;
+		interface RF212DriverConfig;
 		interface SoftwareAckConfig;
 		interface UniqueConfig;
 		interface CsmaConfig;
@@ -38,29 +51,75 @@ module CC2420XRadioP
 		interface SlottedCollisionConfig;
 		interface ActiveMessageConfig;
 		interface DummyConfig;
+
+#ifdef LOW_POWER_LISTENING
 		interface LowPowerListeningConfig;
+#endif
 	}
 
 	uses
 	{
 		interface Ieee154PacketLayer;
 		interface RadioAlarm;
-		interface RadioPacket as CC2420XPacket;
+		interface RadioPacket as RF212Packet;
 
 		interface PacketTimeStamp<TRadio, uint32_t>;
 	}
 
 provides interface StdControl;
+provides interface CollisionAvoidanceConfig;
 uses interface rf212Params;
 }
 
 implementation
 {
+	inline uint8_t getSymbolTime()
+	{
+		switch( RF212_TRX_CTRL_2_VALUE )
+		{
+		case RF212_DATA_MODE_BPSK_20:
+			return 50;
+
+		case RF212_DATA_MODE_BPSK_40:
+			return 25;
+
+		case RF212_DATA_MODE_OQPSK_SIN_RC_100:
+		case RF212_DATA_MODE_OQPSK_SIN_RC_200:
+		case RF212_DATA_MODE_OQPSK_SIN_RC_400_SCR:
+		case RF212_DATA_MODE_OQPSK_SIN_RC_400:
+			return 40;
+
+		case RF212_DATA_MODE_OQPSK_SIN_250:
+		case RF212_DATA_MODE_OQPSK_RC_250:
+		case RF212_DATA_MODE_OQPSK_SIN_500:
+		case RF212_DATA_MODE_OQPSK_RC_500:
+		case RF212_DATA_MODE_OQPSK_SIN_1000_SCR:
+		case RF212_DATA_MODE_OQPSK_SIN_1000:
+		case RF212_DATA_MODE_OQPSK_RC_1000_SCR:
+		case RF212_DATA_MODE_OQPSK_RC_1000:
+			return 16;
+		}
+	}
+	
+	inline bool isBpsk()
+	{
+		switch( RF212_TRX_CTRL_2_VALUE )
+		{
+		case RF212_DATA_MODE_BPSK_20:
+		case RF212_DATA_MODE_BPSK_40:
+			return TRUE;
+
+		default:
+			return FALSE;
+		}
+	}
 
 norace bool withLpl = FALSE;
+norace bool isSlotted = FALSE;
 
 command error_t StdControl.start() {
 	withLpl = (call rf212Params.get_sleepInterval() > 0);
+	isSlotted = call rf212Params.get_slotted() > 0 ? TRUE : FALSE;
 	return SUCCESS;
 }
 
@@ -68,31 +127,34 @@ command error_t StdControl.stop() {
 	return SUCCESS;
 }
 
+command bool CollisionAvoidanceConfig.isSlotted() {
+	return call rf212Params.get_slotted();
+}
 
-/*----------------- CC2420XDriverConfig -----------------*/
+/*----------------- RF212DriverConfig -----------------*/
 
-	async command uint8_t CC2420XDriverConfig.headerLength(message_t* msg)
+	async command uint8_t RF212DriverConfig.headerLength(message_t* msg)
 	{
 		return offsetof(message_t, data) - sizeof(rf212packet_header_t);
 	}
 
-	async command uint8_t CC2420XDriverConfig.maxPayloadLength()
+	async command uint8_t RF212DriverConfig.maxPayloadLength()
 	{
 		return sizeof(rf212packet_header_t) + TOSH_DATA_LENGTH;
 	}
 
-	async command uint8_t CC2420XDriverConfig.metadataLength(message_t* msg)
+	async command uint8_t RF212DriverConfig.metadataLength(message_t* msg)
 	{
 		return 0;
 	}
 
-	async command uint8_t CC2420XDriverConfig.headerPreloadLength()
+	async command uint8_t RF212DriverConfig.headerPreloadLength()
 	{
 		// we need the fcf, dsn, destpan and dest
 		return 7;
 	}
 
-	async command bool CC2420XDriverConfig.requiresRssiCca(message_t* msg)
+	async command bool RF212DriverConfig.requiresRssiCca(message_t* msg)
 	{
 		return call Ieee154PacketLayer.isDataFrame(msg);
 	}
@@ -129,13 +191,27 @@ command error_t StdControl.stop() {
 		call Ieee154PacketLayer.createAckReply(data, ack);
 	}
 
-#ifndef SOFTWAREACK_TIMEOUT
-#define SOFTWAREACK_TIMEOUT	1000
+// 802.15.4 standard:
+// =aTurnaroundTime+phySHRDuration+6*phySymbolsPerOctet
+// =12s + phySymbolsPerOctet + 6o * phySymbolsPerOctet
+// SHR:  BPSK: 40; OQPSK: 10
+// phySymbolsPerOctet: BPSK: 8; OQPSK: 2
+// plus we add a constant for safety
+//TODO: this const seems way too high. I think we can even go with 0...
+#ifndef SOFTWAREACK_TIMEOUT_PLUS
+#define SOFTWAREACK_TIMEOUT_PLUS	1000
 #endif
 
 	async command uint16_t SoftwareAckConfig.getAckTimeout()
 	{
-		return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC * 15);
+#ifndef SOFTWAREACK_TIMEOUT
+		if(isBpsk())
+			return ((12+40+6*8) * getSymbolTime() + SOFTWAREACK_TIMEOUT_PLUS) * RADIO_ALARM_MICROSEC;
+		else
+			return ((12+10+6*2) * getSymbolTime() + SOFTWAREACK_TIMEOUT_PLUS) * RADIO_ALARM_MICROSEC;
+#else
+			return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC);
+#endif
 	}
 
 	tasklet_async command void SoftwareAckConfig.reportChannelError()
@@ -222,44 +298,40 @@ command error_t StdControl.stop() {
 	{
 		// pure airtime: preable (4 bytes), SFD (1 byte), length (1 byte), payload + CRC (len bytes)
 
-		return call CC2420XPacket.payloadLength(msg) + 6;
+		return call RF212Packet.payloadLength(msg) + 6;
 	}
 
 /*----------------- RandomCollisionConfig -----------------*/
 
-	/*
-	 * We try to use the same values as in CC2420
-	 *
-	 * CC2420_MIN_BACKOFF = 10 jiffies = 320 microsec
-	 * CC2420_BACKOFF_PERIOD = 10 jiffies
-	 * initial backoff = 0x1F * CC2420_BACKOFF_PERIOD = 310 jiffies = 9920 microsec
-	 * congestion backoff = 0x7 * CC2420_BACKOFF_PERIOD = 70 jiffies = 2240 microsec
-	 */
-async command uint16_t RandomCollisionConfig.getMinimumBackoff() {
-	if (withLpl) {
-		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
-	} else {
-		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
+
+#ifndef RF212_BACKOFF_MIN
+#define RF212_BACKOFF_MIN 20
+#endif
+
+	async command uint16_t RandomCollisionConfig.getMinimumBackoff()
+	{
+		return (uint16_t)(RF212_BACKOFF_MIN * getSymbolTime() * RADIO_ALARM_MICROSEC);
 	}
-}
 
-async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg) {
-	if (withLpl) {
-		return (uint16_t)(1600 * RADIO_ALARM_MICROSEC);
-	} else {
-		return (uint16_t)(9920 * RADIO_ALARM_MICROSEC);
+#ifndef RF212_BACKOFF_INIT
+#define RF212_BACKOFF_INIT 310
+#endif
+
+	async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg)
+	{
+		return (uint16_t)(RF212_BACKOFF_INIT * getSymbolTime() * RADIO_ALARM_MICROSEC);
 	}
-}
+	
+#ifndef RF212_BACKOFF_CONG
+#define RF212_BACKOFF_CONG 140
+#endif
 
-async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg) {
-	if (withLpl) {
-		return (uint16_t)(3200 * RADIO_ALARM_MICROSEC);
-	} else {
-		return (uint16_t)(2240 * RADIO_ALARM_MICROSEC);
+	async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg)
+	{
+		return (uint16_t)(RF212_BACKOFF_CONG * getSymbolTime() * RADIO_ALARM_MICROSEC);
 	}
-}
 
-
+// 802.15.4 standard: SIFS (no ack requested): 12 symbol; LIFS (ack requested): 40 symbol
 	async command uint16_t RandomCollisionConfig.getTransmitBarrier(message_t* msg)
 	{
 		uint16_t time;
@@ -269,9 +341,9 @@ async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg
 
 		// estimated response time (download the message, etc) is 5-8 bytes
 		if( call Ieee154PacketLayer.requiresAckReply(msg) )
-			time += (uint16_t)(32 * (-5 + 16 + 11 + 5) * RADIO_ALARM_MICROSEC);
+			time += (uint16_t)(40 * getSymbolTime() * RADIO_ALARM_MICROSEC);
 		else
-			time += (uint16_t)(32 * (-5 + 5) * RADIO_ALARM_MICROSEC);
+			time += (uint16_t)(12 * getSymbolTime() * RADIO_ALARM_MICROSEC);
 
 		return time;
 	}
@@ -317,6 +389,7 @@ async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg
 
 /*----------------- LowPowerListening -----------------*/
 
+#ifdef LOW_POWER_LISTENING
 
 	command bool LowPowerListeningConfig.needsAutoAckRequest(message_t* msg)
 	{
@@ -330,8 +403,24 @@ async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg
 
 	command uint16_t LowPowerListeningConfig.getListenLength()
 	{
-		return 5;
+		switch(getSymbolTime()){
+			case 50: {
+				return 38;
+			};
+			case 40: {
+				return 24;
+			};
+			case 25:{
+				return 20;
+			};
+			case 16:{
+				return 12;
+			}
+			default:{
+				return getSymbolTime();
+			}
+		}
 	}
-
+#endif
 
 }

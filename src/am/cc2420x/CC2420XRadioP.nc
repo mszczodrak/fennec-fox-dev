@@ -51,6 +51,7 @@ module CC2420XRadioP
 	}
 
 provides interface StdControl;
+provides interface CollisionAvoidanceConfig;
 uses interface cc2420xParams;
 }
 
