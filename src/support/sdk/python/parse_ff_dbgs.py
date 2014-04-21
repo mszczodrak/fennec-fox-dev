@@ -16,12 +16,12 @@ for line in f.readlines():
 	if len(l) < 2:
 		continue
 
-	if l[0] == "layer":
+	if not l[0].isdigit():
 		continue
 
-	layer = int("%s"%(l[0]))
-	state = int("%s"%(l[1]))
-	action = int("%s"%(l[2]))
+	process = int("%s"%(l[0]))
+	layer = int("%s"%(l[1]))
+	state = int("%s"%(l[2]))
 	d0 = int("%s"%(l[3]))
 	d1 = int("%s"%(l[4]))
 
@@ -33,12 +33,12 @@ for line in f.readlines():
 
 	time_stamp = time_stamp - min_time
 
-	print "{:>6} {:03} ({:}): ".format(time_stamp/1000, time_stamp%1000, mote_id),
+	print "{:>6} {:03}    Mote: {:}   ".format(time_stamp/1000, time_stamp%1000, mote_id),
 
-	print 'Layer: {:<11} '.format(get_layer(layer)),
+	print "Process Id: {:<3} ".format(process),
+
+	print "Layer: {:<13} ".format(get_layer(layer)),
 
 	print "State: {:<9} ".format(get_state(state)),
 
-	print "Action: {:<18} ".format(get_action(action)),
-
-	print "Data:[ %s %s ]" % (l[3], l[4]) 
+	print "Data: [ {:>4}  {:>4} ]".format(l[3], l[4]) 
