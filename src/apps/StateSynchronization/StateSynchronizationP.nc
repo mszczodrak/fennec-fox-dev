@@ -117,7 +117,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if (state_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
 		len - sizeof(((nx_struct fennec_network_state *)0)->crc)) ) {
-		printf("failed\n");
 		return msg;
 	}
 
