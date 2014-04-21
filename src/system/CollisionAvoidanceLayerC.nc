@@ -41,7 +41,7 @@ uses interface RadioReceive as SubReceive;
 uses interface RadioAlarm;
 uses interface RandomCollisionConfig;
 uses interface SlottedCollisionConfig;
-uses interface CollisionAvoidanceLayer;
+uses interface CollisionAvoidanceConfig;
 }
 
 implementation {
@@ -55,7 +55,7 @@ SubReceive = CollisionAvoidanceLayerP.SubReceive;
 RadioAlarm = CollisionAvoidanceLayerP.RadioAlarm;
 RandomCollisionConfig = CollisionAvoidanceLayerP.RandomCollisionConfig;
 SlottedCollisionConfig = CollisionAvoidanceLayerP.SlottedCollisionConfig;
-CollisionAvoidanceLayer = CollisionAvoidanceLayerP.CollisionAvoidanceLayer;
+CollisionAvoidanceConfig = CollisionAvoidanceLayerP.CollisionAvoidanceConfig;
 
 /* wire to SlottedCollisionLayer */
 

@@ -42,7 +42,7 @@ uses interface RadioReceive as SubReceive;
 uses interface RadioAlarm;
 uses interface RandomCollisionConfig;
 uses interface SlottedCollisionConfig;
-uses interface CollisionAvoidanceLayer;
+uses interface CollisionAvoidanceConfig;
 
 /* wire to Slotted */
 uses interface RadioSend as SlottedRadioSend;
@@ -70,7 +70,7 @@ implementation {
 norace bool slotted = FALSE;
 
 command error_t StdControl.start() {
-	slotted = call CollisionAvoidanceLayer.isSlotted();
+	slotted = call CollisionAvoidanceConfig.isSlotted();
 	return SUCCESS;
 }
 
