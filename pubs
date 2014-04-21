@@ -5,7 +5,6 @@ src/interfaces
 src/Makefile
 src/system
 src/support
-src/Serial
 src/Fennec
 src/apps/create.sh
 src/apps/nullApp
