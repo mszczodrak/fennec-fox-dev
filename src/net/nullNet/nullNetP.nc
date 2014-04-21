@@ -82,6 +82,10 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return SUCCESS;
 	}
 
+	if (addr != AM_BROADCAST_ADDR) {
+		call PacketAcknowledgements.requestAck(msg);
+	}
+
 	return call SubAMSend.send(addr, msg, len + 
 		sizeof(nx_struct nullNet_header));
 }
