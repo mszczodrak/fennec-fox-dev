@@ -71,7 +71,7 @@ components SerialPrintfC;
 components LoggerC;
 #endif
 
-components DbgsC;
-DbgsC.Boot -> MainC;
+components SerialDbgsC;
+SerialDbgsC.Boot -> MainC;
 }
 

@@ -2,7 +2,6 @@ CFLAGS+=-I$(FENNEC_FOX_LIB)/interfaces
 CFLAGS+=-I$(FENNEC_FOX_LIB)/system
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc
-CFLAGS+=-I$(FENNEC_FOX_LIB)/Events
 CFLAGS+=-I$(FENNEC_FOX_LIB)/support/dbgs
 
 CFLAGS+=-I$(TOSDIR)/lib/net/ 

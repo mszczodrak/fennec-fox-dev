@@ -26,7 +26,7 @@
  */
 
 /**
-  * Fennec Fox Dbgs Module
+  * Fennec Fox SerialDbgs Module
   *
   * @author: Marcin K Szczodrak
   * @updated: 09/08/2013
@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "DebugMsg.h"
 
-module DbgsP @safe() {
+module SerialDbgsP @safe() {
 uses interface Boot;
 
 #ifdef __DBGS__
@@ -98,7 +98,7 @@ event void SplitControl.stopDone(error_t err) {
 #endif
 
 bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t d0, uint16_t d1) @C() {
-	dbg("Dbgs", "Dbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
+	dbg("SerialDbgs", "SerialDbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
 #ifdef __DBGS__
 #ifndef PRINTF_DBG
 	atomic {
