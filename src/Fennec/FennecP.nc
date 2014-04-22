@@ -50,9 +50,8 @@ implementation {
 
 norace uint16_t current_seq = 0;
 norace state_t current_state = 0;
-
+norace uint8_t rules_counter = NUMBER_OF_POLICIES;
 norace event_t event_mask;
-
 norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
@@ -60,7 +59,7 @@ norace bool state_transitioning = TRUE;
 task void check_event() {
 	uint8_t i;
 	dbg("Fennec", "[-] Fennec check_event() current mask %d", event_mask);
-	for( i=0; i < NUMBER_OF_POLICIES; i++ ) {
+	for( i=0; i < rules_counter; i++ ) {
 		if ((policies[i].src_conf == current_state) && (policies[i].event_mask == event_mask)) {
 			dbg("Fennec", "[-] Fennec found matching rule #%d", i);
 			call FennecState.setStateAndSeq(policies[i].dst_conf, (current_seq + 1) % SEQ_MAX);
