@@ -36,8 +36,10 @@
 #ifndef __PRINTF_APP_H_
 #define __PRINTF_APP_H_
 
-#define NEW_PRINTF_SEMANTICS
-#include "printf.h"
+#ifndef FENNEC_TOS_PRINTF && FENNEC_COOJA_PRINTF
+#error Neither FENNEC_TOS_PRINTF or FENNEC_COOJA_PRINTF are defined . This app will not work without one of the defined.
+#endif
+
 
 
 #endif

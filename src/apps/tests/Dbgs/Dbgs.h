@@ -36,5 +36,8 @@
 #ifndef __DBGS_APP_H_
 #define __DBGS_APP_H_
 
+#ifndef __DBGS__
+#error __DBGS__ is not defined . This app will not work without __DBGS__ 
+#endif
 
 #endif
