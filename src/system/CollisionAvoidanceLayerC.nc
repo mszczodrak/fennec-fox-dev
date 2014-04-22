@@ -30,7 +30,7 @@
   * @author: Marcin K Szczodrak
   */
 
-configuration CollisionAvoidanceLayerC {
+generic configuration CollisionAvoidanceLayerC() {
 
 provides interface StdControl;
 provides interface RadioSend;
@@ -46,7 +46,7 @@ uses interface CollisionAvoidanceConfig;
 
 implementation {
 
-components CollisionAvoidanceLayerP;
+components new CollisionAvoidanceLayerP();
 StdControl = CollisionAvoidanceLayerP.StdControl;
 RadioSend = CollisionAvoidanceLayerP.RadioSend;
 RadioReceive = CollisionAvoidanceLayerP.RadioReceive;

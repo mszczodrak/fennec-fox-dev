@@ -32,7 +32,7 @@
 
 #include <Tasklet.h>
 
-module CollisionAvoidanceLayerP {
+generic module CollisionAvoidanceLayerP() {
 provides interface StdControl;
 provides interface RadioSend;
 provides interface RadioReceive;
