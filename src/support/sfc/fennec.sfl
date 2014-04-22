@@ -115,8 +115,8 @@ use am cc2420x $(FENNEC_FOX_LIB)/am/cc2420x (
 )
 
 use am rf212 $(FENNEC_FOX_LIB)/am/rf212 (
-		uint8_t channel=26,
-		uint8_t power=31, 
+		uint8_t channel=0,
+		uint8_t power=0xE8, 
 		uint16_t sleepInterval=0,
 		bool slotted = 0
 )
@@ -130,7 +130,7 @@ use am rf230 $(FENNEC_FOX_LIB)/am/rf230 (
 
 use am atm128rfa1 $(FENNEC_FOX_LIB)/am/atm128rfa1 (
 		uint8_t channel=26,
-		uint8_t power=31, 
+		uint8_t power=0x00, 
 		uint16_t sleepInterval=0,
 		bool slotted = 0
 )
