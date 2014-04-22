@@ -47,8 +47,7 @@ struct debug_msg {
 };
 
 enum {
-	AM_DEBUG_MSG = 100,
-	DBG_BUFFER_SIZE  = 250,	
+	AM_DEBUG_MSG = 0x89,
 };
 
 #endif

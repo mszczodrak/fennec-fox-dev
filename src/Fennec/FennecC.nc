@@ -72,6 +72,5 @@ components LoggerC;
 #endif
 
 components SerialDbgsC;
-SerialDbgsC.Boot -> MainC;
 }
 

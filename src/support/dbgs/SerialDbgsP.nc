@@ -36,93 +36,45 @@
 #include "DebugMsg.h"
 
 module SerialDbgsP @safe() {
-uses interface Boot;
-
 #ifdef __DBGS__
-uses interface SplitControl;
-uses interface Receive;
 uses interface AMSend;
-uses interface Queue<struct debug_msg>;
 #endif
 }
 
 implementation {
 
-uint8_t state = S_STOPPED;
-
 #ifdef __DBGS__
 message_t packet;
-norace struct debug_msg *msg;
-#endif
-
-event void Boot.booted() {
-	state = S_STOPPED;
-#ifdef __DBGS__
-	state = S_STARTING;
-	msg = NULL;
-	call SplitControl.start();
-#endif
-}
-
-#ifdef __DBGS__
-task void send_msg() {
-	if (state == S_STARTED) {
-		struct debug_msg q_msg = call Queue.dequeue();
-		state = S_TRANSMITTING;
-		memcpy(msg, &q_msg, sizeof(struct debug_msg));
-		call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg));
-	}
-}
-
-event message_t* Receive.receive(message_t* bufPtr,
-                                   void* payload, uint8_t len) {
-	return bufPtr;
-}
+norace struct debug_msg *dmsg = NULL;
+bool busy = FALSE;
 
 event void AMSend.sendDone(message_t* bufPtr, error_t error) {
-	state = S_STARTED;
-	if (call Queue.empty()) {
-	} else {
-		post send_msg();
-	}
+	busy = FALSE;
 }
 
-event void SplitControl.startDone(error_t err) {
-	state = S_STARTED;
-	msg = (struct debug_msg*) call AMSend.getPayload(&packet, sizeof(struct debug_msg));
-}
-
-event void SplitControl.stopDone(error_t err) {
-
-}
 #endif
-
-bool dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t d0, uint16_t d1) @C() {
-	dbg("SerialDbgs", "SerialDbgs 0x%1x 0x%1x 0x%1x 0x%1x 0x%1x", layer, dbg_state, action, d0, d1);
+void dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t d0, uint16_t d1) @C() {
 #ifdef __DBGS__
-#ifndef PRINTF_DBG
-	atomic {
-		if (call Queue.full()) 
-			return 1;
-
-		memset(msg, 0, sizeof(struct debug_msg));
-		msg->process = process;
-		msg->layer = layer;
-		msg->state = dbg_state;
-		msg->d0 = d0;
-		msg->d1 = d1;
-		call Queue.enqueue(*msg);
-
-		post send_msg();
+	if (busy) {
+		return;
 	}
 
-#else
-	printf("%d %d %d %d %d %d %d\n", process, layer, dbg_state, d0, d1);
-	printfflush();
-#endif
+	if (dmsg == NULL) {
+		dmsg = (struct debug_msg*) call AMSend.getPayload(&packet, sizeof(struct debug_msg));
+	}
 
+	busy = TRUE;
+
+	dmsg->process = process;
+	dmsg->layer = layer;
+	dmsg->state = dbg_state;
+	dmsg->d0 = d0;
+	dmsg->d1 = d1;
+
+	if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg)) != SUCCESS) {
+		signal AMSend.sendDone(&packet, FAIL);
+	}
 #endif
-	return 0;
 }
 
 }

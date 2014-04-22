@@ -37,22 +37,16 @@
 #include "DebugMsg.h"
 
 configuration SerialDbgsC {
-uses interface Boot;
 }
 
 implementation {
 
 components SerialDbgsP;
-Boot = SerialDbgsP;
 
 #ifdef __DBGS__
 components SerialActiveMessageC as SerialAM;
-SerialDbgsP.SplitControl -> SerialAM;
-SerialDbgsP.Receive -> SerialAM.Receive[AM_DEBUG_MSG];
 SerialDbgsP.AMSend -> SerialAM.AMSend[AM_DEBUG_MSG];
-
-components new QueueC(struct debug_msg, DBG_BUFFER_SIZE);
-SerialDbgsP.Queue -> QueueC;
+components SerialStartC;
 #endif
 
 }
