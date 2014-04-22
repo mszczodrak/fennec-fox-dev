@@ -63,17 +63,17 @@ implementation
 
 components cc2420xP;
 components CC2420XActiveMessageC as AM;
-components CC2420XRadioP;
+components CC2420XRadioP as RadioP;
 
 cc2420xParams = cc2420xP;
-cc2420xParams = CC2420XRadioP.cc2420xParams;
+cc2420xParams = RadioP.cc2420xParams;
 SplitControl = cc2420xP.SplitControl;
 AMQueueControl = cc2420xP.AMQueueControl;
 AMSend = cc2420xP.AMSend;
 Receive = cc2420xP.Receive;
 Snoop = cc2420xP.Snoop;
 
-cc2420xP.RadioParamsControl -> CC2420XRadioP.StdControl;
+cc2420xP.RadioParamsControl -> RadioP.StdControl;
 
 cc2420xP.SubSplitControl -> AM.SplitControl;
 cc2420xP.PacketTransmitPower -> AM.PacketTransmitPower;

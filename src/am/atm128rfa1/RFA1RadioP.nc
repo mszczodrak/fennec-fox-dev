@@ -64,10 +64,31 @@ module RFA1RadioP
 
 		interface PacketTimeStamp<TRadio, uint32_t>;
 	}
+
+provides interface StdControl;
+provides interface CollisionAvoidanceConfig;
+uses interface atm128rfa1Params;
 }
 
 implementation
 {
+
+norace bool withLpl = FALSE;
+norace bool isSlotted = FALSE;
+
+command error_t StdControl.start() {
+	withLpl = (call atm128rfa1Params.get_sleepInterval() > 0);
+	isSlotted = call atm128rfa1Params.get_slotted() > 0 ? TRUE : FALSE;
+	return SUCCESS;
+}
+
+command error_t StdControl.stop() {
+	return SUCCESS;
+}
+
+command bool CollisionAvoidanceConfig.isSlotted() {
+	return isSlotted;
+}
 
 /*----------------- RFA1DriverConfig -----------------*/
 

@@ -107,7 +107,8 @@ implementation
 
 // -------- RadioAlarm
 
-	components new RadioAlarmC();
+	//components new RadioAlarmC();
+	components new RFA1RadioAlarmC() as RadioAlarmC; /* ucprotonb */
 	RadioAlarmC.Alarm -> RadioDriverLayerC;
 
 // -------- Active Message
@@ -178,7 +179,8 @@ implementation
 
 // -------- UniqueLayer Send part (wired twice)
 
-	components new UniqueLayerC();
+	//components new UniqueLayerC();
+	components new RFA1UniqueLayerC() as UniqueLayerC; /* ucprotonb */
 	UniqueLayerC.Config -> RadioP;
 	UniqueLayerC.SubSend -> PacketLinkLayerC;
 
@@ -210,7 +212,8 @@ implementation
 
 // -------- MessageBuffer
 
-	components new MessageBufferLayerC();
+	//components new MessageBufferLayerC();
+	components new RFA1MessageBufferLayerC() as MessageBufferLayerC; /* ucprotonb */
 	MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
 	MessageBufferLayerC.RadioReceive -> UniqueLayerC;
 	MessageBufferLayerC.RadioState -> TrafficMonitorLayerC;
@@ -222,11 +225,10 @@ implementation
 
 // -------- CollisionAvoidance
 
-#ifdef SLOTTED_MAC
-	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
-#else
-	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
-#endif
+	components new CollisionAvoidanceLayerC();
+	CollisionAvoidanceLayerC.CollisionAvoidanceConfig -> RadioP.CollisionAvoidanceConfig;
+	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
+	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
 	CollisionAvoidanceLayerC.Config -> RadioP;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;

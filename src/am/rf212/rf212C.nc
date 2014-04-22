@@ -64,17 +64,17 @@ implementation
 
 components rf212P;
 components RF212ActiveMessageC as AM;
-components RF212RadioP;
+components RF212RadioP as RadioP;
 
 rf212Params = rf212P;
-rf212Params = RF212RadioP.rf212Params;
+rf212Params = RadioP.rf212Params;
 SplitControl = rf212P.SplitControl;
 AMQueueControl = rf212P.AMQueueControl;
 AMSend = rf212P.AMSend;
 Receive = rf212P.Receive;
 Snoop = rf212P.Snoop;
 
-rf212P.RadioParamsControl -> RF212RadioP.StdControl;
+rf212P.RadioParamsControl -> RadioP.StdControl;
 
 rf212P.SubSplitControl -> AM.SplitControl;
 rf212P.PacketTransmitPower -> AM.PacketTransmitPower;

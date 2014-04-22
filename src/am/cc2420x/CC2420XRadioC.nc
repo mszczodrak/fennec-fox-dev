@@ -209,7 +209,7 @@ implementation
 
 // -------- CollisionAvoidance
 
-	components CollisionAvoidanceLayerC;
+	components new CollisionAvoidanceLayerC();
 	CollisionAvoidanceLayerC.CollisionAvoidanceConfig -> RadioP.CollisionAvoidanceConfig;
 	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
 	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;

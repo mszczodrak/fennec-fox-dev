@@ -62,18 +62,18 @@ implementation
 {
 
 components atm128rfa1P;
-components CC2420XActiveMessageC as AM;
-components CC2420XRadioP;
+components RFA1ActiveMessageC as AM;
+components RFA1RadioP as RadioP;
 
 atm128rfa1Params = atm128rfa1P;
-atm128rfa1Params = CC2420XRadioP.atm128rfa1Params;
+atm128rfa1Params = RadioP.atm128rfa1Params;
 SplitControl = atm128rfa1P.SplitControl;
 AMQueueControl = atm128rfa1P.AMQueueControl;
 AMSend = atm128rfa1P.AMSend;
 Receive = atm128rfa1P.Receive;
 Snoop = atm128rfa1P.Snoop;
 
-atm128rfa1P.RadioParamsControl -> CC2420XRadioP.StdControl;
+atm128rfa1P.RadioParamsControl -> RadioP.StdControl;
 
 atm128rfa1P.SubSplitControl -> AM.SplitControl;
 atm128rfa1P.PacketTransmitPower -> AM.PacketTransmitPower;
