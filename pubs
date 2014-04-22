@@ -32,3 +32,7 @@ src/net/trickle
 src/am/create.sh
 src/am/nullAM
 src/am/cc2420
+src/am/cc2420x
+src/am/rf212
+src/am/rf230
+src/am/atm128rfa1
