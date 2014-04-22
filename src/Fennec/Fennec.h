@@ -55,12 +55,7 @@
 #include "ff_functions.h"
 #include "ff_consts.h"
 
-
-#include <Ieee154.h>
-
 #include <AM.h>
 #include <message.h>
-#include <Serial.h>
-
 
 #endif
