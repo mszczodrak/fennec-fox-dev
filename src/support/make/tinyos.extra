@@ -15,5 +15,4 @@ ifeq ($(TARGETS),telosb)
 endif
 
 ifeq ($(TARGETS),z1)
-  CFLAGS += -DZ1RADIOCONFIGHACK
 endif
