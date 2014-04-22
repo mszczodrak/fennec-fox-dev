@@ -8,10 +8,10 @@ CFLAGS += -I$(TOSDIR)/lib/rfxlink/layers
 
 ifeq ($(TARGETS),telosb)
   CFLAGS += -DCC2420X
-  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
-  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
-  PFLAGS+=-I$(TOSDIR)/platforms/telosa/chips/cc2420x
-  PFLAGS+=-I$(TOSDIR)/chips/cc2420x
+  PFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
+  PFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
+  PFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x
+  PFLAGS += -I$(TOSDIR)/chips/cc2420x
 endif
 
 ifeq ($(TARGETS),z1)

@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "DebugMsg.h"
 
-module FennecSerialDbgP @safe() {
+module DbgsP @safe() {
 uses interface Boot;
 
 #ifdef __DBGS__
@@ -44,7 +44,6 @@ uses interface Receive;
 uses interface AMSend;
 uses interface Queue<struct debug_msg>;
 #endif
-uses interface Leds;
 }
 
 implementation {

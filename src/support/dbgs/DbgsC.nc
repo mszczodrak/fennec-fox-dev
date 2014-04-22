@@ -36,26 +36,24 @@
 #include <Fennec.h>
 #include "DebugMsg.h"
 
-configuration FennecSerialDbgC {
+configuration DbgsC {
 uses interface Boot;
 }
 
 implementation {
 
-components FennecSerialDbgP;
-Boot = FennecSerialDbgP;
+components DbgsP;
+Boot = DbgsP;
 
 #ifdef __DBGS__
 components SerialActiveMessageC as SerialAM;
-FennecSerialDbgP.SplitControl -> SerialAM;
-FennecSerialDbgP.Receive -> SerialAM.Receive[AM_DEBUG_MSG];
-FennecSerialDbgP.AMSend -> SerialAM.AMSend[AM_DEBUG_MSG];
+DbgsP.SplitControl -> SerialAM;
+DbgsP.Receive -> SerialAM.Receive[AM_DEBUG_MSG];
+DbgsP.AMSend -> SerialAM.AMSend[AM_DEBUG_MSG];
 
 components new QueueC(struct debug_msg, DBG_BUFFER_SIZE);
-FennecSerialDbgP.Queue -> QueueC;
+DbgsP.Queue -> QueueC;
 #endif
 
-components LedsC;
-FennecSerialDbgP.Leds -> LedsC;
 }
 

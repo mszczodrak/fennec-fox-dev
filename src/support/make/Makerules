@@ -3,5 +3,6 @@ PFLAGS+=-I$(FENNEC_FOX_LIB)/system
 PFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec
 PFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc
 PFLAGS+=-I$(FENNEC_FOX_LIB)/Events
+PFLAGS+=-I$(FENNEC_FOX_LIB)/Events/support/dbgs
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 TOSMAKE_PATH+=$(FENNEC_FOX_LIB)/support/make
