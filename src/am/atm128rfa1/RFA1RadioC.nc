@@ -196,7 +196,6 @@ implementation
 // -------- Low Power Listening
 
 #ifdef LOW_POWER_LISTENING
-	#warning "*** USING LOW POWER LISTENING LAYER"
 	components new LowPowerListeningLayerC();
 	LowPowerListeningLayerC.Config -> RadioP;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
@@ -229,7 +228,6 @@ implementation
 	CollisionAvoidanceLayerC.CollisionAvoidanceConfig -> RadioP.CollisionAvoidanceConfig;
 	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
 	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
-	CollisionAvoidanceLayerC.Config -> RadioP;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];

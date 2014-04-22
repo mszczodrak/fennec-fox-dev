@@ -56,6 +56,7 @@ provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
+uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp32khz;
 }
 
 implementation
@@ -92,7 +93,7 @@ LowPowerListening = AM.LowPowerListening;
 RadioChannel = AM.RadioChannel;
 PacketTimeStampRadio = AM.PacketTimeStampRadio;
 PacketTimeStampMilli = AM.PacketTimeStampMilli;
-PacketTimeStamp32khz = AM.PacketTimeStamp32khz;
+PacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
 PacketAcknowledgements = AM.PacketAcknowledgements;
 LinkPacketMetadata = AM.LinkPacketMetadata;
 PacketLinkQuality = AM.PacketLinkQuality;
