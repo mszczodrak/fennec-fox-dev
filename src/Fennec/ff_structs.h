@@ -37,7 +37,6 @@
 #define FF_STRUCTURES_H
 
 #include "ff_consts.h"
-#include "ff_structs.h"
 #include "platform_message.h"
 
 #ifndef TOSH_DATA_LENGTH
