@@ -1,17 +1,9 @@
-CFLAGS += -I$(TOSDIR)/lib/net/ 
-CFLAGS += -I$(TOSDIR)/lib/net/ctp  
-CFLAGS += -I$(TOSDIR)/lib/net/drip  
-CFLAGS += -I$(TOSDIR)/lib/net/4bitle
-CFLAGS += -I$(TOSDIR)/lib/rfxlink
-CFLAGS += -I$(TOSDIR)/lib/rfxlink/util
-CFLAGS += -I$(TOSDIR)/lib/rfxlink/layers
-
 ifeq ($(TARGETS),telosb)
   CFLAGS += -DCC2420X
-  PFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
-  PFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
-  PFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x
-  PFLAGS += -I$(TOSDIR)/chips/cc2420x
+  CFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro
+  CFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x/tmicro/am
+  CFLAGS += -I$(TOSDIR)/platforms/telosa/chips/cc2420x
+  CFLAGS += -I$(TOSDIR)/chips/cc2420x
 endif
 
 ifeq ($(TARGETS),z1)

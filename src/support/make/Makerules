@@ -4,5 +4,15 @@ CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc
 CFLAGS+=-I$(FENNEC_FOX_LIB)/Events
 CFLAGS+=-I$(FENNEC_FOX_LIB)/support/dbgs
+
+CFLAGS+=-I$(TOSDIR)/lib/net/ 
+CFLAGS+=-I$(TOSDIR)/lib/net/ctp  
+CFLAGS+=-I$(TOSDIR)/lib/net/drip  
+CFLAGS+=-I$(TOSDIR)/lib/net/4bitle
+CFLAGS+=-I$(TOSDIR)/lib/rfxlink
+CFLAGS+=-I$(TOSDIR)/lib/rfxlink/util
+CFLAGS+=-I$(TOSDIR)/lib/rfxlink/layers
+
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 TOSMAKE_PATH+=$(FENNEC_FOX_LIB)/support/make
+
