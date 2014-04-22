@@ -51,10 +51,7 @@ module RF212RadioP
 		interface SlottedCollisionConfig;
 		interface ActiveMessageConfig;
 		interface DummyConfig;
-
-#ifdef LOW_POWER_LISTENING
 		interface LowPowerListeningConfig;
-#endif
 	}
 
 	uses
@@ -389,8 +386,6 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 
 /*----------------- LowPowerListening -----------------*/
 
-#ifdef LOW_POWER_LISTENING
-
 	command bool LowPowerListeningConfig.needsAutoAckRequest(message_t* msg)
 	{
 		return call Ieee154PacketLayer.getDestAddr(msg) != TOS_BCAST_ADDR;
@@ -421,6 +416,4 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 			}
 		}
 	}
-#endif
-
 }

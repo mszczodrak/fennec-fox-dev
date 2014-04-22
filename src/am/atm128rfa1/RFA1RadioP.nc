@@ -50,10 +50,7 @@ module RFA1RadioP
 		interface SlottedCollisionConfig;
 		interface ActiveMessageConfig;
 		interface DummyConfig;
-
-#ifdef LOW_POWER_LISTENING
 		interface LowPowerListeningConfig;
-#endif
 	}
 
 	uses
@@ -251,14 +248,14 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 	 * congestion backoff = 0x7 * CC2420_BACKOFF_PERIOD = 70 jiffies = 2240 microsec
 	 */
 
-#ifndef LOW_POWER_LISTENING
-
 #ifndef RFA1_BACKOFF_MIN
 #define RFA1_BACKOFF_MIN 320
 #endif
 
-	async command uint16_t RandomCollisionConfig.getMinimumBackoff()
-	{
+async command uint16_t RandomCollisionConfig.getMinimumBackoff() {
+	if (withLpl) {
+		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
+	} else {
 		return (uint16_t)(RFA1_BACKOFF_MIN * RADIO_ALARM_MICROSEC);
 	}
 
@@ -266,8 +263,10 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 #define RFA1_BACKOFF_INIT 4960		// instead of 9920
 #endif
 
-	async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg)
-	{
+async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg) {
+	if (withLpl) {
+		return (uint16_t)(1600 * RADIO_ALARM_MICROSEC);
+	} else {
 		return (uint16_t)(RFA1_BACKOFF_INIT * RADIO_ALARM_MICROSEC);
 	}
 
@@ -275,12 +274,12 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 #define RFA1_BACKOFF_CONG 2240
 #endif
 
-	async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg)
-	{
+async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg) {
+	if (withLpl) {
+		return (uint16_t)(3200 * RADIO_ALARM_MICROSEC);
+	} else {
 		return (uint16_t)(RFA1_BACKOFF_CONG * RADIO_ALARM_MICROSEC);
 	}
-
-#endif
 
 	async command uint16_t RandomCollisionConfig.getTransmitBarrier(message_t* msg)
 	{
@@ -339,8 +338,6 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 
 /*----------------- LowPowerListening -----------------*/
 
-#ifdef LOW_POWER_LISTENING
-
 	command bool LowPowerListeningConfig.needsAutoAckRequest(message_t* msg)
 	{
 		return call Ieee154PacketLayer.getDestAddr(msg) != TOS_BCAST_ADDR;
@@ -355,22 +352,4 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 	{
 		return 5;
 	}
-
-	async command uint16_t RandomCollisionConfig.getMinimumBackoff()
-	{
-		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
-	}
-
-	async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg)
-	{
-		return (uint16_t)(1600 * RADIO_ALARM_MICROSEC);
-	}
-
-	async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg)
-	{
-		return (uint16_t)(3200 * RADIO_ALARM_MICROSEC);
-	}
-
-#endif
-
 }

@@ -195,13 +195,9 @@ implementation
 
 // -------- Low Power Listening
 
-#ifdef LOW_POWER_LISTENING
 	components new LowPowerListeningLayerC();
 	LowPowerListeningLayerC.Config -> RadioP;
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
-#else	
-	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
-#endif
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubReceive -> MessageBufferLayerC;
