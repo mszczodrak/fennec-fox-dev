@@ -61,6 +61,9 @@ void dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t d0, uint
 
 	if (dmsg == NULL) {
 		dmsg = (struct debug_msg*) call AMSend.getPayload(&packet, sizeof(struct debug_msg));
+		if (dmsg == NULL) {
+			return;
+		}
 	}
 
 	busy = TRUE;
