@@ -1,8 +1,8 @@
-PFLAGS+=-I$(FENNEC_FOX_LIB)/interfaces
-PFLAGS+=-I$(FENNEC_FOX_LIB)/system
-PFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec
-PFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc
-PFLAGS+=-I$(FENNEC_FOX_LIB)/Events
-PFLAGS+=-I$(FENNEC_FOX_LIB)/Events/support/dbgs
+CFLAGS+=-I$(FENNEC_FOX_LIB)/interfaces
+CFLAGS+=-I$(FENNEC_FOX_LIB)/system
+CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec
+CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc
+CFLAGS+=-I$(FENNEC_FOX_LIB)/Events
+CFLAGS+=-I$(FENNEC_FOX_LIB)/support/dbgs
 include $(FENNEC_FOX_LIB)/support/sfc/fennec.extra
 TOSMAKE_PATH+=$(FENNEC_FOX_LIB)/support/make
