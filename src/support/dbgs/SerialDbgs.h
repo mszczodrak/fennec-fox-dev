@@ -111,6 +111,4 @@ enum {
 #define DBGS_TIMER_FIRED			160
 #define DBGS_BUSY				161
 
-#define DBGS_TEST_SIGNAL	32767
-
 #endif

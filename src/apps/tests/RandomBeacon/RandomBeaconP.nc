@@ -80,11 +80,7 @@ task void set_timer() {
 
 command error_t SplitControl.start() {
 	//call Leds.led0On();
-	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, 0, 0);
-	dbg("Application", "RandomBeacon SplitControl.start()");
-
 	post set_timer();
-
 	sendBusy = FALSE;
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -92,8 +88,6 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "RandomBeacon SplitControl.stop()");
-	//dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -109,15 +103,9 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = call Random.rand32();
 
-	dbg("Application", "RandomBeacon sendMessage() seqno: %d source: %d", msg->seqno, msg->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, msg->seqno, msg->source);
-
 	if (call SubAMSend.send(BROADCAST, &packet, 
 					sizeof(RandomBeaconMsg)) != SUCCESS) {
 	} else {
-		dbg("Application", "RandomBeacon call SubAMSend.send(%d, 0x%1x, %d)",
-					BROADCAST, &packet,
-					sizeof(RandomBeaconMsg));
 		sendBusy = TRUE;
 		call Leds.set(msg->seqno);
 	}
@@ -131,18 +119,12 @@ event void Timer.fired() {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	dbg("Application", "RandomBeacon event SubAMSend.sendDone(0x%1x, %d)",
-					msg, error);
 	sendBusy = FALSE;
 }
 
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	RandomBeaconMsg* cm = (RandomBeaconMsg*)payload;
-
-	dbg("Application", "RandomBeacon event SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len); 
-	dbg("Application", "RandomBeacon receive seqno: %d source: %d", cm->seqno, cm->source); 
-	dbgs(F_APPLICATION, S_NONE, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	call Leds.set(cm->seqno);
 	return msg;
 }

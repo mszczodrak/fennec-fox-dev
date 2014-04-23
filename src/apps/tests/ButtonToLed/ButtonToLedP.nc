@@ -77,20 +77,13 @@ task void send_message() {
 
 	if (call SubAMSend.send(BROADCAST, &packet, 
 				sizeof(ButtonToLedMsg)) != SUCCESS) {
-                dbgs(F_APPLICATION, S_ERROR, DBGS_SEND_DATA, counter, counter, 0, 0);
-                dbg("Application", "ButtonToLed sendMessage() counter: %d - FAILED",
-                                        		msg->counter);
         } else {
-                dbgs(F_APPLICATION, S_NONE, DBGS_SEND_DATA, counter, counter, 0, 0);
-                dbg("Application", "ButtonToLed call SubAMSend.send(%d, 0x%1x, %d)",
-                                        BROADCAST, &packet, sizeof(ButtonToLedMsg));
                 call Leds.set(counter);
         }
 	counter = 0;
 }
 
 command error_t SplitControl.start() {
-	dbg("Application", "ButtonToLed SplitControl.start()");
 	counter = 0;
 	turn_off = FALSE;
 	call Notify.enable();
@@ -99,7 +92,6 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	dbg("Application", "ButtonToLed SplitControl.start()");
 	call Notify.disable();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -110,8 +102,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {}
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	ButtonToLedMsg* c = (ButtonToLedMsg*)payload;
 	call Leds.set(c->counter);
-	dbg("Application", "ButtonToLed event SubReceive.receive(0x%1x, 0x%1x, %d)", msg, payload, len);
-	dbg("Application", "ButtonToLed receive counter: %d", c->counter);
 	turn_off = TRUE;
 	call Timer.startOneShot(LED_TURNOFF_TIME);
 	return msg;

@@ -104,8 +104,6 @@ uint16_t dest;
 
 task void report_measurements() {
 	call Leds.led1Toggle();
-	dbgs(F_APPLICATION, S_NONE, data->temp, data->adc[0], data->adc[1], 0, 0);
-	dbgs(F_APPLICATION, S_NONE, data->accel[0], data->accel[1], data->accel[2], 0, 0);
 
 	if (call SubAMSend.send(dest, &network_packet,
 			sizeof(z1_sensors_t)) != SUCCESS) {
@@ -142,14 +140,11 @@ command error_t SplitControl.start() {
 		dest = TOS_NODE_ID;
 	}
 
-	dbg("Application", "Z1Sensors SplitControl.start()");
-	call Timer.startPeriodic(call Z1SensorsParams.get_sampling_rate());
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("Application", "Z1Sensors SplitControl.start()");
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -159,8 +154,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {}
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 #ifdef TOSSIM
 	z1_sensors_t *d = (z1_sensors_t*)payload;
-	dbg("Application", "Z1Sensors Temperature %d  Acceleration %d-%d-%d   Adcs[0,1,3,7] %d %d %d %d", 
-		d->temp, d->accel[0], d->accel[1], d->accel[2], d->adc[0], d->adc[1], d->adc[2], d->adc[3]);
 #endif
 
 	memcpy(serial_data, payload, len);
@@ -180,60 +173,46 @@ event void Timer.fired() {
 }
 
 event void ReadTemperature.readDone(error_t error, uint16_t val) {
-	dbg("Application", "Application Z1Sensors ReadTemperature.readDone(%d %d)",
-							error, val);
 	data->temp = val;
 	call ReadAdc0.read();
 }
 
 event void ReadAdc0.readDone( error_t result, uint16_t val ) {
-	dbg("Application", "Application Z1Sensors ReadAdc0.singleDataReady(%d)", val);
 	data->adc[0] = val;
 	call ReadAdc1.read();
 }
 
 event void ReadAdc1.readDone( error_t result, uint16_t val ) {
-	dbg("Application", "Application Z1Sensors ReadAdc1.singleDataReady(%d)", val);
 	data->adc[1] = val;
 	call ReadAdc3.read();
 }
 
 event void ReadAdc3.readDone( error_t result, uint16_t val ) {
-	dbg("Application", "Application Z1Sensors ReadAdc3.singleDataReady(%d)", val);
 	data->adc[2] = val;
 	call ReadAdc7.read();
 }
 
 event void ReadAdc7.readDone( error_t result, uint16_t val ) {
-	dbg("Application", "Application Z1Sensors ReadAdc7.singleDataReady(%d)", val);
 	data->adc[3] = val;
 	call ReadXaxis.read();
 }
 
 event void ReadXaxis.readDone(error_t error, uint16_t val) {
-	dbg("Application", "Application Z1Sensors ReadXaxis.readDone(%d %d)",
-							error, val);
 	data->accel[0] = val;
 	call ReadYaxis.read();
 }
 
 event void ReadYaxis.readDone(error_t error, uint16_t val) {
-	dbg("Application", "Application Z1Sensors ReadYaxis.readDone(%d %d)",
-							error, val);
 	data->accel[1] = val;
 	call ReadZaxis.read();
 }
 
 event void ReadZaxis.readDone(error_t error, uint16_t val) {
-	dbg("Application", "Application Z1Sensors ReadZaxis.readDone(%d %d)",
-							error, val);
 	data->accel[2] = val;
 	call ReadBattery.read();
 }
 
 event void ReadBattery.readDone(error_t error, uint16_t val) {
-	dbg("Application", "Application Z1Sensors ReadBattery.readDone(%d %d)",
-							error, val);
 	data->battery = val;
 	post report_measurements();
 }
@@ -269,7 +248,6 @@ event void AccelSplitControl.stopDone(error_t err) {
 }
 
 event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	dbg("Application", "Application Z1Sensors SerialReceive()");
 	return msg;
 }
 

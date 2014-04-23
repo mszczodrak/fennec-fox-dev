@@ -74,9 +74,7 @@ task void send_msg() {
 	
 	if (call SubAMSend.send(BROADCAST, &packet, 
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
-		dbg("Application", "maxTest send_msg() - cannot send");
 	} else {
-//		dbg("Application", "maxTest send_msg() - max_value %d", max_value);
 		send_busy = TRUE;
 		call Leds.set(max_value);
 	}
@@ -84,18 +82,13 @@ task void send_msg() {
 
 
 command error_t SplitControl.start() {
-	dbg("Application", "maxTest SplitControl.start()");
 	max_value = call maxTestParams.get_val();
-	dbg("Application", "maxTest SplitControl.start() max_value is %d", max_value);
 
 	send_busy = FALSE;
 
 	if (call maxTestParams.get_delay() > 0) {
 		call Timer.startPeriodic(call maxTestParams.get_delay());
 	}
-
-	dbgs(F_APPLICATION, S_NONE, DBGS_MGMT_START, (uint16_t) (max_value >> 16), 
-							(uint16_t) (max_value & 0x0000FFFFuL) );
 
 	signal SplitControl.startDone(SUCCESS);
 	post send_msg();
@@ -104,7 +97,6 @@ command error_t SplitControl.start() {
 
 
 command error_t SplitControl.stop() {
-	dbg("Application", "maxTest SplitControl.start()");
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -119,10 +111,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	nx_struct maxMsg *in_msg = (nx_struct maxMsg*) payload;
 	if (in_msg->max_value > max_value) {
 		max_value = in_msg->max_value;
-		dbg("Application", "maxTest SubReceive.receive() - got new max: %d", max_value);
 		post send_msg();
-		dbgs(F_APPLICATION, S_RECEIVING, 0, (uint16_t) (max_value >> 16), 
-							(uint16_t) (max_value & 0x0000FFFFuL) );
 	}
 
 	if (in_msg->max_value < max_value) {
@@ -141,9 +130,6 @@ event void Timer.fired() {
 	if (call maxTestParams.get_val() != 0) {
 		max_value = call Random.rand32();
 	}
-	dbg("Application", "maxTest Timer.fired() max_value is %d", max_value);
-	dbgs(F_APPLICATION, S_INIT, 0, (uint16_t) (max_value >> 16), 
-							(uint16_t) (max_value & 0x0000FFFFuL) );
 	if (!send_busy) {
 		post send_msg();
 	}
