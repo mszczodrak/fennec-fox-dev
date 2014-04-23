@@ -32,6 +32,8 @@
   * @updated: 01/03/2014
   */
 
+#include "SerialDbgs.h"
+
 generic configuration CounterC(process_t process) {
 provides interface SplitControl;
 
@@ -73,7 +75,7 @@ components new TimerMilliC();
 CounterP.Leds -> LedsC;
 CounterP.Timer -> TimerMilliC;
 
-components SerialDbgsC;
-CounterP.Dbgs -> SerialDbgsC;
+components new SerialDbgsC(AM_DEBUG_MSG);
+CounterP.SerialDbgs -> SerialDbgsC;
 
 }

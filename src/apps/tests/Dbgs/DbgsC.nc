@@ -32,6 +32,7 @@
   * @updated: 01/03/2014
   */
 
+#include "SerialDbgs.h"
 
 generic configuration DbgsC(process_t process) {
 provides interface SplitControl;
@@ -74,6 +75,6 @@ DbgsP.Timer -> Timer;
 components LedsC;
 DbgsP.Leds -> LedsC;
 
-components new SerialDbgsC(20);
+components new SerialDbgsC(AM_DEBUG_MSG);
 DbgsP.SerialDbgs -> SerialDbgsC;
 }

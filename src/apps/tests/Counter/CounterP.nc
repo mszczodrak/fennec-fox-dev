@@ -39,7 +39,7 @@
 generic module CounterP(process_t process) {
 provides interface SplitControl;
 
-nuses interface CounterParams;
+uses interface CounterParams;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,6 +54,8 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli>;
+
+uses interface SerialDbgs;
 
 }
 
@@ -90,7 +92,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	call Dbgs.dbgs(DBGS_MGMT_STOP, 0, 0);
+	call SerialDbgs.dbgs(DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -111,7 +113,7 @@ void sendMessage() {
 		sendBusy = TRUE;
 		call Leds.set(seqno);
 	}
-	call Dbgs.dbgs(DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
+	call SerialDbgs.dbgs(DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
 }
 
 event void Timer.fired() {
@@ -130,7 +132,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
 	call Leds.set(cm->seqno);
-	call Dbgs.dbgs(DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	return msg;
 }
 

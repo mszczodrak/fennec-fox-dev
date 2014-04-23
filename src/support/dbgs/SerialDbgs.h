@@ -48,6 +48,7 @@ enum {
         AM_DEBUG_MSG = 0x89,
 };
 
+#define DBGS_NONE		0
 #define DBGS_SEND_DATA		1
 #define DBGS_SEND_BEACON	2
 #define DBGS_RECEIVE_DATA 	3
