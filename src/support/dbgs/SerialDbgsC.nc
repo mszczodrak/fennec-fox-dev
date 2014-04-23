@@ -44,8 +44,10 @@ implementation {
 
 components new SerialDbgsP(id); 
 components MainC;
+components LedsC;
 SerialDbgs = SerialDbgsP;
 SerialDbgsP.Boot -> MainC.Boot;
+SerialDbgsP.Leds -> LedsC;
 
 #ifdef __DBGS__
 components SerialActiveMessageC;
@@ -54,6 +56,7 @@ SerialDbgsP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
 SerialDbgsP.SerialAMSend -> SerialAMSenderC.AMSend;
 SerialDbgsP.SerialAMPacket -> SerialAMSenderC.AMPacket;
 SerialDbgsP.SerialPacket -> SerialAMSenderC.Packet;
+
 #endif
 
 }

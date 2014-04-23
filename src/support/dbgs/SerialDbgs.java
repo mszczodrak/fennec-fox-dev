@@ -7,12 +7,12 @@
 public class SerialDbgs extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 6;
+    public static final int DEFAULT_MESSAGE_SIZE = 8;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 137;
 
-    /** Create a new SerialDbgs of size 6. */
+    /** Create a new SerialDbgs of size 8. */
     public SerialDbgs() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -92,6 +92,9 @@ public class SerialDbgs extends net.tinyos.message.Message {
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [d1=0x"+Long.toHexString(get_d1())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [d2=0x"+Long.toHexString(get_d2())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
@@ -284,6 +287,69 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the size, in bits, of the field 'd1'
      */
     public static int sizeBits_d1() {
+        return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: d2
+    //   Field type: int, unsigned
+    //   Offset (bits): 48
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'd2' is signed (false).
+     */
+    public static boolean isSigned_d2() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'd2' is an array (false).
+     */
+    public static boolean isArray_d2() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'd2'
+     */
+    public static int offset_d2() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'd2'
+     */
+    public static int offsetBits_d2() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'd2'
+     */
+    public int get_d2() {
+        return (int)getUIntElement(offsetBits_d2(), 16);
+    }
+
+    /**
+     * Set the value of the field 'd2'
+     */
+    public void set_d2(int value) {
+        setUIntElement(offsetBits_d2(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'd2'
+     */
+    public static int size_d2() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'd2'
+     */
+    public static int sizeBits_d2() {
         return 16;
     }
 

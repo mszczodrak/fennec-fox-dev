@@ -92,12 +92,13 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	call SerialDbgs.dbgs(DBGS_MGMT_STOP, 0, 0);
+	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 void sendMessage() {
+	error_t e;
 	CounterMsg* msg = (CounterMsg*)call SubAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
 	if (msg == NULL) {
@@ -107,24 +108,25 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
-	if (call SubAMSend.send(call CounterParams.get_dest(), &packet, 
-					sizeof(CounterMsg)) != SUCCESS) {
-	} else {
-		sendBusy = TRUE;
-		call Leds.set(seqno);
+	e = call SubAMSend.send(call CounterParams.get_dest(), &packet, 
+					sizeof(CounterMsg));
+	if (e != SUCCESS) {
+		signal SubAMSend.sendDone(&packet, e);
 	}
-	call SerialDbgs.dbgs(DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
 }
 
 event void Timer.fired() {
+	seqno++;
 	if (!sendBusy) {
-		dbg("Application", "[%d] Counter Timer.fired()", process);
+		sendBusy = TRUE;
 		sendMessage();
 	}
-	seqno++;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	call Leds.set(seqno);
+	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, 
+				call CounterParams.get_dest());
 	sendBusy = FALSE;
 }
 
@@ -132,7 +134,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
 	call Leds.set(cm->seqno);
-	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
 	return msg;
 }
 

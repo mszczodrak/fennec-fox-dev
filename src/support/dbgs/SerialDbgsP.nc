@@ -38,6 +38,7 @@
 generic module SerialDbgsP(uint8_t id) {
 provides interface SerialDbgs;
 uses interface Boot;
+uses interface Leds;
 #ifdef __DBGS__
 uses interface AMSend as SerialAMSend;
 uses interface AMPacket as SerialAMPacket;
@@ -63,15 +64,18 @@ event void Boot.booted() {
 #endif
 }
 
-command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1) {
+command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
 #ifdef __DBGS__
-	if (busy_serial) {
+	if (busy_serial || dmsg == NULL) {
+		dmsg = (struct debug_msg*) call SerialAMSend.getPayload(&packet,
+                        sizeof(uint32_t));
 		return;
 	}
 
 	dmsg->dbg = dbg;
 	dmsg->d0 = d0;
 	dmsg->d1 = d1;
+	dmsg->d2 = d2;
 	call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg));
 #endif
 }
@@ -81,7 +85,12 @@ command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1) {
 event void SerialSplitControl.startDone(error_t error) {
 	dmsg = (struct debug_msg*) call SerialAMSend.getPayload(&packet,
                         sizeof(uint32_t));
-	busy_serial = FALSE;
+	if (dmsg == NULL) {
+		call Leds.led0On();		
+		busy_serial = TRUE;
+	} else {
+		busy_serial = FALSE;
+	}
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
