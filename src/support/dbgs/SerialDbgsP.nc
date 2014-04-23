@@ -33,52 +33,64 @@
   */
 
 #include <Fennec.h>
-#include "DebugMsg.h"
+#include "SerialDbgs.h"
 
-module SerialDbgsP @safe() {
+generic module SerialDbgsP(uint8_t id) {
+provides interface SerialDbgs;
+uses interface Boot;
 #ifdef __DBGS__
-uses interface AMSend;
+uses interface AMSend as SerialAMSend;
+uses interface AMPacket as SerialAMPacket;
+uses interface Packet as SerialPacket;
+uses interface SplitControl as SerialSplitControl;
 #endif
 }
 
 implementation {
 
-#ifdef __DBGS__
-message_t packet;
-norace struct debug_msg *dmsg = NULL;
-bool busy = FALSE;
+bool busy_serial = TRUE;
 
-event void AMSend.sendDone(message_t* bufPtr, error_t error) {
-	busy = FALSE;
+#ifdef __DBGS__
+struct debug_msg *dmsg = NULL;
+message_t packet;
+#endif
+
+event void Boot.booted() {
+	busy_serial = TRUE;
+#ifdef __DBGS__
+	dmsg = NULL;
+	call SerialSplitControl.start();
+#endif
 }
 
-#endif
-void dbgs(process_t process, uint8_t layer, uint8_t dbg_state, uint16_t d0, uint16_t d1) @C() {
+command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1) {
 #ifdef __DBGS__
-	if (busy) {
+	if (busy_serial) {
 		return;
 	}
 
-	if (dmsg == NULL) {
-		dmsg = (struct debug_msg*) call AMSend.getPayload(&packet, sizeof(struct debug_msg));
-		if (dmsg == NULL) {
-			return;
-		}
-	}
-
-	busy = TRUE;
-
-	dmsg->process = process;
-	dmsg->layer = layer;
-	dmsg->state = dbg_state;
+	dmsg->dbg = dbg;
 	dmsg->d0 = d0;
 	dmsg->d1 = d1;
-
-	if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg)) != SUCCESS) {
-		signal AMSend.sendDone(&packet, FAIL);
-	}
+	call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg));
 #endif
 }
+
+#ifdef __DBGS__
+
+event void SerialSplitControl.startDone(error_t error) {
+	dmsg = (struct debug_msg*) call SerialAMSend.getPayload(&packet,
+                        sizeof(uint32_t));
+	busy_serial = FALSE;
+}
+
+event void SerialSplitControl.stopDone(error_t error) {
+}
+
+event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
+	busy_serial = FALSE;
+}
+#endif
 
 }
 

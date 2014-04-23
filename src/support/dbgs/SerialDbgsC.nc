@@ -34,19 +34,26 @@
 
 
 #include <Fennec.h>
-#include "DebugMsg.h"
+#include "SerialDbgs.h"
 
-configuration SerialDbgsC {
+generic configuration SerialDbgsC(uint8_t id) {
+provides interface SerialDbgs;
 }
 
 implementation {
 
-components SerialDbgsP;
+components new SerialDbgsP(id); 
+components MainC;
+SerialDbgs = SerialDbgsP;
+SerialDbgsP.Boot -> MainC.Boot;
 
 #ifdef __DBGS__
-components SerialActiveMessageC as SerialAM;
-SerialDbgsP.AMSend -> SerialAM.AMSend[AM_DEBUG_MSG];
-components SerialStartC;
+components SerialActiveMessageC;
+components new SerialAMSenderC(id);
+SerialDbgsP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
+SerialDbgsP.SerialAMSend -> SerialAMSenderC.AMSend;
+SerialDbgsP.SerialAMPacket -> SerialAMSenderC.AMPacket;
+SerialDbgsP.SerialPacket -> SerialAMSenderC.Packet;
 #endif
 
 }

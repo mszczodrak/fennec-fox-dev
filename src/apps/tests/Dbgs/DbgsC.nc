@@ -73,4 +73,7 @@ DbgsP.Timer -> Timer;
 
 components LedsC;
 DbgsP.Leds -> LedsC;
+
+components new SerialDbgsC(20);
+DbgsP.SerialDbgs -> SerialDbgsC;
 }

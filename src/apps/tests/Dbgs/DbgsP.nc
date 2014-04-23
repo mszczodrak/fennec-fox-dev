@@ -53,6 +53,8 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
+
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -83,7 +85,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Timer.fired() {
 	call Leds.set(c++);
-	dbgs(process, F_APPLICATION, S_NONE, c, c);
+	call SerialDbgs.dbgs(S_NONE, c, c);
 }
 
 }

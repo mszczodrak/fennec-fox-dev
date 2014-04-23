@@ -58,6 +58,7 @@ uses interface Leds;
 implementation {
 
 command error_t SplitControl.start() {
+	printf("here\n");
 	call Leds.led2On();
 	call Timer.startPeriodic(1000);
 	signal SplitControl.startDone(SUCCESS);

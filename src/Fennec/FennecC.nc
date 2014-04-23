@@ -67,10 +67,5 @@ components SerialStartC;
 components SerialPrintfC;
 #endif
 
-#ifdef FENNEC_LOGGER
-components LoggerC;
-#endif
-
-components SerialDbgsC;
 }
 

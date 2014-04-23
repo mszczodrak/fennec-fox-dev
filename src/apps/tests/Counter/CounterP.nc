@@ -39,7 +39,7 @@
 generic module CounterP(process_t process) {
 provides interface SplitControl;
 
-uses interface CounterParams;
+nuses interface CounterParams;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -75,12 +75,7 @@ uint16_t seqno;
 command error_t SplitControl.start() {
 	uint32_t send_delay = call CounterParams.get_delay() * 
 		call CounterParams.get_delay_scale();
-	dbgs(process, F_APPLICATION, S_NONE, 0, 0);
-	dbg("Application", "[%d] Counter SplitControl.start()", process);
 
-	dbg("Application", "[%d] Counter starting delay: %d", process, send_delay);
-	dbg("Application", "[%d] Counter starting src: %d  dest: %d", process,
-		call CounterParams.get_src(), call CounterParams.get_dest());
 	seqno = 0;
 	sendBusy = FALSE;
 
@@ -95,8 +90,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "[%d] Counter SplitControl.stop()", process);
-	dbgs(process, F_APPLICATION, DBGS_MGMT_STOP, 0, 0);
+	call Dbgs.dbgs(DBGS_MGMT_STOP, 0, 0);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -111,55 +105,32 @@ void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
-
 	if (call SubAMSend.send(call CounterParams.get_dest(), &packet, 
 					sizeof(CounterMsg)) != SUCCESS) {
-		dbgs(process, F_APPLICATION, DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
-		dbg("Application", "[%d] Counter sendMessage() seqno: %d source: %d - FAILED", 
-					process, msg->seqno, msg->source); 
 	} else {
 		sendBusy = TRUE;
-		dbgs(process, F_APPLICATION, DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
-		dbg("Application", "[%d] Counter call SubAMSend.send(%d, 0x%1x, %d)",
-					process, 
-					call CounterParams.get_dest(), &packet,
-					sizeof(CounterMsg));
 		call Leds.set(seqno);
 	}
+	call Dbgs.dbgs(DBGS_SEND_DATA, seqno, call CounterParams.get_dest());
 }
 
 event void Timer.fired() {
 	if (!sendBusy) {
 		dbg("Application", "[%d] Counter Timer.fired()", process);
 		sendMessage();
-	} else {
-		dbgs(process, F_APPLICATION, DBGS_BUSY, seqno, call CounterParams.get_dest());
 	}
 	seqno++;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	//CounterMsg* cm = (CounterMsg*)call SubAMSend.getPayload(msg,
-	//						sizeof(CounterMsg));
-	if (error != SUCCESS) {
-		dbgs(process, F_APPLICATION, DBGS_ERROR_SEND_DONE, seqno, call CounterParams.get_dest());
-	}
-	dbg("Application", "[%d] Counter event SubAMSend.sendDone(0x%1x, %d)",
-				process, msg, error);
 	sendBusy = FALSE;
 }
 
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
-
-	dbg("Application", "[%d] Counter event SubReceive.receive(0x%1x, 0x%1x, %d)",
-				process,  msg, payload, len); 
-	dbg("Application", "[%d] Counter receive seqno: %d source: %d", 
-				process, cm->seqno, cm->source); 
-
 	call Leds.set(cm->seqno);
-	dbgs(process, F_APPLICATION, DBGS_RECEIVE_DATA, cm->seqno, cm->source);
+	call Dbgs.dbgs(DBGS_RECEIVE_DATA, cm->seqno, cm->source);
 	return msg;
 }
 
