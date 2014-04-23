@@ -92,6 +92,10 @@ implementation
 	#define UQ_METADATA_FLAGS	"UQ_RFA1_METADATA_FLAGS"
 	#define UQ_RADIO_ALARM		"UQ_RFA1_RADIO_ALARM"
 
+// -------- TaskleC
+
+	components new TaskletC();
+
 // -------- RadioP
 
 	components RFA1RadioP as RadioP;
@@ -107,9 +111,10 @@ implementation
 
 // -------- RadioAlarm
 
-	//components new RadioAlarmC();
-	components new RFA1RadioAlarmC() as RadioAlarmC; /* ucprotonb */
+	components new RadioAlarmC();
+	//components new RFA1RadioAlarmC() as RadioAlarmC; /* ucprotonb */
 	RadioAlarmC.Alarm -> RadioDriverLayerC;
+	RadioAlarmC.Tasklet -> TaskletC;
 
 // -------- Active Message
 
@@ -179,8 +184,8 @@ implementation
 
 // -------- UniqueLayer Send part (wired twice)
 
-	//components new UniqueLayerC();
-	components new RFA1UniqueLayerC() as UniqueLayerC; /* ucprotonb */
+	components new UniqueLayerC();
+	//components new RFA1UniqueLayerC() as UniqueLayerC; /* ucprotonb */
 	UniqueLayerC.Config -> RadioP;
 	UniqueLayerC.SubSend -> PacketLinkLayerC;
 
@@ -207,11 +212,12 @@ implementation
 
 // -------- MessageBuffer
 
-	//components new MessageBufferLayerC();
-	components new RFA1MessageBufferLayerC() as MessageBufferLayerC; /* ucprotonb */
+	components new MessageBufferLayerC();
+	//components new RFA1MessageBufferLayerC() as MessageBufferLayerC; /* ucprotonb */
 	MessageBufferLayerC.RadioSend -> CollisionAvoidanceLayerC;
 	MessageBufferLayerC.RadioReceive -> UniqueLayerC;
 	MessageBufferLayerC.RadioState -> TrafficMonitorLayerC;
+	MessageBufferLayerC.Tasklet -> TaskletC;
 	RadioChannel = MessageBufferLayerC;
 
 // -------- UniqueLayer receive part (wired twice)
@@ -297,4 +303,5 @@ implementation
 	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
+	RadioDriverLayerC.Tasklet -> TaskletC;
 }
