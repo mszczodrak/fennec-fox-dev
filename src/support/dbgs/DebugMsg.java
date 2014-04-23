@@ -10,7 +10,7 @@ public class DebugMsg extends net.tinyos.message.Message {
     public static final int DEFAULT_MESSAGE_SIZE = 8;
 
     /** The Active Message type associated with this message. */
-    public static final int AM_TYPE = 100;
+    public static final int AM_TYPE = 137;
 
     /** Create a new DebugMsg of size 8. */
     public DebugMsg() {

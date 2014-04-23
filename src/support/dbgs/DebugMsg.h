@@ -36,7 +36,7 @@
 #ifndef __DEBUG_SERIAL_H
 #define __DEBUG_SERIAL_H
 
-#include "ff_structs.h"
+#include "../../Fennec/ff_structs.h"
 
 struct debug_msg {
 	process_t process;
