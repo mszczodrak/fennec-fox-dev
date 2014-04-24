@@ -101,14 +101,12 @@ event void SubSplitControl.stopDone(error_t error) {
 }
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
-	//call LowPowerListening.setRemoteWakeupInterval(msg, call rf212Params.get_sleepInterval());
+	call LowPowerListening.setRemoteWakeupInterval(msg, call rf212Params.get_sleepInterval());
 	call PacketTransmitPower.set(msg, call rf212Params.get_power());
 	return call SubAMSend.send[id](addr, msg, len);
 }
 
 event void SubAMSend.sendDone[am_id_t id](message_t* msg, error_t error) {
-	//printf("ack %d\n", call PacketAcknowledgements.wasAcked(msg));
-	//dbgs(id, F_AM, 0, 0, 0, call Packet.payloadLength(msg), call PacketAcknowledgements.wasAcked(msg));
 	signal AMSend.sendDone[id](msg, error);
 }
 
