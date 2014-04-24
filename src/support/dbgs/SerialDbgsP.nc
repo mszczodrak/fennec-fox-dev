@@ -56,7 +56,7 @@ nx_struct debug_msg queue[DBGS_QUEUE_LEN];
 norace uint8_t head = 0;
 norace uint8_t tail = 0;
 norace uint8_t size = 0;
-norace busy = FALSE;
+norace bool busy = FALSE;
 
 task void sendMessage() {
 	if (size == 0) {
