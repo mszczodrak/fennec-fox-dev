@@ -56,14 +56,14 @@ nx_struct debug_msg queue[DBGS_QUEUE_LEN];
 norace uint8_t head = 0;
 norace uint8_t tail = 0;
 norace uint8_t size = 0;
-norace busy = 0;
+norace busy = FALSE;
 
 task void sendMessage() {
 	if (size == 0) {
 		return;
 	}
 
-	if (busy) {
+	if (busy == TRUE) {
 		return;
 	}
 
@@ -73,7 +73,7 @@ task void sendMessage() {
 		return;
 	}
 
-	busy = 1;
+	busy = TRUE;
 
 	dmsg->version = queue[head].version;
 	dmsg->id = queue[head].version;
@@ -137,7 +137,7 @@ event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
 		if (head == DBGS_QUEUE_LEN) head = 0;
 		size--;
 	}
-	busy = 0;
+	busy = FALSE;
 	post sendMessage();
 
 }
