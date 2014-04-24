@@ -7,12 +7,12 @@
 public class SerialDbgs extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 7;
+    public static final int DEFAULT_MESSAGE_SIZE = 9;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 137;
 
-    /** Create a new SerialDbgs of size 7. */
+    /** Create a new SerialDbgs of size 9. */
     public SerialDbgs() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -85,6 +85,12 @@ public class SerialDbgs extends net.tinyos.message.Message {
     public String toString() {
       String s = "Message <SerialDbgs> \n";
       try {
+        s += "  [version=0x"+Long.toHexString(get_version())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [id=0x"+Long.toHexString(get_id())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
         s += "  [dbg=0x"+Long.toHexString(get_dbg())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
@@ -102,9 +108,135 @@ public class SerialDbgs extends net.tinyos.message.Message {
     // Message-type-specific access methods appear below.
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: dbg
+    // Accessor methods for field: version
     //   Field type: short, unsigned
     //   Offset (bits): 0
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'version' is signed (false).
+     */
+    public static boolean isSigned_version() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'version' is an array (false).
+     */
+    public static boolean isArray_version() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'version'
+     */
+    public static int offset_version() {
+        return (0 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'version'
+     */
+    public static int offsetBits_version() {
+        return 0;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'version'
+     */
+    public short get_version() {
+        return (short)getUIntBEElement(offsetBits_version(), 8);
+    }
+
+    /**
+     * Set the value of the field 'version'
+     */
+    public void set_version(short value) {
+        setUIntBEElement(offsetBits_version(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'version'
+     */
+    public static int size_version() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'version'
+     */
+    public static int sizeBits_version() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: id
+    //   Field type: short, unsigned
+    //   Offset (bits): 8
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'id' is signed (false).
+     */
+    public static boolean isSigned_id() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'id' is an array (false).
+     */
+    public static boolean isArray_id() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'id'
+     */
+    public static int offset_id() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'id'
+     */
+    public static int offsetBits_id() {
+        return 8;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'id'
+     */
+    public short get_id() {
+        return (short)getUIntBEElement(offsetBits_id(), 8);
+    }
+
+    /**
+     * Set the value of the field 'id'
+     */
+    public void set_id(short value) {
+        setUIntBEElement(offsetBits_id(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'id'
+     */
+    public static int size_id() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'id'
+     */
+    public static int sizeBits_id() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: dbg
+    //   Field type: short, unsigned
+    //   Offset (bits): 16
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -126,14 +258,14 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'dbg'
      */
     public static int offset_dbg() {
-        return (0 / 8);
+        return (16 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'dbg'
      */
     public static int offsetBits_dbg() {
-        return 0;
+        return 16;
     }
 
     /**
@@ -167,7 +299,7 @@ public class SerialDbgs extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d0
     //   Field type: int, unsigned
-    //   Offset (bits): 8
+    //   Offset (bits): 24
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -189,14 +321,14 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd0'
      */
     public static int offset_d0() {
-        return (8 / 8);
+        return (24 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd0'
      */
     public static int offsetBits_d0() {
-        return 8;
+        return 24;
     }
 
     /**
@@ -230,7 +362,7 @@ public class SerialDbgs extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d1
     //   Field type: int, unsigned
-    //   Offset (bits): 24
+    //   Offset (bits): 40
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -252,14 +384,14 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd1'
      */
     public static int offset_d1() {
-        return (24 / 8);
+        return (40 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd1'
      */
     public static int offsetBits_d1() {
-        return 24;
+        return 40;
     }
 
     /**
@@ -293,7 +425,7 @@ public class SerialDbgs extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d2
     //   Field type: int, unsigned
-    //   Offset (bits): 40
+    //   Offset (bits): 56
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -315,14 +447,14 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd2'
      */
     public static int offset_d2() {
-        return (40 / 8);
+        return (56 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd2'
      */
     public static int offsetBits_d2() {
-        return 40;
+        return 56;
     }
 
     /**

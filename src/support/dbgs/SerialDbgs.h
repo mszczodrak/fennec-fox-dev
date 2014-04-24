@@ -39,6 +39,8 @@
 #include "../../Fennec/ff_structs.h"
 
 nx_struct debug_msg {
+        nx_uint8_t version;
+        nx_uint8_t id;
         nx_uint8_t dbg;
         nx_uint16_t d0;
         nx_uint16_t d1;
@@ -46,6 +48,7 @@ nx_struct debug_msg {
 };
 
 enum {
+	SERIAL_DBG_VERSION = 5,
         AM_DEBUG_MSG = 0x89,
 };
 

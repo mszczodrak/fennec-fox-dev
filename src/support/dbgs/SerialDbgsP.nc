@@ -72,6 +72,8 @@ command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2)
 		return;
 	}
 
+	dmsg->version = SERIAL_DBG_VERSION;
+	dmsg->id = id;
 	dmsg->dbg = dbg;
 	dmsg->d0 = d0;
 	dmsg->d1 = d1;
