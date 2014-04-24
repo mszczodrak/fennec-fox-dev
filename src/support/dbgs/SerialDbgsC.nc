@@ -51,7 +51,7 @@ SerialDbgsP.Leds -> LedsC;
 
 #ifdef __DBGS__
 components SerialActiveMessageC;
-components new SerialAMSenderC(id);
+components new SerialAMSenderC(AM_DEBUG_MSG);
 SerialDbgsP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
 SerialDbgsP.SerialAMSend -> SerialAMSenderC.AMSend;
 SerialDbgsP.SerialAMPacket -> SerialAMSenderC.AMPacket;
