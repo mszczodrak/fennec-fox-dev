@@ -71,7 +71,6 @@ implementation {
 
 
 message_t packet;
-bool sendBusy = FALSE;
 uint16_t seqno;
 
 command error_t SplitControl.start() {
@@ -79,7 +78,6 @@ command error_t SplitControl.start() {
 		call CounterParams.get_delay_scale();
 
 	seqno = 0;
-	sendBusy = FALSE;
 
 	if ((call CounterParams.get_src() == BROADCAST) || 
 	(call CounterParams.get_src() == TOS_NODE_ID)) {
@@ -97,7 +95,7 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-void sendMessage() {
+task void sendMessage() {
 	error_t e;
 	CounterMsg* msg = (CounterMsg*)call SubAMSend.getPayload(&packet,
 							sizeof(CounterMsg));
@@ -117,17 +115,13 @@ void sendMessage() {
 
 event void Timer.fired() {
 	seqno++;
-	if (!sendBusy) {
-		sendBusy = TRUE;
-		sendMessage();
-	}
+	post sendMessage();
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call Leds.set(seqno);
 	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, 
 				call CounterParams.get_dest());
-	sendBusy = FALSE;
 }
 
 

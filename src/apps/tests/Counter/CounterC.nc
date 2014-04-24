@@ -75,7 +75,7 @@ components new TimerMilliC();
 CounterP.Leds -> LedsC;
 CounterP.Timer -> TimerMilliC;
 
-components new SerialDbgsC(AM_DEBUG_MSG);
+components new SerialDbgsC(process);
 CounterP.SerialDbgs -> SerialDbgsC;
 
 }
