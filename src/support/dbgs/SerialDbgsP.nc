@@ -49,15 +49,12 @@ uses interface SplitControl as SerialSplitControl;
 
 implementation {
 
-bool busy_serial = TRUE;
-
 #ifdef __DBGS__
 nx_struct debug_msg *dmsg = NULL;
 message_t packet;
 #endif
 
 event void Boot.booted() {
-	busy_serial = TRUE;
 #ifdef __DBGS__
 	dmsg = NULL;
 	call SerialSplitControl.start();
@@ -66,7 +63,7 @@ event void Boot.booted() {
 
 command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
 #ifdef __DBGS__
-	if (busy_serial || dmsg == NULL) {
+	if (dmsg == NULL) {
 		dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
                         sizeof(nx_struct debug_msg));
 		return;
@@ -87,19 +84,12 @@ command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2)
 event void SerialSplitControl.startDone(error_t error) {
 	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
                         sizeof(uint32_t));
-	if (dmsg == NULL) {
-		call Leds.led0On();		
-		busy_serial = TRUE;
-	} else {
-		busy_serial = FALSE;
-	}
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
 }
 
 event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
-	busy_serial = FALSE;
 }
 #endif
 
