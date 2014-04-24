@@ -35,7 +35,7 @@
 #include <Fennec.h>
 #include "SerialDbgs.h"
 
-generic module SerialDbgsP(uint8_t id) {
+generic module SerialDbgsP(uint8_t id) @safe() {
 provides interface SerialDbgs;
 uses interface Boot;
 uses interface Leds;
@@ -52,30 +52,72 @@ implementation {
 #ifdef __DBGS__
 nx_struct debug_msg *dmsg = NULL;
 message_t packet;
-#endif
+nx_struct debug_msg queue[DBGS_QUEUE_LEN];
+norace uint8_t head = 0;
+norace uint8_t tail = 0;
+norace uint8_t size = 0;
+norace busy = 0;
 
-event void Boot.booted() {
-#ifdef __DBGS__
-	dmsg = NULL;
-	call SerialSplitControl.start();
-#endif
-}
+task void sendMessage() {
+	if (size == 0) {
+		return;
+	}
 
-command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
-#ifdef __DBGS__
+	if (busy) {
+		return;
+	}
+
 	if (dmsg == NULL) {
 		dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
                         sizeof(nx_struct debug_msg));
 		return;
 	}
 
-	dmsg->version = SERIAL_DBG_VERSION;
-	dmsg->id = id;
-	dmsg->dbg = dbg;
-	dmsg->d0 = d0;
-	dmsg->d1 = d1;
-	dmsg->d2 = d2;
-	call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg));
+	busy = 1;
+
+	dmsg->version = queue[head].version;
+	dmsg->id = queue[head].version;
+	dmsg->dbg = queue[head].dbg;
+	dmsg->d0 = queue[head].d0;
+	dmsg->d1 = queue[head].d1;
+	dmsg->d2 = queue[head].d2;
+	if (call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg)) != SUCCESS) {
+		signal SerialAMSend.sendDone(&packet, FAIL);
+	}
+}
+
+#endif
+
+event void Boot.booted() {
+#ifdef __DBGS__
+	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
+                        sizeof(nx_struct debug_msg));
+	call SerialSplitControl.start();
+#endif
+}
+
+command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
+#ifdef __DBGS__
+	if (size >= DBGS_QUEUE_LEN) {
+		return;
+	}
+
+	if (dmsg == NULL) {
+		dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
+                        sizeof(nx_struct debug_msg));
+		return;
+	}
+
+	queue[tail].version = SERIAL_DBG_VERSION;
+	queue[tail].id = id;
+	queue[tail].dbg = dbg;
+	queue[tail].d0 = d0;
+	queue[tail].d1 = d1;
+	queue[tail].d2 = d2;
+	tail++;
+	if (tail == DBGS_QUEUE_LEN) tail = 0;
+	size++;
+	post sendMessage();
 #endif
 }
 
@@ -90,6 +132,14 @@ event void SerialSplitControl.stopDone(error_t error) {
 }
 
 event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
+	if (size != 0) {
+		head++;
+		if (head == DBGS_QUEUE_LEN) head = 0;
+		size--;
+	}
+	busy = 0;
+	post sendMessage();
+
 }
 #endif
 
