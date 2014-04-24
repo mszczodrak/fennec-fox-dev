@@ -24,15 +24,18 @@ for line in f.readlines():
 	if not l[0].isdigit():
 		continue
 
-	version = int("%s"%(l[0]))
-	did = int("%s"%(l[1]))
-	dbg = int("%s"%(l[2]))
-	d0 = int("%s"%(l[3]))
-	d1 = int("%s"%(l[4]))
-	d2 = int("%s"%(l[5]))
+	try:
+		time_stamp = int("%s"%(l[9]))
+		mote_id = int("%s"%(l[8]))
 
-	mote_id = int("%s"%(l[8]))
-	time_stamp = int("%s"%(l[9]))
+		version = int("%s"%(l[0]))
+		did = int("%s"%(l[1]))
+		dbg = int("%s"%(l[2]))
+		d0 = int("%s"%(l[3]))
+		d1 = int("%s"%(l[4]))
+		d2 = int("%s"%(l[5]))
+	except:
+		continue
 
 	if (time_offset < 0):
 		time_offset = time_stamp
