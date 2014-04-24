@@ -52,7 +52,7 @@ implementation {
 bool busy_serial = TRUE;
 
 #ifdef __DBGS__
-struct debug_msg *dmsg = NULL;
+nx_struct debug_msg *dmsg = NULL;
 message_t packet;
 #endif
 
@@ -67,8 +67,8 @@ event void Boot.booted() {
 command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
 #ifdef __DBGS__
 	if (busy_serial || dmsg == NULL) {
-		dmsg = (struct debug_msg*) call SerialAMSend.getPayload(&packet,
-                        sizeof(uint32_t));
+		dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
+                        sizeof(nx_struct debug_msg));
 		return;
 	}
 
@@ -76,14 +76,14 @@ command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2)
 	dmsg->d0 = d0;
 	dmsg->d1 = d1;
 	dmsg->d2 = d2;
-	call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(struct debug_msg));
+	call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg));
 #endif
 }
 
 #ifdef __DBGS__
 
 event void SerialSplitControl.startDone(error_t error) {
-	dmsg = (struct debug_msg*) call SerialAMSend.getPayload(&packet,
+	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
                         sizeof(uint32_t));
 	if (dmsg == NULL) {
 		call Leds.led0On();		

@@ -38,11 +38,11 @@
 
 #include "../../Fennec/ff_structs.h"
 
-struct debug_msg {
-        uint8_t dbg;
-        uint16_t d0;
-        uint16_t d1;
-        uint16_t d2;
+nx_struct debug_msg {
+        nx_uint8_t dbg;
+        nx_uint16_t d0;
+        nx_uint16_t d1;
+        nx_uint16_t d2;
 };
 
 enum {
