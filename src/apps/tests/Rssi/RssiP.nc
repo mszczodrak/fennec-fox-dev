@@ -55,6 +55,8 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 uses interface Leds;
 uses interface Timer<TMilli> as SendTimer;
 uses interface Timer<TMilli> as LedTimer;
+
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -97,6 +99,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	int8_t lqi = (int8_t) call SubPacketLinkQuality.get(msg);
 	printf("RSSI: %d  LQI: %d\n", rssi, lqi);
 	printfflush();
+#endif
+
+#ifdef __DBGS__
+	call SerialDbgs.dbgs(DBGS_NONE, process, call SubPacketRSSI.get(msg),
+					call SubPacketLinkQuality.get(msg));
 #endif
 
 	signal LedTimer.fired();

@@ -112,7 +112,7 @@ event void SubSplitControl.stopDone(error_t error) {
 }
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
-	call LowPowerListening.setRemoteWakeupInterval(msg, call cc2420Params.get_sleepInterval());
+	//call LowPowerListening.setRemoteWakeupInterval(msg, call cc2420Params.get_sleepInterval());
 	call PacketTransmitPower.set(msg, call cc2420Params.get_power());
 	return call SubAMSend.send[id](addr, msg, len);
 }

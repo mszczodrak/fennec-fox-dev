@@ -36,5 +36,6 @@
 #ifndef __Rssi_APP_H_
 #define __Rssi_APP_H_
 
+#include "SerialDbgs.h"
 
 #endif

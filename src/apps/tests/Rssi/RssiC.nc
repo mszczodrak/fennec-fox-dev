@@ -77,4 +77,7 @@ RssiP.SendTimer -> SendTimerC;
 components new TimerMilliC() as LedTimerC;
 RssiP.LedTimer -> LedTimerC;
 
+components SerialDbgsC;
+RssiP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+
 }
