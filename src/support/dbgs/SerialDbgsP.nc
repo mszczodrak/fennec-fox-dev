@@ -35,8 +35,8 @@
 #include <Fennec.h>
 #include "SerialDbgs.h"
 
-generic module SerialDbgsP(uint8_t id) @safe() {
-provides interface SerialDbgs;
+module SerialDbgsP @safe() {
+provides interface SerialDbgs[uint8_t id];
 uses interface Boot;
 uses interface Leds;
 #ifdef __DBGS__
@@ -86,17 +86,30 @@ task void sendMessage() {
 	}
 }
 
+task void startSerial() {
+	error_t e;
+	e = call SerialSplitControl.start();
+	if (e == EALREADY) {
+		signal SerialSplitControl.startDone(SUCCESS);
+		return;
+	}
+
+	if (e != SUCCESS) {
+		post startSerial();
+	}
+}
+
 #endif
+
+
 
 event void Boot.booted() {
 #ifdef __DBGS__
-	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
-                        sizeof(nx_struct debug_msg));
-	call SerialSplitControl.start();
+	post startSerial();
 #endif
 }
 
-command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
+command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
 #ifdef __DBGS__
 	if (size >= DBGS_QUEUE_LEN) {
 		return;
@@ -124,8 +137,12 @@ command void SerialDbgs.dbgs(uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2)
 #ifdef __DBGS__
 
 event void SerialSplitControl.startDone(error_t error) {
-	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
+	if (error == SUCCESS) {
+		dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
                         sizeof(uint32_t));
+	} else {
+		post startSerial();
+	}
 }
 
 event void SerialSplitControl.stopDone(error_t error) {

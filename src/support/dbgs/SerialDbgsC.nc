@@ -36,17 +36,23 @@
 #include <Fennec.h>
 #include "SerialDbgs.h"
 
-generic configuration SerialDbgsC(uint8_t id) {
-provides interface SerialDbgs;
+configuration SerialDbgsC {
+provides interface SerialDbgs[uint8_t id];
+#ifdef __DBGS__
+uses interface Boot;
+#endif
 }
 
 implementation {
 
-components new SerialDbgsP(id); 
-components MainC;
+components SerialDbgsP; 
 components LedsC;
-SerialDbgs = SerialDbgsP;
-SerialDbgsP.Boot -> MainC.Boot;
+SerialDbgs = SerialDbgsP.SerialDbgs;
+
+#ifdef __DBGS__
+Boot = SerialDbgsP.Boot;
+#endif
+
 SerialDbgsP.Leds -> LedsC;
 
 #ifdef __DBGS__

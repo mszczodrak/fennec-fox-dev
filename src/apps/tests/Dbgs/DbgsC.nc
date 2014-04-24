@@ -75,6 +75,6 @@ DbgsP.Timer -> Timer;
 components LedsC;
 DbgsP.Leds -> LedsC;
 
-components new SerialDbgsC(process);
-DbgsP.SerialDbgs -> SerialDbgsC;
+components SerialDbgsC;
+DbgsP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 }
