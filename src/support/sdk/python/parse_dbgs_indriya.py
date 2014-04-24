@@ -1,8 +1,14 @@
 #!/usr/bin/python
+# Marcin K Szczodrak
+# Updated on 4/24/2014
 
 import sys
-from fennec_h import *
-from dbgs_h import *
+indriya_log_length = 11
+
+
+if len(sys.argv) != 2:
+	print("\nusage: %s <indriya.dat log file>\n\n");
+	sys.exit(1)
 
 f = open(sys.argv[1], "r")
 
@@ -12,7 +18,7 @@ print "{:>8} {:>3} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "ms"
 
 for line in f.readlines():
 	l = line.split()
-	if len(l) < 2:
+	if len(l) != indriya_log_length:
 		continue
 
 	if not l[0].isdigit():
@@ -23,7 +29,7 @@ for line in f.readlines():
 	dbg = int("%s"%(l[2]))
 	d0 = int("%s"%(l[3]))
 	d1 = int("%s"%(l[4]))
-	d2 = int("%s"%(l[4]))
+	d2 = int("%s"%(l[5]))
 
 	mote_id = int("%s"%(l[8]))
 	time_stamp = int("%s"%(l[9]))
