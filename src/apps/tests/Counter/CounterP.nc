@@ -84,6 +84,7 @@ command error_t SplitControl.start() {
 		call Timer.startPeriodic(send_delay);
 	}
 
+	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
