@@ -7,12 +7,12 @@
 public class SerialDbgs extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 8;
+    public static final int DEFAULT_MESSAGE_SIZE = 7;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 137;
 
-    /** Create a new SerialDbgs of size 8. */
+    /** Create a new SerialDbgs of size 7. */
     public SerialDbgs() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -140,14 +140,14 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the value (as a short) of the field 'dbg'
      */
     public short get_dbg() {
-        return (short)getUIntElement(offsetBits_dbg(), 8);
+        return (short)getUIntBEElement(offsetBits_dbg(), 8);
     }
 
     /**
      * Set the value of the field 'dbg'
      */
     public void set_dbg(short value) {
-        setUIntElement(offsetBits_dbg(), 8, value);
+        setUIntBEElement(offsetBits_dbg(), 8, value);
     }
 
     /**
@@ -167,7 +167,7 @@ public class SerialDbgs extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d0
     //   Field type: int, unsigned
-    //   Offset (bits): 16
+    //   Offset (bits): 8
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -189,28 +189,28 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd0'
      */
     public static int offset_d0() {
-        return (16 / 8);
+        return (8 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd0'
      */
     public static int offsetBits_d0() {
-        return 16;
+        return 8;
     }
 
     /**
      * Return the value (as a int) of the field 'd0'
      */
     public int get_d0() {
-        return (int)getUIntElement(offsetBits_d0(), 16);
+        return (int)getUIntBEElement(offsetBits_d0(), 16);
     }
 
     /**
      * Set the value of the field 'd0'
      */
     public void set_d0(int value) {
-        setUIntElement(offsetBits_d0(), 16, value);
+        setUIntBEElement(offsetBits_d0(), 16, value);
     }
 
     /**
@@ -230,7 +230,7 @@ public class SerialDbgs extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d1
     //   Field type: int, unsigned
-    //   Offset (bits): 32
+    //   Offset (bits): 24
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -252,28 +252,28 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd1'
      */
     public static int offset_d1() {
-        return (32 / 8);
+        return (24 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd1'
      */
     public static int offsetBits_d1() {
-        return 32;
+        return 24;
     }
 
     /**
      * Return the value (as a int) of the field 'd1'
      */
     public int get_d1() {
-        return (int)getUIntElement(offsetBits_d1(), 16);
+        return (int)getUIntBEElement(offsetBits_d1(), 16);
     }
 
     /**
      * Set the value of the field 'd1'
      */
     public void set_d1(int value) {
-        setUIntElement(offsetBits_d1(), 16, value);
+        setUIntBEElement(offsetBits_d1(), 16, value);
     }
 
     /**
@@ -293,7 +293,7 @@ public class SerialDbgs extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: d2
     //   Field type: int, unsigned
-    //   Offset (bits): 48
+    //   Offset (bits): 40
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -315,28 +315,28 @@ public class SerialDbgs extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'd2'
      */
     public static int offset_d2() {
-        return (48 / 8);
+        return (40 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'd2'
      */
     public static int offsetBits_d2() {
-        return 48;
+        return 40;
     }
 
     /**
      * Return the value (as a int) of the field 'd2'
      */
     public int get_d2() {
-        return (int)getUIntElement(offsetBits_d2(), 16);
+        return (int)getUIntBEElement(offsetBits_d2(), 16);
     }
 
     /**
      * Set the value of the field 'd2'
      */
     public void set_d2(int value) {
-        setUIntElement(offsetBits_d2(), 16, value);
+        setUIntBEElement(offsetBits_d2(), 16, value);
     }
 
     /**
