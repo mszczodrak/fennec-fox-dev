@@ -2,6 +2,7 @@
 # Author: Marcin Szczodrak
 # Constants defined in Dbgs.h as Python Module
 
+DBGS_NONE				= 0
 DBGS_SEND_DATA       			= 1
 DBGS_SEND_BEACON    			= 2
 DBGS_RECEIVE_DATA     			= 3
