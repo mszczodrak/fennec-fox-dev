@@ -60,7 +60,8 @@ task void sendMessage() {
 	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
 		sizeof(nx_struct debug_msg));
 
-	if (size == 0 || dmsg == NULL || busy == TRUE) {
+	if (size == 0) { return; }
+	if (dmsg == NULL || busy == TRUE) {
 		call SerialDbgs.dbgs[0](DBGS_SERIAL_SEND_MESSAGE, size == 0, dmsg == NULL, busy == TRUE);
 		return;
 	}
@@ -82,16 +83,10 @@ task void sendMessage() {
 #endif
 
 command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
+
 #ifdef __DBGS__
 	if (size >= DBGS_QUEUE_LEN) {
 		call SerialDbgs.dbgs[0](DBGS_SERIAL_QUEUE_FULL, size == 0, dmsg == NULL, busy == TRUE);
-		return;
-	}
-
-	if (dmsg == NULL) {
-		dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
-                        sizeof(nx_struct debug_msg));
-		call SerialDbgs.dbgs[0](DBGS_SERIAL_NULL_PTR, size == 0, dmsg == NULL, busy == TRUE);
 		return;
 	}
 
@@ -101,29 +96,33 @@ command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, 
 	queue[tail].d0 = d0;
 	queue[tail].d1 = d1;
 	queue[tail].d2 = d2;
+
 	atomic {
 		tail++;
 		if (tail == DBGS_QUEUE_LEN) tail = 0;
 		size++;
 	}
+
 	post sendMessage();
 #endif
+
 }
 
 #ifdef __DBGS__
 
 event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
 	atomic {
-		if (size != 0) {
+		if (size > 0) {
 			head++;
 			if (head == DBGS_QUEUE_LEN) head = 0;
 			size--;
 		}
 	}
+
 	busy = FALSE;
 	post sendMessage();
-
 }
+
 #endif
 
 }

@@ -64,6 +64,14 @@ DBGS_ERROR				= 130
 DBGS_ERROR_SEND_DONE			= 131
 DBGS_ERROR_RECEIVE			= 132
 
+DBGS_TIMER_FIRED                        = 160
+DBGS_BUSY                               = 161
+
+DBGS_SERIAL_SEND_MESSAGE                = 190
+DBGS_SERIAL_SEND_FAIL                   = 191
+DBGS_SERIAL_QUEUE_FULL                  = 192
+DBGS_SERIAL_NULL_PTR                    = 193
+
 
 DBGS_TEST_SIGNAL        		= 32767
 
