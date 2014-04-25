@@ -2,13 +2,17 @@ COMPONENT=$(FENNEC_FOX_LIB)/Fennec/FennecC
 SFC_GEN=$(FENNEC_FOX_LIB)/Fennec/sfc
 PFLAGS+=-DTOSH_DATA_LENGTH=127
 
+CFLAGS+=-I$(FENNEC_FOX_LIB)/system
+PFLAGS+=-I$(FENNEC_FOX_LIB)/system
+
+
 CFLAGS += -DLOW_POWER_LISTENING
 
 include $(FENNEC_FOX_LIB)/support/make/Makerules
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/make/tinyos.extra
 
-PFLAGS+=-D__DBGS__
+#PFLAGS+=-D__DBGS__
 
 # 2. TinyOS printf
 #CFLAGS += -I$(TOSDIR)/lib/printf
