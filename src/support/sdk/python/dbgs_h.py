@@ -11,10 +11,10 @@ DBGS_RECEIVE_BEACON 			= 4
 DBGS_MGMT_START         		= 5
 DBGS_MGMT_STOP          		= 6
 
-DBGS_MEMORY_EMPTY       		= 7
-DBGS_BLINK_LED				= 8
-DBGS_SYNC               		= 10
-
+DBGS_START				= 7
+DBGS_START_DONE				= 8
+DBGS_STOP				= 9
+DBGS_STOP_DONE 				= 10
 
 DBGS_GOT_SEND                           = 20
 DBGS_GOT_SEND_HEADER_NULL_FAIL          = 21

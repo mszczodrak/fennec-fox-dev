@@ -68,9 +68,11 @@ components SerialPrintfC;
 #endif
 
 #ifdef __DBGS__
-components SerialDbgsC;
 components SerialStartC;
 #endif
+
+components SerialDbgsC;
+FennecP.SerialDbgs -> SerialDbgsC.SerialDbgs[250];
 
 }
 

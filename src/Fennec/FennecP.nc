@@ -34,6 +34,7 @@
 
 #include <Fennec.h>
 #include "ff_caches.h"
+#include "SerialDbgs.h"
 
 module FennecP @safe() {
 provides interface Fennec;
@@ -44,6 +45,8 @@ uses interface Boot;
 uses interface Leds;
 uses interface SplitControl;
 uses interface Random;
+
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -58,10 +61,8 @@ norace bool state_transitioning = TRUE;
 
 task void check_event() {
 	uint8_t i;
-	dbg("Fennec", "[-] Fennec check_event() current mask %d", event_mask);
 	for( i=0; i < rules_counter; i++ ) {
 		if ((policies[i].src_conf == current_state) && (policies[i].event_mask == event_mask)) {
-			dbg("Fennec", "[-] Fennec found matching rule #%d", i);
 			call FennecState.setStateAndSeq(policies[i].dst_conf, (current_seq + 1) % SEQ_MAX);
 			return;
 		}
@@ -69,14 +70,17 @@ task void check_event() {
 }
 
 task void stop_state() {
+	call SerialDbgs.dbgs(DBGS_STOP, 0, current_state, current_seq);
 	call SplitControl.stop();
 }
 
 task void start_state() {
+	call SerialDbgs.dbgs(DBGS_START, 0, current_state, current_seq);
 	call SplitControl.start();
 }
 
 task void stop_done() {
+	call SerialDbgs.dbgs(DBGS_STOP_DONE, 0, current_state, current_seq);
 	event_mask = 0;
 	current_state = next_state;
 	current_seq = next_seq;
@@ -85,6 +89,7 @@ task void stop_done() {
 }
 
 task void start_done() {
+	call SerialDbgs.dbgs(DBGS_START_DONE, 0, current_state, current_seq);
 	state_transitioning = FALSE;
 }
 
@@ -103,16 +108,12 @@ bool validProcessId(process_t process_id) @C() {
 
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
-			//dbg("Fennec", "[-] Fennec validProcessId(%d) - ordinary", process_id);
 			return TRUE;
 		}
 	}
 
 	/* we should report it */
-	dbg("Fennec", "[-] Fennec validProcessId(%d) - FALSE", process_id);
-
 	post send_state_update();	
-
 	return FALSE;
 }
 
@@ -123,23 +124,16 @@ event void Boot.booted() {
 	next_state = current_state;
 	next_seq = current_seq;
 	state_transitioning = TRUE;
-	dbg("Fennec", "[-] Fennec Boot.booted()");
 	post start_state();
 }
 
 event void SplitControl.startDone(error_t err) {
-	dbg("Fennec", "[-] Fennec SplitControl.startDone(%d)", err);
 	event_mask = 0;
-	dbg("Fennec", "[-] Fennec");
-	dbg("Fennec", "[-] Fennec ");
-	dbg("Fennec", "[-] Fennec ");
 	post start_done();
 }
 
 
 event void SplitControl.stopDone(error_t err) {
-	dbg("Fennec", "[-] Fennec SplitControl.stopDone(%d)", err);
-	dbg("Fennec", "[-] Fennec running in state %d", current_state);
 	post stop_done();
 }
 
@@ -148,24 +142,18 @@ command void Event.report(process_t process, uint8_t status) {
 	uint8_t i;
 	for (i = 0; i < NUMBER_OF_EVENTS; i++) {
 		if (events[i].process_id == process) {
-			dbg("Fennec", "[-] Fennec Event.report(%d, %d) found event_id %d",
-				process, status, event_id);
 			event_id = events[i].event_id;
 			break;
 		}
 	}
 
 	if (event_id == UNKNOWN) {
-		dbg("Fennec", "[-] Fennec Event.report(%d, %d) event_id not found",
-				process, status);
 		return;
 	}
 
 	if (status) {
-		dbg("Fennec", "[-] Fennec setting event id %d", event_id);
 		event_mask |= (1 << event_id);
 	} else {
-		dbg("Fennec", "[-] Fennec clearing event id %d", event_id);
 		event_mask &= ~(1 << event_id);
 	}
 	post check_event();
@@ -197,7 +185,6 @@ command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
 		return processes[ process_id ].am;
 
 	default:
-		dbg("Fennec", "[-] Fennec Fennec.getModuleId(%d, %d) - UNKNOWN", process_id, layer);
 		return UNKNOWN;
 	}
 }
@@ -206,12 +193,10 @@ command module_t Fennec.getModuleId(process_t process_id, layer_t layer) {
 
 command state_t FennecState.getStateId() {
 	return next_state;
-//	return current_state;
 }
 
 command uint16_t FennecState.getStateSeq() {
 	return next_seq;
-//	return current_seq;
 }
 
 /* compares received sequence with the current local one
@@ -243,34 +228,28 @@ int8_t check_sequence(uint16_t received, uint16_t current) {
 }
 
 command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) {
-	dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d)", new_state, new_seq);
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - EBUSY", new_state, new_seq);
 		return EBUSY;	
 	}
 
 	if (new_state >= NUMBER_OF_STATES) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - FAIL", new_state, new_seq);
 		return FAIL;
 	}
 
 	/* Nothing new, receive current information */
 	if ((check_sequence(new_seq, current_seq) == 0)  && (new_state == current_state)) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - nothing new", new_state, new_seq);
 		return SUCCESS;
 	}
 
 	/* Some mote is still in the old state, resend control message */
 	if (check_sequence(new_seq, current_seq) < 0) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - old state", new_state, new_seq);
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 
 	/* Network State sequnce has increased */
 	if ((check_sequence(new_seq, current_seq) > 0) && (new_state == current_state)) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - update sequence", new_state, new_seq);
 		current_seq = new_seq;
 		signal FennecState.resend();
 		return SUCCESS;
@@ -278,7 +257,6 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Receive information about a new network state */
 	if (check_sequence(new_seq, current_seq) > 0) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - new state", new_state, new_seq);
 		next_state = new_state;
 		next_seq = new_seq;
 		state_transitioning = TRUE;
@@ -288,13 +266,11 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Receive same sequence but different states - synchronize using priority levels */
 	if (states[current_state].level > states[new_state].level) {
-		dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - sync with level", new_state, new_seq);
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 		
 	/* Receive same sequence but different states with the same priority levels */ 
-	dbg("Fennec", "[-] Fennec Fennec.setStateAndSeq(%d, %d) - sync with rand seq", new_state, new_seq);
 	next_seq = current_seq + (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
 	state_transitioning = TRUE;
 	signal FennecState.resend();
@@ -305,7 +281,6 @@ command void FennecState.resendDone(error_t error) {
 	if (state_transitioning) {
 		if (error == SUCCESS) {
 		}
-		dbg("Fennec", "[-] Fennec FennecState.resendDone(%d)", error);
 		post stop_state();
 	}
 }
