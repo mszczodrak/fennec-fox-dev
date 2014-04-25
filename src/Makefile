@@ -8,7 +8,7 @@ include $(FENNEC_FOX_LIB)/support/make/Makerules
 include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/make/tinyos.extra
 
-#PFLAGS+=-D__DBGS__
+PFLAGS+=-D__DBGS__
 
 # 2. TinyOS printf
 #CFLAGS += -I$(TOSDIR)/lib/printf
