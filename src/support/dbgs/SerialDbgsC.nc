@@ -39,7 +39,6 @@
 configuration SerialDbgsC {
 provides interface SerialDbgs[uint8_t id];
 #ifdef __DBGS__
-uses interface Boot;
 #endif
 }
 
@@ -49,20 +48,12 @@ components SerialDbgsP;
 components LedsC;
 SerialDbgs = SerialDbgsP.SerialDbgs;
 
-#ifdef __DBGS__
-Boot = SerialDbgsP.Boot;
-#endif
-
 SerialDbgsP.Leds -> LedsC;
 
 #ifdef __DBGS__
-components SerialActiveMessageC;
 components new SerialAMSenderC(AM_DEBUG_MSG);
-SerialDbgsP.SerialSplitControl -> SerialActiveMessageC.SplitControl;
 SerialDbgsP.SerialAMSend -> SerialAMSenderC.AMSend;
 SerialDbgsP.SerialAMPacket -> SerialAMSenderC.AMPacket;
-SerialDbgsP.SerialPacket -> SerialAMSenderC.Packet;
-
 #endif
 
 }

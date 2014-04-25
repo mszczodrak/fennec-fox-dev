@@ -116,5 +116,9 @@ enum {
 
 #define DBGS_TIMER_FIRED			160
 #define DBGS_BUSY				161
+#define DBGS_SERIAL_SEND_MESSAGE		190
+#define DBGS_SERIAL_SEND_FAIL			191
+#define DBGS_SERIAL_QUEUE_FULL			192
+#define DBGS_SERIAL_NULL_PTR			193
 
 #endif

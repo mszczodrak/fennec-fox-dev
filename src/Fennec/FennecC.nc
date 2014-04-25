@@ -69,7 +69,7 @@ components SerialPrintfC;
 
 #ifdef __DBGS__
 components SerialDbgsC;
-SerialDbgsC.Boot -> MainC;
+components SerialStartC;
 #endif
 
 }
