@@ -100,5 +100,11 @@ PacketLinkQuality = AM.PacketLinkQuality;
 PacketTransmitPower = AM.PacketTransmitPower;
 PacketRSSI = AM.PacketRSSI;
 
+#ifdef __DBGS__
+components RF212DriverLayerP;
+components SerialDbgsC;
+RF212DriverLayerP.SerialDbgs -> SerialDbgsC.SerialDbgs[212];
+#endif
+
 
 }
