@@ -11,9 +11,9 @@ include $(FENNEC_FOX_LIB)/support/make/tinyos.extra
 PFLAGS+=-D__DBGS__
 
 # 2. TinyOS printf
-CFLAGS += -I$(TOSDIR)/lib/printf
+#CFLAGS += -I$(TOSDIR)/lib/printf
 #CFLAGS += -DPRINTF_BUFFER_SIZE=200
-CFLAGS += -DFENNEC_TOS_PRINTF
+#CFLAGS += -DFENNEC_TOS_PRINTF
 #CFLAGS += -DFENNEC_COOJA_PRINTF
 
 clean: FORCE

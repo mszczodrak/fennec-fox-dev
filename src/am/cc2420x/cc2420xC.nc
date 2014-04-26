@@ -99,5 +99,11 @@ PacketLinkQuality = AM.PacketLinkQuality;
 PacketTransmitPower = AM.PacketTransmitPower;
 PacketRSSI = AM.PacketRSSI;
 
+#ifdef __DBGS__
+components CC2420XDriverLayerP;
+components SerialDbgsC;
+CC2420XDriverLayerP.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+#endif
+
 
 }
