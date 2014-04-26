@@ -3,7 +3,8 @@
 # Updated on 4/24/2014
 
 import sys
-twonet_log_length = 21
+twonet_serial_log_length = 21
+twonet_printf_log_length = 8
 
 if len(sys.argv) != 2:
 	print("\nusage: %s <twonet.dat log file>\n\n");
@@ -17,26 +18,42 @@ print "{:>8} {:>3} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "ms"
 
 for line in f.readlines():
 	l = line.split()
-	if len(l) != twonet_log_length:
+
+	if len(l) != twonet_serial_log_length and len(l) != twonet_printf_log_length:
 		continue
 
-	if l[1] != 'destination:':
+	if l[1] != 'destination:' and l[1] != 'PRINTF:':
 		continue
 
-	try:
-		#time_stamp = int("%s"%(l[0]))
-		time_stamp = 0
-		mote_id = int("%s"%(l[0]))
+	if l[1] == 'destination:':
+		try:
+			#time_stamp = int("%s"%(l[0]))
+			time_stamp = 0
+			mote_id = int("%s"%(l[0]))
 
-		version = int("%s"%(l[12][1:-1]))
-		did = int("%s"%(l[13][:-1]))
-		dbg = int("%s"%(l[14][:-1]))
-		d0 = int("%s"%(l[15][:-1])) * 256 + int("%s"%(l[16][:-1]))
-		d1 = int("%s"%(l[17][:-1])) * 256 + int("%s"%(l[18][:-1]))
-		d2 = int("%s"%(l[19][:-1])) * 256 + int("%s"%(l[20][:-1]))
-	except:
-		continue
+			version = int("%s"%(l[12][1:-1]))
+			did = int("%s"%(l[13][:-1]))
+			dbg = int("%s"%(l[14][:-1]))
+			d0 = int("%s"%(l[15][:-1])) * 256 + int("%s"%(l[16][:-1]))
+			d1 = int("%s"%(l[17][:-1])) * 256 + int("%s"%(l[18][:-1]))
+			d2 = int("%s"%(l[19][:-1])) * 256 + int("%s"%(l[20][:-1]))
+		except:
+			continue
 
+	if l[1] == 'PRINTF:':
+		try:
+			#time_stamp = int("%s"%(l[0]))
+			time_stamp = 0
+			mote_id = int("%s"%(l[0]))
+
+			version = int("%s"%(l[2]))
+			did = int("%s"%(l[3]))
+			dbg = int("%s"%(l[4]))
+			d0 = int("%s"%(l[5]))
+			d1 = int("%s"%(l[6]))
+			d2 = int("%s"%(l[7]))
+		except:
+			continue
 
 	if (time_offset < 0):
 		time_offset = time_stamp
