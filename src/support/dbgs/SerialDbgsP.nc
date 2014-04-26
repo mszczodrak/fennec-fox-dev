@@ -74,10 +74,19 @@ task void sendMessage() {
 	dmsg->d0 = queue[head].d0;
 	dmsg->d1 = queue[head].d1;
 	dmsg->d2 = queue[head].d2;
+
+#ifdef FENNEC_TOS_PRINTF
+	printf("%d %d %d %d %d %d\n", queue[head].version, queue[head].version,
+		queue[head].dbg, queue[head].d0, queue[head].d1, queue[head].d2);
+
+	signal SerialAMSend.sendDone(&packet, SUCCESS);
+#else
+
 	if (call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg)) != SUCCESS) {
 		call SerialDbgs.dbgs[0](DBGS_SERIAL_SEND_FAIL, size == 0, dmsg == NULL, busy == TRUE);
 		signal SerialAMSend.sendDone(&packet, FAIL);
 	}
+#endif
 }
 
 #endif

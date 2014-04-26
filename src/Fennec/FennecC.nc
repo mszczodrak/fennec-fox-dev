@@ -68,7 +68,9 @@ components SerialPrintfC;
 #endif
 
 #ifdef __DBGS__
+#ifndef FENNEC_TOS_PRINTF
 components SerialStartC;
+#endif
 #endif
 
 components SerialDbgsC;
