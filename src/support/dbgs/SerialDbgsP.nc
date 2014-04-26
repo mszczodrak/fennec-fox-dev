@@ -78,6 +78,7 @@ task void sendMessage() {
 #ifdef FENNEC_TOS_PRINTF
 	printf("%d %d %d %d %d %d\n", queue[head].version, queue[head].version,
 		queue[head].dbg, queue[head].d0, queue[head].d1, queue[head].d2);
+	printfflush();
 
 	signal SerialAMSend.sendDone(&packet, SUCCESS);
 #else
