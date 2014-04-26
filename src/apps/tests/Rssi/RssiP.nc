@@ -102,8 +102,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #endif
 
 #ifdef __DBGS__
-	call SerialDbgs.dbgs(DBGS_NONE, process, call SubPacketRSSI.get(msg),
-					call SubPacketLinkQuality.get(msg));
+	call SerialDbgs.dbgs(process, call SubAMPacket.source(msg),
+		call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
 #endif
 
 	signal LedTimer.fired();
