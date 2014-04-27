@@ -32,15 +32,20 @@
  * Author: Miklos Maroti
  */
 
-configuration NeighborhoodC
+generic configuration NeighborhoodC()
 {
 	provides interface Neighborhood;
+	provides interface NeighborhoodFlag;
 }
 
 implementation
 {
-	components NeighborhoodP, MainC;
+	components new NeighborhoodP(), MainC;
 
 	Neighborhood = NeighborhoodP;
+
+	// TODO: make sure that no more than 8 flags are used at a time
+	NeighborhoodFlag = NeighborhoodP.NeighborhoodFlag[unique("NeighborhoodFlag")];
+
 	MainC.SoftwareInit -> NeighborhoodP;
 }
