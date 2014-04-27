@@ -62,7 +62,6 @@ task void sendMessage() {
 
 	if (size == 0) { return; }
 	if (dmsg == NULL || busy == TRUE) {
-		call SerialDbgs.dbgs[0](DBGS_SERIAL_SEND_MESSAGE, size == 0, dmsg == NULL, busy == TRUE);
 		return;
 	}
 
@@ -84,7 +83,6 @@ task void sendMessage() {
 #else
 
 	if (call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg)) != SUCCESS) {
-		call SerialDbgs.dbgs[0](DBGS_SERIAL_SEND_FAIL, size == 0, dmsg == NULL, busy == TRUE);
 		signal SerialAMSend.sendDone(&packet, FAIL);
 	}
 #endif
@@ -96,7 +94,6 @@ command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, 
 
 #ifdef __DBGS__
 	if (size >= DBGS_QUEUE_LEN) {
-		call SerialDbgs.dbgs[0](DBGS_SERIAL_QUEUE_FULL, size == 0, dmsg == NULL, busy == TRUE);
 		return;
 	}
 
