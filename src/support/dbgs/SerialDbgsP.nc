@@ -92,6 +92,10 @@ task void sendMessage() {
 
 command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, uint16_t d2) {
 
+#ifdef TOSSIM 
+	dbg("SerialDbgs", "%d %d %d %d %d %d\n", SERIAL_DBG_VERSION, id, dbg, d0, d1, d2);
+#endif
+
 #ifdef __DBGS__
 	if (size >= DBGS_QUEUE_LEN) {
 		return;
@@ -112,7 +116,6 @@ command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, 
 
 	post sendMessage();
 #endif
-
 }
 
 #ifdef __DBGS__
