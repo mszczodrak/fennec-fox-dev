@@ -93,9 +93,9 @@ class Cape():
 
 	def setRealTime(self):
 		self.__real_time = 1
-#		self.__sf = SerialForwarder(self.__sf_port)
-#		self.__sin = SensorInput(self.__sensor_port)
-#		self.__throttle = Throttle(self.__tossim, 10)
+		self.__sf = SerialForwarder(self.__sf_port)
+		self.__sin = SensorInput(self.__sensor_port)
+		self.__throttle = Throttle(self.__tossim, 10)
 
 
 	def setSimulationTime(self, sim_time):
