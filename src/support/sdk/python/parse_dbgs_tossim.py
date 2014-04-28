@@ -18,6 +18,7 @@ print "{:>8} {:>3} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "ms"
 
 for line in f.readlines():
 	l = line.split()
+	
 	if len(l) != tossim_log:
 		continue
 
@@ -25,15 +26,16 @@ for line in f.readlines():
 		continue
 
 	try:
-		time_stamp = 0
-		mote_id = 0
+		tl = [float(x) for x in l[0].split(':')]
+		time_stamp = int((((tl[0] * 60) + tl[1]) * 60) * 1000 + (1000 * tl[2]))
+		mote_id = int("%s"%(l[2][1:-2]))
 
-		version = int("%s"%(l[8]),16)
-		did = int("%s"%(l[9]),16)
-		dbg = int("%s"%(l[10]),16)
-		d0 = int("%s%s"%(l[11],l[12]),16)
-		d1 = int("%s%s"%(l[13],l[14]),16)
-		d2 = int("%s%s"%(l[15],l[16]),16)
+		version = int("%s"%(l[3]))
+		did = int("%s"%(l[4]))
+		dbg = int("%s"%(l[5]))
+		d0 = int("%s"%(l[6]))
+		d1 = int("%s"%(l[7]))
+		d2 = int("%s"%(l[8]))
 	except:
 		continue
 
