@@ -49,7 +49,7 @@ uses interface tossimParams;
 uses interface StdControl as AMQueueControl;
 uses interface SplitControl as SubSplitControl;
 uses interface SystemLowPowerListening;
-uses interface LowPowerListening;
+provides interface LowPowerListening;
 
 uses interface AMSend as SubAMSend[process_t process_id];
 uses interface AMPacket;
@@ -95,7 +95,7 @@ event void SubSplitControl.startDone(error_t error) {
 		call AMQueueControl.start();
         	call SystemLowPowerListening.setDefaultRemoteWakeupInterval(call tossimParams.get_sleepInterval());
 	        call SystemLowPowerListening.setDelayAfterReceive(call tossimParams.get_sleepDelay());
-        	call LowPowerListening.setLocalWakeupInterval(call tossimParams.get_sleepInterval());
+        	//call LowPowerListening.setLocalWakeupInterval(call tossimParams.get_sleepInterval());
 	}
 
 	post setChannel();
@@ -104,7 +104,7 @@ event void SubSplitControl.startDone(error_t error) {
 }
 
 event void SubSplitControl.stopDone(error_t error) {
-        call LowPowerListening.setLocalWakeupInterval(0);
+        //call LowPowerListening.setLocalWakeupInterval(0);
 	if (error == SUCCESS) {
 		call AMQueueControl.stop();
 	}
@@ -112,7 +112,7 @@ event void SubSplitControl.stopDone(error_t error) {
 }
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
-	call LowPowerListening.setRemoteWakeupInterval(msg, call tossimParams.get_sleepInterval());
+	//call LowPowerListening.setRemoteWakeupInterval(msg, call tossimParams.get_sleepInterval());
 	call PacketTransmitPower.set(msg, call tossimParams.get_power());
 	return call SubAMSend.send[id](addr, msg, len);
 }
@@ -246,5 +246,16 @@ default event message_t* Snoop.receive[am_id_t id](message_t* msg, void* payload
 default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t err) {
 }
 
+command void LowPowerListening.setLocalWakeupInterval(uint16_t intervalMs) {}
+
+command uint16_t LowPowerListening.getLocalWakeupInterval() {
+	return 0;
+}
+
+command void LowPowerListening.setRemoteWakeupInterval(message_t *msg, uint16_t intervalMs) {}
+
+command uint16_t LowPowerListening.getRemoteWakeupInterval(message_t *msg) {
+	return 0;
+}
 
 }

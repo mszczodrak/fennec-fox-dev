@@ -96,9 +96,12 @@ tossimP.AMPacket -> AM.AMPacket;
 
 Packet = AM.Packet;
 AMPacket = AM.AMPacket;
-LowPowerListening = AM.LowPowerListening;
 PacketAcknowledgements = AM;
-LinkPacketMetadata = AM.LinkPacketMetadata;
+
+LowPowerListening = tossimP;
+
+components CC2420PacketC;
+LinkPacketMetadata = CC2420PacketC;
 
 //PacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
 //PacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
@@ -113,6 +116,5 @@ PacketTimeStamp32khz = tossimP.PacketTimeStamp32khz;
 /* System LowPowerListening Confs */
 components SystemLowPowerListeningC;
 tossimP.SystemLowPowerListening -> SystemLowPowerListeningC;
-tossimP.LowPowerListening -> AM.LowPowerListening;
 
 }
