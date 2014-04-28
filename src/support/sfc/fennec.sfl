@@ -99,6 +99,13 @@ use network tricklePlus $(FENNEC_FOX_LIB)/net/tricklePlus (
 use network SyncNet $(FENNEC_FOX_LIB)/net/cuNet ()
 
 # am Modules
+use am tossim $(FENNEC_FOX_LIB)/am/tossim (
+		uint8_t channel=26,
+		uint8_t power=31, 
+		uint16_t sleepInterval=0,
+		uint16_t sleepDelay=100
+)
+
 use am cc2420 $(FENNEC_FOX_LIB)/am/cc2420 (
 		uint8_t channel=26,
 		uint8_t power=31, 
