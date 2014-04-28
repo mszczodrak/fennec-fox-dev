@@ -1,4 +1,0 @@
-To compile for CapeFox make sure that the
-$(FENNEC_FOX_LIB)/src/support/make/cape.extra 
-file is in $(TOROOT)/support/make
-
