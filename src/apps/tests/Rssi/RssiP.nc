@@ -95,6 +95,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	int8_t rssi = (int8_t) call SubPacketRSSI.get(msg);
 	int16_t rssi_calib = (rssi * call RssiParams.get_rssi_scale()) + 
 				call RssiParams.get_rssi_offset();
+		dbg("Application", "Receive Beacon\n");
 #ifdef FENNEC_TOS_PRINTF
 	int8_t lqi = (int8_t) call SubPacketLinkQuality.get(msg);
 	printf("RSSI: %d  LQI: %d\n", rssi, lqi);
@@ -126,6 +127,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void SendTimer.fired() {
 	if (!busy) {
 		busy = TRUE;
+		dbg("Application", "Send Beacon\n");
 		call SubAMSend.send(BROADCAST, &packet, 40);
 	}
 }

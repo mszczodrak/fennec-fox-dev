@@ -60,16 +60,16 @@ task void start_next_module() {
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	switch(err) {
 	case EALREADY:
-		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - EALREADY module: %d", module_id);
+		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - EALREADY module: %d\n", module_id);
 		signal ModuleCtrl.startDone(SUCCESS);
 		return;
 
 	case SUCCESS:
-		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - SUCCESS module: %d", module_id);
+		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - SUCCESS module: %d\n", module_id);
 		return;
 
 	default:
-		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - FAIL module: %d", module_id);
+		dbg("NetworkProcess", "[-] NetworkProcess start_next_module() - FAIL module: %d\n", module_id);
 		signal NetworkProcess.startDone(FAIL);
 	}
 }
@@ -80,22 +80,22 @@ task void stop_next_module() {
 	call Timer.startOneShot(MODULE_RESPONSE_DELAY);
 	switch(err) {
 	case EALREADY:
-		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - EALREADY module: %d", module_id);
+		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - EALREADY module: %d\n", module_id);
 		signal ModuleCtrl.stopDone(SUCCESS);
 		return;
 
 	case SUCCESS:
-		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - SUCCESS module: %d", module_id);
+		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - SUCCESS module: %d\n", module_id);
 		return;
 
 	default:
-		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - FAIL module: %d", module_id);
+		dbg("NetworkProcess", "[-] NetworkProcess stop_next_module() - FAIL module: %d\n", module_id);
 		signal NetworkProcess.stopDone(FAIL);
 	}
 }
 
 command error_t NetworkProcess.start(process_t process_id) {
-	dbg("NetworkProcess", "[-] NetworkProcess NetworkProcess.start(%d)", process_id);
+	dbg("NetworkProcess", "[-] NetworkProcess NetworkProcess.start(%d)\n", process_id);
 	state = S_STARTING;
 	current_layer = F_AM;
 	current_process = process_id;
@@ -104,7 +104,7 @@ command error_t NetworkProcess.start(process_t process_id) {
 }
 
 command error_t NetworkProcess.stop(process_t process_id) {
-	dbg("NetworkProcess", "[-] NetworkProcess NetworkProcess.stop(%d)", process_id);
+	dbg("NetworkProcess", "[-] NetworkProcess NetworkProcess.stop(%d)\n", process_id);
 	state = S_STOPPING;
 	current_layer = F_APPLICATION;
 	current_process = process_id;
@@ -113,13 +113,13 @@ command error_t NetworkProcess.stop(process_t process_id) {
 }
 
 event void ModuleCtrl.startDone(error_t error) {
-	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.startDone(%d)", error);
+	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.startDone(%d)\n", error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();
 		next_layer();
 		if (current_layer == UNKNOWN_LAYER) {
 			state = S_STARTED;
-			dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl signal NetworkProcess.startDone(SUCCESS)");
+			dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl signal NetworkProcess.startDone(SUCCESS)\n");
 			signal NetworkProcess.startDone(SUCCESS);
 		} else {
 			post start_next_module();
@@ -128,13 +128,13 @@ event void ModuleCtrl.startDone(error_t error) {
 }
 
 event void ModuleCtrl.stopDone(error_t error) {
-	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.stopDone(%d)", error);
+	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.stopDone(%d)\n", error);
 	if ((error == SUCCESS) || (error = EALREADY)) {
 		call Timer.stop();
 		next_layer();
 		if (current_layer == UNKNOWN_LAYER) {
 			state = S_STOPPED;
-			dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl signal NetworkProcess.stopDone(SUCCESS)");
+			dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl signal NetworkProcess.stopDone(SUCCESS)\n");
 			signal NetworkProcess.stopDone(SUCCESS);
 		} else {
 			post stop_next_module();
@@ -144,12 +144,12 @@ event void ModuleCtrl.stopDone(error_t error) {
 
 event void Timer.fired() {
 	if (state == S_STARTING) {
-		dbg("NetworkProcess", "[-] NetworkProcess Timer.fired() - start_next_module()");
+		dbg("NetworkProcess", "[-] NetworkProcess Timer.fired() - start_next_module()\n");
 		post start_next_module();
 	}
 
 	if (state == S_STOPPING) {
-		dbg("NetworkProcess", "[-] NetworkProcess Timer.fired() - stop_next_module()");
+		dbg("NetworkProcess", "[-] NetworkProcess Timer.fired() - stop_next_module()\n");
 		post stop_next_module();
 	}
 }

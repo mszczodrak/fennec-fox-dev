@@ -43,7 +43,7 @@ class Simulator():
 		self.cape = Cape.Cape()
 		self.dbg_channels = ["Application", "Network"]
 		self.dbg_channels = ["Application", "Network", "Fennec", "FennecEngine", "NetworkState", "NetworkProcess", "StateSynchronization", "SerialDbgs"]
-		self.dbg_channels = ["SerialDbgs"]
+		#self.dbg_channels = ["SerialDbgs"]
 		#self.cape.setTopologyFile("topos/81/linkgain.out")
 		self.cape.setTopologyFile("topos/4/linkgain.out")
 		self.cape.setNoiseFile("noise/casino.txt")
