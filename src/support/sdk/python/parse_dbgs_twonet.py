@@ -37,23 +37,23 @@ for line in f.readlines():
 		except:
 			continue
 
-	if not l[0].isdigit():
-		continue
+	else:
+		if not l[0].isdigit():
+			continue
 
-	try:
-		#time_stamp = int("%s"%(l[0]))
-		time_stamp = 0
-		mote_id = int("%s"%(l[0]))
+		try:
+			#time_stamp = int("%s"%(l[0]))
+			time_stamp = 0
+			mote_id = int("%s"%(l[0]))
 
-		version = int("%s"%(l[6][1:-1]))
-		did = int("%s"%(l[7][:-1]))
-		dbg = int("%s"%(l[8][:-1]))
-		d0 = int("%s"%(l[9][:-1])) * 256 + int("%s"%(l[10][:-1]))
-		d1 = int("%s"%(l[11][:-1])) * 256 + int("%s"%(l[12][:-1]))
-		d2 = int("%s"%(l[13][:-1])) * 256 + int("%s"%(l[14][:-2]))
-	except:
-		continue
-
+			version = int("%s"%(l[6][1:-1]))
+			did = int("%s"%(l[7][:-1]))
+			dbg = int("%s"%(l[8][:-1]))
+			d0 = int("%s"%(l[9][:-1])) * 256 + int("%s"%(l[10][:-1]))
+			d1 = int("%s"%(l[11][:-1])) * 256 + int("%s"%(l[12][:-1]))
+			d2 = int("%s"%(l[13][:-1])) * 256 + int("%s"%(l[14][:-2]))
+		except:
+			continue
 
 
 
