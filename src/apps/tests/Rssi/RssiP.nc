@@ -101,10 +101,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	printfflush();
 #endif
 
-#ifdef __DBGS__
 	call SerialDbgs.dbgs(DBGS_RECEIVE_BEACON, call SubAMPacket.source(msg),
 		call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
-#endif
 
 	signal LedTimer.fired();
 

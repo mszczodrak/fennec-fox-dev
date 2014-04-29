@@ -47,7 +47,7 @@ class Simulator():
 		#self.cape.setTopologyFile("topos/81/linkgain.out")
 		self.cape.setTopologyFile("topos/4/linkgain.out")
 		self.cape.setNoiseFile("noise/casino.txt")
-		self.cape.setSimulationTime(1000)
+		self.cape.setSimulationTime(10000)
 		
 		self.cape.setup()
 		
