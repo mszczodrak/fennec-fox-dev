@@ -42,6 +42,7 @@ uses interface RadioAlarm;
 uses interface RandomCollisionConfig;
 uses interface SlottedCollisionConfig;
 uses interface CollisionAvoidanceConfig;
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -68,6 +69,8 @@ SlottedCollisionLayerC.SubReceive -> CollisionAvoidanceLayerP.SlottedSubReceive;
 SlottedCollisionLayerC.RadioAlarm -> CollisionAvoidanceLayerP.SlottedRadioAlarm;
 SlottedCollisionLayerC.Config -> CollisionAvoidanceLayerP.SlottedConfig;
 
+//SerialDbgs = SlottedCollisionLayerC;
+
 /* wire to RandomCollisionLayer */
 
 components new RandomCollisionLayerC();
@@ -78,5 +81,7 @@ RandomCollisionLayerC.SubSend -> CollisionAvoidanceLayerP.RandomSubSend;
 RandomCollisionLayerC.SubReceive -> CollisionAvoidanceLayerP.RandomSubReceive;
 RandomCollisionLayerC.RadioAlarm -> CollisionAvoidanceLayerP.RandomRadioAlarm;
 RandomCollisionLayerC.Config -> CollisionAvoidanceLayerP.RandomConfig;
+
+SerialDbgs = RandomCollisionLayerC;
 
 }
