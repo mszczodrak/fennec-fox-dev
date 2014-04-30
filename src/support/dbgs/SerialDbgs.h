@@ -99,6 +99,10 @@ enum {
 #define DBGS_NOT_ACKED_FAILED			51
 #define DBGS_NOT_ACKED				52
 #define DBGS_ACKED				53
+#define DBGS_CONGESTION				54
+
+
+
 
 #define DBGS_SEND_CONTROL_MSG			101
 #define DBGS_RECEIVE_CONTROL_MSG		102
