@@ -48,9 +48,9 @@ nx_struct debug_msg {
 };
 
 enum {
-	SERIAL_DBG_VERSION = 5,
-        AM_DEBUG_MSG = 0x89,
-	DBGS_QUEUE_LEN = 50,
+	SERIAL_DBG_VERSION 	= 5,
+        AM_DEBUG_MSG 		= 0x89,
+	DBGS_QUEUE_LEN 		= 15,
 };
 
 #define DBGS_NONE		0

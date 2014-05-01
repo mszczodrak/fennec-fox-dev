@@ -48,31 +48,16 @@ implementation {
 
 #ifdef __DBGS__
 
-nx_struct debug_msg *dmsg = NULL;
-message_t packet;
-nx_struct debug_msg queue[DBGS_QUEUE_LEN];
+message_t queue[DBGS_QUEUE_LEN];
 norace uint8_t head = 0;
 norace uint8_t tail = 0;
 norace uint8_t size = 0;
-norace bool busy = FALSE;
 
 task void sendMessage() {
-	dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&packet,
-		sizeof(nx_struct debug_msg));
 
-	if (size == 0) { return; }
-	if (dmsg == NULL || busy == TRUE) {
+	if (size == 0 ) {
 		return;
 	}
-
-	busy = TRUE;
-
-	dmsg->version = queue[head].version;
-	dmsg->id = queue[head].version;
-	dmsg->dbg = queue[head].dbg;
-	dmsg->d0 = queue[head].d0;
-	dmsg->d1 = queue[head].d1;
-	dmsg->d2 = queue[head].d2;
 
 #ifdef FENNEC_TOS_PRINTF
 	printf("%d %d %d %d %d %d\n", queue[head].version, queue[head].version,
@@ -81,9 +66,13 @@ task void sendMessage() {
 
 	signal SerialAMSend.sendDone(&packet, SUCCESS);
 #else
+	switch(call SerialAMSend.send(AM_BROADCAST_ADDR, &queue[head], sizeof(nx_struct debug_msg))) {
+		case EBUSY:
+		case SUCCESS:
+			break;
 
-	if (call SerialAMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(nx_struct debug_msg)) != SUCCESS) {
-		signal SerialAMSend.sendDone(&packet, FAIL);
+		default:
+			signal SerialAMSend.sendDone(&queue[head], FAIL);
 	}
 #endif
 }
@@ -97,16 +86,19 @@ command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, 
 #endif
 
 #ifdef __DBGS__
-	if (size >= DBGS_QUEUE_LEN) {
+	nx_struct debug_msg *dmsg = (nx_struct debug_msg*) call SerialAMSend.getPayload(&queue[tail],
+		sizeof(nx_struct debug_msg));
+
+	if (size >= DBGS_QUEUE_LEN || dmsg == NULL) {
 		return;
 	}
 
-	queue[tail].version = SERIAL_DBG_VERSION;
-	queue[tail].id = id;
-	queue[tail].dbg = dbg;
-	queue[tail].d0 = d0;
-	queue[tail].d1 = d1;
-	queue[tail].d2 = d2;
+	dmsg->version = SERIAL_DBG_VERSION;
+	dmsg->id = id;
+	dmsg->dbg = dbg;
+	dmsg->d0 = d0;
+	dmsg->d1 = d1;
+	dmsg->d2 = d2;
 
 	atomic {
 		tail++;
@@ -129,7 +121,6 @@ event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
 		}
 	}
 
-	busy = FALSE;
 	post sendMessage();
 }
 
