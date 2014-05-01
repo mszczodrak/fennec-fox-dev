@@ -19,7 +19,7 @@ use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter (
 		uint16_t src,
 		uint16_t dest )
 
-use application dbgs $(FENNEC_FOX_LIB)/apps/tests/Dbgs ()
+use application dbgs $(FENNEC_FOX_LIB)/apps/tests/Dbgs (uint16_t delay = 1024)
 
 use application printf $(FENNEC_FOX_LIB)/apps/tests/PrintfApp ()
 

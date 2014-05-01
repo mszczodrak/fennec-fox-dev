@@ -63,7 +63,7 @@ uint16_t c;
 
 command error_t SplitControl.start() {
 	c = 0;
-	call Timer.startPeriodic(1000);
+	call Timer.startPeriodic(call DbgsParams.get_delay());
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -84,7 +84,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void Timer.fired() {
-	call Leds.set(c++);
+	c++;
 	call SerialDbgs.dbgs(DBGS_NONE, process, c, c);
 }
 
