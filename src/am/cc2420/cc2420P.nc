@@ -178,7 +178,7 @@ async command void PacketLinkQuality.set(message_t* msg, uint8_t value) {
 }
 
 async command bool PacketTransmitPower.isSet(message_t* msg) {
-	return TRUE;
+	return call PacketTransmitPower.get(msg) != 0;
 }
 
 async command uint8_t PacketTransmitPower.get(message_t* msg) {

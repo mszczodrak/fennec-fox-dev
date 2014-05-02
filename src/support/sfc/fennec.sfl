@@ -67,6 +67,8 @@ use application StateSync $(FENNEC_FOX_LIB)/apps/StateSynchronization (
 		uint16_t send_delay = 1000
 )
 
+use application NetworkRadioSetup $(FENNEC_FOX_LIB)/apps/network_rssi()
+
 # net Modules
 
 use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
