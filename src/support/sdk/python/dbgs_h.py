@@ -40,9 +40,10 @@ DBGS_SYNC_PARAMS                        = 42
 DBGS_CHANNEL_TIMEOUT_NEXT               = 43
 DBGS_CHANNEL_TIMEOUT_RESET              = 44
 DBGS_SYNC_PARAMS_FAIL              	= 45
-DBGS_RADIO_START_V_REG                  = 46
-DBGS_RADIO_STOP_V_REG                   = 47
-DBGS_RADIO_ON_PERIOD                   	= 48
+DBGS_RADIO_START                        = 46
+DBGS_RADIO_START_DONE                   = 47
+DBGS_RADIO_STOP                         = 48
+DBGS_RADIO_STOP_DONE                    = 49
 
 DBGS_NOT_ACKED_RESEND                   = 50
 DBGS_NOT_ACKED_FAILED                   = 51
