@@ -70,6 +70,7 @@ module DefaultLplP {
     interface Leds;
     interface SystemLowPowerListening;
   }
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -79,6 +80,16 @@ implementation {
   
   /** The length of the current send message */
   uint8_t currentSendLen;
+
+task void reportStartDone() {
+	call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, 0, 0);
+}
+
+task void reportStopDone() {
+	call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, 0, 0);
+}
+
+
   
   /**
    * Radio Power State
@@ -247,6 +258,7 @@ implementation {
   event void SubControl.startDone(error_t error) {
     if(!error) {
       call RadioPowerState.forceState(S_ON);
+      post reportStartDone();
       
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
           || call SendState.getState() == S_LPL_SENDING) {
@@ -268,7 +280,7 @@ implementation {
     }
 
     if(!error) {
-
+      post reportStopDone();
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
           || call SendState.getState() == S_LPL_SENDING) {
         // We're in the middle of sending a message; start the radio back up

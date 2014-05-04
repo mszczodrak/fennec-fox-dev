@@ -158,11 +158,11 @@ implementation {
   void signalDone( error_t err );
  
   task void reportCongestion() {
-    call SerialDbgs.dbgs(DBGS_CONGESTION, 242, 0, 0);
+//    call SerialDbgs.dbgs(DBGS_CONGESTION, 242, 0, 0);
   }
 
   task void notAcked() {
-    call SerialDbgs.dbgs(DBGS_NOT_ACKED, 242, 0, 0);
+//    call SerialDbgs.dbgs(DBGS_NOT_ACKED, 242, 0, 0);
   }
 
   /***************** Init Commands *****************/
