@@ -59,7 +59,9 @@ generic module SoftwareAckLayerC()
 implementation
 {
 	task void notAcked() {
-//		call SerialDbgs.dbgs(DBGS_NOT_ACKED, 0, 0, 0);
+#ifdef __DBGS__MAC_NOT_ACKED__
+		call SerialDbgs.dbgs(DBGS_NOT_ACKED, 0, 0, 0);
+#endif
 	}
 
 

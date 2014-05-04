@@ -158,11 +158,15 @@ implementation {
   void signalDone( error_t err );
  
   task void reportCongestion() {
-//    call SerialDbgs.dbgs(DBGS_CONGESTION, 242, 0, 0);
+#ifdef __DBGS__MAC_CONGESTION__
+    call SerialDbgs.dbgs(DBGS_CONGESTION, 242, 0, 0);
+#endif
   }
 
   task void notAcked() {
-//    call SerialDbgs.dbgs(DBGS_NOT_ACKED, 242, 0, 0);
+#ifdef __DBGS__MAC_NOT_ACKED__
+    call SerialDbgs.dbgs(DBGS_NOT_ACKED, 242, 0, 0);
+#endif
   }
 
   /***************** Init Commands *****************/

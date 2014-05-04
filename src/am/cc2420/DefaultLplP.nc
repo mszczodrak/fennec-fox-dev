@@ -82,13 +82,16 @@ implementation {
   uint8_t currentSendLen;
 
 task void reportStartDone() {
+#ifdef __DBGS__RADIO_STATUS__
 	call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, 0, 0);
+#endif
 }
 
 task void reportStopDone() {
+#ifdef __DBGS__RADIO_STATUS__
 	call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, 0, 0);
+#endif
 }
-
 
   
   /**

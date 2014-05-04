@@ -56,7 +56,9 @@ generic module RandomCollisionLayerP()
 implementation
 {
 	task void reportCongestion() {
-//		call SerialDbgs.dbgs(DBGS_CONGESTION, 0, 0, 0);
+#ifdef __DBGS__MAC_CONGESTION__
+		call SerialDbgs.dbgs(DBGS_CONGESTION, 0, 0, 0);
+#endif
 	}
 
 	tasklet_norace uint8_t state;
