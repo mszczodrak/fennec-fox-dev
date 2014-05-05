@@ -283,8 +283,8 @@ implementation
 
 
 components SerialDbgsC;
-CollisionAvoidanceLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[212];
-SoftwareAckLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[212];
-LowPowerListeningLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[212];
+CollisionAvoidanceLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+SoftwareAckLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+LowPowerListeningLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
 
 }
