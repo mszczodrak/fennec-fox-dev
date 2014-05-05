@@ -659,7 +659,6 @@ implementation
 
 		cmd = CMD_TURNON;
 		call Tasklet.schedule();
-
 		return SUCCESS;
 	}
 

@@ -282,9 +282,10 @@ implementation
 	RadioDriverLayerC.Tasklet -> TaskletC;
 
 
-components SerialDbgsC;
-CollisionAvoidanceLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
-SoftwareAckLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
-LowPowerListeningLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+	components SerialDbgsC;
+	CollisionAvoidanceLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+	SoftwareAckLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+	LowPowerListeningLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+	LowPowerListeningLayerC.LocalTime -> RadioDriverLayerC;
 
 }

@@ -52,8 +52,9 @@ generic configuration LowPowerListeningLayerC()
 
 		interface LowPowerListeningConfig as Config;
 		interface PacketAcknowledgements;
+		interface LocalTime<TRadio> as LocalTime;
+		interface SerialDbgs;
 	}
-	uses interface SerialDbgs;
 }
 
 implementation
@@ -75,6 +76,7 @@ implementation
 	PacketAcknowledgements = LowPowerListeningLayerP;
 
 	SerialDbgs = LowPowerListeningLayerP;
+	LocalTime = LowPowerListeningLayerP;
 	
 	LowPowerListeningLayerP.Timer -> TimerMilliC;
 	LowPowerListeningLayerP.SystemLowPowerListening -> SystemLowPowerListeningC;
