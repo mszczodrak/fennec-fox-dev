@@ -310,4 +310,9 @@ implementation
 	RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];
 	RadioDriverLayerC.Tasklet -> TaskletC;
+
+	components SerialDbgsC;
+	CollisionAvoidanceLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[230];
+	SoftwareAckLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[230];
+	LowPowerListeningLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[230];
 }
