@@ -201,12 +201,17 @@ implementation
 
 // -------- Low Power Listening
 
+#ifdef LOW_POWER_LISTENING
+	#warning "*** USING LOW POWER LISTENING LAYER"
 	components new LowPowerListeningLayerC();
 	LowPowerListeningLayerC.Config -> RadioP;
 #ifdef RF230_HARDWARE_ACK
 	LowPowerListeningLayerC.PacketAcknowledgements -> RadioDriverLayerC;
 #else
 	LowPowerListeningLayerC.PacketAcknowledgements -> SoftwareAckLayerC;
+#endif
+#else
+	components new LowPowerListeningDummyC() as LowPowerListeningLayerC;
 #endif
 	LowPowerListeningLayerC.SubControl -> MessageBufferLayerC;
 	LowPowerListeningLayerC.SubSend -> MessageBufferLayerC;
@@ -230,10 +235,12 @@ implementation
 
 // -------- CollisionAvoidance
 
-	components new CollisionAvoidanceLayerC();
-	CollisionAvoidanceLayerC.CollisionAvoidanceConfig -> RadioP.CollisionAvoidanceConfig;
-	CollisionAvoidanceLayerC.RandomCollisionConfig -> RadioP.RandomCollisionConfig;
-	CollisionAvoidanceLayerC.SlottedCollisionConfig -> RadioP.SlottedCollisionConfig;
+#ifdef SLOTTED_MAC
+	components new SlottedCollisionLayerC() as CollisionAvoidanceLayerC;
+#else
+	components new RandomCollisionLayerC() as CollisionAvoidanceLayerC;
+#endif
+	CollisionAvoidanceLayerC.Config -> RadioP;
 	CollisionAvoidanceLayerC.SubSend -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.SubReceive -> SoftwareAckLayerC;
 	CollisionAvoidanceLayerC.RadioAlarm -> RadioAlarmC.RadioAlarm[unique(UQ_RADIO_ALARM)];

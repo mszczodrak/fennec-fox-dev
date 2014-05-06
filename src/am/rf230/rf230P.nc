@@ -41,7 +41,6 @@ provides interface Receive[process_t process_id];
 provides interface Receive as Snoop[process_t process_id];
 
 uses interface rf230Params;
-uses interface StdControl as RadioParamsControl;
 uses interface StdControl as AMQueueControl;
 uses interface SplitControl as SubSplitControl;
 uses interface LowPowerListening;
@@ -62,12 +61,10 @@ uses interface Receive as SubSnoop[process_t process_id];
 implementation {
 	
 command error_t SplitControl.start() {
-	call RadioParamsControl.start();
 	return call SubSplitControl.start();
 }
 
 command error_t SplitControl.stop() {
-	call RadioParamsControl.stop();
 	return call SubSplitControl.stop();
 }
 
