@@ -84,14 +84,18 @@ command error_t SplitControl.start() {
 		call Timer.startPeriodic(send_delay);
 	}
 
+#ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
+#endif
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
+#ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -121,7 +125,9 @@ event void Timer.fired() {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call Leds.set(seqno);
+#ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, 
+#endif
 				call CounterParams.get_dest());
 }
 
@@ -129,7 +135,9 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
 	call Leds.set(cm->seqno);
+#ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
+#endif
 	return msg;
 }
 
