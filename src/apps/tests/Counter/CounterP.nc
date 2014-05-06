@@ -127,8 +127,8 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call Leds.set(seqno);
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, 
-#endif
 				call CounterParams.get_dest());
+#endif
 }
 
 
