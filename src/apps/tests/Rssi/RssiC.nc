@@ -71,6 +71,9 @@ SubPacketRSSI = RssiP.SubPacketRSSI;
 components LedsC;
 RssiP.Leds -> LedsC;
 
+components RandomC;
+RssiP.Random -> RandomC;
+
 components new TimerMilliC() as SendTimerC;
 RssiP.SendTimer -> SendTimerC;
 

@@ -53,6 +53,7 @@ uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
+uses interface Random;
 uses interface Timer<TMilli> as SendTimer;
 uses interface Timer<TMilli> as LedTimer;
 
@@ -72,9 +73,13 @@ task void reset_led_timer() {
 	call LedTimer.startOneShot(2 * call RssiParams.get_tx_delay());
 }
 
+task void send_timer() {
+	call SendTimer.startOneShot( (call Random.rand16() % call RssiParams.get_tx_delay()) + 
+			(call RssiParams.get_tx_delay() / 2) + 1);
+}
+
 command error_t SplitControl.start() {
-	dbg("Application", "Rssi SplitControl.start()");
-	call SendTimer.startPeriodic(call RssiParams.get_tx_delay());
+	post send_timer();
 	busy = FALSE;
 	post reset_led_timer();
 	signal SplitControl.startDone(SUCCESS);
@@ -82,7 +87,6 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	dbg("Application", "Rssi SplitControl.start()");
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -95,7 +99,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	int8_t rssi = (int8_t) call SubPacketRSSI.get(msg);
 	int16_t rssi_calib = (rssi * call RssiParams.get_rssi_scale()) + 
 				call RssiParams.get_rssi_offset();
-		dbg("Application", "Receive Beacon\n");
 #ifdef FENNEC_TOS_PRINTF
 	int8_t lqi = (int8_t) call SubPacketLinkQuality.get(msg);
 	printf("RSSI: %d  LQI: %d\n", rssi, lqi);
@@ -129,9 +132,9 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void SendTimer.fired() {
 	if (!busy) {
 		busy = TRUE;
-		dbg("Application", "Send Beacon\n");
 		call SubAMSend.send(BROADCAST, &packet, 40);
 	}
+	post send_timer();
 }
 
 event void LedTimer.fired() {
