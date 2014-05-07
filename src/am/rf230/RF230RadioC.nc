@@ -322,5 +322,4 @@ implementation
 	CollisionAvoidanceLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[230];
 	SoftwareAckLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[230];
 	LowPowerListeningLayerC.SerialDbgs -> SerialDbgsC.SerialDbgs[230];
-	LowPowerListeningLayerC.LocalTime -> RadioDriverLayerC;
 }
