@@ -61,32 +61,21 @@ generic module LowPowerListeningLayerP()
 		interface SystemLowPowerListening;
 
 		interface Leds;
-		interface LocalTime<TRadio>;
 		interface SerialDbgs;
 	}
 }
 
 implementation
 {
-	norace uint32_t on_time = 0;
-
 	task void reportStartDone() {
 #ifdef __DBGS__RADIO_STATUS__
-		if (on_time != 0) {
-			on_time = call LocalTime.get() - on_time;
-		}
-		call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, on_time >> 16, (uint16_t) on_time);
-		on_time = call LocalTime.get();
+		call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, 0, 0);
 #endif
 	}
 
 	task void reportStopDone() {
 #ifdef __DBGS__RADIO_STATUS__
-		if (on_time != 0) {
-			on_time = call LocalTime.get() - on_time;
-		}
-		call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, on_time >> 16, (uint16_t) on_time);
-		on_time = call LocalTime.get();
+		call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, 0, 0);
 #endif
 	}
 

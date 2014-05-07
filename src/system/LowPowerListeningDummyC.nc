@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Vanderbilt University
+ * Copyright (c) 2009, Vanderbilt University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
  * Author: Miklos Maroti
  */
 
-generic configuration LowPowerListeningLayerC()
+generic configuration LowPowerListeningDummyC()
 {
 	provides
 	{
@@ -49,36 +49,18 @@ generic configuration LowPowerListeningLayerC()
 		interface BareSend as SubSend;
 		interface BareReceive as SubReceive;
 		interface RadioPacket as SubPacket;
-
-		interface LowPowerListeningConfig as Config;
-		interface PacketAcknowledgements;
 		interface SerialDbgs;
 	}
 }
 
 implementation
 {
-	components new LowPowerListeningLayerP(), new TimerMilliC();
-	components SystemLowPowerListeningC;
+	SplitControl = SubControl;
+	Send = SubSend;
+	Receive = SubReceive;
+	RadioPacket = SubPacket;
 
-	SplitControl = LowPowerListeningLayerP;
-	Send = LowPowerListeningLayerP;
-	Receive = LowPowerListeningLayerP;
-	RadioPacket = LowPowerListeningLayerP;
-	LowPowerListening = LowPowerListeningLayerP;
-
-	SubControl = LowPowerListeningLayerP;
-	SubSend = LowPowerListeningLayerP;
-	SubReceive = LowPowerListeningLayerP;
-	SubPacket = LowPowerListeningLayerP;
-	Config = LowPowerListeningLayerP;
-	PacketAcknowledgements = LowPowerListeningLayerP;
-
-	SerialDbgs = LowPowerListeningLayerP;
-	
-	LowPowerListeningLayerP.Timer -> TimerMilliC;
-	LowPowerListeningLayerP.SystemLowPowerListening -> SystemLowPowerListeningC;
-
-	components NoLedsC as LedsC;
-	LowPowerListeningLayerP.Leds -> LedsC;
+	components new LowPowerListeningDummyP();
+	LowPowerListening = LowPowerListeningDummyP;
+	SerialDbgs = LowPowerListeningDummyP;
 }
