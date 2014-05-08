@@ -56,13 +56,17 @@ configuration RF231RadioC
 
 #ifndef TFRAMES_ENABLED
 		interface Ieee154Send;
+		interface BareSend;
 		interface Receive as Ieee154Receive;
+		interface BareReceive;
 		interface SendNotifier as Ieee154Notifier;
 
 		interface Resource as SendResource[uint8_t clint];
 
 		interface Ieee154Packet;
 		interface Packet as PacketForIeee154Message;
+		interface Packet as BarePacket;
+		interface ShortAddressConfig;
 #endif
 
 		interface PacketAcknowledgements;
@@ -74,6 +78,10 @@ configuration RF231RadioC
 #endif
 
 		interface RadioChannel;
+
+#ifndef RF231_HARDWARE_ACK
+		interface Read<uint8_t> as ReadRSSI;
+#endif
 
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface PacketField<uint8_t> as PacketTransmitPower;
@@ -98,6 +106,15 @@ implementation
 // -------- RadioP
 
 	components RF231RadioP as RadioP;
+
+    BareSend = TinyosNetworkLayerC.Ieee154Send;
+    BareReceive = TinyosNetworkLayerC.Ieee154Receive;
+    ShortAddressConfig = RadioP;
+
+    components RF231BarePacketP as BarePacketP;
+    BarePacket = BarePacketP;
+    BarePacketP.RadioPacket -> RadioDriverLayerC;
+
 
 #ifdef RADIO_DEBUG
 	components AssertC;
@@ -312,6 +329,9 @@ implementation
 	LinkPacketMetadata = RadioDriverLayerC;
 	LocalTimeRadio = RadioDriverLayerC;
 
+#ifndef RF231_HARDWARE_ACK
+	ReadRSSI = RadioDriverLayerC;
+#endif
 	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
