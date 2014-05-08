@@ -128,6 +128,7 @@ generic module CtpRoutingEngineP(uint8_t routingTableSize, uint32_t minInterval,
 	interface CompareBit;
 
     }
+    uses interface SerialDbgs;
 }
 
 
@@ -181,6 +182,13 @@ implementation {
     uint32_t currentInterval = minInterval;
     uint32_t t; 
     bool tHasPassed;
+
+task void routeUpdate() {
+#ifdef __DBGS__NETWORK_ROUTING__
+        call SerialDbgs.dbgs(DBGS_NETWORK_ROUTING_UPDATE, parentChanges,
+			routeInfo.parent, routeInfo.etx + call LinkEstimator.getLinkQuality(routeInfo.parent));
+#endif
+}
 
     void chooseAdvertiseTime() {
        t = currentInterval;
@@ -321,6 +329,7 @@ implementation {
                 /* update routeInfo with parent's current info */
 		routeInfo.etx = entry->info.etx;
 		routeInfo.congested = entry->info.congested;
+		post routeUpdate();
                 continue;
             }
             /* Ignore links that are congested */
@@ -374,6 +383,7 @@ implementation {
 		if (currentEtx - minEtx > 20) {
 		  call CtpInfo.triggerRouteUpdate();
 		}
+		post routeUpdate();
             }
         }    
 

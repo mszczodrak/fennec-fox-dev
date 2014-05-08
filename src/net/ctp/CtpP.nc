@@ -221,4 +221,7 @@ SubPacket = AMQueueCtrlP.Packet;
 CtpMultiplexC.QueueSend -> AMQueueCtrlP;
 StdControl = AMQueueCtrlP;
 
+components SerialDbgsC;
+Router.SerialDbgs -> SerialDbgsC.SerialDbgs[200];
+
 }
