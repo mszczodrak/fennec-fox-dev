@@ -1,4 +1,8 @@
-rf230 Fennec Fox module
+rf231 Fennec Fox module
 
-Doc: http://www.atmel.com/Images/doc5131.pdf
+Doc: http://www.atmel.com/images/doc8111.pdf
+
+uint8_t radio_tx_power = 0x0    # in    [ 0x0  0x1  0x2  0x3  0x4  0x5  0x6  0x7  0x8  0x9  0xA  0xB  0xC  0xD  0xE   0xF  ]
+                                # for   [ +3  +2.8 +2.3 +1.8 +1.3 +0.7  0.0  -1  - 2   -3   -4   -5   -7   -9   -12   -17 ] dBm
+
 

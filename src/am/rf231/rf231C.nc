@@ -25,14 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
-  * Fennec Fox rf230 adaptation
+  * Fennec Fox rf231 adaptation
   *
   * @author: Marcin K Szczodrak
   */
 
 #include <RadioConfig.h>
 
-configuration rf230C {
+configuration rf231C {
 
 provides interface SplitControl;
 provides interface AMSend[process_t process_id];
@@ -43,7 +43,7 @@ provides interface Packet;
 provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
-uses interface rf230Params;
+uses interface rf231Params;
 uses interface StdControl as AMQueueControl;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
@@ -62,27 +62,27 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp
 implementation
 {
 
-components rf230P;
-components RF230ActiveMessageC as AM;
-components RF230RadioP as RadioP;
+components rf231P;
+components RF231ActiveMessageC as AM;
+components RF231RadioP as RadioP;
 
-rf230Params = rf230P;
-SplitControl = rf230P.SplitControl;
-AMQueueControl = rf230P.AMQueueControl;
-AMSend = rf230P.AMSend;
-Receive = rf230P.Receive;
-Snoop = rf230P.Snoop;
+rf231Params = rf231P;
+SplitControl = rf231P.SplitControl;
+AMQueueControl = rf231P.AMQueueControl;
+AMSend = rf231P.AMSend;
+Receive = rf231P.Receive;
+Snoop = rf231P.Snoop;
 
-rf230P.SubSplitControl -> AM.SplitControl;
-rf230P.PacketTransmitPower -> AM.PacketTransmitPower;
-rf230P.RadioChannel -> AM.RadioChannel;
-rf230P.SubAMSend -> AM.AMSend;
-rf230P.SubReceive -> AM.Receive;
-rf230P.SubSnoop -> AM.Snoop;
-rf230P.AMPacket -> AM.AMPacket;
-rf230P.Packet -> AM.Packet;
-rf230P.LowPowerListening -> AM.LowPowerListening;
-rf230P.PacketAcknowledgements -> AM.PacketAcknowledgements;
+rf231P.SubSplitControl -> AM.SplitControl;
+rf231P.PacketTransmitPower -> AM.PacketTransmitPower;
+rf231P.RadioChannel -> AM.RadioChannel;
+rf231P.SubAMSend -> AM.AMSend;
+rf231P.SubReceive -> AM.Receive;
+rf231P.SubSnoop -> AM.Snoop;
+rf231P.AMPacket -> AM.AMPacket;
+rf231P.Packet -> AM.Packet;
+rf231P.LowPowerListening -> AM.LowPowerListening;
+rf231P.PacketAcknowledgements -> AM.PacketAcknowledgements;
 
 Packet = AM.Packet;
 AMPacket = AM.AMPacket;

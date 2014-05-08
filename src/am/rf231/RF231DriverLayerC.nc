@@ -33,9 +33,9 @@
  */
 
 #include <RadioConfig.h>
-#include <RF230DriverLayer.h>
+#include <RF231DriverLayer.h>
 
-configuration RF230DriverLayerC
+configuration RF231DriverLayerC
 {
 	provides
 	{
@@ -57,7 +57,7 @@ configuration RF230DriverLayerC
 
 	uses
 	{
-		interface RF230DriverConfig as Config;
+		interface RF231DriverConfig as Config;
 		interface PacketTimeStamp<TRadio, uint32_t>;
 
 		interface PacketFlag as TransmitPowerFlag;
@@ -70,8 +70,8 @@ configuration RF230DriverLayerC
 
 implementation
 {
-	components RF230DriverLayerP as DriverLayerP, 
-		HplRF230C, BusyWaitMicroC, MainC;
+	components RF231DriverLayerP as DriverLayerP, 
+		HplRF231C, BusyWaitMicroC, MainC;
 
 	RadioState = DriverLayerP;
 	RadioSend = DriverLayerP;
@@ -79,7 +79,7 @@ implementation
 	RadioCCA = DriverLayerP;
 	RadioPacket = DriverLayerP;
 
-	LocalTimeRadio = HplRF230C;
+	LocalTimeRadio = HplRF231C;
 
 	Config = DriverLayerP;
 
@@ -96,19 +96,19 @@ implementation
 	PacketTimeStamp = DriverLayerP.PacketTimeStamp;
 	LinkPacketMetadata = DriverLayerP;
 
-	DriverLayerP.LocalTime -> HplRF230C;
+	DriverLayerP.LocalTime -> HplRF231C;
 
-	Alarm = HplRF230C.Alarm;
+	Alarm = HplRF231C.Alarm;
 	RadioAlarm = DriverLayerP.RadioAlarm;
 
-	DriverLayerP.SELN -> HplRF230C.SELN;
-	DriverLayerP.SpiResource -> HplRF230C.SpiResource;
-	DriverLayerP.FastSpiByte -> HplRF230C;
+	DriverLayerP.SELN -> HplRF231C.SELN;
+	DriverLayerP.SpiResource -> HplRF231C.SpiResource;
+	DriverLayerP.FastSpiByte -> HplRF231C;
 
-	DriverLayerP.SLP_TR -> HplRF230C.SLP_TR;
-	DriverLayerP.RSTN -> HplRF230C.RSTN;
+	DriverLayerP.SLP_TR -> HplRF231C.SLP_TR;
+	DriverLayerP.RSTN -> HplRF231C.RSTN;
 
-	DriverLayerP.IRQ -> HplRF230C.IRQ;
+	DriverLayerP.IRQ -> HplRF231C.IRQ;
 	Tasklet = DriverLayerP.Tasklet;
 	DriverLayerP.BusyWait -> BusyWaitMicroC;
 

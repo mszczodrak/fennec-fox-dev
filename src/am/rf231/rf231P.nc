@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
-  * Fennec Fox rf230 adaptation
+  * Fennec Fox rf231 adaptation
   *
   * @author: Marcin K Szczodrak
   */
@@ -33,14 +33,14 @@
 
 #include <Fennec.h>
 
-module rf230P {
+module rf231P {
 provides interface SplitControl;
 
 provides interface AMSend[process_t process_id];
 provides interface Receive[process_t process_id];
 provides interface Receive as Snoop[process_t process_id];
 
-uses interface rf230Params;
+uses interface rf231Params;
 uses interface StdControl as AMQueueControl;
 uses interface SplitControl as SubSplitControl;
 uses interface LowPowerListening;
@@ -69,11 +69,11 @@ command error_t SplitControl.stop() {
 }
 
 task void setChannel() {
-	if (call RadioChannel.getChannel() == call rf230Params.get_channel()) {
+	if (call RadioChannel.getChannel() == call rf231Params.get_channel()) {
 		return;
 	}
 
-	if (call RadioChannel.setChannel(call rf230Params.get_channel()) != SUCCESS) {
+	if (call RadioChannel.setChannel(call rf231Params.get_channel()) != SUCCESS) {
 		post setChannel();
 	}
 }
@@ -81,7 +81,7 @@ task void setChannel() {
 event void SubSplitControl.startDone(error_t error) {
 	if (error == SUCCESS) {
 		call AMQueueControl.start();
-        	call LowPowerListening.setLocalWakeupInterval(call rf230Params.get_sleepInterval());
+        	call LowPowerListening.setLocalWakeupInterval(call rf231Params.get_sleepInterval());
 	}
 
 	post setChannel();
@@ -98,8 +98,8 @@ event void SubSplitControl.stopDone(error_t error) {
 }
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
-	call LowPowerListening.setRemoteWakeupInterval(msg, call rf230Params.get_sleepInterval());
-	call PacketTransmitPower.set(msg, call rf230Params.get_power());
+	call LowPowerListening.setRemoteWakeupInterval(msg, call rf231Params.get_sleepInterval());
+	call PacketTransmitPower.set(msg, call rf231Params.get_power());
 	return call SubAMSend.send[id](addr, msg, len);
 }
 
