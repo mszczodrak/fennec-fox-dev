@@ -132,7 +132,14 @@ use am rf212 $(FENNEC_FOX_LIB)/am/rf212 (
 
 use am rf230 $(FENNEC_FOX_LIB)/am/rf230 (
 		uint8_t channel=26,
-		uint8_t power=31, 
+		uint8_t power=0, 
+		uint16_t sleepInterval=0,
+		bool slotted = 0
+)
+
+use am rf231 $(FENNEC_FOX_LIB)/am/rf231 (
+		uint8_t channel=26,
+		uint8_t power=0, 
 		uint16_t sleepInterval=0,
 		bool slotted = 0
 )
