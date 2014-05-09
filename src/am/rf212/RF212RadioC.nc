@@ -69,6 +69,8 @@ configuration RF212RadioC
 		interface LowPowerListening;
 		interface PacketLink;
 
+		interface Read<uint8_t> as ReadRSSI;
+
 #ifdef TRAFFIC_MONITOR
 		interface TrafficMonitor;
 #endif
@@ -292,6 +294,7 @@ implementation
 	PacketRSSI = RadioDriverLayerC.PacketRSSI;
 	LinkPacketMetadata = RadioDriverLayerC;
 	LocalTimeRadio = RadioDriverLayerC;
+	ReadRSSI = RadioDriverLayerC.ReadRSSI;
 
 	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
