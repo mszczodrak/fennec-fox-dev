@@ -75,6 +75,7 @@ DBGS_SERIAL_SEND_FAIL                   = 191
 DBGS_SERIAL_QUEUE_FULL                  = 192
 DBGS_SERIAL_NULL_PTR                    = 193
 
+DBGS_NETWORK_ROUTING_UPDATE		= 199
 
 DBGS_TEST_SIGNAL        		= 32767
 
