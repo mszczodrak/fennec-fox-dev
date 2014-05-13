@@ -46,6 +46,7 @@ provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 
 uses interface cc2420Params;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 uses interface SplitControl as SubSplitControl;
 uses interface SystemLowPowerListening;

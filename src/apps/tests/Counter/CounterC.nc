@@ -38,6 +38,7 @@ generic configuration CounterC(process_t process) {
 provides interface SplitControl;
 
 uses interface CounterParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -57,6 +58,7 @@ components new CounterP(process);
 SplitControl = CounterP;
 
 CounterParams = CounterP;
+Param = CounterP;
 
 SubAMSend = CounterP.SubAMSend;
 SubReceive = CounterP.SubReceive;

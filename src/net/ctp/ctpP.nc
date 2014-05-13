@@ -10,6 +10,7 @@ provides interface Receive as Receive;
 provides interface Receive as Snoop;
 
 uses interface ctpParams;
+uses interface Param;
 
 uses interface LowPowerListening;
 uses interface RadioChannel;
