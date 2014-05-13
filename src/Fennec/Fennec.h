@@ -53,6 +53,9 @@
 #include "ff_functions.h"
 #include "ff_consts.h"
 
+#include "global_variables.h"
+#include "global_variables_init.h"
+
 #include <AM.h>
 #include <message.h>
 
