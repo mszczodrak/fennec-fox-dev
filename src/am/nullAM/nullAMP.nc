@@ -43,6 +43,7 @@ provides interface PacketAcknowledgements as PacketAcknowledgements;
 provides interface LinkPacketMetadata as LinkPacketMetadata;
 
 uses interface nullAMParams;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 
 provides interface LowPowerListening;

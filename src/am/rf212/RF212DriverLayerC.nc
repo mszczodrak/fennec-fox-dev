@@ -51,8 +51,6 @@ configuration RF212DriverLayerC
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface LinkPacketMetadata;
 
-		interface Read<uint8_t> as ReadRSSI;
-
 		interface LocalTime<TRadio> as LocalTimeRadio;
 		interface Alarm<TRadio, tradio_size>;
 	}
@@ -96,8 +94,6 @@ implementation
 	PacketLinkQuality = RF212DriverLayerP.PacketLinkQuality;
 	PacketTimeStamp = RF212DriverLayerP.PacketTimeStamp;
 	LinkPacketMetadata = RF212DriverLayerP;
-
-	ReadRSSI = RF212DriverLayerP.ReadRSSI;
 
 	RF212DriverLayerP.LocalTime -> HplRF212C;
 

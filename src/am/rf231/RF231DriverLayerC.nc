@@ -44,7 +44,6 @@ configuration RF231DriverLayerC
 		interface RadioReceive;
 		interface RadioCCA;
 		interface RadioPacket;
-		interface Read<uint8_t> as ReadRSSI;
 
 		interface PacketField<uint8_t> as PacketTransmitPower;
 		interface PacketField<uint8_t> as PacketRSSI;
@@ -79,7 +78,6 @@ implementation
 	RadioReceive = DriverLayerP;
 	RadioCCA = DriverLayerP;
 	RadioPacket = DriverLayerP;
-	ReadRSSI = DriverLayerP;
 
 	LocalTimeRadio = HplRF231C;
 

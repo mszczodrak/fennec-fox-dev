@@ -45,6 +45,7 @@ provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 
 uses interface nullNetParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -67,6 +68,7 @@ implementation {
 components new nullNetP(process);
 SplitControl = nullNetP;
 nullNetParams = nullNetP;
+Param = nullNetP;
 AMSend = nullNetP.AMSend;
 Receive = nullNetP.Receive;
 Snoop = nullNetP.Snoop;

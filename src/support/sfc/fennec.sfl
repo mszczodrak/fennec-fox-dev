@@ -97,6 +97,7 @@ use network tricklePlus $(FENNEC_FOX_LIB)/net/tricklePlus (
 		uint8_t scale = 10
 )
 
+use network dip $(FENNEC_FOX_LIB)/net/dip ()
 
 use network SyncNet $(FENNEC_FOX_LIB)/net/cuNet ()
 

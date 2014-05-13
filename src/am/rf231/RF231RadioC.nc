@@ -79,10 +79,6 @@ configuration RF231RadioC
 
 		interface RadioChannel;
 
-#ifndef RF231_HARDWARE_ACK
-		interface Read<uint8_t> as ReadRSSI;
-#endif
-
 		interface PacketField<uint8_t> as PacketLinkQuality;
 		interface PacketField<uint8_t> as PacketTransmitPower;
 		interface PacketField<uint8_t> as PacketRSSI;
@@ -329,9 +325,6 @@ implementation
 	LinkPacketMetadata = RadioDriverLayerC;
 	LocalTimeRadio = RadioDriverLayerC;
 
-#ifndef RF231_HARDWARE_ACK
-	ReadRSSI = RadioDriverLayerC;
-#endif
 	RadioDriverLayerC.TransmitPowerFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.RSSIFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];
 	RadioDriverLayerC.TimeSyncFlag -> MetadataFlagsLayerC.PacketFlag[unique(UQ_METADATA_FLAGS)];

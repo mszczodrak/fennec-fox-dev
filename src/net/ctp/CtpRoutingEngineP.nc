@@ -329,7 +329,6 @@ task void routeUpdate() {
                 /* update routeInfo with parent's current info */
 		routeInfo.etx = entry->info.etx;
 		routeInfo.congested = entry->info.congested;
-		post routeUpdate();
                 continue;
             }
             /* Ignore links that are congested */
@@ -383,7 +382,6 @@ task void routeUpdate() {
 		if (currentEtx - minEtx > 20) {
 		  call CtpInfo.triggerRouteUpdate();
 		}
-		post routeUpdate();
             }
         }    
 
@@ -582,6 +580,7 @@ task void routeUpdate() {
 
     command void CtpInfo.triggerRouteUpdate() {
       resetInterval();
+      post routeUpdate();
      }
 
     command void CtpInfo.triggerImmediateRouteUpdate() {

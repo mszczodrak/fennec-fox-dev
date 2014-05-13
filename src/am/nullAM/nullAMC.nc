@@ -43,6 +43,7 @@ provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
 uses interface nullAMParams;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
@@ -66,6 +67,7 @@ implementation {
 components nullAMP;
 
 nullAMParams = nullAMP;
+Param = nullAMP;
 SplitControl = nullAMP.SplitControl;
 
 LowPowerListening = nullAMP;

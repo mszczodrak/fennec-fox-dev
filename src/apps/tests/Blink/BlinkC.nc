@@ -39,6 +39,7 @@ generic configuration BlinkC(process_t process) {
 provides interface SplitControl;
 
 uses interface BlinkParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -57,6 +58,7 @@ components new BlinkP(process);
 SplitControl = BlinkP;
 
 BlinkParams = BlinkP;
+Param = BlinkP;
 
 SubAMSend = BlinkP.SubAMSend;
 SubReceive = BlinkP.SubReceive;

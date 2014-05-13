@@ -38,6 +38,7 @@ generic module BlinkP(process_t process) {
 provides interface SplitControl;
 
 uses interface BlinkParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -56,9 +57,12 @@ uses interface Timer<TMilli> as Timer;
 
 implementation {
 bool on;
+uint16_t delay;
 
 command error_t SplitControl.start() {
 	on = 0;
+	call Param.get(0, &delay, sizeof(delay));
+	
 	call Timer.startPeriodic(call BlinkParams.get_delay());
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
