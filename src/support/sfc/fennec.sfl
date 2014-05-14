@@ -14,10 +14,10 @@ use application blink $(FENNEC_FOX_LIB)/apps/tests/Blink (
 		uint16_t delay=1024 )
 
 use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter ( 
-		uint16_t delay,
-		uint16_t delay_scale,
-		uint16_t src,
-		uint16_t dest )
+		uint16_t delay = 1000,
+		uint16_t delay_scale = 1,
+		uint16_t src = 0,
+		uint16_t dest = 0 )
 
 use application dbgs $(FENNEC_FOX_LIB)/apps/tests/Dbgs (uint16_t delay = 1024)
 
@@ -38,8 +38,8 @@ use application z1Sens $(FENNEC_FOX_LIB)/apps/tests/Z1Sensors (
 		uint16_t sampling_rate = 1024)
 
 use application randBeacon $(FENNEC_FOX_LIB)/apps/tests/RandomBeacon ( 
-		uint16_t delay,
-		uint16_t delay_scale)
+		uint16_t delay = 1024,
+		uint16_t delay_scale = 1)
 
 use application rssi $(FENNEC_FOX_LIB)/apps/tests/Rssi (
 		uint16_t tx_delay = 200,
@@ -73,7 +73,7 @@ use application NetworkRadioSetup $(FENNEC_FOX_LIB)/apps/network_rssi()
 
 use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
 
-use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root)
+use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0)
 
 use network ftsp $(FENNEC_FOX_LIB)/net/ftsp ()
 
