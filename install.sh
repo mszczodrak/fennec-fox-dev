@@ -36,11 +36,24 @@
 # @author	Marcin Szczodrak
 # @updated	February 27 2014
 
-PROFILE_FILE=~/.profile
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	PROFILE_FILE=~/.profile;
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+	PROFILE_FILE=~/.bash_profile;
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+	PROFILE_FILE=~/.profile;
+elif [[ "$OSTYPE" == "win32" ]]; then
+	PROFILE_FILE=~/.profile;
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+	PROFILE_FILE=~/.profile;
+else
+	echo "Unknown OS type"
+	exit
+fi
 
 if [ -f $PROFILE_FILE ];
 then
-	sed -i '/FENNEC_FOX_LIB/ d' $PROFILE_FILE
+	sed -ie '/FENNEC_FOX_LIB/ d' $PROFILE_FILE
 	echo "export FENNEC_FOX_LIB=`pwd`/src" >> $PROFILE_FILE
 	echo "Installation Succesful"
 	echo "Please logout or at least enter 'source $PROFILE_FILE'"
