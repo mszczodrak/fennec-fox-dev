@@ -64,8 +64,14 @@ struct network_process {
 	void* network_params;
 	void* am_params;
 	uint8_t application_module;
+	uint8_t *application_variable_name;
+	uint8_t *application_variable_offset;
 	uint8_t network_module;
+	uint8_t *network_variable_name;
+	uint8_t *network_variable_offset;
 	uint8_t am_module;
+	uint8_t *am_variable_name;
+	uint8_t *am_variable_offset;
 	bool am_level;
 };
 
