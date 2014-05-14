@@ -34,7 +34,6 @@
 
 #include "Fennec.h"
 #include "ff_caches.h"
-#include "ff_defaults.h"
 
 #define MODULE_RESPONSE_DELAY    200
 
