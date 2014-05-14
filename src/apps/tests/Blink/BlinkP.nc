@@ -77,7 +77,7 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
-	on ? call Leds.set(0) : call Leds.set(call BlinkParams.get_led()) ;
+	on ? call Leds.set(0) : call Leds.set(led) ;
 	on = !on;
 }
 

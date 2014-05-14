@@ -42,7 +42,6 @@ provides interface Packet as Packet;
 provides interface PacketAcknowledgements as PacketAcknowledgements;
 
 uses interface Param;
-uses interface nullNetParams;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
