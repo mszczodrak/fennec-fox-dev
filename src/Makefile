@@ -1,11 +1,13 @@
 COMPONENT=$(FENNEC_FOX_LIB)/Fennec/FennecC
+TINYOS_ROOT_DIR?=/home/msz/github/tinyos-main
+include $(TINYOS_ROOT_DIR)/Makefile.include
+
 SFC_GEN=$(FENNEC_FOX_LIB)/Fennec/sfc
 PFLAGS+=-DTOSH_DATA_LENGTH=127
 
 CFLAGS += -DLOW_POWER_LISTENING
 
 include $(FENNEC_FOX_LIB)/support/make/Makerules
-include $(MAKERULES)
 include $(FENNEC_FOX_LIB)/support/make/dbgs.extra
 
 PFLAGS+=-D__DBGS__
