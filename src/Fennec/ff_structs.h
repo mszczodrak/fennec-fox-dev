@@ -38,6 +38,8 @@
 
 #include "ff_consts.h"
 #include "platform_message.h"
+#include "global_data.h"
+#include "local_data.h"
 
 #ifndef TOSH_DATA_LENGTH
 #define TOSH_DATA_LENGTH 127
@@ -55,23 +57,25 @@ typedef uint8_t layer_t;
 typedef uint8_t event_t;
 typedef uint8_t process_t;
 
+nx_struct fennec_data {
+        nx_struct global_data global;
+        nx_struct local_data local;
+};
+
 struct network_process {
 	process_t process_id;
 	uint8_t application;
 	uint8_t network;
 	uint8_t am;
-	void* application_params;
-	void* network_params;
-	void* am_params;
 	uint8_t application_module;
-	uint8_t *application_variable_name;
-	uint8_t *application_variable_offset;
+	uint8_t application_variables_number;
+	uint8_t application_variables_offset;
 	uint8_t network_module;
-	uint8_t *network_variable_name;
-	uint8_t *network_variable_offset;
+	uint8_t network_variables_number;
+	uint8_t network_variables_offset;
 	uint8_t am_module;
-	uint8_t *am_variable_name;
-	uint8_t *am_variable_offset;
+	uint8_t am_variables_number;
+	uint8_t am_variables_offset;
 	bool am_level;
 };
 
