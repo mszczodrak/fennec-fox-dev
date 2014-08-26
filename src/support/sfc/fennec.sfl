@@ -14,7 +14,7 @@ use application blink $(FENNEC_FOX_LIB)/apps/tests/Blink (
 		uint16_t delay=1024 )
 
 use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter ( 
-		uint16_t delay = 1000,
+		uint16_t delay,
 		uint16_t delay_scale = 1,
 		uint16_t src = 0,
 		uint16_t dest = 0 )

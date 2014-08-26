@@ -53,8 +53,10 @@
 #include "ff_functions.h"
 #include "ff_consts.h"
 
-#include "global_variables.h"
-#include "global_variables_init.h"
+#include "global_data.h"
+#include "local_data.h"
+#include "data_storage.h"
+#include "data_storage_values.h"
 
 #include <AM.h>
 #include <message.h>
