@@ -57,10 +57,10 @@ typedef uint8_t layer_t;
 typedef uint8_t event_t;
 typedef uint8_t process_t;
 
-nx_struct fennec_data {
-        nx_struct global_data global;
-        nx_struct local_data local;
-};
+struct variable_reference {
+	uint8_t	varid;
+	void*	ptr;
+}; 
 
 struct network_process {
 	process_t process_id;

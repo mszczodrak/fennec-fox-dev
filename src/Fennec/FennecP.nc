@@ -311,11 +311,59 @@ async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 default event void FennecState.resend() {}
 
 
+
+error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8_t *off) {
+	if (process_id >= NUMBER_OF_PROCESSES) {
+		return F_ENOPROC;
+	}
+
+	switch(layer) {
+	case F_APPLICATION:
+		*num = processes[process_id].application_variables_number;
+		*off = processes[process_id].application_variables_offset;
+		return SUCCESS;
+
+	case F_NETWORK:
+		*num = processes[process_id].network_variables_number;
+		*off = processes[process_id].network_variables_offset;
+		return SUCCESS;
+
+	case F_AM:
+		*num = processes[process_id].am_variables_number;
+		*off = processes[process_id].am_variables_offset;
+		return SUCCESS;
+
+	default:
+		return F_ENOLAYER;
+	}
+}
+
 command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+	uint8_t var_number;
+	uint8_t var_offset;
+	uint8_t i;
+	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
+
+	if (err != SUCCESS) {
+		return err;
+	}
+	
         return SUCCESS;
 }
 
 command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+	uint8_t var_number;
+	uint8_t var_offset;
+	uint8_t i;
+	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
+
+	if (err != SUCCESS) {
+		return err;
+	}
+
+	for (i = var_offset; i < (var_offset+var_number); i++) {
+	}
+
         return SUCCESS;
 }
 

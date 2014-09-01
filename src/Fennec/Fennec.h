@@ -47,13 +47,8 @@
 #include "printf.h"
 #endif
 
-#include "ff_structs.h"
-#include "ff_flags.h"
-#include "fennec_states.h"
-#include "ff_functions.h"
-#include "ff_consts.h"
-
-#include "fennec_data_values.h"
+#include "ff_fennec.h"
+#include "ff_sfc.h"
 
 #include <AM.h>
 #include <message.h>
