@@ -35,7 +35,7 @@
 generic module nullAppP(process_t process_id) {
 provides interface SplitControl;
 
-uses interface nullAppParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;

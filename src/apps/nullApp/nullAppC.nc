@@ -35,7 +35,7 @@
 generic configuration nullAppC(process_t process_id) {
 provides interface SplitControl;
 
-uses interface nullAppParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -53,7 +53,7 @@ implementation {
 components new nullAppP(process_id);
 SplitControl = nullAppP;
 
-nullAppParams = nullAppP;
+Param = nullAppP;
 
 SubAMSend = nullAppP.SubAMSend;
 SubReceive = nullAppP.SubReceive;

@@ -40,6 +40,7 @@ module FennecP @safe() {
 provides interface Fennec;
 provides interface FennecState;
 provides interface Event;
+provides interface Param[process_t process, uint8_t layer];
 
 uses interface Boot;
 uses interface Leds;
@@ -309,7 +310,18 @@ async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 
 default event void FennecState.resend() {}
 
+
+command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+        return SUCCESS;
 }
 
+command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+        return SUCCESS;
+}
 
+//command void* Param.ptr[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+//        return NULL;
+//}
+
+}
 

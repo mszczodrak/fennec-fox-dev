@@ -43,7 +43,7 @@ provides interface Packet;
 provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
-uses interface cc2420xParams;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
@@ -65,8 +65,8 @@ components cc2420xP;
 components CC2420XActiveMessageC as AM;
 components CC2420XRadioP as RadioP;
 
-cc2420xParams = cc2420xP;
-cc2420xParams = RadioP.cc2420xParams;
+Param = cc2420xP;
+Param = RadioP.Param;
 SplitControl = cc2420xP.SplitControl;
 AMQueueControl = cc2420xP.AMQueueControl;
 AMSend = cc2420xP.AMSend;

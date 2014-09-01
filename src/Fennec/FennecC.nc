@@ -39,6 +39,7 @@ configuration FennecC {
 provides interface Fennec;
 provides interface Event;
 provides interface FennecState;
+provides interface Param[process_t process, uint8_t layer];
 }
 
 implementation {
@@ -52,6 +53,7 @@ components RandomC;
 Fennec = FennecP;
 FennecState = FennecP;
 Event = FennecP;
+Param = FennecP;
 
 FennecP.Boot -> MainC;
 FennecP.Leds -> LedsC;

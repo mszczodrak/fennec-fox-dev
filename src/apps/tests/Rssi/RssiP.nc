@@ -39,7 +39,7 @@
 generic module RssiP(process_t process) {
 provides interface SplitControl;
 
-uses interface RssiParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -65,23 +65,37 @@ implementation {
 message_t packet;
 bool busy;
 
+uint16_t tx_delay;
+float rssi_scale;
+int8_t rssi_offset;
+int8_t threshold_1;
+int8_t threshold_2;
+
 message_metadata_t* getMetadata(message_t *msg) {
 	return (message_metadata_t*)msg->metadata;
 }
 
 task void reset_led_timer() {
-	call LedTimer.startOneShot(2 * call RssiParams.get_tx_delay());
+	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
+	call LedTimer.startOneShot(2 * tx_delay);
 }
 
 task void send_timer() {
-	call SendTimer.startOneShot( (call Random.rand16() % call RssiParams.get_tx_delay()) + 
-			(call RssiParams.get_tx_delay() / 2) + 1);
+	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
+	call SendTimer.startOneShot( (call Random.rand16() % tx_delay) + 
+			(tx_delay / 2) + 1);
 }
 
 command error_t SplitControl.start() {
 	post send_timer();
 	busy = FALSE;
 	post reset_led_timer();
+
+	call Param.get(RSSI_SCALE, &rssi_scale, sizeof(rssi_scale));
+	call Param.get(RSSI_OFFSET, &rssi_offset, sizeof(rssi_offset));
+	call Param.get(THRESHOLD_1, &threshold_1, sizeof(threshold_1));
+	call Param.get(THRESHOLD_2, &threshold_2, sizeof(threshold_2));
+
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -97,8 +111,8 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	int8_t rssi = (int8_t) call SubPacketRSSI.get(msg);
-	int16_t rssi_calib = (rssi * call RssiParams.get_rssi_scale()) + 
-				call RssiParams.get_rssi_offset();
+	int16_t rssi_calib = (rssi * rssi_scale) + rssi_offset;
+
 #ifdef FENNEC_TOS_PRINTF
 	int8_t lqi = (int8_t) call SubPacketLinkQuality.get(msg);
 	printf("RSSI: %d  LQI: %d\n", rssi, lqi);
@@ -114,11 +128,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	call Leds.led0On();
 
-	if ( rssi_calib  > call RssiParams.get_threshold_1() ) {
+	if ( rssi_calib  > threshold_1 ) {
 		call Leds.led1On();
 	}
 
-	if ( rssi_calib  > call RssiParams.get_threshold_2() ) {
+	if ( rssi_calib  > threshold_2 ) {
 		call Leds.led2On();
 	}
 
