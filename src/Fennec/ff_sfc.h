@@ -7,6 +7,7 @@
 #include "ff_processes.h"
 #include "ff_states.h"
 #include "global_data.h"
+#include "global_data_msg.h"
 #include "local_data.h"
 #include "variable_constants.h"
 #include "variable_lookup.h"
