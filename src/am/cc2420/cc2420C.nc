@@ -43,7 +43,6 @@ provides interface Packet;
 provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
-uses interface cc2420Params;
 uses interface Param;
 uses interface StdControl as AMQueueControl;
 
@@ -69,7 +68,6 @@ components cc2420P;
 components CC2420ControlC;
 components CC2420ActiveMessageC as AM;
 
-cc2420Params = cc2420P;
 Param = cc2420P;
 SplitControl = cc2420P.SplitControl;
 AMQueueControl = cc2420P.AMQueueControl;

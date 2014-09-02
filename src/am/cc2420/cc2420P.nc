@@ -45,7 +45,6 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 
-uses interface cc2420Params;
 uses interface Param;
 uses interface StdControl as AMQueueControl;
 uses interface SplitControl as SubSplitControl;
@@ -70,6 +69,11 @@ uses interface CC2420Config;
 }
 
 implementation {
+
+uint8_t channel;
+uint8_t power;
+uint16_t sleepInterval;
+uint16_t sleepDelay;
 	
 command error_t SplitControl.start() {
 	return call SubSplitControl.start();
@@ -81,11 +85,13 @@ command error_t SplitControl.stop() {
 
 
 task void setChannel() {
-	if (call RadioChannel.getChannel() == call cc2420Params.get_channel()) {
+	call Param.get(CHANNEL, &channel, sizeof(channel));
+
+	if (call RadioChannel.getChannel() == channel) {
 		return;
 	}
 
-	if (call RadioChannel.setChannel(call cc2420Params.get_channel()) != SUCCESS) {
+	if (call RadioChannel.setChannel(channel) != SUCCESS) {
 		post setChannel();
 	}
 }
@@ -94,9 +100,13 @@ task void setChannel() {
 event void SubSplitControl.startDone(error_t error) {
 	if (error == SUCCESS) {
 		call AMQueueControl.start();
-        	call SystemLowPowerListening.setDefaultRemoteWakeupInterval(call cc2420Params.get_sleepInterval());
-	        call SystemLowPowerListening.setDelayAfterReceive(call cc2420Params.get_sleepDelay());
-        	call LowPowerListening.setLocalWakeupInterval(call cc2420Params.get_sleepInterval());
+
+		call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
+		call Param.get(SLEEPDELAY, &sleepDelay, sizeof(sleepDelay));
+
+        	call SystemLowPowerListening.setDefaultRemoteWakeupInterval(sleepInterval);
+	        call SystemLowPowerListening.setDelayAfterReceive(sleepDelay);
+        	call LowPowerListening.setLocalWakeupInterval(sleepInterval);
 	}
 
 	post setChannel();
@@ -113,8 +123,11 @@ event void SubSplitControl.stopDone(error_t error) {
 }
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
-	call LowPowerListening.setRemoteWakeupInterval(msg, call cc2420Params.get_sleepInterval());
-	call PacketTransmitPower.set(msg, call cc2420Params.get_power());
+	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
+	call Param.get(POWER, &power, sizeof(power));
+
+	call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
+	call PacketTransmitPower.set(msg, power);
 	return call SubAMSend.send[id](addr, msg, len);
 }
 
@@ -152,14 +165,16 @@ task void setChannelDone() {
 	signal RadioChannel.setChannelDone();
 }
 
-command error_t RadioChannel.setChannel(uint8_t channel) {
-	call CC2420Config.setChannel( channel );
+command error_t RadioChannel.setChannel(uint8_t ch) {
+	call CC2420Config.setChannel( ch );
+	channel = ch;
 	post setChannelDone();
 	return SUCCESS;
 }
 
 command uint8_t RadioChannel.getChannel() {
-	return call CC2420Config.getChannel();
+	channel = call CC2420Config.getChannel();
+	return channel;
 }
 
 async command bool PacketLinkQuality.isSet(message_t* msg) {
@@ -183,8 +198,8 @@ async command bool PacketTransmitPower.isSet(message_t* msg) {
 }
 
 async command uint8_t PacketTransmitPower.get(message_t* msg) {
-	return call CC2420Packet.getPower(msg);
-
+	power = call CC2420Packet.getPower(msg);
+	return power;
 }
 
 async command void PacketTransmitPower.clear(message_t* msg) {
