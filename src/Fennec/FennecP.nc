@@ -347,8 +347,15 @@ command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, voi
 	if (err != SUCCESS) {
 		return err;
 	}
-	
-        return SUCCESS;
+
+	for (i = var_offset; i < (var_offset+var_number); i++) {
+		if (variable_lookup[i].var_id == name) {
+			memcpy(value, variable_lookup[i].ptr, size);
+			return SUCCESS;
+		}
+	}
+
+        return FAIL;
 }
 
 command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
@@ -362,14 +369,34 @@ command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, voi
 	}
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
+		if (variable_lookup[i].var_id == name) {
+			memcpy(variable_lookup[i].ptr, value, size);
+			globalDataSyncLocal();
+			return SUCCESS;
+		}
 	}
 
-        return SUCCESS;
+        return FAIL;
 }
 
-//command void* Param.ptr[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
-//        return NULL;
-//}
+command void* Param.ptr[process_t process_id, uint8_t layer](uint8_t name) {
+	uint8_t var_number;
+	uint8_t var_offset;
+	uint8_t i;
+	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
+
+	if (err != SUCCESS) {
+		return NULL;
+	}
+
+	for (i = var_offset; i < (var_offset+var_number); i++) {
+		if (variable_lookup[i].var_id == name) {
+			return variable_lookup[i].ptr;
+		}
+	}
+
+        return NULL;
+}
 
 }
 

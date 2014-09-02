@@ -37,6 +37,7 @@
 interface Param {
 command error_t get(uint8_t name, void *value, uint8_t size);
 command error_t set(uint8_t name, void *value, uint8_t size);
+command void* ptr(uint8_t name);
 }
 
 

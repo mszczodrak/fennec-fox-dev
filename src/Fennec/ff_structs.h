@@ -58,7 +58,7 @@ typedef uint8_t event_t;
 typedef uint8_t process_t;
 
 struct variable_reference {
-	uint8_t	varid;
+	uint8_t	var_id;
 	void*	ptr;
 }; 
 
