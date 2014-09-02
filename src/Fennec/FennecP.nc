@@ -313,29 +313,31 @@ default event void FennecState.resend() {}
 
 
 error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8_t *off) {
-	if (process_id >= NUMBER_OF_PROCESSES) {
-		return F_ENOPROC;
-	}
+	struct network_process* np;
 
-	switch(layer) {
-	case F_APPLICATION:
+	if (layer == F_APPLICATION) {
 		*num = processes[process_id].application_variables_number;
 		*off = processes[process_id].application_variables_offset;
 		return SUCCESS;
+	}
 
-	case F_NETWORK:
+	if (layer == F_NETWORK) {
 		*num = processes[process_id].network_variables_number;
 		*off = processes[process_id].network_variables_offset;
 		return SUCCESS;
-
-	case F_AM:
-		*num = processes[process_id].am_variables_number;
-		*off = processes[process_id].am_variables_offset;
-		return SUCCESS;
-
-	default:
-		return F_ENOLAYER;
 	}
+
+	if (layer == F_AM) {
+		for (np = *states[active_state].processes; np != NULL; np++) {
+			if (np->am == process_id) {
+				*num = np->am_variables_number;
+				*off = np->am_variables_offset;
+				return SUCCESS;
+			}
+		}
+	}
+
+	return F_ENOLAYER;
 }
 
 //command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
