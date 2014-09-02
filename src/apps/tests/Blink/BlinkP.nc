@@ -62,7 +62,7 @@ uint8_t led;
 command error_t SplitControl.start() {
 	on = 0;
 	call Param.get(DELAY, &delay, sizeof(delay));
-	call Param.get(LED, &led, sizeof(delay));
+	call Param.get(LED, &led, sizeof(led));
 	
 	call Timer.startPeriodic(delay);
 	signal SplitControl.startDone(SUCCESS);

@@ -338,7 +338,8 @@ error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8
 	}
 }
 
-command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+//command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+command error_t Param.get[uint8_t layer, process_t process_id](uint8_t name, void *value, uint8_t size) {
 	uint8_t var_number;
 	uint8_t var_offset;
 	uint8_t i;
@@ -358,7 +359,8 @@ command error_t Param.get[process_t process_id, uint8_t layer](uint8_t name, voi
         return FAIL;
 }
 
-command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+//command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
+command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, void *value, uint8_t size) {
 	uint8_t var_number;
 	uint8_t var_offset;
 	uint8_t i;
@@ -379,7 +381,8 @@ command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, voi
         return FAIL;
 }
 
-command void* Param.ptr[process_t process_id, uint8_t layer](uint8_t name) {
+//command void* Param.ptr[process_t process_id, uint8_t layer](uint8_t name) {
+command void* Param.ptr[uint8_t layer, process_t process_id](uint8_t name) {
 	uint8_t var_number;
 	uint8_t var_offset;
 	uint8_t i;
