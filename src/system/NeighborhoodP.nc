@@ -38,7 +38,7 @@ generic module NeighborhoodP()
 {
 	provides
 	{
-//		interface Init;
+		interface Init;
 		interface Neighborhood;
 		interface NeighborhoodFlag;
 	}
@@ -52,7 +52,6 @@ implementation
 	tasklet_norace uint8_t time;
 	tasklet_norace uint8_t last;
 
-/*
 	command error_t Init.init()
 	{
 		uint8_t i;
@@ -62,7 +61,6 @@ implementation
 	
 		return SUCCESS;
 	}
-*/
 
 	inline tasklet_async command am_addr_t Neighborhood.getNode(uint8_t idx)
 	{
