@@ -58,18 +58,10 @@ uses interface Param;
 implementation
 {
 
-norace bool withLpl = FALSE;
-norace bool isSlotted = FALSE;
+norace uint16_t sleepInterval = 0;
 
 command error_t StdControl.start() {
-	uint16_t sleepInterval;
-	uint16_t slotted;
-
 	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
-	call Param.get(SLOTTED, &slotted, sizeof(slotted));
-
-	withLpl = (sleepInterval > 0);
-	isSlotted = slotted > 0 ? TRUE : FALSE;
 	return SUCCESS;
 }
 
@@ -78,7 +70,9 @@ command error_t StdControl.stop() {
 }
 
 command bool CollisionAvoidanceConfig.isSlotted() {
-	return isSlotted;
+	uint16_t slotted;
+	call Param.get(SLOTTED, &slotted, sizeof(slotted));
+	return slotted;
 }
 
 
@@ -249,7 +243,7 @@ command bool CollisionAvoidanceConfig.isSlotted() {
 	 * congestion backoff = 0x7 * CC2420_BACKOFF_PERIOD = 70 jiffies = 2240 microsec
 	 */
 async command uint16_t RandomCollisionConfig.getMinimumBackoff() {
-	if (withLpl) {
+	if (sleepInterval) {
 		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
 	} else {
 		return (uint16_t)(320 * RADIO_ALARM_MICROSEC);
@@ -257,7 +251,7 @@ async command uint16_t RandomCollisionConfig.getMinimumBackoff() {
 }
 
 async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg) {
-	if (withLpl) {
+	if (sleepInterval) {
 		return (uint16_t)(1600 * RADIO_ALARM_MICROSEC);
 	} else {
 		return (uint16_t)(9920 * RADIO_ALARM_MICROSEC);
@@ -265,7 +259,7 @@ async command uint16_t RandomCollisionConfig.getInitialBackoff(message_t* msg) {
 }
 
 async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg) {
-	if (withLpl) {
+	if (sleepInterval) {
 		return (uint16_t)(3200 * RADIO_ALARM_MICROSEC);
 	} else {
 		return (uint16_t)(2240 * RADIO_ALARM_MICROSEC);

@@ -63,14 +63,13 @@ module DefaultLplP {
     interface PacketAcknowledgements;
     interface State as SendState;
     interface State as RadioPowerState;
-    interface State as SplitControlState;
+    interface State as SubControlState;
     interface Timer<TMilli> as OffTimer;
     interface Timer<TMilli> as SendDoneTimer;
     interface Random;
     interface Leds;
     interface SystemLowPowerListening;
   }
-uses interface SerialDbgs;
 }
 
 implementation {
@@ -80,19 +79,6 @@ implementation {
   
   /** The length of the current send message */
   uint8_t currentSendLen;
-
-task void reportStartDone() {
-#ifdef __DBGS__RADIO_STATUS__
-	call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, 0, 0);
-#endif
-}
-
-task void reportStopDone() {
-#ifdef __DBGS__RADIO_STATUS__
-	call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, 0, 0);
-#endif
-}
-
   
   /**
    * Radio Power State
@@ -172,8 +158,8 @@ task void reportStopDone() {
    * signal receive() more than once for that message.
    */
   command error_t Send.send(message_t *msg, uint8_t len) {
-    if(call SplitControlState.isState(S_OFF) || 
-      call SplitControlState.isState(S_TURNING_OFF)) {
+    if(call SubControlState.isState(S_OFF) || 
+      call SubControlState.isState(S_TURNING_OFF)) {
       // Everything is off right now, start SplitControl and try again
       return EOFF;
     }
@@ -261,7 +247,6 @@ task void reportStopDone() {
   event void SubControl.startDone(error_t error) {
     if(!error) {
       call RadioPowerState.forceState(S_ON);
-      post reportStartDone();
       
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
           || call SendState.getState() == S_LPL_SENDING) {
@@ -274,8 +259,8 @@ task void reportStopDone() {
     /* This check distinguishes the LPL sleep interval from
      * the whole AM radio stack stop 
      */
-    if(call SplitControlState.isState(S_OFF) || 
-      call SplitControlState.isState(S_TURNING_OFF)) {
+    if(call SubControlState.isState(S_OFF) || 
+      call SubControlState.isState(S_TURNING_OFF)) {
       call OffTimer.stop();
       call SendDoneTimer.stop();
       call SendState.toIdle();
@@ -283,7 +268,7 @@ task void reportStopDone() {
     }
 
     if(!error) {
-      post reportStopDone();
+
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
           || call SendState.getState() == S_LPL_SENDING) {
         // We're in the middle of sending a message; start the radio back up
@@ -301,8 +286,8 @@ task void reportStopDone() {
     /* Prevent resending routine when the radio AM
      * is getting completely turned off 
      */
-    if(call SplitControlState.isState(S_OFF) || 
-      call SplitControlState.isState(S_TURNING_OFF)) {
+    if(call SubControlState.isState(S_OFF) || 
+      call SubControlState.isState(S_TURNING_OFF)) {
       signal Send.sendDone(msg, error);
       return;
     }
@@ -357,9 +342,9 @@ task void reportStopDone() {
      * Only stop the radio if the radio is supposed to be off permanently
      * or if the duty cycle is on and our sleep interval is not 0
      */
-    if(call SplitControlState.getState() == S_OFF
+    if(call SubControlState.getState() == S_OFF
         || (call PowerCycle.getSleepInterval() > 0 
-                && call SplitControlState.getState() != S_OFF
+                && call SubControlState.getState() != S_OFF
                 && call SendState.getState() == S_LPL_NOT_SENDING)) { 
       post stopRadio();
     }
@@ -396,8 +381,8 @@ task void reportStopDone() {
   }
   
   task void resend() {
-    if(call SplitControlState.isState(S_OFF) ||
-      call SplitControlState.isState(S_TURNING_OFF)) {
+    if(call SubControlState.isState(S_OFF) ||
+      call SubControlState.isState(S_TURNING_OFF)) {
       return;
     }
     if(call Resend.resend(TRUE) != SUCCESS) {
