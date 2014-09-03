@@ -32,35 +32,11 @@
  * Author: Miklos Maroti
  */
 
-generic configuration UniqueLayerC()
-{
-	provides
-	{
-		// NOTE, this is a combined layer, should be hooked up at two places
-		interface BareSend as Send;
-		interface RadioReceive;
-	}
-	uses
-	{
-		interface BareSend as SubSend;
-		interface RadioReceive as SubReceive;
+#ifndef __NEIGHBORHOOD_H__
+#define __NEIGHBORHOOD_H__
 
-		interface UniqueConfig as Config;
-	}
-}
+#ifndef NEIGHBORHOOD_SIZE
+#define NEIGHBORHOOD_SIZE	5  /* no more than 8 */
+#endif
 
-implementation
-{
-	components new UniqueLayerP(), MainC, new NeighborhoodP();
-
-	MainC.SoftwareInit -> UniqueLayerP;
-	UniqueLayerP.Neighborhood -> NeighborhoodP;
-	UniqueLayerP.NeighborhoodFlag -> NeighborhoodP;
-
-	Send = UniqueLayerP;
-	SubSend = UniqueLayerP;
-
-	RadioReceive = UniqueLayerP;
-	SubReceive = UniqueLayerP;
-	Config = UniqueLayerP;
-}
+#endif//__NEIGHBORHOOD_H__
