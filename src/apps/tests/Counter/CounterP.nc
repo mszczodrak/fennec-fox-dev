@@ -128,7 +128,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call Param.get(DEST, &dest, sizeof(dest));
 	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
 #endif
-	printf("Sending %d from %d\n", seqno, TOS_NODE_ID);
 }
 
 
@@ -138,7 +137,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
 #endif
-	printf("Receive %d from %d\n", cm->seqno, cm->source);
 	return msg;
 }
 

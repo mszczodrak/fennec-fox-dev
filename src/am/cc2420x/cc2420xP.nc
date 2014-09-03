@@ -111,7 +111,7 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t 
 	call Param.get(POWER, &power, sizeof(power));
 	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
 
-	call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
+	//call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
 	call PacketTransmitPower.set(msg, power);
 	return call SubAMSend.send[id](addr, msg, len);
 }
