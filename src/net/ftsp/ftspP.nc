@@ -10,7 +10,7 @@ provides interface AMPacket as NetworkAMPacket;
 provides interface Packet as NetworkPacket;
 provides interface PacketAcknowledgements as NetworkPacketAcknowledgements;
 
-uses interface ftspParams;
+uses interface Param;
 
 uses interface AMSend as MacAMSend;
 uses interface Receive as MacReceive;

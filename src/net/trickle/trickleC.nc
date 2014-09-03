@@ -48,7 +48,7 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 
-uses interface trickleParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -70,7 +70,7 @@ implementation {
 
 components new trickleP(process);
 SplitControl = trickleP;
-trickleParams = trickleP;
+Param = trickleP;
 AMSend = trickleP.AMSend;
 Receive = trickleP.Receive;
 Snoop = trickleP.Snoop;

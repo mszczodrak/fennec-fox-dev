@@ -45,7 +45,7 @@ provides interface AMPacket as AMPacket;
 provides interface Packet as Packet;
 provides interface PacketAcknowledgements as PacketAcknowledgements;
 
-uses interface trickleParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -295,35 +295,47 @@ event void TrickleTimer.fired[ uint16_t key ]() {
 }
 
 command uint16_t TrickleTimerParams.get_low() {
-	return call trickleParams.get_low();
+	uint16_t low;
+	call Param.get(LOW, &low, sizeof(low));
+	return low;
 }
 
 command error_t TrickleTimerParams.set_low(uint16_t new_low) {
-	return call trickleParams.set_low(new_low);
+	uint16_t low = new_low;
+	return call Param.set(LOW, &low, sizeof(low));
 }
 
 command uint16_t TrickleTimerParams.get_high() {
-	return call trickleParams.get_high();
+	uint16_t high;
+	call Param.get(HIGH, &high, sizeof(high));
+	return high;
 }
 
 command error_t TrickleTimerParams.set_high(uint16_t new_high) {
-	return call trickleParams.set_high(new_high);
+	uint16_t high = new_high;
+	return call Param.set(HIGH, &high, sizeof(high));
 }
 
 command uint8_t TrickleTimerParams.get_k() {
-	return call trickleParams.get_k();
+	uint8_t k;
+	call Param.get(K, &k, sizeof(k));
+	return k;
 }
 
 command error_t TrickleTimerParams.set_k(uint8_t new_k) {
-	return call trickleParams.set_k(new_k);
+	uint8_t k = new_k;
+	return call Param.set(K, &k, sizeof(k));
 }
 
 command uint8_t TrickleTimerParams.get_scale() {
-	return call trickleParams.get_scale();
+	uint8_t scale;
+	call Param.get(SCALE, &scale, sizeof(scale));
+	return scale;
 }
 
 command error_t TrickleTimerParams.set_scale(uint8_t new_scale) {
-	return call trickleParams.set_scale(new_scale);
+	uint8_t scale = new_scale;
+	return call Param.set(SCALE, &scale, sizeof(scale));
 }
 
 event void RadioChannel.setChannelDone() {

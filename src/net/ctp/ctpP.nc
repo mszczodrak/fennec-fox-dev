@@ -9,7 +9,6 @@ provides interface AMSend as AMSend;
 provides interface Receive as Receive;
 provides interface Receive as Snoop;
 
-uses interface ctpParams;
 uses interface Param;
 
 uses interface LowPowerListening;
@@ -33,9 +32,12 @@ uses interface Packet;
 
 implementation {
 
+uint16_t root;
+
 command error_t SplitControl.start() {
 	call RoutingControl.start();
-	if (call ctpParams.get_root() == TOS_NODE_ID) {
+	call Param.get(ROOT, &root, sizeof(root));
+	if (root == TOS_NODE_ID) {
 		call LowPowerListening.setLocalWakeupInterval(0);
 		call RootControl.setRoot();
 	}
@@ -46,7 +48,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	if (call ctpParams.get_root() == TOS_NODE_ID) {
+	if (root == TOS_NODE_ID) {
 		call RootControl.unsetRoot();
 	}
 	call RoutingControl.stop();

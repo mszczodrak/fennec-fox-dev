@@ -13,7 +13,7 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 
-uses interface dipParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -35,7 +35,7 @@ implementation {
 
 components new dipP(process);
 SplitControl = dipP;
-dipParams = dipP;
+Param = dipP;
 AMSend = dipP.AMSend;
 Receive = dipP.Receive;
 Snoop = dipP.Snoop;

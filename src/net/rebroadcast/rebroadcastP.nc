@@ -10,7 +10,7 @@ provides interface AMPacket as AMPacket;
 provides interface Packet as Packet;
 provides interface PacketAcknowledgements as PacketAcknowledgements;
 
-uses interface rebroadcastParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -35,6 +35,8 @@ float delay = 1
 
 
 uint8_t retry;
+uint16_t retry_delay;
+uint8_t repeat;
 bool busy = FALSE;
 uint8_t pkt_len;
 am_addr_t pkt_addr;
@@ -70,14 +72,16 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return EBUSY;
 
 	busy = TRUE;
-	retry = call rebroadcastParams.get_retry();
+
+	call Param.get(RETRY, &retry, sizeof(retry));
+	call Param.get(REPEAT, &repeat, sizeof(repeat));
+
 	pkt_len = len + sizeof(nx_struct rebroadcast_header);
 	pkt_addr = addr;
 	pkt_msg = msg;
 
 	hdr = (nx_struct rebroadcast_header*) call SubAMSend.getPayload(pkt_msg, pkt_len);
-
-	hdr->repeat = call rebroadcastParams.get_repeat();
+	hdr->repeat = repeat;
 
 	if (pkt_addr == TOS_NODE_ID) {
 		dbg("", "[%d] rebroadcast AMSend.sendDone(0x%1x, %d )", process, pkt_msg, SUCCESS);
@@ -91,8 +95,10 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	pkt_err = call SubAMSend.send(pkt_addr, pkt_msg, pkt_len);
 
-	if (pkt_err != SUCCESS)
-		call Timer.startOneShot(call rebroadcastParams.get_retry_delay());
+	if (pkt_err != SUCCESS) {
+		call Param.get(RETRY_DELAY, &retry_delay, sizeof(retry_delay));
+		call Timer.startOneShot(retry_delay);
+	}
 
 	return SUCCESS;
 }
@@ -137,8 +143,10 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 	pkt_err = call SubAMSend.send(pkt_addr, msg, pkt_len);
 
-	if (pkt_err != SUCCESS)
-		call Timer.startOneShot(call rebroadcastParams.get_retry_delay());
+	if (pkt_err != SUCCESS) {
+		call Param.get(RETRY_DELAY, &retry_delay, sizeof(retry_delay));
+		call Timer.startOneShot(retry_delay);
+	}
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {

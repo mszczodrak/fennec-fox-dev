@@ -13,7 +13,6 @@ provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
 
-uses interface ctpParams;
 uses interface Param;
 
 uses interface AMSend as SubAMSend;
@@ -35,7 +34,6 @@ implementation {
 
 components new ctpP(process);
 SplitControl = ctpP.SplitControl;
-ctpParams = ctpP;
 Param = ctpP;
 AMSend = ctpP.AMSend;
 Receive = ctpP.Receive;

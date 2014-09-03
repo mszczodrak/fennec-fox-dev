@@ -10,7 +10,7 @@ provides interface AMPacket as AMPacket;
 provides interface Packet as Packet;
 provides interface PacketAcknowledgements as PacketAcknowledgements;
 
-uses interface dipParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
