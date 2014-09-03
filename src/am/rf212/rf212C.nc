@@ -43,7 +43,7 @@ provides interface Packet;
 provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
-uses interface rf212Params;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
@@ -66,7 +66,7 @@ components rf212P;
 components RF212ActiveMessageC as AM;
 components RF212RadioP as RadioP;
 
-rf212Params = rf212P;
+Param = rf212P;
 SplitControl = rf212P.SplitControl;
 AMQueueControl = rf212P.AMQueueControl;
 AMSend = rf212P.AMSend;

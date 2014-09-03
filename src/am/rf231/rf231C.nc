@@ -43,7 +43,7 @@ provides interface Packet;
 provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
-uses interface rf231Params;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
@@ -66,7 +66,7 @@ components rf231P;
 components RF231ActiveMessageC as AM;
 components RF231RadioP as RadioP;
 
-rf231Params = rf231P;
+Param = rf231P;
 SplitControl = rf231P.SplitControl;
 AMQueueControl = rf231P.AMQueueControl;
 AMSend = rf231P.AMSend;

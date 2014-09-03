@@ -43,7 +43,7 @@ provides interface Packet;
 provides interface PacketAcknowledgements;
 provides interface LinkPacketMetadata;
 
-uses interface atm128rfa1Params;
+uses interface Param;
 uses interface StdControl as AMQueueControl;
 
 provides interface PacketField<uint8_t> as PacketLinkQuality;
@@ -66,8 +66,8 @@ components atm128rfa1P;
 components RFA1ActiveMessageC as AM;
 components RFA1RadioP as RadioP;
 
-atm128rfa1Params = atm128rfa1P;
-atm128rfa1Params = RadioP.atm128rfa1Params;
+Param = atm128rfa1P;
+Param = RadioP.Param;
 SplitControl = atm128rfa1P.SplitControl;
 AMQueueControl = atm128rfa1P.AMQueueControl;
 AMSend = atm128rfa1P.AMSend;

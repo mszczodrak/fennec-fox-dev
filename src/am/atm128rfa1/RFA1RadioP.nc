@@ -64,7 +64,7 @@ module RFA1RadioP
 
 provides interface StdControl;
 provides interface CollisionAvoidanceConfig;
-uses interface atm128rfa1Params;
+uses interface Param;
 }
 
 implementation
@@ -74,8 +74,14 @@ norace bool withLpl = FALSE;
 norace bool isSlotted = FALSE;
 
 command error_t StdControl.start() {
-	withLpl = (call atm128rfa1Params.get_sleepInterval() > 0);
-	isSlotted = call atm128rfa1Params.get_slotted() > 0 ? TRUE : FALSE;
+	uint16_t sleepInterval;
+	uint16_t slotted;
+
+	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
+	call Param.get(SLOTTED, &slotted, sizeof(slotted));
+
+	withLpl = (sleepInterval > 0);
+	isSlotted = slotted > 0 ? TRUE : FALSE;
 	return SUCCESS;
 }
 
