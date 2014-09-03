@@ -35,7 +35,7 @@
 generic configuration PrintfAppC(process_t process) {
 provides interface SplitControl;
 
-uses interface PrintfAppParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new PrintfAppP(process);
 SplitControl = PrintfAppP;
 
-PrintfAppParams = PrintfAppP;
+Param = PrintfAppP;
 
 SubAMSend = PrintfAppP.SubAMSend;
 SubReceive = PrintfAppP.SubReceive;

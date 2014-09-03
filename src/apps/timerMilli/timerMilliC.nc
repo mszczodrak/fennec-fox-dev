@@ -34,7 +34,7 @@
 generic configuration timerMilliC(process_t process) {
 provides interface SplitControl;
 
-uses interface timerMilliParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new timerMilliP(process);
 SplitControl = timerMilliP;
 
-timerMilliParams = timerMilliP;
+Param = timerMilliP;
 
 SubAMSend = timerMilliP.SubAMSend;
 SubReceive = timerMilliP.SubReceive;

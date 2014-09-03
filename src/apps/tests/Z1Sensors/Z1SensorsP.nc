@@ -38,7 +38,7 @@
 generic module Z1SensorsP(process_t process) {
 provides interface SplitControl;
 
-uses interface Z1SensorsParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -134,8 +134,9 @@ command error_t SplitControl.start() {
 
 	serial_data = (void*) call SerialAMSend.getPayload(&serial_packet,
                                                         sizeof(z1_sensors_t));
-	if (call Z1SensorsParams.get_dest()) {
-		dest = call Z1SensorsParams.get_dest();
+
+	call Param.get(DEST, &dest, sizeof(dest));
+	if (dest) {
 	} else {
 		dest = TOS_NODE_ID;
 	}

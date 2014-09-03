@@ -40,7 +40,7 @@
 generic configuration Z1SensorsC(process_t process) {
 provides interface SplitControl;
 
-uses interface Z1SensorsParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -59,7 +59,7 @@ implementation {
 components new Z1SensorsP(process);
 SplitControl = Z1SensorsP;
 
-Z1SensorsParams = Z1SensorsP;
+Param = Z1SensorsP;
 
 SubAMSend = Z1SensorsP.SubAMSend;
 SubReceive = Z1SensorsP.SubReceive;

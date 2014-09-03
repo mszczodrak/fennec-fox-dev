@@ -38,7 +38,7 @@
 generic module maxTestP(process_t process) {
 provides interface SplitControl;
 
-uses interface maxTestParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -58,9 +58,10 @@ uses interface Timer<TMilli>;
 
 implementation {
 
-uint32_t max_value = 0;
 message_t packet;
 bool send_busy = FALSE;
+uint32_t val;
+uint32_t delay;
 
 task void send_msg() {
 	nx_struct maxMsg *out_msg = (nx_struct maxMsg*)
@@ -70,24 +71,25 @@ task void send_msg() {
 		return;
 	}
 
-	out_msg->max_value = max_value;
+	out_msg->max_value = val;
 	
 	if (call SubAMSend.send(BROADCAST, &packet, 
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
 	} else {
 		send_busy = TRUE;
-		call Leds.set(max_value);
+		call Leds.set(val);
 	}
 }
 
 
 command error_t SplitControl.start() {
-	max_value = call maxTestParams.get_val();
+	call Param.get(VAL, &val, sizeof(val));
+	call Param.get(DELAY, &delay, sizeof(delay));
 
 	send_busy = FALSE;
 
-	if (call maxTestParams.get_delay() > 0) {
-		call Timer.startPeriodic(call maxTestParams.get_delay());
+	if (delay > 0) {
+		call Timer.startPeriodic(delay);
 	}
 
 	signal SplitControl.startDone(SUCCESS);
@@ -109,12 +111,12 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct maxMsg *in_msg = (nx_struct maxMsg*) payload;
-	if (in_msg->max_value > max_value) {
-		max_value = in_msg->max_value;
+	if (in_msg->max_value > val) {
+		val = in_msg->max_value;
 		post send_msg();
 	}
 
-	if (in_msg->max_value < max_value) {
+	if (in_msg->max_value < val) {
 		post send_msg();
 	}
 
@@ -127,8 +129,9 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void Timer.fired() {
-	if (call maxTestParams.get_val() != 0) {
-		max_value = call Random.rand32();
+	call Param.get(VAL, &val, sizeof(val));
+	if (val != 0) {
+		val = call Random.rand32();
 	}
 	if (!send_busy) {
 		post send_msg();

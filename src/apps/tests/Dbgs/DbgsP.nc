@@ -38,7 +38,7 @@
 generic module DbgsP(process_t process) {
 provides interface SplitControl;
 
-uses interface DbgsParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -60,10 +60,12 @@ uses interface SerialDbgs;
 implementation {
 
 uint16_t c;
+uint16_t delay;
 
 command error_t SplitControl.start() {
 	c = 0;
-	call Timer.startPeriodic(call DbgsParams.get_delay());
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Timer.startPeriodic(delay);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }

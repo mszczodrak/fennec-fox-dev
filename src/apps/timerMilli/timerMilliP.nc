@@ -38,7 +38,7 @@
 generic module timerMilliP(process_t process) {
 provides interface SplitControl;
 
-uses interface timerMilliParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -57,22 +57,19 @@ uses interface Timer<TMilli>;
 
 implementation {
 
-/** Available Parameters
-	uint32_t delay = 1000,
-	uint16_t src = 0
-*/
-
+uint32_t delay;
+uint16_t src;
 
 command error_t SplitControl.start() {
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Param.get(SRC, &src, sizeof(src));
+
 	dbg("Application", "[%d] timerMilli SplitControl.start()", process);
-	dbg("Application", "[%d] timerMilli src: %d", process, call timerMilliParams.get_src());
+	dbg("Application", "[%d] timerMilli src: %d", process, src);
 
-	if ((call timerMilliParams.get_src() == BROADCAST) || 
-		(call timerMilliParams.get_src() == TOS_NODE_ID)) {
-		dbg("Application", "[%d] timerMilli will fire in %d ms",
-			process, call timerMilliParams.get_delay());
-		call Timer.startOneShot(call timerMilliParams.get_delay());
-
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		dbg("Application", "[%d] timerMilli will fire in %d ms", process, delay);
+		call Timer.startOneShot(delay);
 	}
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;

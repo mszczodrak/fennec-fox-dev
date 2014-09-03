@@ -35,7 +35,7 @@
 generic configuration ButtonToLedC(process_t process) {
 provides interface SplitControl;
 
-uses interface ButtonToLedParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new ButtonToLedP(process);
 SplitControl = ButtonToLedP;
 
-ButtonToLedParams = ButtonToLedP;
+Param = ButtonToLedP;
 
 SubAMSend = ButtonToLedP.SubAMSend;
 SubReceive = ButtonToLedP.SubReceive;

@@ -35,7 +35,7 @@
 generic configuration maxTestC(process_t process) {
 provides interface SplitControl;
 
-uses interface maxTestParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new maxTestP(process_t process);
 SplitControl = maxTestP;
 
-maxTestParams = maxTestP;
+Param = maxTestP;
 
 SubAMSend = maxTestP.SubAMSend;
 SubReceive = maxTestP.SubReceive;

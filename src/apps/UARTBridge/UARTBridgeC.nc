@@ -36,7 +36,7 @@
 generic configuration UARTBridgeC(process_t process) {
 provides interface SplitControl;
 
-uses interface UARTBridgeParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new UARTBridgeP(process);
 SplitControl = UARTBridgeP;
 
-UARTBridgeParams = UARTBridgeP;
+Param = UARTBridgeP;
 
 SubAMSend = UARTBridgeP.SubAMSend;
 SubReceive = UARTBridgeP.SubReceive;

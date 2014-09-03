@@ -35,7 +35,7 @@
 generic configuration TelosbSensorsC(process_t process) {
 provides interface SplitControl;
 
-uses interface TelosbSensorsParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -53,7 +53,7 @@ implementation {
 components new TelosbSensorsP(process);
 SplitControl = TelosbSensorsP;
 
-TelosbSensorsParams = TelosbSensorsP;
+Param = TelosbSensorsP;
 
 SubAMSend = TelosbSensorsP.SubAMSend;
 SubReceive = TelosbSensorsP.SubReceive;

@@ -36,7 +36,7 @@
 generic configuration PrintfBridgeC(process_t process) {
 provides interface SplitControl;
 
-uses interface PrintfBridgeParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new PrintfBridgeP(process);
 SplitControl = PrintfBridgeP;
 
-PrintfBridgeParams = PrintfBridgeP;
+Param = PrintfBridgeP;
 
 SubAMSend = PrintfBridgeP.SubAMSend;
 SubReceive = PrintfBridgeP.SubReceive;

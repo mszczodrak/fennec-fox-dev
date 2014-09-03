@@ -38,7 +38,7 @@
 generic module PrintfAppP(process_t process) {
 provides interface SplitControl;
 
-uses interface PrintfAppParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;

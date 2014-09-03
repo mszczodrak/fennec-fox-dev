@@ -37,7 +37,7 @@
 generic module PrintfBridgeP(process_t process) {
 provides interface SplitControl;
 
-uses interface PrintfBridgeParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;

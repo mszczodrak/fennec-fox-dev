@@ -39,7 +39,7 @@
 generic module TelosbSensorsP(process_t process) {
 provides interface SplitControl;
 
-uses interface TelosbSensorsParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -84,6 +84,7 @@ void *serial_data = NULL;
 message_t network_packet;
 message_t serial_packet;
 uint16_t dest;
+uint16_t sampling_rate;
 
 task void report_measurements() {
 	call Leds.led1Toggle();
@@ -114,13 +115,15 @@ command error_t SplitControl.start() {
 
 	serial_data = (void*) call SerialAMSend.getPayload(&serial_packet,
 							sizeof(telosb_sensors_t));
-	if (call TelosbSensorsParams.get_dest()) {
-		dest = call TelosbSensorsParams.get_dest();
+
+	call Param.get(DEST, &dest, sizeof(dest));
+	call Param.get(SAMPLING_RATE, &sampling_rate, sizeof(sampling_rate));
+	if (dest) {
 	} else {
 		dest = TOS_NODE_ID;
 	}
 	dbg("Application", "TelosbSensors SplitControl.start() width dest: %d", dest);
-	call Timer.startPeriodic(call TelosbSensorsParams.get_sampling_rate());
+	call Timer.startPeriodic(sampling_rate);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }

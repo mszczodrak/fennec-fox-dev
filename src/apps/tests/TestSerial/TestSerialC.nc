@@ -35,7 +35,7 @@
 generic configuration TestSerialC(process_t process) {
 provides interface SplitControl;
 
-uses interface TestSerialParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new TestSerialP(process);
 SplitControl = TestSerialP;
 
-TestSerialParams = TestSerialP;
+Param = TestSerialP;
 
 SubAMSend = TestSerialP.SubAMSend;
 SubReceive = TestSerialP.SubReceive;

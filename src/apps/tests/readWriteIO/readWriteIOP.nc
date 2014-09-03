@@ -38,7 +38,7 @@
 generic module readWriteIOP(process_t process) {
 provides interface SplitControl;
 
-uses interface readWriteIOParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -62,10 +62,17 @@ implementation {
 uint16_t readData;
 uint16_t writeData;
 
+uint16_t sampling_rate;
+uint16_t actuating_rate;
+
 command error_t SplitControl.start() {
 	dbg("Application", "readWriteIO SplitControl.start()");
-	call SensorTimer.startPeriodic(call readWriteIOParams.get_sampling_rate());
-	call ActuatorTimer.startPeriodic(call readWriteIOParams.get_actuating_rate());
+	call Param.get(SAMPLING_RATE, &sampling_rate, sizeof(sampling_rate));
+	call Param.get(ACTUATING_RATE, &actuating_rate, sizeof(actuating_rate));
+
+	call SensorTimer.startPeriodic(sampling_rate);
+	call ActuatorTimer.startPeriodic(actuating_rate);
+
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }

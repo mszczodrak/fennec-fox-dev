@@ -38,7 +38,7 @@
 generic module timerSecondP(process_t process) {
 provides interface SplitControl;
 
-uses interface timerSecondParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -57,19 +57,16 @@ uses interface Event;
 
 implementation {
 
-/** Available Parameters
-	uint32_t delay = 1000,
-	uint16_t src = 0
-*/
-
+uint32_t delay;
+uint16_t src;
 
 command error_t SplitControl.start() {
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Param.get(SRC, &src, sizeof(src));
+
 	dbg("Application", "timerSecond SplitControl.start()");
-	if ((call timerSecondParams.get_src() == BROADCAST) || 
-		(call timerSecondParams.get_src() == TOS_NODE_ID)) {
-
-		call Timer.startPeriodic(call timerSecondParams.get_delay());
-
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		call Timer.startPeriodic(delay);
 	}
 
 	signal SplitControl.startDone(SUCCESS);

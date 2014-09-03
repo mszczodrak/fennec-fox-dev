@@ -38,7 +38,7 @@ generic configuration ThroughputC(process_t process) {
 provides interface SplitControl;
 provides interface Module;
 
-uses interface ThroughputParams;
+uses interface Param;
    
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -63,7 +63,7 @@ enum {
 components new ThroughputP(process);
 SplitControl = ThroughputP;
 Module = ThroughputP;
-ThroughputParams = ThroughputP;
+Param = ThroughputP;
   
 components new TimerMilliC() as TimerImp;
 ThroughputP.Timer -> TimerImp;

@@ -36,7 +36,7 @@ generic module ThroughputP(process_t process) {
 provides interface SplitControl;
 provides interface Module;
 
-uses interface ThroughputParams ;
+uses interface Param;
 
 /* Sub interfaces */
 uses interface AMSend as SubAMSend;
@@ -93,6 +93,11 @@ bool init = 1;
 #define MIN_ADDR 1
 #define MAX_ADDR 17
 
+uint8_t size;
+uint32_t freq;
+uint16_t destination;
+
+
 /**
   * starting point for this module
   */
@@ -110,8 +115,8 @@ command error_t SplitControl.start() {
 
 #if !defined(__DBGS__) && !defined(FENNEC_TOS_PRINTF)
 	/* check if this node will be sending messages over the serial */
-	if ((TOS_NODE_ID == call ThroughputParams.get_destination()) || 
-	        (NODE == call ThroughputParams.get_destination())) {
+	call Param.get(DESTINATION, &destination, sizeof(destination));
+	if ((TOS_NODE_ID == destination) || (NODE == destination)) {
 		/* if serial needed, initialize it */
 		call SerialSplitControl.start();
 	}
@@ -215,8 +220,9 @@ event void SerialSplitControl.startDone(error_t error) {}
 #endif
 
 event void Timer.fired() {
+	call Param.get(FREQ, &freq, sizeof(freq));
 	if (init) {
-		call Timer.startPeriodic(call ThroughputParams.get_freq());
+		call Timer.startPeriodic(freq);
 		init = 0;
 	}
 	call Leds.led2Toggle();
@@ -244,15 +250,18 @@ void prepare_network_message() {
                 return;
         }
 
+	call Param.get(SIZE, &size, sizeof(size));
+	call Param.get(FREQ, &freq, sizeof(freq));
+	call Param.get(DESTINATION, &destination, sizeof(destination));
+
         network_data_payload = (app_data_t*)
-                call SubAMSend.getPayload(network_message, sizeof(app_data_t)
-                                        + call ThroughputParams.get_size());
+                call SubAMSend.getPayload(network_message, sizeof(app_data_t) + size);
 
         /* set network message content */
         network_data_payload->src = TOS_NODE_ID;
         network_data_payload->seqno = seqno;
-        network_data_payload->freq = call ThroughputParams.get_freq();
-        memset(network_data_payload->data, 0, call ThroughputParams.get_size());
+        network_data_payload->freq = freq;
+        memset(network_data_payload->data, 0, size);
 
         /* Check if there is a space in queue */
         if (call SubQueue.full()) {
@@ -264,8 +273,8 @@ void prepare_network_message() {
 
         /* Just add the message to the queue and wait */
         nm.msg = network_message;
-        nm.len = sizeof(app_data_t) + call ThroughputParams.get_size();
-        nm.addr = call ThroughputParams.get_destination();
+        nm.len = sizeof(app_data_t) + size;
+        nm.addr = destination;
         call SubQueue.enqueue(nm);
 
         post send_network_message();

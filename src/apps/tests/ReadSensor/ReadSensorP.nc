@@ -38,7 +38,7 @@
 generic module ReadSensorP(process_t process) {
 provides interface SplitControl;
 
-uses interface ReadSensorParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -57,9 +57,12 @@ uses interface Read<uint16_t> as Read;
 
 implementation {
 
+uint16_t sampling_rate;
+
 command error_t SplitControl.start() {
 	dbg("Application", "Application ReadSensor SplitControl.start()");
-	call Timer.startPeriodic(call ReadSensorParams.get_sampling_rate());
+	call Param.get(SAMPLING_RATE, &sampling_rate, sizeof(sampling_rate));
+	call Timer.startPeriodic(sampling_rate);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }

@@ -4,7 +4,7 @@
 generic module network_rssiP(process_t process_id) {
 provides interface SplitControl;
 
-uses interface network_rssiParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;

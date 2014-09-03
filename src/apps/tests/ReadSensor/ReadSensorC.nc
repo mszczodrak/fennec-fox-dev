@@ -34,7 +34,7 @@
 generic configuration ReadSensorC(process_t process) {
 provides interface SplitControl;
 
-uses interface ReadSensorParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -53,7 +53,7 @@ implementation {
 components new ReadSensorP(process);
 SplitControl = ReadSensorP;
 
-ReadSensorParams = ReadSensorP;
+Param = ReadSensorP;
 
 SubAMSend = ReadSensorP.SubAMSend;
 SubReceive = ReadSensorP.SubReceive;

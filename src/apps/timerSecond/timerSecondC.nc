@@ -34,7 +34,7 @@
 generic configuration timerSecondC(process_t process) {
 provides interface SplitControl;
 
-uses interface timerSecondParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new timerSecondP(process);
 SplitControl = timerSecondP;
 
-timerSecondParams = timerSecondP;
+Param = timerSecondP;
 
 SubAMSend = timerSecondP.SubAMSend;
 SubReceive = timerSecondP.SubReceive;

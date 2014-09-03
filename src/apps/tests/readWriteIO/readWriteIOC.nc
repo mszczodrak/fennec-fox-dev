@@ -34,7 +34,7 @@
 generic configuration readWriteIOC(process_t process) {
 provides interface SplitControl;
 
-uses interface readWriteIOParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -53,7 +53,7 @@ implementation {
 components new readWriteIOP(process);
 SplitControl = readWriteIOP;
 
-readWriteIOParams = readWriteIOP;
+Param = readWriteIOP;
 
 SubAMSend = readWriteIOP.SubAMSend;
 SubReceive = readWriteIOP.SubReceive;

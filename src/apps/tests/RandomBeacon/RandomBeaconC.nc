@@ -35,7 +35,7 @@
 generic configuration RandomBeaconC(process_t process) {
 provides interface SplitControl;
 
-uses interface RandomBeaconParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -54,7 +54,7 @@ implementation {
 components new RandomBeaconP();
 SplitControl = RandomBeaconP;
 
-RandomBeaconParams = RandomBeaconP;
+Param = RandomBeaconP;
 
 SubAMSend = RandomBeaconP.SubAMSend;
 SubReceive = RandomBeaconP.SubReceive;

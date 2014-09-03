@@ -38,7 +38,7 @@
 generic module TestSerialP(process_t process) {
 provides interface SplitControl;
 
-uses interface TestSerialParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -71,13 +71,17 @@ void *serial_data;
 bool on;
 uint32_t seq = 0;
 
+uint8_t led=1;
+uint16_t delay=1024;
 
 command error_t SplitControl.start() {
 	on = 0;
 	busy_serial = FALSE;
 	seq = 0;
 	dbg("Application", "TestSerial SplitControl.start()");
-	call Timer.startPeriodic(call TestSerialParams.get_delay());
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Param.get(LED, &led, sizeof(led));
+	call Timer.startPeriodic(delay);
 	call SerialSplitControl.start();
         signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -104,7 +108,7 @@ event void Timer.fired() {
         if (call SerialAMSend.send(BROADCAST, &packet, sizeof(uint32_t)) != SUCCESS) {
                 signal SerialAMSend.sendDone(&packet, FAIL);
         } else {
-        	on ? call Leds.set(0) : call Leds.set(call TestSerialParams.get_led()) ;
+        	on ? call Leds.set(0) : call Leds.set(led) ;
 	        on = !on;
                 busy_serial = TRUE;
         }

@@ -39,7 +39,6 @@
 generic module CounterP(process_t process) {
 provides interface SplitControl;
 
-uses interface CounterParams;
 uses interface Param;
 
 uses interface AMSend as SubAMSend;
@@ -62,26 +61,25 @@ uses interface SerialDbgs;
 
 implementation {
 
-/**
- Available Parameters:
-	uint16_t delay,
-	uint16_t delay_scale,
-	uint16_t src,
-	uint16_t dest
-*/
-
+uint16_t delay;
+uint16_t delay_scale;
+uint16_t src;
+uint16_t dest;
 
 message_t packet;
 uint16_t seqno;
 
 command error_t SplitControl.start() {
-	uint32_t send_delay = call CounterParams.get_delay() * 
-		call CounterParams.get_delay_scale();
+	uint32_t send_delay;
 
+	call Param.get(SRC, &src, sizeof(src));
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
+
+	send_delay = delay * delay_scale;
 	seqno = 0;
 
-	if ((call CounterParams.get_src() == BROADCAST) || 
-	(call CounterParams.get_src() == TOS_NODE_ID)) {
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
 		call Timer.startPeriodic(send_delay);
 	}
 
@@ -112,8 +110,8 @@ task void sendMessage() {
 	msg->source = TOS_NODE_ID;
 	msg->seqno = seqno;
 
-	e = call SubAMSend.send(call CounterParams.get_dest(), &packet, 
-					sizeof(CounterMsg));
+	call Param.get(DEST, &dest, sizeof(dest));
+	e = call SubAMSend.send(dest, &packet, sizeof(CounterMsg));
 	if (e != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, e);
 	}
@@ -127,8 +125,8 @@ event void Timer.fired() {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call Leds.set(seqno);
 #ifdef __DBGS__APPLICATION__
-	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, 
-				call CounterParams.get_dest());
+	call Param.get(DEST, &dest, sizeof(dest));
+	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
 #endif
 }
 

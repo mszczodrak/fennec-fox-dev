@@ -39,7 +39,7 @@
 generic module StateSynchronizationP(process_t process) @safe() {
 provides interface SplitControl;
 
-uses interface StateSynchronizationParams;
+uses interface Param;
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
 uses interface Receive as SubSnoop;
@@ -59,11 +59,12 @@ uses interface Leds;
 
 implementation {
 
+uint16_t send_delay;
 message_t packet;
 
 task void schedule_send() {
-	call Timer.startOneShot((call Random.rand16() % 
-		call StateSynchronizationParams.get_send_delay()) + 1);
+	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
+	call Timer.startOneShot((call Random.rand16() % send_delay) + 1);
 }
 
 task void send_msg() {

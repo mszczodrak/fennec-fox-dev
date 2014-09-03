@@ -4,7 +4,7 @@
 generic configuration network_rssiC(process_t process_id) {
 provides interface SplitControl;
 
-uses interface network_rssiParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -22,7 +22,7 @@ implementation {
 components new network_rssiP(process_id);
 SplitControl = network_rssiP;
 
-network_rssiParams = network_rssiP;
+Param = network_rssiP;
 
 SubAMSend = network_rssiP.SubAMSend;
 SubReceive = network_rssiP.SubReceive;

@@ -39,7 +39,7 @@
 generic configuration StateSynchronizationC(process_t process) {
 provides interface SplitControl;
 
-uses interface StateSynchronizationParams;
+uses interface Param;
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
 uses interface Receive as SubSnoop;
@@ -56,7 +56,7 @@ implementation {
 
 components new StateSynchronizationP(process);
 SplitControl = StateSynchronizationP;
-StateSynchronizationParams = StateSynchronizationP;
+Param = StateSynchronizationP;
 
 SubAMSend = StateSynchronizationP;
 SubReceive = StateSynchronizationP.SubReceive;

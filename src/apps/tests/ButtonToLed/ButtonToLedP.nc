@@ -38,7 +38,7 @@
 generic module ButtonToLedP(process_t process) {
 provides interface SplitControl;
 
-uses interface ButtonToLedParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;

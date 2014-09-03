@@ -37,7 +37,7 @@
 generic configuration DbgsC(process_t process) {
 provides interface SplitControl;
 
-uses interface DbgsParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -56,7 +56,7 @@ implementation {
 components new DbgsP(process);
 SplitControl = DbgsP;
 
-DbgsParams = DbgsP;
+Param = DbgsP;
 
 SubAMSend = DbgsP.SubAMSend;
 SubReceive = DbgsP.SubReceive;

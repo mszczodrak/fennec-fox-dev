@@ -40,7 +40,7 @@
 generic module RandomBeaconP(process_t process) {
 provides interface SplitControl;
 
-uses interface RandomBeaconParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
@@ -61,22 +61,18 @@ uses interface Random;
 
 implementation {
 
-/**
- Available Parameters:
-	uint16_t delay,
-	uint16_t delay_scale,
-*/
-
+uint16_t delay;
+uint16_t delay_scale;
 
 message_t packet;
 bool sendBusy = FALSE;
 
 task void set_timer() {
-	call Timer.startOneShot((call Random.rand32()) % 
-		(call RandomBeaconParams.get_delay() * 
-		call RandomBeaconParams.get_delay_scale()));
-}
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
 
+	call Timer.startOneShot((call Random.rand32()) % (delay * delay_scale));
+}
 
 command error_t SplitControl.start() {
 	//call Leds.led0On();

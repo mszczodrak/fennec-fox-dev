@@ -37,7 +37,7 @@
 generic module UARTBridgeP(process_t process) {
 provides interface SplitControl;
 
-uses interface UARTBridgeParams;
+uses interface Param;
 
 uses interface AMSend as SubAMSend;
 uses interface Receive as SubReceive;
