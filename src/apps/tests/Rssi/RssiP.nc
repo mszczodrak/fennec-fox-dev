@@ -150,16 +150,14 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void SendTimer.fired() {
 	RssiMsg *msg = (RssiMsg*) call SubAMSend.getPayload(&packet,
 							sizeof(RssiMsg));
-
-	if (msg == NULL || busy) {
-		post send_timer();
-		return;
+	if (msg != NULL && !busy) {
+		busy = TRUE;
+		msg->src = TOS_NODE_ID;
+		msg->seq = ++seqno;
+		call SubAMSend.send(BROADCAST, &packet, sizeof(RssiMsg));
 	}
 
-	busy = TRUE;
-	msg->src = TOS_NODE_ID;
-	msg->seq = ++seqno;
-	call SubAMSend.send(BROADCAST, &packet, sizeof(RssiMsg));
+	post send_timer();
 }
 
 event void LedTimer.fired() {
