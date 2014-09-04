@@ -39,6 +39,7 @@
 module FennecP @safe() {
 provides interface Fennec;
 provides interface FennecState;
+provides interface FennecData;
 provides interface Event;
 provides interface Param[process_t process, uint8_t layer];
 
@@ -59,6 +60,8 @@ norace event_t event_mask;
 norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
+
+norace uint16_t current_data_seq = 0;
 
 task void check_event() {
 	uint8_t i;
@@ -294,6 +297,37 @@ command void FennecState.resendDone(error_t error) {
 	}
 }
 
+default event void FennecState.resend() {}
+
+/** Fennec Data interface */
+
+command void* FennecData.getData() {
+	return (void*) &fennec_global_data;
+}
+
+command void* FennecData.getNxData() {
+	return (void*) &fennec_global_data_nx;
+}
+
+command uint16_t FennecData.getDataSeq() {
+	return current_data_seq;
+}
+
+command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, uint16_t seq) {
+	current_data_seq = seq;
+	memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
+	globalDataSyncWithNetwork();
+	return SUCCESS;
+}
+
+command void FennecData.syncNetwork() {
+	globalDataSyncWithLocal();
+	current_data_seq++;
+	signal FennecData.resend();
+}
+
+/** Fennec interface */
+
 async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 	struct network_process **npr;
 	process_t process_id = UNKNOWN;
@@ -307,9 +341,6 @@ async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 	}
 	return process_id;
 }
-
-default event void FennecState.resend() {}
-
 
 
 error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8_t *off) {
@@ -375,7 +406,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].var_id == name) {
 			memcpy(variable_lookup[i].ptr, value, size);
-			globalDataSyncLocal();
+			call FennecData.syncNetwork();
 			return SUCCESS;
 		}
 	}
