@@ -38,4 +38,12 @@
 
 #include "SerialDbgs.h"
 
+#define RSSI_DATA 	20
+
+typedef nx_struct RssiMsg {
+	nx_am_addr_t src;
+	nx_uint32_t seq;
+	nx_uint8_t data[RSSI_DATA];
+} RssiMsg;
+
 #endif

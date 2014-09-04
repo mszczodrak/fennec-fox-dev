@@ -64,6 +64,7 @@ implementation {
 
 message_t packet;
 bool busy;
+uint32_t seqno;
 
 uint16_t tx_delay;
 float rssi_scale;
@@ -87,6 +88,7 @@ task void send_timer() {
 }
 
 command error_t SplitControl.start() {
+	seqno = 0;
 	post send_timer();
 	busy = FALSE;
 	post reset_led_timer();
@@ -120,8 +122,10 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #endif
 
 #ifdef __DBGS__APPLICATION__
+	RssiMsg *m = (RssiMsg*) payload;
 	call SerialDbgs.dbgs(DBGS_RECEIVE_BEACON, call SubAMPacket.source(msg),
-		call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
+		//call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
+		call SubPacketRSSI.get(msg), m->seq);
 #endif
 
 	signal LedTimer.fired();
@@ -144,11 +148,18 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void SendTimer.fired() {
-	if (!busy) {
-		busy = TRUE;
-		call SubAMSend.send(BROADCAST, &packet, 40);
+	RssiMsg *msg = (RssiMsg*) call SubAMSend.getPayload(&packet,
+							sizeof(RssiMsg));
+
+	if (msg == NULL || busy) {
+		post send_timer();
+		return;
 	}
-	post send_timer();
+
+	busy = TRUE;
+	msg->src = TOS_NODE_ID;
+	msg->seq = ++seqno;
+	call SubAMSend.send(BROADCAST, &packet, sizeof(RssiMsg));
 }
 
 event void LedTimer.fired() {
