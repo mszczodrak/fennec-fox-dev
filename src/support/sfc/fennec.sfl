@@ -67,6 +67,10 @@ use application StateSync $(FENNEC_FOX_LIB)/apps/StateSynchronization (
 		uint16_t send_delay = 1000
 )
 
+use application DataSync $(FENNEC_FOX_LIB)/apps/DataSynchronization (
+		uint16_t send_delay = 1000
+)
+
 use application NetworkRadioSetup $(FENNEC_FOX_LIB)/apps/network_rssi()
 
 # net Modules
