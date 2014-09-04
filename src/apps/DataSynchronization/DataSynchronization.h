@@ -5,7 +5,8 @@
 
 nx_struct fennec_network_data {
 	nx_uint16_t seq;
-	nx_global_data_msg;
-}
+	nx_struct global_data_msg data;
+	nx_uint16_t crc;
+};
 
 #endif

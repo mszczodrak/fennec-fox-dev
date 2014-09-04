@@ -68,28 +68,28 @@ task void schedule_send() {
 }
 
 task void send_msg() {
-	nx_struct fennec_network_data *state_msg;
-	dbg("DataSynchronization", "[%d] DataSynchronizationP send_state_sync_msg()", process);
+	nx_struct fennec_network_data *data_msg;
+	dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg()", process);
 
-	state_msg = (nx_struct fennec_network_data*) 
+	data_msg = (nx_struct fennec_network_data*) 
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
    
-	if (state_msg == NULL) {
+	if (data_msg == NULL) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
 	}
 
-	state_msg->seq = (nx_uint16_t) call FennecState.getStateSeq();
-	state_msg->state_id = (nx_uint16_t) call FennecState.getStateId();
-	state_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
+	data_msg->seq = (nx_uint16_t) call FennecState.getStateSeq();
+	memcpy(data_msg->data, fennec_global_cache, sizeof(nx_struct global_data_msg));
+	data_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*) data_msg, 
 		sizeof(nx_struct fennec_network_data) - 
 		sizeof(((nx_struct fennec_network_data *)0)->crc));
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_data)) != SUCCESS) {
-		dbg("DataSynchronization", "[%d] DataSynchronizationP send_state_sync_msg() - FAIL", process);
+		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - FAIL", process);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
-		dbg("DataSynchronization", "[%d] DataSynchronizationP send_state_sync_msg() - SUCCESS", process);
+		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - SUCCESS", process);
 	}
 }
 
@@ -112,16 +112,16 @@ command error_t SplitControl.stop() {
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	nx_struct fennec_network_data *state_msg = (nx_struct fennec_network_data*) payload;
+	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
-	if (state_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
+	if (data_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) data_msg, 
 		len - sizeof(((nx_struct fennec_network_data *)0)->crc)) ) {
 		return msg;
 	}
 
-	call FennecState.setStateAndSeq(state_msg->state_id, state_msg->seq);
+	//call FennecState.setStateAndSeq(data_msg->data, data_msg->seq);
 	return msg;
 }
 
@@ -134,8 +134,8 @@ event void Timer.fired() {
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	nx_struct fennec_network_data *state_msg = (nx_struct fennec_network_data*) payload;
-	call FennecState.setStateAndSeq(state_msg->state_id, state_msg->seq);
+	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
+	//call FennecState.setStateAndSeq(data_msg->data, data_msg->seq);
 	return msg;
 }
 
