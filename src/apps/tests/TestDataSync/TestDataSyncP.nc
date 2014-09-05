@@ -63,7 +63,7 @@ uses interface SerialDbgs;
 implementation {
 
 uint16_t update_delay;
-uint32_t seqno;
+uint16_t seqno;
 
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));

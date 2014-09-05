@@ -324,7 +324,7 @@ command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, nx_uin
 	globalDataSyncWithNetwork();
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	void printfGlobalData() {
+	printfGlobalData();
 	#endif
 
 	return SUCCESS;
@@ -429,7 +429,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	var_hist[0] = name;
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	void printfGlobalData() {
+	printfGlobalData();
 	#endif
 
 	call FennecData.syncNetwork();
