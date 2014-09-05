@@ -71,9 +71,11 @@ SubPacketRSSI = TestDataSyncP.SubPacketRSSI;
 
 components LedsC;
 components new TimerMilliC();
+components RandomC;
 
 TestDataSyncP.Leds -> LedsC;
 TestDataSyncP.Timer -> TimerMilliC;
+TestDataSyncP.Random -> RandomC;
 
 components SerialDbgsC;
 TestDataSyncP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];

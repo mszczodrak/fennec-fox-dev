@@ -54,6 +54,7 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli>;
+uses interface Random;
 
 uses interface SerialDbgs;
 
@@ -86,6 +87,29 @@ command error_t SplitControl.stop() {
 }
 
 task void updateData() {
+	uint8_t v = call Random.rand16() % 5;	
+	uint16_t d = call Random.rand16();
+	switch(v) {
+	case 1:
+		call Param.set(VAL1, &d, sizeof(d));
+		break;
+
+	case 2:
+		call Param.set(VAL2, &d, sizeof(d));
+		break;
+
+	case 3:
+		call Param.set(VAL3, &d, sizeof(d));
+		break;
+
+	case 4:
+		call Param.set(VAL4, &d, sizeof(d));
+		break;
+
+	default:
+		call Param.set(VAL5, &d, sizeof(d));
+		break;
+	}
 }
 
 event void Timer.fired() {
