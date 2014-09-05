@@ -24,25 +24,25 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
-  * Fennec Fox nullAM MAC module
+  * Fennec Fox TRadio
   *
   * @author: Marcin K Szczodrak
+  * @updated: 09/08/2013
   */
-#ifndef __nullAM_H_
-#define __nullAM_H_
 
-#define nullAM_RECEIVE_HISTORY_SIZE 4
-#define nullAM_INVALID_ELEMENT      0xFF
-#define nullAM_RECEIVE_QUEUE_SIZE   5
 
-typedef nx_struct nullAM_header_t {
-        nxle_uint16_t fcf;
-        nxle_uint8_t dsn;
-        nxle_uint16_t destpan;
-        nxle_uint16_t dest;
-        nxle_uint16_t src;
-} nullAM_header_t;
+#ifndef FF_AM_H
+#define FF_AM_H
 
+#include "Timer.h"
+
+#if !defined(CC2420X) || defined(PLATFORM_Z1) || defined(TOSSIM)
+typedef TMicro TRadio;
+typedef uint16_t tradio_size;
+#else
+#include <RadioConfig.h>
 #endif
 
+#endif

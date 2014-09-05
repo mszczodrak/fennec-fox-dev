@@ -8,5 +8,6 @@
 #include "ff_structs.h"
 #include "fennec_states.h"
 #include "ff_flags.h"
+#include "ff_am.h"
 
 #endif
