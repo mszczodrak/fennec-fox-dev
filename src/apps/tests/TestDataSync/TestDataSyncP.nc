@@ -61,27 +61,13 @@ uses interface SerialDbgs;
 
 implementation {
 
-uint16_t delay;
-uint16_t delay_scale;
-uint16_t src;
-uint16_t dest;
-
-message_t packet;
-uint16_t seqno;
+uint16_t update_delay;
+uint32_t seqno;
 
 command error_t SplitControl.start() {
-	uint32_t send_delay;
+	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 
-	call Param.get(SRC, &src, sizeof(src));
-	call Param.get(DELAY, &delay, sizeof(delay));
-	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
-
-	send_delay = delay * delay_scale;
-	seqno = 0;
-
-	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		call Timer.startPeriodic(send_delay);
-	}
+	call Timer.startPeriodic(update_delay);
 
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
@@ -99,44 +85,19 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-task void sendMessage() {
-	error_t e;
-	TestDataSyncMsg* msg = (TestDataSyncMsg*)call SubAMSend.getPayload(&packet,
-							sizeof(TestDataSyncMsg));
-	if (msg == NULL) {
-		return;
-	}
-
-	msg->source = TOS_NODE_ID;
-	msg->seqno = seqno;
-
-	call Param.get(DEST, &dest, sizeof(dest));
-	e = call SubAMSend.send(dest, &packet, sizeof(TestDataSyncMsg));
-	if (e != SUCCESS) {
-		signal SubAMSend.sendDone(&packet, e);
-	}
+task void updateData() {
 }
 
 event void Timer.fired() {
 	seqno++;
-	post sendMessage();
+	post updateData();
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	call Leds.set(seqno);
-#ifdef __DBGS__APPLICATION__
-	call Param.get(DEST, &dest, sizeof(dest));
-	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
-#endif
 }
 
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	TestDataSyncMsg* cm = (TestDataSyncMsg*)payload;
-	call Leds.set(cm->seqno);
-#ifdef __DBGS__APPLICATION__
-	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
-#endif
 	return msg;
 }
 
