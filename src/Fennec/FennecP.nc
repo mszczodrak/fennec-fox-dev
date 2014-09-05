@@ -63,6 +63,8 @@ norace bool state_transitioning = TRUE;
 
 norace uint16_t current_data_seq = 0;
 
+nx_uint8_t var_hist[VARIABLE_HISTORY];
+
 task void check_event() {
 	uint8_t i;
 	for( i=0; i < rules_counter; i++ ) {
@@ -301,21 +303,24 @@ default event void FennecState.resend() {}
 
 /** Fennec Data interface */
 
-command void* FennecData.getData() {
-	return (void*) &fennec_global_data;
-}
-
-command void* FennecData.getNxData() {
-	return (void*) &fennec_global_data_nx;
-}
-
 command uint16_t FennecData.getDataSeq() {
 	return current_data_seq;
 }
 
-command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, uint16_t seq) {
+command error_t FennecData.getDataHist(nx_uint8_t *history, uint8_t len) {
+	memcpy(history, &var_hist, len);
+	return SUCCESS;
+}
+
+command error_t FennecData.getNxData(nx_struct global_data_msg *ptr) {
+	memcpy(ptr, &fennec_global_data_nx, sizeof(nx_struct global_data_msg));
+	return SUCCESS;
+}
+
+command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq) {
 	current_data_seq = seq;
 	memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
+	memcpy(var_hist, history, VARIABLE_HISTORY);
 	globalDataSyncWithNetwork();
 	return SUCCESS;
 }
@@ -392,7 +397,6 @@ command error_t Param.get[uint8_t layer, process_t process_id](uint8_t name, voi
         return FAIL;
 }
 
-//command error_t Param.set[process_t process_id, uint8_t layer](uint8_t name, void *value, uint8_t size) {
 command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, void *value, uint8_t size) {
 	uint8_t var_number;
 	uint8_t var_offset;
@@ -406,33 +410,24 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].var_id == name) {
 			memcpy(variable_lookup[i].ptr, value, size);
-			call FennecData.syncNetwork();
-			return SUCCESS;
+			err = SUCCESS;
+			break;
 		}
 	}
-
-        return FAIL;
-}
-
-//command void* Param.ptr[process_t process_id, uint8_t layer](uint8_t name) {
-command void* Param.ptr[uint8_t layer, process_t process_id](uint8_t name) {
-	uint8_t var_number;
-	uint8_t var_offset;
-	uint8_t i;
-	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
 
 	if (err != SUCCESS) {
-		return NULL;
+		return err;
 	}
 
-	for (i = var_offset; i < (var_offset+var_number); i++) {
-		if (variable_lookup[i].var_id == name) {
-			return variable_lookup[i].ptr;
-		}
+	for(i = 1; i < VARIABLE_HISTORY; i++) {
+		var_hist[i] = var_hist[i-1];
 	}
+	var_hist[0] = name;
 
-        return NULL;
+	call FennecData.syncNetwork();
+	return SUCCESS;
 }
+
 
 }
 

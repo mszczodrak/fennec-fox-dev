@@ -91,7 +91,6 @@ task void updateData() {
 	uint16_t d = call Random.rand16();
 	seqno++;
 
-
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Node [%d] seq %d - set var %d to %d\n", TOS_NODE_ID, seqno, v, d);
 #endif

@@ -46,6 +46,7 @@ enum {
 	SEQ_OFFSET		= 1,
 	SEQ_OVERLAP		= 10,
 	SEQ_MAX			= 0xFFDC,
+	VARIABLE_HISTORY	= 5,
 
         UNKNOWN                 = 0xFF,
 	NODE			= 0xFFFA,

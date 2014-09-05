@@ -79,9 +79,10 @@ task void send_msg() {
 		return;
 	}
 
-	data_msg->seq = (nx_uint16_t) call FennecData.getDataSeq();
-	memcpy((void*)&(data_msg->data), call FennecData.getNxData(),
-					sizeof(nx_struct global_data_msg));
+	data_msg->sequence = (nx_uint16_t) call FennecData.getDataSeq();
+	call FennecData.getDataHist(data_msg->history, VARIABLE_HISTORY);
+	call FennecData.getNxData(&(data_msg->data));
+
 	data_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*) data_msg, 
 		sizeof(nx_struct fennec_network_data) - 
 		sizeof(((nx_struct fennec_network_data *)0)->crc));
@@ -122,7 +123,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		return msg;
 	}
 
-	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->seq);
+	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
 
@@ -135,7 +136,7 @@ event void Timer.fired() {
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
-	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->seq);
+	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
 
