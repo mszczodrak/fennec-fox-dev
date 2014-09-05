@@ -119,6 +119,7 @@ task void updateData() {
 }
 
 event void Timer.fired() {
+	printf("fired\n");
 	post updateData();
 }
 

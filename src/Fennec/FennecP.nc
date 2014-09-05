@@ -341,6 +341,7 @@ command void FennecData.syncNetwork() {
 async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 	struct network_process **npr;
 	process_t process_id = UNKNOWN;
+
 	for (npr = states[current_state].processes; (*npr) != NULL; npr++) {
 		if ((*npr)->am_module == am_module_id) {
 			if (!(*npr)->am_level) {
@@ -349,12 +350,21 @@ async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 			process_id = (*npr)->process_id;
 		}
 	}
+
+	for (npr = daemon_processes; (*npr) != NULL; npr++) {
+		if ((*npr)->am_module == am_module_id) {
+			if (!(*npr)->am_level) {
+				return (*npr)->process_id;
+			}
+			process_id = (*npr)->process_id;
+		}
+	}
+
 	return process_id;
 }
 
 
 error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8_t *off) {
-	struct network_process* np;
 
 	if (layer == F_APPLICATION) {
 		*num = processes[process_id].application_variables_number;
@@ -368,15 +378,18 @@ error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8
 		return SUCCESS;
 	}
 
+	/* find for which process radio is dominant */
+	printf("checking for radio layer module %d\n", process_id);
 	if (layer == F_AM) {
-		for (np = *states[active_state].processes; np != NULL; np++) {
-			if (np->am == process_id) {
-				*num = np->am_variables_number;
-				*off = np->am_variables_offset;
-				return SUCCESS;
-			}
-		}
+		process_id = call Fennec.getProcessIdFromAM(process_id);
+		printf("new process id is %d\n", process_id);
+		*num = processes[process_id].am_variables_number;
+		*off = processes[process_id].am_variables_offset;
+		return SUCCESS;
 	}
+
+	*num = UNKNOWN;
+	*off = UNKNOWN;
 
 	return F_ENOLAYER;
 }
@@ -386,6 +399,9 @@ command error_t Param.get[uint8_t layer, process_t process_id](uint8_t name, voi
 	uint8_t var_offset;
 	uint8_t i;
 	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
+
+	printf("param get l:%d p:%d  n:%d   vnum:%d    voff:%d\n", layer, process_id, name, var_number, var_offset);
+	printfflush();
 
 	if (err != SUCCESS) {
 		return err;
