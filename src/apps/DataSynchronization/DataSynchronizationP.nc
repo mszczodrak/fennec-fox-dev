@@ -26,7 +26,7 @@
  */
 
 /**
-  * Fennec Fox State Synchronizarion Module
+  * Fennec Fox Data Synchronizarion Module
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/03/2014
@@ -51,7 +51,7 @@ uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
-uses interface FennecState;
+uses interface FennecData;
 uses interface Random;
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
@@ -79,8 +79,9 @@ task void send_msg() {
 		return;
 	}
 
-	data_msg->seq = (nx_uint16_t) call FennecState.getStateSeq();
-	memcpy(data_msg->data, fennec_global_cache, sizeof(nx_struct global_data_msg));
+	data_msg->seq = (nx_uint16_t) call FennecData.getDataSeq();
+	memcpy((void*)&(data_msg->data), call FennecData.getNxData(),
+					sizeof(nx_struct global_data_msg));
 	data_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*) data_msg, 
 		sizeof(nx_struct fennec_network_data) - 
 		sizeof(((nx_struct fennec_network_data *)0)->crc));
@@ -93,7 +94,7 @@ task void send_msg() {
 	}
 }
 
-event void FennecState.resend() {
+event void FennecData.resend() {
 	post send_msg();
 }
 
@@ -121,12 +122,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		return msg;
 	}
 
-	//call FennecState.setStateAndSeq(data_msg->data, data_msg->seq);
+	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->seq);
 	return msg;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	call FennecState.resendDone(error);
 }
 
 event void Timer.fired() {
@@ -135,7 +135,7 @@ event void Timer.fired() {
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
-	//call FennecState.setStateAndSeq(data_msg->data, data_msg->seq);
+	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->seq);
 	return msg;
 }
 

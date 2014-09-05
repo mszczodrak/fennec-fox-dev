@@ -26,7 +26,7 @@
  */
 
 /**
-  * Fennec Fox State Synchronizarion Module
+  * Fennec Fox Data Synchronizarion Module
   *
   * @author: Marcin K Szczodrak
   * @updated: 01/03/2014
@@ -70,7 +70,7 @@ SubPacketTransmitPower = DataSynchronizationP.SubPacketTransmitPower;
 SubPacketRSSI = DataSynchronizationP.SubPacketRSSI;
 
 components FennecC;
-DataSynchronizationP.FennecState -> FennecC;
+DataSynchronizationP.FennecData -> FennecC;
 
 components RandomC;
 DataSynchronizationP.Random -> RandomC;
