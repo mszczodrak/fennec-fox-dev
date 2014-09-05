@@ -89,6 +89,13 @@ command error_t SplitControl.stop() {
 task void updateData() {
 	uint8_t v = call Random.rand16() % 5;	
 	uint16_t d = call Random.rand16();
+	seqno++;
+
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("Node [%d] seq %d - set var %d to %d\n", TOS_NODE_ID, seqno, v, d);
+#endif
+
 	switch(v) {
 	case 1:
 		call Param.set(VAL1, &d, sizeof(d));
@@ -113,7 +120,6 @@ task void updateData() {
 }
 
 event void Timer.fired() {
-	seqno++;
 	post updateData();
 }
 
