@@ -330,9 +330,33 @@ command error_t FennecData.getNxData(nx_struct global_data_msg *ptr) {
 }
 
 command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq) {
+	uint16_t diff;
+
+	/* someone is behind */
+	if (seq < current_data_seq) {
+		signal FennecData.resend();
+		return SUCCESS;
+	}
+
+	/* same message */
+	if ((seq == current_data_seq) && 
+		(memcmp(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg)) == 0)) {
+		return SUCCESS;
+	}
+
+	/* we lost track of the data, sync all */
+	if (seq + VARIABLE_HISTORY >= current_data_seq) {
+		current_data_seq = seq;
+		memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
+		memcpy(var_hist, history, VARIABLE_HISTORY);
+		goto sync;
+	}
+
 	current_data_seq = seq;
 	memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
 	memcpy(var_hist, history, VARIABLE_HISTORY);
+
+sync:
 	globalDataSyncWithNetwork();
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
