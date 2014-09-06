@@ -68,7 +68,8 @@ uint16_t seqno;
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 
-	call Timer.startPeriodic(update_delay);
+	printf("update delay is %u\n", update_delay);
+	call Timer.startOneShot(update_delay);
 
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
@@ -91,9 +92,9 @@ task void updateData() {
 	uint16_t d = call Random.rand16();
 	seqno++;
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Node [%d] seq %d - set var %d to %d\n", TOS_NODE_ID, seqno, v, d);
-#endif
+	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("Node [%d] seq %u - set var %u to %u\n", TOS_NODE_ID, seqno, v, d);
+	#endif
 
 	switch(v) {
 	case 1:
@@ -119,8 +120,10 @@ task void updateData() {
 }
 
 event void Timer.fired() {
+	uint16_t rand_delay = call Random.rand16() % update_delay;
 	printf("fired\n");
 	post updateData();
+	call Timer.startOneShot(update_delay / 2 + rand_delay);
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {

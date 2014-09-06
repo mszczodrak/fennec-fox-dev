@@ -303,6 +303,18 @@ default event void FennecState.resend() {}
 
 /** Fennec Data interface */
 
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+void printfDataHistory() {
+	uint8_t i;
+	printf("Var hist: ");
+	for(i = 0; i < VARIABLE_HISTORY; i++) {
+		printf(" %u ", var_hist[i]);
+	}
+	printf("\n");
+}
+#endif
+
+
 command uint16_t FennecData.getDataSeq() {
 	return current_data_seq;
 }
@@ -324,7 +336,9 @@ command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, nx_uin
 	globalDataSyncWithNetwork();
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("FennecData.setDataAndSeq - UPDATE FROM NETWORK\n");
 	printfGlobalData();
+	printfDataHistory();
 	#endif
 
 	return SUCCESS;
@@ -379,10 +393,10 @@ error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8
 	}
 
 	/* find for which process radio is dominant */
-	printf("checking for radio layer module %d\n", process_id);
+	//printf("checking for radio layer module %d\n", process_id);
 	if (layer == F_AM) {
 		process_id = call Fennec.getProcessIdFromAM(process_id);
-		printf("new process id is %d\n", process_id);
+		//printf("new process id is %d\n", process_id);
 		*num = processes[process_id].am_variables_number;
 		*off = processes[process_id].am_variables_offset;
 		return SUCCESS;
@@ -400,8 +414,8 @@ command error_t Param.get[uint8_t layer, process_t process_id](uint8_t name, voi
 	uint8_t i;
 	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
 
-	printf("param get l:%d p:%d  n:%d   vnum:%d    voff:%d\n", layer, process_id, name, var_number, var_offset);
-	printfflush();
+	//printf("param get l:%d p:%d  n:%d   vnum:%d    voff:%d\n", layer, process_id, name, var_number, var_offset);
+	//printfflush();
 
 	if (err != SUCCESS) {
 		return err;
@@ -423,9 +437,13 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	uint8_t i;
 	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
 
+	printf("Param.set[%u %u](%u ptr %u)\n", layer, process_id, name, size);
+
 	if (err != SUCCESS) {
 		return err;
 	}
+
+	err = FAIL;
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].var_id == name) {
@@ -439,16 +457,19 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 		return err;
 	}
 
-	for(i = 1; i < VARIABLE_HISTORY; i++) {
-		var_hist[i] = var_hist[i-1];
+	for(i = VARIABLE_HISTORY; i > 1; i--) {
+		var_hist[i-1] = var_hist[i-2];
 	}
 	var_hist[0] = name;
 
+	call FennecData.syncNetwork();
+
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("Application sets variable %u\n", name);
 	printfGlobalData();
+	printfDataHistory();
 	#endif
 
-	call FennecData.syncNetwork();
 	return SUCCESS;
 }
 
