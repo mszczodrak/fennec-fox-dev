@@ -329,20 +329,8 @@ command error_t FennecData.getNxData(nx_struct global_data_msg *ptr) {
 	return SUCCESS;
 }
 
-command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq) {
+command error_t FennecData.setDataHistSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq) {
 	uint16_t diff;
-
-	/* someone is behind */
-	if (seq < current_data_seq) {
-		signal FennecData.resend();
-		return SUCCESS;
-	}
-
-	/* same message */
-	if ((seq == current_data_seq) && 
-		(memcmp(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg)) == 0)) {
-		return SUCCESS;
-	}
 
 	/* we lost track of the data, sync all */
 	if (seq + VARIABLE_HISTORY >= current_data_seq) {
@@ -352,9 +340,27 @@ command error_t FennecData.setDataAndSeq(nx_struct global_data_msg* data, nx_uin
 		goto sync;
 	}
 
+	/* same message */
+	if ((seq == current_data_seq) && 
+		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
+		//(memcmp(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg)) == 0)) {
+		//counter++;
+		return SUCCESS;
+	}
+
+
+
+	/* someone is behind */
+	if (seq < current_data_seq) {
+		signal FennecData.resend();
+		return SUCCESS;
+	}
+
+
 	current_data_seq = seq;
 	memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
 	memcpy(var_hist, history, VARIABLE_HISTORY);
+
 
 sync:
 	globalDataSyncWithNetwork();

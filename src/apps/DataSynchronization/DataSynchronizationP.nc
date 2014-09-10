@@ -123,7 +123,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		return msg;
 	}
 
-	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
+	call FennecData.setDataHistSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
 
