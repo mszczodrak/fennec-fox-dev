@@ -62,6 +62,12 @@ struct variable_reference {
 	void*	ptr;
 }; 
 
+struct variable_info {
+	uint8_t var_id;
+	uint8_t offset;
+	uint8_t size;
+};
+
 struct network_process {
 	process_t process_id;
 	uint8_t application;
