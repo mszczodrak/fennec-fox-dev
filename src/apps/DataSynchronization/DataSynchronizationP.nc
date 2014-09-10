@@ -61,6 +61,9 @@ implementation {
 
 uint16_t send_delay;
 message_t packet;
+uint8_t packet_len;
+uint8_t dump_offset = UNKNOWN;
+uint16_t global_data_len = 0;
 
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
@@ -69,6 +72,7 @@ task void schedule_send() {
 
 task void send_msg() {
 	nx_struct fennec_network_data *data_msg;
+	uint8_t data_len;
 	dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg()", process);
 
 	data_msg = (nx_struct fennec_network_data*) 
@@ -80,12 +84,24 @@ task void send_msg() {
 	}
 
 	data_msg->sequence = (nx_uint16_t) call FennecData.getDataSeq();
-	call FennecData.getDataHist(data_msg->history, VARIABLE_HISTORY);
-	call FennecData.getNxData(&(data_msg->data));
+	data_msg->dump_offset = dump_offset;
 
-	data_msg->crc = (nx_uint16_t) crc16(0, (uint8_t*) data_msg, 
-		sizeof(nx_struct fennec_network_data) - 
-		sizeof(((nx_struct fennec_network_data *)0)->crc));
+	if (dump_offset == UNKNOWN) {
+		/* regular resend */
+		call FennecData.getDataHist(data_msg->history, VARIABLE_HISTORY);
+		data_msg->data_len = call FennecData.getNxData(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
+	} else {
+		uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
+		global_data_len = call FennecData.getNxDataLen();
+		if (global_data_len > (dump_offset + DATA_DUMP_MAX_PAYLOAD)) {
+			packet_len = DATA_DUMP_MAX_PAYLOAD;
+		} else {
+			packet_len = global_data_len - dump_offset;
+		}
+		
+		memcpy(data_msg->data, all_data + dump_offset, packet_len);
+		data_msg->data_len = data_len;
+	}
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_data)) != SUCCESS) {
 		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - FAIL", process);
@@ -96,6 +112,11 @@ task void send_msg() {
 }
 
 event void FennecData.resend() {
+	post send_msg();
+}
+
+event void FennecData.dump() {
+	dump_offset = 0;
 	post send_msg();
 }
 
@@ -118,17 +139,25 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
-	if (data_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) data_msg, 
-		len - sizeof(((nx_struct fennec_network_data *)0)->crc)) ) {
-		return msg;
-	}
-
-	call FennecData.setDataHistSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
+	//call FennecData.setDataHistSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*)
+	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
+	if (data_msg->dump_offset != UNKNOWN) {
+		global_data_len = call FennecData.getNxDataLen();
+		dump_offset += DATA_DUMP_MAX_PAYLOAD;
+		if (dump_offset >= global_data_len) {
+			dump_offset = UNKNOWN;
+		} else {
+			post send_msg();
+		}
+	}
 }
+
+
 
 event void Timer.fired() {
 	post send_msg();

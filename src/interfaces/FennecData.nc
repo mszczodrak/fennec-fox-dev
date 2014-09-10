@@ -6,5 +6,9 @@ interface FennecData {
 	command error_t getNxData(nx_struct global_data_msg *ptr);
 	command error_t setDataHistSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq);
 	command void syncNetwork();
+
+	command uint16_t getNxDataPtr(void* p);
 	event void resend();
+	event void dump();
+	
 }
