@@ -348,13 +348,48 @@ struct variable_info * getVariableInfo(uint8_t var_id) {
 	return NULL;
 }
 
+/* returns the position in the received history from where
+ * the history matches with the local status
+ */
+uint8_t longestMatchStart(nx_uint8_t* history) {
+	uint8_t l;
+	uint8_t r;
+	uint8_t longest = 0;
+	uint8_t longest_start = VARIABLE_HISTORY;
+
+	for (r = 0; r < VARIABLE_HISTORY; r++) {
+		uint8_t v = r;
+		uint8_t len = 0;
+		for(l = 0; l < VARIABLE_HISTORY; l++) {
+			if (history[v] == var_hist[l]) {
+				len++;
+				v++;
+			} else {
+				len = 0;
+			}
+		}
+		if (len > longest) {
+			longest = len;
+			longest_start = r;
+		}
+	}
+	return longest_start;
+}
+
 command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint16_t seq) {
 	uint16_t diff;
 	uint8_t i;
+	uint8_t index;
 
 	/* we lost track of the data, sync all */
-	if (seq + VARIABLE_HISTORY >= current_data_seq) {
+	if (seq + VARIABLE_HISTORY > current_data_seq) {
 		/* this should not happen, the data sync app takes care of it */
+		return;
+	}
+
+	/* someone lost track of the data, dump it */
+	if (current_data_seq + VARIABLE_HISTORY > seq) {
+		signal FennecData.dump();
 		return;
 	}
 
@@ -402,7 +437,7 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	}
 
 	/* resolve update difference */
-
+	index = longestMatchStart(history);
 
 
 
