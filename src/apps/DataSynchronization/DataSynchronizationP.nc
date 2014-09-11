@@ -88,9 +88,10 @@ task void send_msg() {
 
 	if (dump_offset == UNKNOWN) {
 		/* regular resend */
-		call FennecData.getDataHist(data_msg->history, VARIABLE_HISTORY);
-		data_msg->data_len = call FennecData.getNxData(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
+		call FennecData.fillDataHist(data_msg->history, VARIABLE_HISTORY);
+		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
 	} else {
+		/* dump all the data */
 		uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
 		global_data_len = call FennecData.getNxDataLen();
 		if (global_data_len > (dump_offset + DATA_DUMP_MAX_PAYLOAD)) {
@@ -165,7 +166,7 @@ event void Timer.fired() {
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
-	call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
+	//call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
 

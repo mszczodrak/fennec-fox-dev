@@ -319,14 +319,22 @@ command uint16_t FennecData.getDataSeq() {
 	return current_data_seq;
 }
 
-command error_t FennecData.getDataHist(nx_uint8_t *history, uint8_t len) {
+command uint16_t FennecData.getNxDataLen() {
+	return sizeof(nx_struct global_data_msg);
+}
+
+command void* FennecData.getNxDataPtr() {
+	return &fennec_global_data_nx;
+}
+
+command error_t FennecData.fillDataHist(void *history, uint8_t len) {
 	memcpy(history, &var_hist, len);
 	return SUCCESS;
 }
 
-command error_t FennecData.getNxData(nx_struct global_data_msg *ptr) {
-	memcpy(ptr, &fennec_global_data_nx, sizeof(nx_struct global_data_msg));
-	return SUCCESS;
+command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
+	//memcpy(ptr, &fennec_global_data_nx, sizeof(nx_struct global_data_msg));
+	return 0;
 }
 
 command error_t FennecData.setDataHistSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq) {
