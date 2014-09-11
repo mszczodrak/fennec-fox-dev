@@ -61,7 +61,6 @@ implementation {
 
 uint16_t send_delay;
 message_t packet;
-uint8_t packet_len;
 uint8_t dump_offset = UNKNOWN;
 uint16_t global_data_len = 0;
 
@@ -72,7 +71,6 @@ task void schedule_send() {
 
 task void send_msg() {
 	nx_struct fennec_network_data *data_msg;
-	uint8_t data_len;
 	dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg()", process);
 
 	data_msg = (nx_struct fennec_network_data*) 
@@ -98,13 +96,12 @@ task void send_msg() {
 		uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
 		global_data_len = call FennecData.getNxDataLen();
 		if (global_data_len > (dump_offset + DATA_DUMP_MAX_PAYLOAD)) {
-			packet_len = DATA_DUMP_MAX_PAYLOAD;
+			data_msg->data_len = DATA_DUMP_MAX_PAYLOAD;
 		} else {
-			packet_len = global_data_len - dump_offset;
+			data_msg->data_len = global_data_len - dump_offset;
 		}
 		
-		memcpy(data_msg->data, all_data + dump_offset, packet_len);
-		data_msg->data_len = data_len;
+		memcpy(data_msg->data, all_data + dump_offset, data_msg->data_len);
 	}
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_data)) != SUCCESS) {
@@ -143,7 +140,38 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
-	//call FennecData.setDataHistSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
+	if (call FennecData.getDataSeq() + VARIABLE_HISTORY < data_msg->sequence) {
+		/* this node is behind the rest of the network */		
+		uint8_t *all_data;
+
+		if (data_msg->dump_offset == UNKNOWN) {
+			/* let others know that we are behind */
+			signal FennecData.resend();
+			return msg;
+		}
+
+		/* synchronize with the cache dump */
+		all_data = (uint8_t*) call FennecData.getNxDataPtr();
+		memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
+
+		/* check if it is the end of the cache dump */
+		global_data_len = call FennecData.getNxDataLen();
+		if (data_msg->dump_offset + data_msg->data_len == global_data_len) {
+			/* let fennec know about the complete update */
+			call FennecData.updateData(NULL, 0, NULL, data_msg->sequence);
+		}
+
+		return msg;
+	}
+
+	/* ignore cache updates */
+	if (data_msg->dump_offset != UNKNOWN) {
+		return msg;	
+	}
+
+	/* this is a regular message update, so report to Fennec */
+	call FennecData.updateData(data_msg->data, data_msg->data_len, 
+				data_msg->history, data_msg->sequence);
 	return msg;
 }
 

@@ -138,6 +138,7 @@ event void Boot.booted() {
 	next_state = current_state;
 	next_seq = current_seq;
 	state_transitioning = TRUE;
+	memset(var_hist, UNKNOWN, VARIABLE_HISTORY);
 	post start_state();
 }
 
@@ -337,14 +338,31 @@ command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
 	return 0;
 }
 
-command error_t FennecData.setDataHistSeq(nx_struct global_data_msg* data, nx_uint8_t* history, uint16_t seq) {
+struct variable_info * getVariableInfo(uint8_t var_id) {
+	uint8_t i;
+	for (i = 0; i < VARIABLE_HISTORY; i++) {
+		if (global_data_info[i].var_id == var_id) {
+			return &(global_data_info[i]);
+		}
+	}
+	return NULL;
+}
+
+command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint16_t seq) {
 	uint16_t diff;
+	uint8_t i;
 
 	/* we lost track of the data, sync all */
 	if (seq + VARIABLE_HISTORY >= current_data_seq) {
+		/* this should not happen, the data sync app takes care of it */
+		return;
+	}
+
+	/* after cache dump update */
+	if (data_len == 0) {
+		/* This is cache update */
 		current_data_seq = seq;
-		memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
-		memcpy(var_hist, history, VARIABLE_HISTORY);
+		memset(var_hist, UNKNOWN, VARIABLE_HISTORY);
 		goto sync;
 	}
 
@@ -353,16 +371,40 @@ command error_t FennecData.setDataHistSeq(nx_struct global_data_msg* data, nx_ui
 		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
 		//(memcmp(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg)) == 0)) {
 		//counter++;
-		return SUCCESS;
+		return;
 	}
 
-
-
-	/* someone is behind */
-	if (seq < current_data_seq) {
-		signal FennecData.resend();
-		return SUCCESS;
+	/* if we have any UNKNOWN part of the history, accept the update */
+	for (i = 0; i < VARIABLE_HISTORY; i++) {
+		if (var_hist[i] == UNKNOWN) {
+			/* sync message update */
+			break;	
+		}
+		goto sync;
 	}
+
+	/* if i < VARIABLE_HISTORY, then we have UNKNOWN in our history */
+	if (i < VARIABLE_HISTORY) {
+		uint8_t *g = (uint8_t*) &fennec_global_data_nx;
+		uint8_t updated_size = 0;
+		uint8_t *update_data = data;
+		
+		for(; i < VARIABLE_HISTORY && updated_size < data_len; i++) {
+			uint8_t v = history[i];
+			struct variable_info *v_info = getVariableInfo(v);
+			uint8_t *dest = g + v_info->offset;
+			uint8_t s = v_info->size;
+			memcpy( dest, update_data, s );
+			update_data += s;
+			updated_size += s;
+		}
+		goto sync;
+	}
+
+	/* resolve update difference */
+
+
+
 
 
 	current_data_seq = seq;
@@ -378,14 +420,6 @@ sync:
 	printfGlobalData();
 	printfDataHistory();
 	#endif
-
-	return SUCCESS;
-}
-
-command void FennecData.syncNetwork() {
-	globalDataSyncWithLocal();
-	current_data_seq++;
-	signal FennecData.resend();
 }
 
 /** Fennec interface */
@@ -500,7 +534,9 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	}
 	var_hist[0] = name;
 
-	call FennecData.syncNetwork();
+	globalDataSyncWithLocal();
+	current_data_seq++;
+	signal FennecData.resend();
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Application sets variable %u\n", name);

@@ -3,7 +3,7 @@
 
 #include <Fennec.h>
 
-#define DATA_SYNC_MAX_PAYLOAD	80
+#define DATA_SYNC_MAX_PAYLOAD	70
 #define DATA_DUMP_MAX_PAYLOAD + VARIABLE_HISTORY
 
 nx_struct fennec_network_data {
