@@ -88,10 +88,13 @@ task void send_msg() {
 
 	if (dump_offset == UNKNOWN) {
 		/* regular resend */
-		call FennecData.fillDataHist(data_msg->history, VARIABLE_HISTORY);
 		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
+		call FennecData.fillDataHist(data_msg->history, VARIABLE_HISTORY);
 	} else {
-		/* dump all the data */
+		/* dump all the data
+		 * the whole cache is broken down into chunks of size
+		 * no more than DATA_DUMP_MAX_PAYLOAD
+		 */
 		uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
 		global_data_len = call FennecData.getNxDataLen();
 		if (global_data_len > (dump_offset + DATA_DUMP_MAX_PAYLOAD)) {
@@ -147,12 +150,14 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*)
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
+	/* check if the sent message was part of the dump process */
 	if (data_msg->dump_offset != UNKNOWN) {
 		global_data_len = call FennecData.getNxDataLen();
 		dump_offset += DATA_DUMP_MAX_PAYLOAD;
 		if (dump_offset >= global_data_len) {
 			dump_offset = UNKNOWN;
 		} else {
+			/* continue to dumping cache */
 			post send_msg();
 		}
 	}
@@ -165,7 +170,7 @@ event void Timer.fired() {
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
+	//nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
 	//call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
