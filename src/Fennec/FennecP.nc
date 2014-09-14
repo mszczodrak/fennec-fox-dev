@@ -351,35 +351,56 @@ struct variable_info * getVariableInfo(uint8_t var_id) {
 /* returns the position in the received history from where
  * the history matches with the local status
  */
-uint8_t longestMatchStart(nx_uint8_t* history) {
-	uint8_t l;
-	uint8_t r;
-	uint8_t longest = 0;
-	uint8_t longest_start = VARIABLE_HISTORY;
+uint8_t longestMatchStart(nx_uint8_t* hist1, nx_uint8_t *hist2, uint8_t* pus_index1, uint8_t* pus_index2) {
+	uint8_t index_2;
+	uint8_t index_1;
+	uint8_t the_longest = 0;
+	*pus_index1 = VARIABLE_HISTORY;
+	*pus_index2 = VARIABLE_HISTORY;
 
-	for (r = 0; r < VARIABLE_HISTORY; r++) {
-		uint8_t v = r;
-		uint8_t len = 0;
-		for(l = 0; l < VARIABLE_HISTORY; l++) {
-			if (history[v] == var_hist[l]) {
-				len++;
-				v++;
+	for ( index_1 = 0; index_1 < VARIABLE_HISTORY; index_1++ ) {
+		uint8_t v1 = index_1;
+		uint8_t temp_longest = 0;
+		for(index_2 = 0; index_2 < VARIABLE_HISTORY && v1 < VARIABLE_HISTORY; index_2++ ) {
+			if (hist1[v1] == hist2[index_2]) {
+				temp_longest++;
+				v1++;
 			} else {
-				len = 0;
+				temp_longest = 0;
 			}
 		}
-		if (len > longest) {
-			longest = len;
-			longest_start = r;
+		if (temp_longest > the_longest) {
+			the_longest = temp_longest;
+			*pus_index1 = index_1;
+			*pus_index2 = index_2 - the_longest; 
 		}
 	}
-	return longest_start;
+	return the_longest;
+}
+
+/* syncs data with local cache, returns how many were actually sinked */
+uint8_t sync_all_data(void* data, uint8_t data_len, nx_uint8_t* history, nx_uint8_t from, nx_uint8_t to) {
+	uint8_t *g = (uint8_t*) &fennec_global_data_nx;
+	uint8_t updated_size = 0;
+	uint8_t *update_data = data;
+
+	for(; from < to && updated_size < data_len; from++) {
+		uint8_t v = history[from];
+		struct variable_info *v_info = getVariableInfo(v);
+		uint8_t *dest = g + v_info->offset;
+		uint8_t s = v_info->size;
+		memcpy( dest, update_data, s );
+		update_data += s;
+		updated_size += s;
+	}
+	return to - from;
 }
 
 command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint16_t seq) {
-	uint16_t diff;
 	uint8_t i;
-	uint8_t index;
+	uint8_t msg_hist_index;
+	uint8_t var_hist_index;
+	uint8_t hist_match_len;
 
 	/* we lost track of the data, sync all */
 	if (seq + VARIABLE_HISTORY > current_data_seq) {
@@ -404,7 +425,6 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	/* same message */
 	if ((seq == current_data_seq) && 
 		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
-		//(memcmp(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg)) == 0)) {
 		//counter++;
 		return;
 	}
@@ -420,31 +440,67 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	/* if i < VARIABLE_HISTORY, then we have UNKNOWN in our history */
 	if (i < VARIABLE_HISTORY) {
-		uint8_t *g = (uint8_t*) &fennec_global_data_nx;
-		uint8_t updated_size = 0;
-		uint8_t *update_data = data;
-		
-		for(; i < VARIABLE_HISTORY && updated_size < data_len; i++) {
-			uint8_t v = history[i];
-			struct variable_info *v_info = getVariableInfo(v);
-			uint8_t *dest = g + v_info->offset;
-			uint8_t s = v_info->size;
-			memcpy( dest, update_data, s );
-			update_data += s;
-			updated_size += s;
-		}
+		sync_all_data(data, data_len, history, i, VARIABLE_HISTORY);
+		memcpy(var_hist, history, VARIABLE_HISTORY);
 		goto sync;
 	}
 
 	/* resolve update difference */
-	index = longestMatchStart(history);
+	hist_match_len = longestMatchStart(history, var_hist, &msg_hist_index, &var_hist_index);
+
+	if ( hist_match_len < VARIABLE_HISTORY / 2 ) {
+		/* not much history to compare, sync all, use seq to decide */
+		if (seq < current_data_seq) {
+			/* received message is behind */
+			signal FennecData.resend();
+			return;
+		}
+
+		sync_all_data(data, data_len, history, 0, VARIABLE_HISTORY);
+		memcpy(var_hist, history, VARIABLE_HISTORY);
+		goto sync;
+	}
+
+	if ( msg_hist_index == var_hist_index ) {
+		/* history match, sync sequence */
+		if (seq > current_data_seq) {
+			current_data_seq = seq;
+		}
+		goto sync;
+	}
+
+	if ( msg_hist_index == 0 && var_hist_index > 0 ) {
+		/* received message is behind */
+		signal FennecData.resend();
+		return;
+	}
+
+	if ( msg_hist_index > 0 ) {
+		/* we are behind */
+		uint8_t updated = sync_all_data(data, data_len, history, 0, msg_hist_index);
+		if (updated != msg_hist_index) {
+			/* we are missing too many data updated */
+			/* someone needs to give us a dump update */
+
+			/* SYNC FAILED */
+			return;
+		}
+	}
+
+	/* sync history */
+	/* make space for msg history, while keeping the local diff in front */
+
+	for ( i = VARIABLE_HISTORY; i - msg_hist_index > var_hist_index; i-- ) {
+		var_hist[i-1] = var_hist[i-msg_hist_index-1];
+	}
+
+	/* copy the message diff history */
+	for ( i = 0; i < msg_hist_index; i++) {
+		var_hist[var_hist_index + i] = history[i];
+	} 
 
 
-
-
-	current_data_seq = seq;
-	memcpy(&fennec_global_data_nx, data, sizeof(nx_struct global_data_msg));
-	memcpy(var_hist, history, VARIABLE_HISTORY);
+///	memcpy(var_hist, history, VARIABLE_HISTORY);
 
 
 sync:
@@ -564,7 +620,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 		return err;
 	}
 
-	for(i = VARIABLE_HISTORY; i > 1; i--) {
+	for ( i = VARIABLE_HISTORY; i > 1; i-- ) {
 		var_hist[i-1] = var_hist[i-2];
 	}
 	var_hist[0] = name;
