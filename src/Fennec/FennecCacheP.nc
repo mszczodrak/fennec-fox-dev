@@ -37,6 +37,8 @@
 module FennecCacheP @safe() {
 provides interface FennecData;
 provides interface Param[process_t process, uint8_t layer];
+
+uses interface Boot;
 uses interface Random;
 uses interface Fennec;
 }
@@ -46,6 +48,13 @@ implementation {
 norace uint16_t current_data_seq = 0;
 nx_uint8_t var_hist[VARIABLE_HISTORY];
 
+event void Boot.booted() {
+	uint8_t i = 0;
+	for ( i = 0; i < VARIABLE_HISTORY; i++) {
+		var_hist[i] = UNKNOWN;
+	}
+	current_data_seq = 0;
+}
 
 /** Fennec Data interface */
 

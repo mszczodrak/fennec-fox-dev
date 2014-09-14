@@ -59,10 +59,6 @@ norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
 
-norace uint16_t current_data_seq = 0;
-
-nx_uint8_t var_hist[VARIABLE_HISTORY];
-
 task void check_event() {
 	uint8_t i;
 	for( i=0; i < rules_counter; i++ ) {
@@ -136,7 +132,6 @@ event void Boot.booted() {
 	next_state = current_state;
 	next_seq = current_seq;
 	state_transitioning = TRUE;
-	memset(var_hist, UNKNOWN, VARIABLE_HISTORY);
 	post start_state();
 }
 

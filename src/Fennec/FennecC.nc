@@ -63,6 +63,7 @@ FennecP.Random -> RandomC;
 
 FennecData = FennecCacheP;
 Param = FennecCacheP;
+FennecCacheP.Boot -> MainC;
 FennecCacheP.Random -> RandomC;
 FennecCacheP.Fennec -> FennecP;
 
