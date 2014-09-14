@@ -50,17 +50,21 @@ components FennecP;
 components LedsC;
 components NetworkStateC;
 components RandomC;
+components FennecCacheP;
 
 Fennec = FennecP;
 FennecState = FennecP;
-FennecData = FennecP;
 Event = FennecP;
-Param = FennecP;
 
 FennecP.Boot -> MainC;
 FennecP.Leds -> LedsC;
 FennecP.SplitControl -> NetworkStateC;
 FennecP.Random -> RandomC;
+
+FennecData = FennecCacheP;
+Param = FennecCacheP;
+FennecCacheP.Random -> RandomC;
+FennecCacheP.Fennec -> FennecP;
 
 #ifdef FENNEC_TOS_PRINTF
 components PrintfC;
