@@ -82,9 +82,8 @@ command void* FennecData.getNxDataPtr() {
 	return &fennec_global_data_nx;
 }
 
-command error_t FennecData.fillDataHist(void *history, uint8_t len) {
-	memcpy(history, &var_hist, len);
-	return SUCCESS;
+command void* FennecData.getHistory() {
+	return var_hist;
 }
 
 command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
@@ -179,7 +178,6 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	/* same message */
 	if ((seq == current_data_seq) && 
 		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
-		//counter++;
 		return;
 	}
 

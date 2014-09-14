@@ -87,7 +87,7 @@ task void send_msg() {
 	if (dump_offset == UNKNOWN) {
 		/* regular resend */
 		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
-		call FennecData.fillDataHist(data_msg->history, VARIABLE_HISTORY);
+		memcpy(data_msg->history, call FennecData.getHistory(), VARIABLE_HISTORY);
 	} else {
 		/* dump all the data
 		 * the whole cache is broken down into chunks of size
