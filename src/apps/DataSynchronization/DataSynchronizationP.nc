@@ -184,7 +184,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	/* this is either a regular message update, or end of dump (history) so report to Fennec */
-	printf("call updateData (len %d, seq %d)\n", data_msg->data_len, data_msg->sequence);
+	printf("Receive -> call updateData (len %d, seq %d)\n", data_msg->data_len, data_msg->sequence);
 
 	suppress_send = TRUE;
 

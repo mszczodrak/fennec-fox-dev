@@ -374,6 +374,8 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].var_id == name) {
 			memcpy(variable_lookup[i].ptr, value, size);
+			/* update name to global id */
+			name = variable_lookup[i].global_id;
 			err = SUCCESS;
 			break;
 		}
@@ -382,6 +384,11 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	if (err != SUCCESS) {
 		return err;
 	}
+
+	if (name == 0) {
+		/* this is not a global variable */
+		return SUCCESS;
+	} 
 
 	for ( i = VARIABLE_HISTORY; i > 1; i-- ) {
 		var_hist[i-1] = var_hist[i-2];

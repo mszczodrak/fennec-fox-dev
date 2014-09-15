@@ -60,6 +60,7 @@ typedef uint8_t process_t;
 struct variable_reference {
 	uint8_t	var_id;
 	void*	ptr;
+	uint8_t global_id;
 }; 
 
 struct variable_info {
