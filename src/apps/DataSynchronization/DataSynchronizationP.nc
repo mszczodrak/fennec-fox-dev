@@ -63,6 +63,7 @@ uint16_t send_delay;
 message_t packet;
 uint8_t dump_offset = UNKNOWN;
 uint16_t global_data_len = 0;
+bool suppress_send = FALSE;
 
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
@@ -72,6 +73,12 @@ task void schedule_send() {
 task void send_msg() {
 	nx_struct fennec_network_data *data_msg;
 	dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg()", process);
+
+	if (suppress_send) {
+		printf("Suppressing sending message....\n");
+		suppress_send = FALSE;
+		return;
+	}
 
 	data_msg = (nx_struct fennec_network_data*) 
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
@@ -84,8 +91,8 @@ task void send_msg() {
 	data_msg->sequence = (nx_uint16_t) call FennecData.getDataSeq();
 	data_msg->dump_offset = dump_offset;
 
-	if (dump_offset == UNKNOWN) {
-		/* regular resend */
+	if (( dump_offset == UNKNOWN ) || ( dump_offset == global_data_len )) {
+		/* regular resend or end of dump */
 		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
 		memcpy(data_msg->history, call FennecData.getHistory(), VARIABLE_HISTORY);
 	} else {
@@ -112,17 +119,24 @@ task void send_msg() {
 	}
 }
 
-event void FennecData.resend() {
-	post send_msg();
+event void FennecData.resend(bool immediate) {
+	suppress_send = FALSE;
+	if (immediate) {
+		post send_msg();
+	} else {
+		post schedule_send();
+	}
 }
 
 event void FennecData.dump() {
+	suppress_send = FALSE;
 	dump_offset = 0;
-	post send_msg();
+	post schedule_send();
 }
 
 command error_t SplitControl.start() {
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SplitControl.start()", process);
+	suppress_send = FALSE;
 	post schedule_send();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -142,34 +156,37 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if (call FennecData.getDataSeq() + VARIABLE_HISTORY < data_msg->sequence) {
 		/* this node is behind the rest of the network */		
-		uint8_t *all_data;
 
 		if (data_msg->dump_offset == UNKNOWN) {
 			/* let others know that we are behind */
-			signal FennecData.resend();
+			printf("We are behind, let others know\n");
+			signal FennecData.resend(1);
 			return msg;
 		}
 
-		/* synchronize with the cache dump */
-		all_data = (uint8_t*) call FennecData.getNxDataPtr();
-		memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
-
-		/* check if it is the end of the cache dump */
-		global_data_len = call FennecData.getNxDataLen();
-		if (data_msg->dump_offset + data_msg->data_len == global_data_len) {
-			/* let fennec know about the complete update */
-			call FennecData.updateData(NULL, 0, NULL, data_msg->sequence);
+		/* we are synchronizing with the cache dump */
+		if ( data_msg->dump_offset < global_data_len ) {
+			uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
+			printf("Keep syncing dump (offset %d, len %d)\n",
+				data_msg->dump_offset, data_msg->data_len);
+			memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
+			return msg;
 		}
-
-		return msg;
+		printf("end of syncing, update history and that's it\n");
+	} else {
+		if (data_msg->dump_offset != UNKNOWN) {
+			printf("ignore cache dump\n");
+			/* ignore cache updates */
+			suppress_send = TRUE;
+			return msg;	
+		}
 	}
 
-	/* ignore cache updates */
-	if (data_msg->dump_offset != UNKNOWN) {
-		return msg;	
-	}
+	/* this is either a regular message update, or end of dump (history) so report to Fennec */
+	printf("call updateData (len %d, seq %d)\n", data_msg->data_len, data_msg->sequence);
 
-	/* this is a regular message update, so report to Fennec */
+	suppress_send = TRUE;
+
 	call FennecData.updateData(data_msg->data, data_msg->data_len, 
 				data_msg->history, data_msg->sequence);
 	return msg;
@@ -178,13 +195,15 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*)
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
+	suppress_send = FALSE;
+
 	/* check if the sent message was part of the dump process */
 	if (data_msg->dump_offset != UNKNOWN) {
 		global_data_len = call FennecData.getNxDataLen();
-		dump_offset += DATA_DUMP_MAX_PAYLOAD;
-		if (dump_offset >= global_data_len) {
+		if (dump_offset < global_data_len) {
 			dump_offset = UNKNOWN;
 		} else {
+			dump_offset += DATA_DUMP_MAX_PAYLOAD;
 			/* continue to dumping cache */
 			post send_msg();
 		}

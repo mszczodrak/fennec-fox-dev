@@ -155,67 +155,56 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	uint8_t var_hist_index;
 	uint8_t hist_match_len;
 
-	/* we lost track of the data, sync all */
-	if (seq + VARIABLE_HISTORY > current_data_seq) {
-		/* this should not happen, the data sync app takes care of it */
+	/* same message */
+	if ((seq == current_data_seq) && 
+		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
+		printf("the same seq %d and history\n", seq);
 		return;
 	}
 
 	/* someone lost track of the data, dump it */
-	if (current_data_seq + VARIABLE_HISTORY > seq) {
+	if (current_data_seq > VARIABLE_HISTORY + seq) {
+		printf("got old sequence %d, dump our data\n", seq);
 		signal FennecData.dump();
 		return;
 	}
 
-	/* after cache dump update */
-	if (data_len == 0) {
-		/* This is cache update */
-		current_data_seq = seq;
-		memset(var_hist, UNKNOWN, VARIABLE_HISTORY);
-		goto sync;
-	}
-
-	/* same message */
-	if ((seq == current_data_seq) && 
-		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
-		return;
-	}
-
-	/* if we have any UNKNOWN part of the history, accept the update */
-	for (i = 0; i < VARIABLE_HISTORY; i++) {
-		if (var_hist[i] == UNKNOWN) {
-			/* sync message update */
-			break;	
-		}
-		goto sync;
-	}
-
-	/* if i < VARIABLE_HISTORY, then we have UNKNOWN in our history */
-	if (i < VARIABLE_HISTORY) {
+	/* if we were behind, update (assume the rest of the data is synced */
+	if (( current_data_seq + VARIABLE_HISTORY < seq )) {
+		printf("sync all\n");
 		sync_all_data(data, data_len, history, i, VARIABLE_HISTORY);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
+		current_data_seq = seq;
 		goto sync;
 	}
 
 	/* resolve update difference */
 	hist_match_len = longestMatchStart(history, var_hist, &msg_hist_index, &var_hist_index);
+	printf("longestMatchStart returned hist_len %d  msg_ind %d  var_ind %d\n",
+			hist_match_len, msg_hist_index, var_hist_index);
 
 	if ( hist_match_len < VARIABLE_HISTORY / 2 ) {
 		/* not much history to compare, sync all, use seq to decide */
 		if (seq < current_data_seq) {
 			/* received message is behind */
-			signal FennecData.resend();
+			printf("short history (%d < %d), we resend\n", 
+				hist_match_len, VARIABLE_HISTORY / 2);
+			signal FennecData.resend(0);
 			return;
 		}
 
+		printf("short history (%d < %d), we sink\n",
+				hist_match_len, VARIABLE_HISTORY / 2);
 		sync_all_data(data, data_len, history, 0, VARIABLE_HISTORY);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
+		current_data_seq = seq;
 		goto sync;
 	}
 
 	if ( msg_hist_index == var_hist_index ) {
 		/* history match, sync sequence */
 		if (seq > current_data_seq) {
+			printf("just update seq\n");
 			current_data_seq = seq;
 		}
 		goto sync;
@@ -223,7 +212,8 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	if ( msg_hist_index == 0 && var_hist_index > 0 ) {
 		/* received message is behind */
-		signal FennecData.resend();
+		printf("received is behind, we resend\n");
+		signal FennecData.resend(0);
 		return;
 	}
 
@@ -233,9 +223,17 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 		if (updated != msg_hist_index) {
 			/* we are missing too many data updated */
 			/* someone needs to give us a dump update */
-
-			/* SYNC FAILED */
+			printf("updated %d != %d msg_hist_index, we need to get dump\n",
+				updated, msg_hist_index);
+			current_data_seq = 0;
+			signal FennecData.resend(1);
 			return;
+		}
+		printf("we are synchronizing... (msg_his %d, var_his %d)\n",
+				msg_hist_index, var_hist_index);
+		current_data_seq += seq;
+		if (seq > current_data_seq) {
+			current_data_seq = seq + var_hist_index;
 		}
 	}
 
@@ -250,10 +248,6 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	for ( i = 0; i < msg_hist_index; i++) {
 		var_hist[var_hist_index + i] = history[i];
 	} 
-
-
-///	memcpy(var_hist, history, VARIABLE_HISTORY);
-
 
 sync:
 	globalDataSyncWithNetwork();
@@ -353,7 +347,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 
 	globalDataSyncWithLocal();
 	current_data_seq++;
-	signal FennecData.resend();
+	signal FennecData.resend(1);
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Application sets variable %u\n", name);
