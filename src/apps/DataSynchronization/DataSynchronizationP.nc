@@ -200,7 +200,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	/* check if the sent message was part of the dump process */
 	if (data_msg->dump_offset != UNKNOWN) {
 		global_data_len = call FennecData.getNxDataLen();
-		if (dump_offset < global_data_len) {
+		if (dump_offset == global_data_len) {
 			dump_offset = UNKNOWN;
 		} else {
 			dump_offset += DATA_DUMP_MAX_PAYLOAD;

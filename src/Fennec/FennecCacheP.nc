@@ -86,11 +86,6 @@ command void* FennecData.getHistory() {
 	return var_hist;
 }
 
-command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
-	//memcpy(ptr, &fennec_global_data_nx, sizeof(nx_struct global_data_msg));
-	return 0;
-}
-
 struct variable_info * getVariableInfo(uint8_t var_id) {
 	uint8_t i;
 	for (i = 0; i < VARIABLE_HISTORY; i++) {
@@ -131,20 +126,34 @@ uint8_t longestMatchStart(nx_uint8_t* hist1, nx_uint8_t *hist2, uint8_t* pus_ind
 	return the_longest;
 }
 
-/* syncs data with local cache, returns how many were actually sinked */
-uint8_t sync_all_data(void* data, uint8_t data_len, nx_uint8_t* history, nx_uint8_t from, nx_uint8_t to) {
-	uint8_t *g = (uint8_t*) &fennec_global_data_nx;
-	uint8_t updated_size = 0;
-	uint8_t *update_data = data;
+/* 
+ * syncs data with local cache, 
+ * to_data        - pointer to the destination where the data should be copied to
+ * from_data      - pointer to location where the data should be copied from
+ * from_data_len  - how much data (Bytes) can be copied to destination
+ * updated_size   - pointer storing how much data (Bytes) was actually copied
+ * history        - pointer to the history buffer
+ * from           - starting position in the history buffer
+ * to             - final position in the history buffer
+ * returns        how many were history items were actually copied
+ */
+uint8_t sync_data_fragment(void* to_data, void* from_data, uint8_t from_data_len,
+					uint8_t *updated_size,
+					nx_uint8_t* from_history,
+					nx_uint8_t from,
+					nx_uint8_t to) {
+	uint8_t *to_data_ptr = (uint8_t*) to_data;
+	uint8_t *from_data_ptr = from_data;
+	*updated_size = 0;
 
-	for(; from < to && updated_size < data_len; from++) {
-		uint8_t v = history[from];
+	for(; from < to && *updated_size < from_data_len; from++) {
+		uint8_t v = from_history[from];
 		struct variable_info *v_info = getVariableInfo(v);
-		uint8_t *dest = g + v_info->offset;
+		uint8_t *dest = to_data_ptr + v_info->offset;
 		uint8_t s = v_info->size;
-		memcpy( dest, update_data, s );
-		update_data += s;
-		updated_size += s;
+		memcpy( dest, from_data_ptr, s );
+		from_data_ptr += s;
+		*updated_size += s;
 	}
 	return to - from;
 }
@@ -154,6 +163,7 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	uint8_t msg_hist_index;
 	uint8_t var_hist_index;
 	uint8_t hist_match_len;
+	uint8_t updated_size;
 
 	/* same message */
 	if ((seq == current_data_seq) && 
@@ -172,7 +182,8 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	/* if we were behind, update (assume the rest of the data is synced */
 	if (( current_data_seq + VARIABLE_HISTORY < seq )) {
 		printf("sync all\n");
-		sync_all_data(data, data_len, history, i, VARIABLE_HISTORY);
+		sync_data_fragment(&fennec_global_data_nx, data, data_len,
+				&updated_size, history, i, VARIABLE_HISTORY);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
 		current_data_seq = seq;
 		goto sync;
@@ -195,7 +206,9 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 		printf("short history (%d < %d), we sink\n",
 				hist_match_len, VARIABLE_HISTORY / 2);
-		sync_all_data(data, data_len, history, 0, VARIABLE_HISTORY);
+		sync_data_fragment(&fennec_global_data_nx, data, data_len,
+						&updated_size, history,
+						0, VARIABLE_HISTORY);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
 		current_data_seq = seq;
 		goto sync;
@@ -219,7 +232,9 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	if ( msg_hist_index > 0 ) {
 		/* we are behind */
-		uint8_t updated = sync_all_data(data, data_len, history, 0, msg_hist_index);
+		uint8_t updated = sync_data_fragment(&fennec_global_data_nx,
+						data, data_len, &updated_size, 
+						history, 0, msg_hist_index);
 		if (updated != msg_hist_index) {
 			/* we are missing too many data updated */
 			/* someone needs to give us a dump update */
@@ -258,6 +273,15 @@ sync:
 	printfDataHistory();
 	#endif
 }
+
+
+command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
+	uint8_t updated_size;
+	sync_data_fragment(ptr, &fennec_global_data_nx, max_size, &updated_size, 
+					var_hist, 0, VARIABLE_HISTORY);
+	return updated_size;
+}
+
 
 /** Param interface */
 
