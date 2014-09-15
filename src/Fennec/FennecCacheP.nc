@@ -88,11 +88,14 @@ command void* FennecData.getHistory() {
 
 struct variable_info * getVariableInfo(uint8_t var_id) {
 	uint8_t i;
+	printf("Get variable info: %d\n", var_id);
 	for (i = 0; i < VARIABLE_HISTORY; i++) {
 		if (global_data_info[i].var_id == var_id) {
+			printf("Found var info\n");
 			return &(global_data_info[i]);
 		}
 	}
+	printf("NULL\n");
 	return NULL;
 }
 
@@ -144,18 +147,34 @@ uint8_t sync_data_fragment(void* to_data, void* from_data, uint8_t from_data_len
 					nx_uint8_t to) {
 	uint8_t *to_data_ptr = (uint8_t*) to_data;
 	uint8_t *from_data_ptr = from_data;
-	*updated_size = 0;
+	uint8_t i;
+	uint8_t v;
+	struct variable_info *v_info;
+	uint8_t *mem_dest;
 
-	for(; from < to && *updated_size < from_data_len; from++) {
-		uint8_t v = from_history[from];
-		struct variable_info *v_info = getVariableInfo(v);
-		uint8_t *dest = to_data_ptr + v_info->offset;
-		uint8_t s = v_info->size;
-		memcpy( dest, from_data_ptr, s );
-		from_data_ptr += s;
-		*updated_size += s;
+
+	*updated_size = 0;
+	printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
+			*updated_size, from_data_len, from, to);
+
+	for(i = from; i < to && *updated_size < from_data_len; i++) {
+		v = from_history[i];
+		v_info = getVariableInfo(v);
+		if (v_info == NULL) {
+			break;
+		}
+		mem_dest = to_data_ptr + v_info->offset;
+
+		printf("var size: %d\n", v_info->size);
+
+		memcpy( mem_dest, from_data_ptr, v_info->size );
+		from_data_ptr += v_info->size;
+		*updated_size += v_info->size;
+
+		printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
+			*updated_size, from_data_len, from, to);
 	}
-	return to - from;
+	return i - from;
 }
 
 command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint16_t seq) {

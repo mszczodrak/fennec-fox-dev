@@ -95,6 +95,7 @@ task void send_msg() {
 		/* regular resend or end of dump */
 		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
 		memcpy(data_msg->history, call FennecData.getHistory(), VARIABLE_HISTORY);
+		printf("sending len %d\n", data_msg->data_len);
 	} else {
 		/* dump all the data
 		 * the whole cache is broken down into chunks of size
