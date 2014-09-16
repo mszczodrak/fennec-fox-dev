@@ -154,8 +154,8 @@ uint8_t sync_data_fragment(void* data, uint8_t data_len,
 
 
 	*updated_size = 0;
-	printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
-			*updated_size, data_len, from, to);
+	//printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
+	//		*updated_size, data_len, from, to);
 
 	for(i = from; i < to && *updated_size < data_len; i++) {
 		v = from_history[i];
@@ -175,8 +175,8 @@ uint8_t sync_data_fragment(void* data, uint8_t data_len,
 		data_ptr += v_info->size;
 		*updated_size += v_info->size;
 
-		printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
-			*updated_size, data_len, from, to);
+		//printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
+		//	*updated_size, data_len, from, to);
 	}
 	return i - from;
 }
@@ -270,7 +270,7 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 		}
 		printf("Receive -> we are synchronizing... (msg_his %d, var_his %d)\n",
 				msg_hist_index, var_hist_index);
-		current_data_seq += seq;
+		current_data_seq += msg_hist_index;
 		if (seq > current_data_seq) {
 			current_data_seq = seq + var_hist_index;
 		}
@@ -408,7 +408,6 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	signal FennecData.resend(1);
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application sets variable %u\n", name);
 	printfGlobalData();
 	printfDataHistory();
 	#endif
