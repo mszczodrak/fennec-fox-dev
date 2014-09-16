@@ -99,6 +99,11 @@ struct variable_info * getVariableInfo(uint8_t var_id) {
 	return NULL;
 }
 
+void signal_global_update(nx_uint8_t var_id){
+
+
+}
+
 /* returns the position in the received history from where
  * the history matches with the local status
  */
@@ -169,6 +174,7 @@ uint8_t sync_data_fragment(void* data, uint8_t data_len,
 
 		if (download) {
 			memcpy( mem_dest, data_ptr, v_info->size );
+			signal_global_update(v);
 		} else {
 			memcpy( data_ptr, mem_dest, v_info->size );
 		}
@@ -189,12 +195,12 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	uint8_t updated_size;
 
 	/* same message */
-	if ((seq == current_data_seq) && 
-		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
-		/* we do not check data! if there is inconsistency, we won't catch that */
-		printf("Receive -> the same seq %d and history\n", seq);
-		return;
-	}
+//	if ((seq == current_data_seq) && 
+//		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
+//		/* we do not check data! if there is inconsistency, we won't catch that */
+//		printf("Receive -> the same seq %d and history\n", seq);
+//		return;
+//	}
 
 	/* someone lost track of the data, dump it */
 	if (current_data_seq > VARIABLE_HISTORY + seq) {
@@ -238,13 +244,13 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 		goto sync;
 	}
 
-//	if (( msg_hist_index == 0) && ( msg_hist_index == var_hist_index )) {
 	if (hist_match_len == VARIABLE_HISTORY) {
 		/* history match, sync sequence */
 		if (seq > current_data_seq) {
 			printf("Receive -> just update seq to %d\n", seq);
 			current_data_seq = seq;
 		}
+		printf("Receive -> the same seq %d and history\n", seq);
 		return;
 	}
 
@@ -287,6 +293,11 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	for ( i = 0; i < msg_hist_index; i++) {
 		var_hist[var_hist_index + i] = history[i];
 	} 
+
+	if ( var_hist_index > 0 ) {
+		printf("Receive -> sender is also behind, signal FennecData.resend(0)\n");
+		signal FennecData.resend(0);
+	}
 
 sync:
 	globalDataSyncWithNetwork();
@@ -397,6 +408,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	} 
 
 	printf("updated global variable %d\n", name);
+	signal_global_update(name);
 
 	for ( i = VARIABLE_HISTORY; i > 1; i-- ) {
 		var_hist[i-1] = var_hist[i-2];
