@@ -88,14 +88,14 @@ command void* FennecData.getHistory() {
 
 struct variable_info * getVariableInfo(uint8_t var_id) {
 	uint8_t i;
-	printf("Get variable info: %d\n", var_id);
+	//printf("Get variable info: %d\n", var_id);
 	for (i = 0; i < VARIABLE_HISTORY; i++) {
 		if (global_data_info[i].var_id == var_id) {
-			printf("Found var info\n");
+			//printf("Found var info\n");
 			return &(global_data_info[i]);
 		}
 	}
-	printf("NULL\n");
+	//printf("NULL\n");
 	return NULL;
 }
 
@@ -131,22 +131,22 @@ uint8_t longestMatchStart(nx_uint8_t* hist1, nx_uint8_t *hist2, uint8_t* pus_ind
 
 /* 
  * syncs data with local cache, 
- * to_data        - pointer to the destination where the data should be copied to
- * from_data      - pointer to location where the data should be copied from
- * from_data_len  - how much data (Bytes) can be copied to destination
+ * data      - pointer to location where the data should be copied from
+ * data_len  - how much data (Bytes) can be copied to destination
  * updated_size   - pointer storing how much data (Bytes) was actually copied
  * history        - pointer to the history buffer
  * from           - starting position in the history buffer
  * to             - final position in the history buffer
  * returns        how many were history items were actually copied
  */
-uint8_t sync_data_fragment(void* to_data, void* from_data, uint8_t from_data_len,
+uint8_t sync_data_fragment(void* data, uint8_t data_len,
 					uint8_t *updated_size,
 					nx_uint8_t* from_history,
 					nx_uint8_t from,
-					nx_uint8_t to) {
-	uint8_t *to_data_ptr = (uint8_t*) to_data;
-	uint8_t *from_data_ptr = from_data;
+					nx_uint8_t to,
+					bool download) {
+	uint8_t *to_data_ptr = (uint8_t*) &fennec_global_data_nx;
+	uint8_t *data_ptr = data;
 	uint8_t i;
 	uint8_t v;
 	struct variable_info *v_info;
@@ -155,9 +155,9 @@ uint8_t sync_data_fragment(void* to_data, void* from_data, uint8_t from_data_len
 
 	*updated_size = 0;
 	printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
-			*updated_size, from_data_len, from, to);
+			*updated_size, data_len, from, to);
 
-	for(i = from; i < to && *updated_size < from_data_len; i++) {
+	for(i = from; i < to && *updated_size < data_len; i++) {
 		v = from_history[i];
 		v_info = getVariableInfo(v);
 		if (v_info == NULL) {
@@ -165,14 +165,18 @@ uint8_t sync_data_fragment(void* to_data, void* from_data, uint8_t from_data_len
 		}
 		mem_dest = to_data_ptr + v_info->offset;
 
-		printf("var size: %d\n", v_info->size);
+		//printf("var size: %d\n", v_info->size);
 
-		memcpy( mem_dest, from_data_ptr, v_info->size );
-		from_data_ptr += v_info->size;
+		if (download) {
+			memcpy( mem_dest, data_ptr, v_info->size );
+		} else {
+			memcpy( data_ptr, mem_dest, v_info->size );
+		}
+		data_ptr += v_info->size;
 		*updated_size += v_info->size;
 
 		printf("syncing... updated_size: %d   max_len: %d   from: %d   to: %d\n", 
-			*updated_size, from_data_len, from, to);
+			*updated_size, data_len, from, to);
 	}
 	return i - from;
 }
@@ -187,22 +191,23 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	/* same message */
 	if ((seq == current_data_seq) && 
 		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
-		printf("the same seq %d and history\n", seq);
+		/* we do not check data! if there is inconsistency, we won't catch that */
+		printf("Receive -> the same seq %d and history\n", seq);
 		return;
 	}
 
 	/* someone lost track of the data, dump it */
 	if (current_data_seq > VARIABLE_HISTORY + seq) {
-		printf("got old sequence %d, dump our data\n", seq);
+		printf("Receive -> got old sequence %d, signal FennecData.dump() \n", seq);
 		signal FennecData.dump();
 		return;
 	}
 
 	/* if we were behind, update (assume the rest of the data is synced */
 	if (( current_data_seq + VARIABLE_HISTORY < seq )) {
-		printf("sync all\n");
-		sync_data_fragment(&fennec_global_data_nx, data, data_len,
-				&updated_size, history, i, VARIABLE_HISTORY);
+		printf("Receive -> we are behind; sync all\n");
+		sync_data_fragment(data, data_len,
+				&updated_size, history, i, VARIABLE_HISTORY, 1);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
 		current_data_seq = seq;
 		goto sync;
@@ -210,60 +215,60 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	/* resolve update difference */
 	hist_match_len = longestMatchStart(history, var_hist, &msg_hist_index, &var_hist_index);
-	printf("longestMatchStart returned hist_len %d  msg_ind %d  var_ind %d\n",
+	printf("Receive -> longestMatchStart returned hist_len %d  msg_ind %d  var_ind %d\n",
 			hist_match_len, msg_hist_index, var_hist_index);
 
 	if ( hist_match_len < VARIABLE_HISTORY / 2 ) {
 		/* not much history to compare, sync all, use seq to decide */
 		if (seq < current_data_seq) {
 			/* received message is behind */
-			printf("short history (%d < %d), we resend\n", 
+			printf("Receive -> too short history (%d < %d), signal FennecData.resend(0)\n", 
 				hist_match_len, VARIABLE_HISTORY / 2);
 			signal FennecData.resend(0);
 			return;
 		}
 
-		printf("short history (%d < %d), we sink\n",
+		printf("Receive -> too short history (%d < %d), we sink\n",
 				hist_match_len, VARIABLE_HISTORY / 2);
-		sync_data_fragment(&fennec_global_data_nx, data, data_len,
+		sync_data_fragment(data, data_len,
 						&updated_size, history,
-						0, VARIABLE_HISTORY);
+						0, VARIABLE_HISTORY, 1);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
 		current_data_seq = seq;
 		goto sync;
 	}
 
-	if ( msg_hist_index == var_hist_index ) {
+//	if (( msg_hist_index == 0) && ( msg_hist_index == var_hist_index )) {
+	if (hist_match_len == VARIABLE_HISTORY) {
 		/* history match, sync sequence */
 		if (seq > current_data_seq) {
-			printf("just update seq\n");
+			printf("Receive -> just update seq to %d\n", seq);
 			current_data_seq = seq;
 		}
-		goto sync;
+		return;
 	}
 
 	if ( msg_hist_index == 0 && var_hist_index > 0 ) {
 		/* received message is behind */
-		printf("received is behind, we resend\n");
+		printf("Receive -> sender is behind, signal FennecData.resend(0)\n");
 		signal FennecData.resend(0);
 		return;
 	}
 
 	if ( msg_hist_index > 0 ) {
 		/* we are behind */
-		uint8_t updated = sync_data_fragment(&fennec_global_data_nx,
-						data, data_len, &updated_size, 
-						history, 0, msg_hist_index);
+		uint8_t updated = sync_data_fragment(data, data_len, &updated_size, 
+						history, 0, msg_hist_index, 1);
 		if (updated != msg_hist_index) {
 			/* we are missing too many data updated */
 			/* someone needs to give us a dump update */
-			printf("updated %d != %d msg_hist_index, we need to get dump\n",
+			printf("Receive -> updated %d != %d msg_hist_index, signal FennecData.resend(1)\n",
 				updated, msg_hist_index);
 			current_data_seq = 0;
 			signal FennecData.resend(1);
 			return;
 		}
-		printf("we are synchronizing... (msg_his %d, var_his %d)\n",
+		printf("Receive -> we are synchronizing... (msg_his %d, var_his %d)\n",
 				msg_hist_index, var_hist_index);
 		current_data_seq += seq;
 		if (seq > current_data_seq) {
@@ -287,17 +292,18 @@ sync:
 	globalDataSyncWithNetwork();
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("FennecData.setDataAndSeq - UPDATE FROM NETWORK\n");
 	printfGlobalData();
 	printfDataHistory();
+	printf("Sequence: %d\n", current_data_seq);
 	#endif
 }
 
 
 command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
 	uint8_t updated_size;
-	sync_data_fragment(ptr, &fennec_global_data_nx, max_size, &updated_size, 
-					var_hist, 0, VARIABLE_HISTORY);
+
+	sync_data_fragment(ptr, max_size, &updated_size, 
+					var_hist, 0, VARIABLE_HISTORY, 0);
 	return updated_size;
 }
 
@@ -385,10 +391,12 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 		return err;
 	}
 
-	if (name == 0) {
+	if (name == UNKNOWN) {
 		/* this is not a global variable */
 		return SUCCESS;
 	} 
+
+	printf("updated global variable %d\n", name);
 
 	for ( i = VARIABLE_HISTORY; i > 1; i-- ) {
 		var_hist[i-1] = var_hist[i-2];

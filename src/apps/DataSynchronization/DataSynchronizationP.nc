@@ -155,6 +155,9 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
+	printf("Receive.receive [seg: %d  offset: %d   data_len: %d]  from Node %d\n", 
+		data_msg->sequence, data_msg->dump_offset, data_msg->data_len, call SubAMPacket.source(msg));
+
 	if (call FennecData.getDataSeq() + VARIABLE_HISTORY < data_msg->sequence) {
 		/* this node is behind the rest of the network */		
 
