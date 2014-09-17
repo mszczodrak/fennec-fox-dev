@@ -37,7 +37,7 @@
 interface Param {
 command error_t get(uint8_t name, void *value, uint8_t size);
 command error_t set(uint8_t name, void *value, uint8_t size);
-//event void updated(uint8_t var_id);
+event void updated(uint8_t var_id);
 }
 
 

@@ -99,10 +99,62 @@ struct variable_info * getVariableInfo(uint8_t var_id) {
 	return NULL;
 }
 
-void signal_global_update(nx_uint8_t var_id){
+void send_param_update(uint8_t var_id, process_t process_id) {
+	uint8_t var_number;
+	uint8_t var_offset;
+	uint8_t i;
+
+	/* application */
+	var_number = processes[process_id].application_variables_number;
+	var_offset = processes[process_id].application_variables_offset;
+
+	for (i = var_offset; i < (var_offset+var_number); i++) {
+		if ((variable_lookup[i].var_id == var_id) && 
+			(variable_lookup[i].global_id != UNKNOWN)) {
+			signal Param.updated[F_APPLICATION, process_id](var_id);
+                }
+        }
+
+	/* network */
+	var_number = processes[process_id].network_variables_number;
+	var_offset = processes[process_id].network_variables_offset;
+
+	for (i = var_offset; i < (var_offset+var_number); i++) {
+		if ((variable_lookup[i].var_id == var_id) && 
+			(variable_lookup[i].global_id != UNKNOWN)) {
+			signal Param.updated[F_NETWORK, process_id](var_id);
+                }
+        }
+
+	/* am */
 
 
 }
+
+void signal_global_update(nx_uint8_t var_id) {
+
+	struct network_process **daemons = NULL;
+	struct network_process **ordinary = NULL;
+
+	daemons = call Fennec.getDaemonProcesses();
+	ordinary = call Fennec.getOrdinaryProcesses();
+
+
+	while ((ordinary != NULL) && (*ordinary != NULL)) {
+		//dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (ordinary)\n",
+                //                                (*ordinary)->process_id);
+		send_param_update(var_id, (*ordinary)->process_id);
+		ordinary++;
+	}
+
+	while ((daemons != NULL) && (*daemons != NULL)) {
+		//dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (daemons)\n",
+                //                                (*daemons)->process_id);
+		send_param_update(var_id, (*daemons)->process_id);
+		daemons++;
+	}
+}
+
 
 /* returns the position in the received history from where
  * the history matches with the local status
