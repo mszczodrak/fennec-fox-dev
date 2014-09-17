@@ -104,14 +104,19 @@ void send_param_update(uint8_t var_id, process_t process_id) {
 	uint8_t var_offset;
 	uint8_t i;
 
+	printf("send param update  %d  %d\n", var_id, process_id);
+
 	/* application */
 	var_number = processes[process_id].application_variables_number;
 	var_offset = processes[process_id].application_variables_offset;
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
-		if ((variable_lookup[i].var_id == var_id) && 
-			(variable_lookup[i].global_id != UNKNOWN)) {
-			signal Param.updated[F_APPLICATION, process_id](var_id);
+		if (variable_lookup[i].global_id == var_id) {
+			printf("signal! [%d %d]\n", F_APPLICATION, process_id);
+			//signal Param.updated[F_APPLICATION, process_id]
+			/* nesC bug (issue #33) - reverse order */
+			signal Param.updated[process_id, F_APPLICATION]
+						(variable_lookup[i].var_id);
                 }
         }
 
@@ -120,15 +125,28 @@ void send_param_update(uint8_t var_id, process_t process_id) {
 	var_offset = processes[process_id].network_variables_offset;
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
-		if ((variable_lookup[i].var_id == var_id) && 
-			(variable_lookup[i].global_id != UNKNOWN)) {
-			signal Param.updated[F_NETWORK, process_id](var_id);
+		if (variable_lookup[i].global_id == var_id) {
+			printf("signal! NET  proc %d\n", process_id);
+			//signal Param.updated[F_NETWORK, process_id]
+			/* nesC bug (issue #33) - reverse order */
+			signal Param.updated[process_id, F_NETWORK]
+						(variable_lookup[i].var_id);
                 }
         }
 
 	/* am */
+	var_number = processes[process_id].am_variables_number;
+	var_offset = processes[process_id].am_variables_offset;
 
-
+	for (i = var_offset; i < (var_offset+var_number); i++) {
+		if (variable_lookup[i].global_id == var_id) {
+			printf("signal! AM  proc %d\n", process_id);
+			//signal Param.updated[F_AM, processes[process_id].am_module]
+			/* nesC bug (issue #33) - reverse order */
+			signal Param.updated[processes[process_id].am_module, F_AM]
+						(variable_lookup[i].var_id);
+		}
+	}
 }
 
 void signal_global_update(nx_uint8_t var_id) {
@@ -479,6 +497,9 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	return SUCCESS;
 }
 
+default event void Param.updated[uint8_t layer, process_t process_id](uint8_t var_id) {
+	printf("default updated [%d %d]\n", layer, process_id);
+}
 
 }
 

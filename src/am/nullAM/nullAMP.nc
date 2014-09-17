@@ -249,5 +249,9 @@ async command void PacketRSSI.clear(message_t* msg) {
 async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 }
 
+event void Param.updated(uint8_t var_id) {
+
+}
+
 
 }

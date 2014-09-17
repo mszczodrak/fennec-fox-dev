@@ -165,4 +165,8 @@ event void LedTimer.fired() {
 	post reset_led_timer();
 }
 
+event void Param.updated(uint8_t var_id) {
+
+}
+
 }
