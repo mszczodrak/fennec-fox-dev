@@ -144,4 +144,8 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 
+event void Param.updated(uint8_t var_id) {
+
+}
+
 }

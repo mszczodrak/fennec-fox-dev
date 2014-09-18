@@ -92,4 +92,8 @@ event message_t* CtpSnoop.receive(message_t* msg, void* payload, uint8_t len) {
 	return signal Snoop.receive(msg, payload, len);
 }
 
+event void Param.updated(uint8_t var_id) {
+
+}
+
 }

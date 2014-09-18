@@ -108,6 +108,8 @@ task void send_state_update() {
 bool validProcessId(process_t process_id) @C() {
 	struct network_process **npr;
 
+	printf("get process_id %d\n", process_id);
+
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
 		if ((*npr)->process_id == process_id) {
 			return TRUE;
