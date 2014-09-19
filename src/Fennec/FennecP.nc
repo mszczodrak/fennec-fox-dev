@@ -45,7 +45,6 @@ uses interface Boot;
 uses interface Leds;
 uses interface SplitControl;
 uses interface Random;
-uses interface FennecData;
 
 uses interface SerialDbgs;
 }
@@ -105,37 +104,6 @@ task void start_done() {
 task void send_state_update() {
 	signal FennecState.resend();
 }
-
-/* GLOBAL FUNCTIONS C-like */
-
-bool validProcessId(uint8_t msg_type) @C() {
-	struct network_process **npr;
-
-	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
-		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
-			return TRUE;
-		}
-	}
-
-	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
-		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
-			return TRUE;
-		}
-	}
-
-	/* we should report it */
-	post send_state_update();	
-	return FALSE;
-}
-
-nx_uint8_t setFennecType(uint8_t id) @C() {
-	nx_uint8_t newType;
-	newType = id << 4;
-	newType += (call FennecData.getDataSeq() & 0x0F);
-	return newType;
-}
-
-/* ---- */
 
 event void Boot.booted() {
 	event_mask = 0;
@@ -335,7 +303,29 @@ command void FennecState.resendDone(error_t error) {
 
 default event void FennecState.resend() {}
 
-event void FennecData.resend(bool immediate) {}
-event void FennecData.dump() {}
+/** 
+	Global C-like functions - part of ff_functions 
+*/
+
+bool validProcessId(uint8_t msg_type) @C() {
+	struct network_process **npr;
+
+	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
+		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
+			return TRUE;
+		}
+	}
+
+	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
+		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
+			return TRUE;
+		}
+	}
+
+	/* we should report it */
+	post send_state_update();	
+	return FALSE;
+}
+
 
 }

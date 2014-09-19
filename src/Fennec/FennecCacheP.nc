@@ -56,7 +56,9 @@ event void Boot.booted() {
 	current_data_seq = 0;
 }
 
-/** Fennec Data interface */
+/** 
+	Fennec Data interface 
+*/
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 void printfDataHistory() {
@@ -388,7 +390,9 @@ command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
 }
 
 
-/** Param interface */
+/** 
+	Param interface 
+*/
 
 error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8_t *off) {
 
@@ -498,6 +502,17 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 
 default event void Param.updated[uint8_t layer, process_t process_id](uint8_t var_id) {
 	printf("default updated [%d %d]\n", layer, process_id);
+}
+
+/** 
+	Global C-like functions - part of ff_functions 
+*/
+
+nx_uint8_t setFennecType(uint8_t id) @C() {
+	nx_uint8_t newType;
+	newType = id << 4;
+	newType += (call FennecData.getDataSeq() & 0x0F);
+	return newType;
 }
 
 }

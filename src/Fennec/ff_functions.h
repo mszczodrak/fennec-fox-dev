@@ -45,12 +45,6 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-/*
-metadata_t* getMetadata( message_t* msg ) @C() {
-        return (metadata_t*)msg->metadata;
-}
-*/
-
 uint32_t gcdr (uint32_t a, uint32_t b )@C() {
         if ( a==0 ) return b;
         return gcdr ( b%a, a );
