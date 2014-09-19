@@ -45,7 +45,7 @@ uses interface Fennec;
 
 implementation {
 
-norace uint16_t current_data_seq = 0;
+norace nx_uint8_t current_data_seq;
 nx_uint8_t var_hist[VARIABLE_HISTORY];
 
 event void Boot.booted() {
@@ -69,8 +69,7 @@ void printfDataHistory() {
 }
 #endif
 
-
-command uint16_t FennecData.getDataSeq() {
+command nx_uint8_t FennecData.getDataSeq() {
 	return current_data_seq;
 }
 
@@ -257,7 +256,7 @@ uint8_t sync_data_fragment(void* data, uint8_t data_len,
 	return i - from;
 }
 
-command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint16_t seq) {
+command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, nx_uint16_t seq) {
 	uint8_t i;
 	uint8_t msg_hist_index;
 	uint8_t var_hist_index;
