@@ -70,6 +70,7 @@ module DefaultLplP {
     interface Leds;
     interface SystemLowPowerListening;
   }
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -101,7 +102,19 @@ implementation {
   enum {
     ONE_MESSAGE = 0,
   };
-  
+
+	task void reportStartDone() {
+#ifdef __DBGS__RADIO_STATUS__
+		call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, 0, 0);
+#endif
+	}
+
+	task void reportStopDone() {
+#ifdef __DBGS__RADIO_STATUS__
+		call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, 0, 0);
+#endif
+	}
+
   /***************** Prototypes ***************/
   task void send();
   task void resend();
@@ -247,6 +260,7 @@ implementation {
   event void SubControl.startDone(error_t error) {
     if(!error) {
       call RadioPowerState.forceState(S_ON);
+      post reportStartDone();
       
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
           || call SendState.getState() == S_LPL_SENDING) {
@@ -264,6 +278,7 @@ implementation {
       call OffTimer.stop();
       call SendDoneTimer.stop();
       call SendState.toIdle();
+      post reportStartDone();
       return;
     }
 
@@ -277,6 +292,7 @@ implementation {
       } else {        
         call OffTimer.stop();
         call SendDoneTimer.stop();
+        post reportStartDone();
       }
     }
   }

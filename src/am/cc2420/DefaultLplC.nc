@@ -92,4 +92,9 @@ implementation {
   DefaultLplP.Random -> RandomC;
   DefaultLplP.Leds -> LedsC;
   DefaultLplP.SystemLowPowerListening -> SystemLowPowerListeningC;
+
+
+components SerialDbgsC;
+DefaultLplP.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
+
 }
