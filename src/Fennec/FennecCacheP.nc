@@ -105,15 +105,12 @@ void send_param_update(uint8_t var_id, process_t process_id) {
 	uint8_t var_offset;
 	uint8_t i;
 
-	printf("send param update  %d  %d\n", var_id, process_id);
-
 	/* application */
 	var_number = processes[process_id].application_variables_number;
 	var_offset = processes[process_id].application_variables_offset;
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].global_id == var_id) {
-			printf("signal! [%d %d]\n", F_APPLICATION, process_id);
 			//signal Param.updated[F_APPLICATION, process_id]
 			/* nesC bug (issue #33) - reverse order */
 			signal Param.updated[process_id, F_APPLICATION]
@@ -127,7 +124,6 @@ void send_param_update(uint8_t var_id, process_t process_id) {
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].global_id == var_id) {
-			printf("signal! NET  proc %d\n", process_id);
 			//signal Param.updated[F_NETWORK, process_id]
 			/* nesC bug (issue #33) - reverse order */
 			signal Param.updated[process_id, F_NETWORK]
@@ -141,7 +137,6 @@ void send_param_update(uint8_t var_id, process_t process_id) {
 
 	for (i = var_offset; i < (var_offset+var_number); i++) {
 		if (variable_lookup[i].global_id == var_id) {
-			printf("signal! AM  proc %d\n", process_id);
 			//signal Param.updated[F_AM, processes[process_id].am_module]
 			/* nesC bug (issue #33) - reverse order */
 			signal Param.updated[processes[process_id].am_module, F_AM]
@@ -275,14 +270,19 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	/* someone lost track of the data, dump it */
 	if (current_data_seq > VARIABLE_HISTORY + seq) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> got old sequence %d, signal FennecData.dump() \n", seq);
+#endif
 		signal FennecData.dump();
 		return;
 	}
 
 	/* if we were behind, update (assume the rest of the data is synced */
 	if (( current_data_seq + VARIABLE_HISTORY < seq )) {
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> we are behind; sync all\n");
+#endif
 		sync_data_fragment(data, data_len,
 				&updated_size, history, i, VARIABLE_HISTORY, 1);
 		memcpy(var_hist, history, VARIABLE_HISTORY);
@@ -292,21 +292,29 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	/* resolve update difference */
 	hist_match_len = longestMatchStart(history, var_hist, &msg_hist_index, &var_hist_index);
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Receive -> longestMatchStart returned hist_len %d  msg_ind %d  var_ind %d\n",
 			hist_match_len, msg_hist_index, var_hist_index);
+#endif
 
 	if ( hist_match_len < VARIABLE_HISTORY / 2 ) {
 		/* not much history to compare, sync all, use seq to decide */
 		if (seq < current_data_seq) {
 			/* received message is behind */
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Receive -> too short history (%d < %d), signal FennecData.resend(0)\n", 
 				hist_match_len, VARIABLE_HISTORY / 2);
+#endif
 			signal FennecData.resend(0);
 			return;
 		}
 
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> too short history (%d < %d), we sink\n",
 				hist_match_len, VARIABLE_HISTORY / 2);
+#endif
 		sync_data_fragment(data, data_len,
 						&updated_size, history,
 						0, VARIABLE_HISTORY, 1);
@@ -318,16 +326,17 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 	if (hist_match_len == VARIABLE_HISTORY) {
 		/* history match, sync sequence */
 		if (seq > current_data_seq) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Receive -> just update seq to %d\n", seq);
+#endif
 			current_data_seq = seq;
+			signal FennecData.resend(0);
 		}
-		printf("Receive -> the same seq %d and history\n", seq);
 		return;
 	}
 
 	if ( msg_hist_index == 0 && var_hist_index > 0 ) {
 		/* received message is behind */
-		printf("Receive -> sender is behind, signal FennecData.resend(0)\n");
 		signal FennecData.resend(0);
 		return;
 	}
@@ -339,14 +348,18 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 		if (updated != msg_hist_index) {
 			/* we are missing too many data updated */
 			/* someone needs to give us a dump update */
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Receive -> updated %d != %d msg_hist_index, signal FennecData.resend(1)\n",
 				updated, msg_hist_index);
+#endif
 			current_data_seq = 0;
 			signal FennecData.resend(1);
 			return;
 		}
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> we are synchronizing... (msg_his %d, var_his %d)\n",
 				msg_hist_index, var_hist_index);
+#endif
 		current_data_seq += msg_hist_index;
 		if (seq > current_data_seq) {
 			current_data_seq = seq + var_hist_index;
@@ -461,7 +474,9 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	uint8_t i;
 	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
 
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Param.set[%u %u](%u ptr %u)\n", layer, process_id, name, size);
+#endif
 
 	if (err != SUCCESS) {
 		return err;
@@ -488,7 +503,6 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 		return SUCCESS;
 	} 
 
-	printf("updated global variable %d\n", name);
 	signal_global_update(name);
 
 	for ( i = VARIABLE_HISTORY; i > 1; i-- ) {
@@ -509,10 +523,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 }
 
 default event void Param.updated[uint8_t layer, process_t process_id](uint8_t var_id) {
-	printf("default updated [%d %d]\n", layer, process_id);
 }
-
- 
 
 }
 

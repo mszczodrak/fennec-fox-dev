@@ -13,10 +13,10 @@ include $(TINYOS_ROOT_DIR)/Makefile.include
 #PFLAGS+=-D__DBGS__
 
 # 2. TinyOS printf
-CFLAGS += -I$(TINYOS_OS_DIR)/lib/printf
+#CFLAGS += -I$(TINYOS_OS_DIR)/lib/printf
 #CFLAGS += -DPRINTF_BUFFER_SIZE=200
 #CFLAGS += -DFENNEC_TOS_PRINTF
-CFLAGS += -DFENNEC_COOJA_PRINTF
+#CFLAGS += -DFENNEC_COOJA_PRINTF
 
 clean: FORCE
 	rm -rf build $(CLEAN_EXTRA) pp
