@@ -70,11 +70,14 @@ uint32_t max_val;
 task void updateData();
 
 command error_t SplitControl.start() {
+	max_val = 0;
 	call Param.get(SENSE_DELAY, &sense_delay, sizeof(sense_delay));
 	call Param.get(EXPIRE_DELAY, &expire_delay, sizeof(expire_delay));
 
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("sense delay is %lu and expire delay is %lu\n", 
 			sense_delay, expire_delay);
+#endif
 	call SenseTimer.startOneShot(sense_delay);
 
 #ifdef __DBGS__APPLICATION__
@@ -96,26 +99,31 @@ command error_t SplitControl.stop() {
 
 event void SenseTimer.fired() {
 	uint16_t rand_delay = call Random.rand16() % sense_delay;
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("fired\n");
+#endif
+
 	post updateData();
-	call Timer.startOneShot(sense_delay / 2 + rand_delay);
+	call SenseTimer.startOneShot(sense_delay / 2 + rand_delay);
 }
 
-event void EventDelay.fired() {
-	max_val = 0;
-	post updateData();
+event void ExpireTimer.fired() {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("Node [%d] Expired!\n", TOS_NODE_ID);
+#endif
 }
 
 void checkMaxData(uint32_t v) {
-	if (max_val < v) {
+	if ( (! call ExpireTimer.isRunning()) || (max_val < v) ) {
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Node [%d] set MAX_SENSE %lu < %lu\n", 
 					TOS_NODE_ID, max_val, v);
 		#endif
 
+		call ExpireTimer.startOneShot(expire_delay);
 		max_val = v;
-		call Param.set(MAX_SENSE, &max_val, sizeof(max_val));
-		call EventDelay.startOneShot(event_delay);
+		call Param.set(MAX_SENSED, &max_val, sizeof(max_val));
 	} else {
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Node [%d] pass ... %lu >= %lu\n", 
@@ -142,9 +150,11 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Param.updated(uint8_t var_id) {
 	uint32_t temp;
-	call Param.get(MAX_SENSE, &temp, sizeof(temp));
+	call Param.get(MAX_SENSED, &temp, sizeof(temp));
 
-	printf("Application var %d updated to &lu\n", var_id, temp);
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("Application var %d updated to %lu\n", var_id, temp);
+#endif
 	checkMaxData(temp);
 }
 

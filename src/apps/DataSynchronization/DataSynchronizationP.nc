@@ -88,7 +88,9 @@ task void send_msg() {
 		/* regular resend or end of dump */
 		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
 		memcpy(data_msg->history, call FennecData.getHistory(), VARIABLE_HISTORY);
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("sending len %d\n", data_msg->data_len);
+#endif
 	} else {
 		/* dump all the data
 		 * the whole cache is broken down into chunks of size
@@ -145,15 +147,20 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Receive.receive [seg: %d  offset: %d   data_len: %d]  from Node %d\n", 
-		data_msg->sequence, data_msg->dump_offset, data_msg->data_len, call SubAMPacket.source(msg));
+		data_msg->sequence, data_msg->dump_offset,
+		data_msg->data_len, call SubAMPacket.source(msg));
+#endif
 
 	if (call FennecData.getDataSeq() + VARIABLE_HISTORY < data_msg->sequence) {
 		/* this node is behind the rest of the network */		
 
 		if (data_msg->dump_offset == UNKNOWN) {
 			/* let others know that we are behind */
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("We are behind, let others know\n");
+#endif
 			signal FennecData.resend(1);
 			return msg;
 		}
@@ -163,15 +170,21 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		/* we are synchronizing with the cache dump */
 		if ( data_msg->dump_offset < global_data_len ) {
 			uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Keep syncing dump (offset %d, len %d)\n",
 				data_msg->dump_offset, data_msg->data_len);
+#endif
 			memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
 			return msg;
 		}
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("end of syncing, update history and that's it\n");
+#endif
 	} else {
 		if (data_msg->dump_offset != UNKNOWN) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("ignore cache dump\n");
+#endif
 			/* ignore cache updates */
 			call Timer.stop();
 			return msg;	
@@ -179,7 +192,10 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	/* this is either a regular message update, or end of dump (history) so report to Fennec */
-	printf("Receive -> call updateData (len %d, seq %d)\n", data_msg->data_len, data_msg->sequence);
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("Receive -> call updateData (len %d, seq %d)\n",
+			data_msg->data_len, data_msg->sequence);
+#endif
 
 	call Timer.stop();
 
