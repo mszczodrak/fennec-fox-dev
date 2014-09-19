@@ -45,7 +45,7 @@ uses interface Fennec;
 
 implementation {
 
-norace nx_uint8_t current_data_seq;
+norace uint8_t current_data_seq;
 nx_uint8_t var_hist[VARIABLE_HISTORY];
 
 event void Boot.booted() {
@@ -71,7 +71,7 @@ void printfDataHistory() {
 }
 #endif
 
-command nx_uint8_t FennecData.getDataSeq() {
+command uint8_t FennecData.getDataSeq() {
 	return current_data_seq;
 }
 
@@ -258,7 +258,7 @@ uint8_t sync_data_fragment(void* data, uint8_t data_len,
 	return i - from;
 }
 
-command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, nx_uint16_t seq) {
+command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint8_t seq) {
 	uint8_t i;
 	uint8_t msg_hist_index;
 	uint8_t var_hist_index;
@@ -365,12 +365,14 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 		var_hist[var_hist_index + i] = history[i];
 	} 
 
-	if ( var_hist_index > 0 ) {
-		printf("Receive -> sender is also behind, signal FennecData.resend(0)\n");
-		signal FennecData.resend(0);
-	}
+//	if ( var_hist_index > 0 ) {
+//		printf("Receive -> sender is also behind, signal FennecData.resend(0)\n");
+//		signal FennecData.resend(0);
+//	}
 
 sync:
+		
+	signal FennecData.resend(0);	/* just pass it further */
 	globalDataSyncWithNetwork();
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -387,6 +389,12 @@ command uint8_t FennecData.fillNxDataUpdate(void *ptr, uint8_t max_size) {
 	sync_data_fragment(ptr, max_size, &updated_size, 
 					var_hist, 0, VARIABLE_HISTORY, 0);
 	return updated_size;
+}
+
+command void FennecData.checkDataSeq(uint8_t msg_type) {
+	if (LOW_DATA_ID(msg_type) != LOW_DATA_ID(current_data_seq)) {
+		signal FennecData.resend(0);
+	}
 }
 
 
@@ -504,16 +512,7 @@ default event void Param.updated[uint8_t layer, process_t process_id](uint8_t va
 	printf("default updated [%d %d]\n", layer, process_id);
 }
 
-/** 
-	Global C-like functions - part of ff_functions 
-*/
-
-nx_uint8_t setFennecType(uint8_t id) @C() {
-	nx_uint8_t newType;
-	newType = id << 4;
-	newType += (call FennecData.getDataSeq() & 0x0F);
-	return newType;
-}
+ 
 
 }
 

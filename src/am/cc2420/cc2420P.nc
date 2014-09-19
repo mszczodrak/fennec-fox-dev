@@ -126,8 +126,6 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t 
 	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
 	call Param.get(POWER, &power, sizeof(power));
 
-	printf("AMSend send proc %d\n", call AMPacket.type(msg));
-
 	call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
 	call PacketTransmitPower.set(msg, power);
 	return call SubAMSend.send[id](addr, msg, len);
@@ -146,7 +144,6 @@ command uint8_t AMSend.maxPayloadLength[am_id_t id]() {
 }
 
 command void* AMSend.getPayload[am_id_t id](message_t* msg, uint8_t len) {
-	printf("payload for process %d\n", call AMPacket.type(msg));
 	return call SubAMSend.getPayload[id](msg, len);
 }
 

@@ -60,6 +60,7 @@ FennecP.Boot -> MainC;
 FennecP.Leds -> LedsC;
 FennecP.SplitControl -> NetworkStateC;
 FennecP.Random -> RandomC;
+FennecP.FennecData -> FennecCacheP;
 
 FennecData = FennecCacheP;
 Param = FennecCacheP;

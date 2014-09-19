@@ -45,6 +45,7 @@ uses interface Boot;
 uses interface Leds;
 uses interface SplitControl;
 uses interface Random;
+uses interface FennecData;
 
 uses interface SerialDbgs;
 }
@@ -310,6 +311,8 @@ default event void FennecState.resend() {}
 bool validProcessId(uint8_t msg_type) @C() {
 	struct network_process **npr;
 
+	call FennecData.checkDataSeq(msg_type);
+
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
 		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
@@ -327,5 +330,14 @@ bool validProcessId(uint8_t msg_type) @C() {
 	return FALSE;
 }
 
+nx_uint8_t setFennecType(uint8_t id) @C() {
+	nx_uint8_t newType;
+	newType = id << 4;
+	newType += (call FennecData.getDataSeq() & 0x0F);
+	return newType;
+}
+
+event void FennecData.resend(bool immediate) {}
+event void FennecData.dump() {}
 
 }
