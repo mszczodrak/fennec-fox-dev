@@ -106,21 +106,26 @@ event void EventDelay.fired() {
 	post updateData();
 }
 
-task void updateData() {
-	uint32_t v = call Random.rand32();
+void checkMaxData(uint32_t v) {
 	if (max_val < v) {
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Node [%d] set MAX_SENSE %lu < %lu\n", 
 					TOS_NODE_ID, max_val, v);
 		#endif
+
 		max_val = v;
 		call Param.set(MAX_SENSE, &max_val, sizeof(max_val));
+		call EventDelay.startOneShot(event_delay);
 	} else {
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("Node [%d] pass ... %lu >= %lu\n", 
 					TOS_NODE_ID, max_val, v);
 		#endif
 	}
+}
+
+task void updateData() {
+	checkMaxData(call Random.rand32());
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
@@ -136,7 +141,11 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void Param.updated(uint8_t var_id) {
-	printf("Application var %d updated\n", var_id);
+	uint32_t temp;
+	call Param.get(MAX_SENSE, &temp, sizeof(temp));
+
+	printf("Application var %d updated to &lu\n", var_id, temp);
+	checkMaxData(temp);
 }
 
 }
