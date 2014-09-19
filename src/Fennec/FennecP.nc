@@ -110,20 +110,15 @@ task void send_state_update() {
 
 bool validProcessId(uint8_t msg_type) @C() {
 	struct network_process **npr;
-	uint8_t low_proc_id = LOW_PROC_ID(msg_type);
-	uint8_t low_data_id = LOW_DATA_ID(msg_type);
-
-	printf("validProcessId type: %d    low_proc: %d   low_data: %d\n",
-			msg_type, low_proc_id, low_data_id);
 
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
-		if (LOW_PROC_ID((*npr)->process_id) == low_proc_id) {
+		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
 		}
 	}
 
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
-		if (LOW_PROC_ID((*npr)->process_id) == low_proc_id) {
+		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
 		}
 	}
@@ -137,7 +132,6 @@ nx_uint8_t setFennecType(uint8_t id) @C() {
 	nx_uint8_t newType;
 	newType = id << 4;
 	newType += (call FennecData.getDataSeq() & 0x0F);
-	printf("got id: %d, current seq: %d   -> return %d\n", id, call FennecData.getDataSeq(), newType);
 	return newType;
 }
 
