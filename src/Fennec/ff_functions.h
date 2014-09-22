@@ -40,7 +40,7 @@
 #include "ff_structs.h"
 
 #define LOW_PROC_ID(x) (x >> 4)
-#define LOW_DATA_ID(x) (x & 0x0F)
+#define LOW_DATA_ID(x) (x & 0x0E)
 #define LOW_ID(x)      (x & 0x0F)
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
