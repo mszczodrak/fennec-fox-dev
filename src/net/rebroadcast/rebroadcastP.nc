@@ -152,6 +152,8 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
 
+	printf("Rebroadcast SubReceive.receive\n");
+
 	dbg("", "[%d] rebroadcast Receive.receive(0x%1x, 0x%1x, %d )",
 			process, msg, 
 			ptr + sizeof(nx_struct rebroadcast_header), 

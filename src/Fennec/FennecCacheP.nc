@@ -337,6 +337,9 @@ command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* his
 
 	if ( msg_hist_index == 0 && var_hist_index > 0 ) {
 		/* received message is behind */
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+			printf("Received message is behind\n");
+#endif
 		signal FennecData.resend(0);
 		return;
 	}

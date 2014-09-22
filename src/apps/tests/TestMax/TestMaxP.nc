@@ -101,7 +101,7 @@ event void SenseTimer.fired() {
 	uint16_t rand_delay = call Random.rand16() % sense_delay;
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("fired\n");
+	printf("Application fired\n");
 #endif
 
 	post updateData();

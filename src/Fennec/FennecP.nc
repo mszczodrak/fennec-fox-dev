@@ -311,16 +311,14 @@ default event void FennecState.resend() {}
 bool validProcessId(uint8_t msg_type) @C() {
 	struct network_process **npr;
 
-	call FennecData.checkDataSeq(msg_type);
-
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
-		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
+		if (LOW_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
 		}
 	}
 
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
-		if (LOW_PROC_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
+		if (LOW_ID((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
 		}
 	}

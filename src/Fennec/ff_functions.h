@@ -41,6 +41,7 @@
 
 #define LOW_PROC_ID(x) (x >> 4)
 #define LOW_DATA_ID(x) (x & 0x0F)
+#define LOW_ID(x)      (x & 0x0F)
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
