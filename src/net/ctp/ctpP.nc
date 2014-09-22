@@ -93,7 +93,29 @@ event message_t* CtpSnoop.receive(message_t* msg, void* payload, uint8_t len) {
 }
 
 event void Param.updated(uint8_t var_id) {
+	uint16_t temp;
+	if (var_id != ROOT) {
+		return;
+	}
 
+        call Param.get(ROOT, &temp, sizeof(temp));
+
+	if (temp == root) {
+		/* no change */
+		return;
+	}
+
+	if (root == TOS_NODE_ID) {
+		call RootControl.unsetRoot();
+	}
+
+	root = temp;
+
+	if (root == TOS_NODE_ID) {
+		call LowPowerListening.setLocalWakeupInterval(0);
+		call RootControl.setRoot();
+	}
 }
+
 
 }

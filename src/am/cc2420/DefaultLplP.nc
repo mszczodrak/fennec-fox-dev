@@ -278,7 +278,7 @@ implementation {
       call OffTimer.stop();
       call SendDoneTimer.stop();
       call SendState.toIdle();
-      post reportStartDone();
+      post reportStopDone();
       return;
     }
 
@@ -292,7 +292,7 @@ implementation {
       } else {        
         call OffTimer.stop();
         call SendDoneTimer.stop();
-        post reportStartDone();
+        post reportStopDone();
       }
     }
   }
