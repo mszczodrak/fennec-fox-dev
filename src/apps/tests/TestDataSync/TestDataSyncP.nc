@@ -68,7 +68,9 @@ uint16_t seqno;
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 
+	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("update delay is %u\n", update_delay);
+	#endif
 	call Timer.startOneShot(update_delay);
 
 #ifdef __DBGS__APPLICATION__
@@ -138,7 +140,9 @@ task void updateData() {
 
 event void Timer.fired() {
 	uint16_t rand_delay = call Random.rand16() % update_delay;
+	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("fired\n");
+	#endif
 	post updateData();
 	call Timer.startOneShot(update_delay / 2 + rand_delay);
 }
@@ -156,7 +160,9 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void Param.updated(uint8_t var_id) {
+	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Application var %d updated\n", var_id);
+	#endif
 }
 
 }

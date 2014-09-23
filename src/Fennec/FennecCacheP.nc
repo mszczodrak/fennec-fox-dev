@@ -33,6 +33,7 @@
   */
 
 #include <Fennec.h>
+#include "hashing.h"
 
 module FennecCacheP @safe() {
 provides interface FennecData;
@@ -47,6 +48,12 @@ implementation {
 
 norace uint8_t current_data_seq;
 nx_uint8_t var_hist[VARIABLE_HISTORY];
+uint16_t data_crc;
+
+task void update_data_crc() {
+	data_crc = crc16(0, call FennecData.getNxDataPtr(),
+					call FennecData.getNxDataLen());
+}
 
 event void Boot.booted() {
 	uint8_t i = 0;
@@ -54,6 +61,7 @@ event void Boot.booted() {
 		var_hist[i] = UNKNOWN;
 	}
 	current_data_seq = 0;
+	post update_data_crc();
 }
 
 /** 
