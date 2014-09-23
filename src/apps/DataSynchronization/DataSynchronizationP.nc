@@ -89,7 +89,7 @@ task void send_msg() {
 		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
 		memcpy(data_msg->history, call FennecData.getHistory(), VARIABLE_HISTORY);
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("sending len %d\n", data_msg->data_len);
+		//printf("sending len %d\n", data_msg->data_len);
 #endif
 	} else {
 		/* dump all the data
@@ -148,9 +148,9 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		process, msg, payload, len);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Receive.receive [seg: %d  offset: %d   data_len: %d]  from Node %d\n", 
-		data_msg->sequence, data_msg->dump_offset,
-		data_msg->data_len, call SubAMPacket.source(msg));
+	//printf("Receive.receive [seg: %d  offset: %d   data_len: %d]  from Node %d\n", 
+	//	data_msg->sequence, data_msg->dump_offset,
+	//	data_msg->data_len, call SubAMPacket.source(msg));
 #endif
 
 	if (call FennecData.getDataSeq() + VARIABLE_HISTORY < data_msg->sequence) {
@@ -193,8 +193,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	/* this is either a regular message update, or end of dump (history) so report to Fennec */
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Receive -> call updateData (len %d, seq %d)\n",
-			data_msg->data_len, data_msg->sequence);
+	//printf("Receive -> call updateData (len %d, seq %d)\n",
+	//		data_msg->data_len, data_msg->sequence);
 #endif
 
 	call Timer.stop();

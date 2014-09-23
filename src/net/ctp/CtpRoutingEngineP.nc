@@ -447,6 +447,7 @@ task void routeUpdate() {
     }
 
     event void BeaconSend.sendDone(message_t* msg, error_t error) {
+        post routeUpdate();
         if ((msg != &beaconMsgBuffer) || !sending) {
             //something smells bad around here
             return;
@@ -580,7 +581,6 @@ task void routeUpdate() {
 
     command void CtpInfo.triggerRouteUpdate() {
       resetInterval();
-      post routeUpdate();
      }
 
     command void CtpInfo.triggerImmediateRouteUpdate() {

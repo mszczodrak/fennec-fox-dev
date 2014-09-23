@@ -101,7 +101,7 @@ event void SenseTimer.fired() {
 	uint16_t rand_delay = call Random.rand16() % sense_delay;
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application fired\n");
+	//printf("Application fired\n");
 #endif
 
 	post updateData();
@@ -126,8 +126,8 @@ void checkMaxData(uint32_t v) {
 		call Param.set(MAX_SENSED, &max_val, sizeof(max_val));
 	} else {
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] pass ... %lu >= %lu\n", 
-					TOS_NODE_ID, max_val, v);
+			//printf("Node [%d] pass ... %lu >= %lu\n", 
+			//		TOS_NODE_ID, max_val, v);
 		#endif
 	}
 }
@@ -153,7 +153,7 @@ event void Param.updated(uint8_t var_id) {
 	call Param.get(MAX_SENSED, &temp, sizeof(temp));
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application var %d updated to %lu\n", var_id, temp);
+	//printf("Application var %d updated to %lu from %lu\n", var_id, temp, max_val);
 #endif
 	checkMaxData(temp);
 }
