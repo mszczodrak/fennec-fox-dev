@@ -48,10 +48,10 @@ implementation {
 
 norace uint8_t current_data_seq;
 nx_uint8_t var_hist[VARIABLE_HISTORY];
-uint16_t data_crc;
+uint16_t current_data_crc;
 
-task void update_data_crc() {
-	data_crc = crc16(0, call FennecData.getNxDataPtr(),
+void update_data_crc() {
+	current_data_crc = crc16(0, call FennecData.getNxDataPtr(),
 					call FennecData.getNxDataLen());
 }
 
@@ -61,7 +61,7 @@ event void Boot.booted() {
 		var_hist[i] = UNKNOWN;
 	}
 	current_data_seq = 0;
-	post update_data_crc();
+	update_data_crc();
 }
 
 /** 
@@ -93,6 +93,10 @@ command void* FennecData.getNxDataPtr() {
 
 command void* FennecData.getHistory() {
 	return var_hist;
+}
+
+command uint16_t FennecData.getDataCrc() {
+	return current_data_crc;
 }
 
 struct variable_info * getVariableInfo(uint8_t var_id) {
@@ -181,7 +185,8 @@ void signal_global_update(nx_uint8_t var_id) {
 /* returns the position in the received history from where
  * the history matches with the local status
  */
-uint8_t longestMatchStart(nx_uint8_t* hist1, nx_uint8_t *hist2, uint8_t* pus_index1, uint8_t* pus_index2) {
+uint8_t longestMatchStart(nx_uint8_t* hist1, nx_uint8_t *hist2,
+				uint8_t* pus_index1, uint8_t* pus_index2) {
 	uint8_t index_2;
 	uint8_t index_1;
 	uint8_t the_longest = 0;
@@ -191,7 +196,8 @@ uint8_t longestMatchStart(nx_uint8_t* hist1, nx_uint8_t *hist2, uint8_t* pus_ind
 	for ( index_1 = 0; index_1 < VARIABLE_HISTORY; index_1++ ) {
 		uint8_t v1 = index_1;
 		uint8_t temp_longest = 0;
-		for(index_2 = 0; index_2 < VARIABLE_HISTORY && v1 < VARIABLE_HISTORY; index_2++ ) {
+		for(index_2 = 0; (index_2 < VARIABLE_HISTORY) &&
+					(v1 < VARIABLE_HISTORY); index_2++ ) {
 			if (hist1[v1] == hist2[index_2]) {
 				temp_longest++;
 				v1++;
@@ -261,138 +267,103 @@ uint8_t sync_data_fragment(void* data, uint8_t data_len,
 	return i - from;
 }
 
-command void FennecData.updateData(void* data, uint8_t data_len, nx_uint8_t* history, uint8_t seq) {
+command void FennecData.updateData(void* in_data, uint8_t in_data_len, 
+		uint16_t in_data_crc, nx_uint8_t* in_history, uint8_t in_seq) {
 	uint8_t i;
 	uint8_t msg_hist_index;
 	uint8_t var_hist_index;
 	uint8_t hist_match_len;
 	uint8_t updated_size;
 
-	/* same message */
-//	if ((seq == current_data_seq) && 
-//		(memcmp(var_hist, history, VARIABLE_HISTORY) == 0)) {
-//		/* we do not check data! if there is inconsistency, we won't catch that */
-//		printf("Receive -> the same seq %d and history\n", seq);
-//		return;
-//	}
-
-	/* someone lost track of the data, dump it */
-	if (current_data_seq > VARIABLE_HISTORY + seq) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("Receive -> got old sequence %d, signal FennecData.dump() \n", seq);
+	printf("updateData len: %d  crc: %d  seq: %d\n", 
+				in_data_len, in_data_crc, in_seq);
 #endif
-		signal FennecData.dump();
+
+	/* same message */
+	if (( in_data_crc == current_data_crc ) &&
+			( memcmp(var_hist, in_history, VARIABLE_HISTORY) == 0 ) ) {
+		if (in_seq > current_data_seq) {
+			current_data_seq = in_seq;
+		}
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("updateData -> same message\n");
+#endif
 		return;
 	}
 
-	/* if we were behind, update (assume the rest of the data is synced */
-	if (( current_data_seq + VARIABLE_HISTORY < seq )) {
-
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("Receive -> we are behind; sync all\n");
-#endif
-		sync_data_fragment(data, data_len,
-				&updated_size, history, i, VARIABLE_HISTORY, 1);
-		memcpy(var_hist, history, VARIABLE_HISTORY);
-		current_data_seq = seq;
-		goto sync;
-	}
-
-	/* resolve update difference */
-	hist_match_len = longestMatchStart(history, var_hist, &msg_hist_index, &var_hist_index);
+	/* Compare two history records */
+	hist_match_len = longestMatchStart(in_history, var_hist, 
+					&msg_hist_index, &var_hist_index);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Receive -> longestMatchStart returned hist_len %d  msg_ind %d  var_ind %d\n",
 			hist_match_len, msg_hist_index, var_hist_index);
 #endif
 
-	if ( hist_match_len < VARIABLE_HISTORY / 2 ) {
-		/* not much history to compare, sync all, use seq to decide */
-		if (seq < current_data_seq) {
-			/* received message is behind */
+	/* Can we merge ? */
+	if ( hist_match_len > ( VARIABLE_HISTORY / 2 ) && ( msg_hist_index > 0 )) {
+		uint8_t updated = sync_data_fragment(in_data, in_data_len, &updated_size, 
+						in_history, 0, msg_hist_index, 1);
+
+		update_data_crc();
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Receive -> too short history (%d < %d), signal FennecData.resend(0)\n", 
-				hist_match_len, VARIABLE_HISTORY / 2);
+		printf("merge: hist: %d - %d, crc %d - %d\n", updated,
+				msg_hist_index, in_data_crc, current_data_crc);
 #endif
-			signal FennecData.resend(0);
-			return;
-		}
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("Receive -> too short history (%d < %d), we sink\n",
-				hist_match_len, VARIABLE_HISTORY / 2);
-#endif
-		sync_data_fragment(data, data_len,
-						&updated_size, history,
-						0, VARIABLE_HISTORY, 1);
-		memcpy(var_hist, history, VARIABLE_HISTORY);
-		current_data_seq = seq;
-		goto sync;
-	}
-
-	if (hist_match_len == VARIABLE_HISTORY) {
-		/* history match, sync sequence */
-		if (seq > current_data_seq) {
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Receive -> just update seq to %d\n", seq);
-#endif
-			current_data_seq = seq;
-			signal FennecData.resend(0);
-		}
-		return;
-	}
-
-	if ( msg_hist_index == 0 && var_hist_index > 0 ) {
-		/* received message is behind */
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Received message is behind\n");
-#endif
-		signal FennecData.resend(0);
-		return;
-	}
-
-	if ( msg_hist_index > 0 ) {
-		/* we are behind */
-		uint8_t updated = sync_data_fragment(data, data_len, &updated_size, 
-						history, 0, msg_hist_index, 1);
-		if (updated != msg_hist_index) {
-			/* we are missing too many data updated */
+		if (( updated != msg_hist_index ) || 
+					( in_data_crc != current_data_crc )) {
+			/* we are missing too many data updates */
 			/* someone needs to give us a dump update */
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Receive -> updated %d != %d msg_hist_index, signal FennecData.resend(1)\n",
+			printf("merge ERROR -> updated %d != %d msg_hist_index, signal FennecData.resend(1)\n",
 				updated, msg_hist_index);
 #endif
-			current_data_seq = 0;
-			signal FennecData.resend(1);
-			return;
+			goto lost;
 		}
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> we are synchronizing... (msg_his %d, var_his %d)\n",
 				msg_hist_index, var_hist_index);
 #endif
 		current_data_seq += msg_hist_index;
-		if (seq > current_data_seq) {
-			current_data_seq = seq + var_hist_index;
+		if (in_seq > current_data_seq) {
+			current_data_seq = in_seq + var_hist_index;
 		}
+
+		/* sync history */
+		/* make space for msg history, while keeping the local diff in front */
+
+		for ( i = VARIABLE_HISTORY; i - msg_hist_index > var_hist_index; i-- ) {
+			var_hist[i-1] = var_hist[i-msg_hist_index-1];
+		}
+
+		/* copy the message diff history */
+		for ( i = 0; i < msg_hist_index; i++) {
+			var_hist[var_hist_index + i] = in_history[i];
+		} 
+
+		goto sync;
 	}
 
-	/* sync history */
-	/* make space for msg history, while keeping the local diff in front */
 
-	for ( i = VARIABLE_HISTORY; i - msg_hist_index > var_hist_index; i-- ) {
-		var_hist[i-1] = var_hist[i-msg_hist_index-1];
+	/* someone lost track of the data, dump it */
+	if (current_data_seq > VARIABLE_HISTORY + in_seq) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("Receive -> got old sequence %d, signal FennecData.dump() \n", in_seq);
+#endif
+		signal FennecData.dump();
+		return;
 	}
 
-	/* copy the message diff history */
-	for ( i = 0; i < msg_hist_index; i++) {
-		var_hist[var_hist_index + i] = history[i];
-	} 
-
-//	if ( var_hist_index > 0 ) {
-//		printf("Receive -> sender is also behind, signal FennecData.resend(0)\n");
-//		signal FennecData.resend(0);
-//	}
+lost:
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("FennecData -> we are lost! - reset data\n");
+#endif
+	current_data_seq = 0;
+	signal FennecData.resend(1);
+	return;
 
 sync:
 		
@@ -521,6 +492,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	}
 	var_hist[0] = name;
 
+	update_data_crc();
 	globalDataSyncWithLocal();
 	current_data_seq++;
 	signal FennecData.resend(1);
