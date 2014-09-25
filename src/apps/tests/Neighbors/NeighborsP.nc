@@ -73,7 +73,7 @@ uint16_t tx_delay;
 
 uint8_t neighborhoodCounter;
 
-NeighborsEntry my_data[NEIGHBORHOOD_DATA];
+NeighborsData my_data[NEIGHBORHOOD_DATA];
 
 message_metadata_t* getMetadata(message_t *msg) {
 	return (message_metadata_t*)msg->metadata;
@@ -109,7 +109,8 @@ void updateNeighborhoodCounter() {
 	printf("Neighborhood size %d\n", neighborhoodCounter);
 }
 
-void add_receive_node(am_addr_t src, uint8_t tx, uint8_t fresh) {
+void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
+					nx_uint16_t size, uint8_t fresh) {
 	uint8_t i;
 
 	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
@@ -135,6 +136,8 @@ void add_receive_node(am_addr_t src, uint8_t tx, uint8_t fresh) {
 	}
 
 	my_data[i].node = src;
+	my_data[i].size = size;
+	my_data[i].seq = seq;
 
 	if (fresh) {
 		/* this node hears me */
@@ -146,7 +149,8 @@ void add_receive_node(am_addr_t src, uint8_t tx, uint8_t fresh) {
 		my_data[i].rec = 0;
 	}
 
-	printf("Record update: Node %d   TX %d    Rec %d\n", src, tx, my_data[i].rec);
+	printf("Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
+			src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
 
 	updateNeighborhoodCounter();
 }
@@ -191,7 +195,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 			/* this node hears us */
 			if ( m->data[i].radio_tx == radio_tx_power ) {
 				/* this node hears us with the current radio control */
-				add_receive_node(m->src, m->tx, 1);
+				add_receive_node(m->src, m->tx, m->seq, m->size, 1);
 			} else {
 				printf("Node %d has old record\n", m->src);
 				/* this node does not know about us anymore */
@@ -200,7 +204,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		}
 	}
 
-	add_receive_node(m->src, m->tx, 0);
+	add_receive_node(m->src, m->tx, m->seq, m->size, 0);
 	printf("Node %d does not hear us\n", m->src);
 	/* this node does not know about us */
 	return msg;
@@ -211,6 +215,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void SendTimer.fired() {
+	uint8_t i;
 	NeighborsMsg *msg = (NeighborsMsg*) call SubAMSend.getPayload(&packet,
 							sizeof(NeighborsMsg));
 	if (msg == NULL || busy) {
@@ -223,7 +228,11 @@ event void SendTimer.fired() {
 	msg->tx = radio_tx_power;
 	msg->seq = ++seqno;
 	msg->size = neighborhoodCounter;
-	memcpy(msg->data, my_data, NEIGHBORHOOD_DATA * sizeof(NeighborsEntry));
+	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
+		msg->data[i].node = my_data[i].node;
+		msg->data[i].radio_tx = my_data[i].radio_tx;
+		msg->data[i].rec = my_data[i].rec;
+	}
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);

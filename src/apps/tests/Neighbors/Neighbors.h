@@ -40,17 +40,25 @@
 
 #define NEIGHBORHOOD_DATA 	18
 
+typedef nx_struct NeighborsData {
+	nx_am_addr_t	node;
+	nx_uint16_t	rec;
+	nx_uint8_t	radio_tx;
+	nx_uint16_t	seq;
+	nx_uint8_t	size; 	
+} NeighborsData;
+
 typedef nx_struct NeighborsEntry {
-	nx_am_addr_t node;
-	nx_uint16_t  rec;
-	nx_uint8_t   radio_tx;
+	nx_am_addr_t	node;
+	nx_uint16_t	rec;
+	nx_uint8_t	radio_tx;
 } NeighborsEntry;
 
 typedef nx_struct NeighborsMsg {
-	nx_am_addr_t src;
-	nx_uint8_t tx;
-	nx_uint16_t seq;
-	nx_uint8_t size;
+	nx_am_addr_t	src;
+	nx_uint8_t	tx;
+	nx_uint16_t	seq;
+	nx_uint8_t	size;
 	NeighborsEntry data[NEIGHBORHOOD_DATA];
 } NeighborsMsg;
 
