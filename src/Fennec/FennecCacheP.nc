@@ -325,10 +325,6 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 
 
 	/* Can we merge ? */
-//	if ( (( current_data_seq < in_data_seq ) && ( in_hist_index > current_hist_index )) || 
-//	     (( current_data_seq > in_data_seq ) && ( in_hist_index < current_hist_index )) ||
-//	     (( current_data_seq == in_data_seq ) && ( in_hist_index == current_hist_index )) ) {
-
 	if ((hist_match_len > (VARIABLE_HISTORY / 2)) && (( in_hist_index > 0 ) || ( current_hist_index > 0 ))) {
 		uint8_t updated = sync_data_fragment(in_data, in_data_len, &updated_size, 
 						in_history, 0, in_hist_index, 1);
@@ -372,20 +368,22 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 		//	var_hist[current_hist_index + i] = in_history[i];
 		//}
 
-		done_max = 0;
+		done_max = 255;
 		rep = in_hist_index + current_hist_index;
+
 		while(rep > 0) {
-			printf("rep %d\n", rep);
 			this_max = 0;
+
+			/* Find the largest variable ID to be sorted */
 	
 			for ( i = 0; i < in_hist_index; i++  ) {
-				if ((in_history[i] > this_max) && (in_history[i] > done_max)) {
+				if ((in_history[i] > this_max) && (in_history[i] < done_max)) {
 					this_max = in_history[i];
 				}
 			}
 
 			for ( i = 0; i < current_hist_index; i++  ) {
-				if ((var_hist[i] > this_max) && (var_hist[i] > done_max)) {
+				if ((var_hist[i] > this_max) && (var_hist[i] < done_max)) {
 					this_max = var_hist[i];
 				}
 			}
@@ -394,14 +392,14 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 
 			for ( i = 0; i < in_hist_index; i++  ) {
 				if (in_history[i] == this_max) {
-					var_hist[rep - 1] = this_max;
 					rep--;
+					var_hist[rep] = this_max;
 				}
 			}
 			for ( i = 0; i < current_hist_index; i++  ) {
 				if (var_hist[i] == this_max) {
-					var_hist[rep - 1] = this_max;
 					rep--;
+					var_hist[rep] = this_max;
 				}
 			}
 			done_max = this_max;
