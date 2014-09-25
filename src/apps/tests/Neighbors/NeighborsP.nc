@@ -92,6 +92,7 @@ task void send_timer() {
 
 void start_new_radio_tx_test() {
 	busy = FALSE;
+	neighborhoodCounter = 0;
 	seqno = 0;
 	post send_timer();
 }
@@ -101,7 +102,7 @@ void updateNeighborhoodCounter() {
 	neighborhoodCounter = 0;
 
 	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
-		if (my_data[i].radio_tx == radio_tx_power) {
+		if (( my_data[i].radio_tx == radio_tx_power ) && ( my_data[i].rec > 0 )) {
 			neighborhoodCounter++;
 		}
 	}
@@ -138,6 +139,7 @@ void add_receive_node(am_addr_t src, uint8_t tx, uint8_t fresh) {
 	if (fresh) {
 		/* this node hears me */
 		my_data[i].rec++;
+		my_data[i].radio_tx = tx;
 	} else {
 		/* this node does not hear me */
 		my_data[i].radio_tx = tx;
@@ -160,6 +162,7 @@ command error_t SplitControl.start() {
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 
+	
 	start_new_radio_tx_test();
 	
 	signal SplitControl.startDone(SUCCESS);
@@ -173,13 +176,17 @@ command error_t SplitControl.stop() {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
+	post send_timer();
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t i;
 	NeighborsMsg *m = (NeighborsMsg*) payload;
 
-	for ( i = 0; i < m->size; i++ ) {
+	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
+		if (m->data[i].node == BROADCAST) {
+			break;
+		}
 		if (m->data[i].node == TOS_NODE_ID) {
 			/* this node hears us */
 			if ( m->data[i].radio_tx == radio_tx_power ) {
@@ -215,6 +222,7 @@ event void SendTimer.fired() {
 	msg->src = TOS_NODE_ID;
 	msg->tx = radio_tx_power;
 	msg->seq = ++seqno;
+	msg->size = neighborhoodCounter;
 	memcpy(msg->data, my_data, NEIGHBORHOOD_DATA * sizeof(NeighborsEntry));
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg)) != SUCCESS) {
