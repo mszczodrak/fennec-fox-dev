@@ -38,7 +38,7 @@
 
 #include "SerialDbgs.h"
 
-#define NEIGHBORHOOD_DATA 	20
+#define NEIGHBORHOOD_DATA 	18
 
 typedef nx_struct NeighborsEntry {
 	nx_am_addr_t node;
@@ -46,15 +46,12 @@ typedef nx_struct NeighborsEntry {
 	nx_uint8_t   radio_tx;
 } NeighborsEntry;
 
-typedef nx_struct NeighborsMsgEntry {
-	nx_am_addr_t node;
-	nx_uint16_t  rec;
-} NeighborsMsgEntry;
-
 typedef nx_struct NeighborsMsg {
 	nx_am_addr_t src;
-	nx_uint32_t seq;
-	NeighborsMsgEntry[NEIGHBORHOOD_DATA];
+	nx_uint8_t tx;
+	nx_uint16_t seq;
+	nx_uint8_t size;
+	NeighborsEntry data[NEIGHBORHOOD_DATA];
 } NeighborsMsg;
 
 #endif

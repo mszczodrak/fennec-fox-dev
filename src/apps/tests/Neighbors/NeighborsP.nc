@@ -71,8 +71,9 @@ uint8_t min_size;
 uint8_t radio_tx_power;
 uint16_t tx_delay;
 
-uint8_t neighborhood_in;	/* how many can I hear */
-uint8_t neighborhood_out;	/* how many can hear me */
+uint8_t neighborhoodCounter;
+
+NeighborsEntry my_data[NEIGHBORHOOD_DATA];
 
 message_metadata_t* getMetadata(message_t *msg) {
 	return (message_metadata_t*)msg->metadata;
@@ -95,7 +96,66 @@ void start_new_radio_tx_test() {
 	post send_timer();
 }
 
+void updateNeighborhoodCounter() {
+	uint8_t i;
+	neighborhoodCounter = 0;
+
+	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
+		if (my_data[i].radio_tx == radio_tx_power) {
+			neighborhoodCounter++;
+		}
+	}
+	printf("Neighborhood size %d\n", neighborhoodCounter);
+}
+
+void add_receive_node(am_addr_t src, uint8_t tx, uint8_t fresh) {
+	uint8_t i;
+
+	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
+		if (my_data[i].node == src) {
+			break;
+		}
+		if (my_data[i].node == BROADCAST) {
+			break;
+		}
+	}
+
+	if ( i == NEIGHBORHOOD_DATA ) {
+		/* evict someone */
+		uint16_t smallest_rec = 32000;
+		uint8_t temp = 0;
+		for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
+			if ( my_data[i].rec < smallest_rec) {
+				smallest_rec = my_data[i].rec;
+				temp = i;
+			}
+		}
+		i = temp;
+	}
+
+	my_data[i].node = src;
+
+	if (fresh) {
+		/* this node hears me */
+		my_data[i].rec++;
+	} else {
+		/* this node does not hear me */
+		my_data[i].radio_tx = tx;
+		my_data[i].rec = 0;
+	}
+
+	printf("Record update: Node %d   TX %d    Rec %d\n", src, tx, my_data[i].rec);
+
+	updateNeighborhoodCounter();
+}
+
 command error_t SplitControl.start() {
+	uint8_t i;
+
+	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
+		my_data[i].node = BROADCAST;
+	}
+
 	call Param.get(MIN_SIZE, &min_size, sizeof(min_size));
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
@@ -116,24 +176,26 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	//int8_t rssi = (int8_t) call SubPacketRSSI.get(msg);
-
-#ifdef FENNEC_TOS_PRINTF
-	//int8_t lqi = (int8_t) call SubPacketLinkQuality.get(msg);
-#endif
-
-#ifdef __DBGS__APPLICATION__
+	uint8_t i;
 	NeighborsMsg *m = (NeighborsMsg*) payload;
-	call SerialDbgs.dbgs(DBGS_RECEIVE_BEACON, call SubAMPacket.source(msg),
-		//call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
-		call SubPacketRSSI.get(msg), m->seq);
-#endif
 
-	signal TestTimer.fired();
+	for ( i = 0; i < m->size; i++ ) {
+		if (m->data[i].node == TOS_NODE_ID) {
+			/* this node hears us */
+			if ( m->data[i].radio_tx == radio_tx_power ) {
+				/* this node hears us with the current radio control */
+				add_receive_node(m->src, m->tx, 1);
+			} else {
+				printf("Node %d has old record\n", m->src);
+				/* this node does not know about us anymore */
+			}
+			return msg;
+		}
+	}
 
-	call Leds.led0On();
-
-
+	add_receive_node(m->src, m->tx, 0);
+	printf("Node %d does not hear us\n", m->src);
+	/* this node does not know about us */
 	return msg;
 }
 
@@ -144,16 +206,20 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void SendTimer.fired() {
 	NeighborsMsg *msg = (NeighborsMsg*) call SubAMSend.getPayload(&packet,
 							sizeof(NeighborsMsg));
-	if (msg != NULL && !busy) {
-		busy = TRUE;
-		call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
-		msg->src = TOS_NODE_ID;
-		msg->tx = radio_tx_power;
-		msg->seq = ++seqno;
-		call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg));
+	if (msg == NULL || busy) {
+		post send_timer();
 	}
 
-	post send_timer();
+	busy = TRUE;
+	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+	msg->src = TOS_NODE_ID;
+	msg->tx = radio_tx_power;
+	msg->seq = ++seqno;
+	memcpy(msg->data, my_data, NEIGHBORHOOD_DATA * sizeof(NeighborsEntry));
+
+	if (call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg)) != SUCCESS) {
+		signal SubAMSend.sendDone(&packet, FAIL);
+	}
 }
 
 event void TestTimer.fired() {
