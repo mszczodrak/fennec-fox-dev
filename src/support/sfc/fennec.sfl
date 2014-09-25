@@ -48,7 +48,7 @@ use application rssi $(FENNEC_FOX_LIB)/apps/tests/Rssi (
 		int8_t threshold_1 = -80,
 		int8_t threshold_2 = -50)
 
-use application neighbor $(FENNEC_FOX_LIB)/apps/tests/Neighborhood (
+use application neighbor $(FENNEC_FOX_LIB)/apps/tests/Neighbors (
 		uint8_t min_size = 4,
 		uint8_t radio_tx_power = 31,
 		uint16_t tx_delay = 5000)

@@ -26,36 +26,36 @@
  */
 
 /**
-  * Fennec Fox Neighborhood Application module
+  * Fennec Fox Neighbors Application module
   *
   * @author: Marcin K Szczodrak
   * @updated: 05/22/2011
   */
 
 
-#ifndef __Neighborhood_APP_H_
-#define __Neighborhood_APP_H_
+#ifndef __Neighbors_APP_H_
+#define __Neighbors_APP_H_
 
 #include "SerialDbgs.h"
 
 #define NEIGHBORHOOD_DATA 	20
 
-typedef nx_struct NeighborhoodEntry {
+typedef nx_struct NeighborsEntry {
 	nx_am_addr_t node;
 	nx_uint16_t  rec;
 	nx_uint8_t   radio_tx;
-} NeighborhoodEntry;
+} NeighborsEntry;
 
-typedef nx_struct NeighborhoodMsgEntry {
+typedef nx_struct NeighborsMsgEntry {
 	nx_am_addr_t node;
 	nx_uint16_t  rec;
-} NeighborhoodMsgEntry;
+} NeighborsMsgEntry;
 
-typedef nx_struct NeighborhoodMsg {
+typedef nx_struct NeighborsMsg {
 	nx_am_addr_t src;
 	nx_uint32_t seq;
-	NeighborhoodMsgEntry[NEIGHBORHOOD_DATA];
-} NeighborhoodMsg;
+	NeighborsMsgEntry[NEIGHBORHOOD_DATA];
+} NeighborsMsg;
 
 #endif
 

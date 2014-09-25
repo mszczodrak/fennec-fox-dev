@@ -26,14 +26,14 @@
  */
 
 /**
-  * Fennec Fox Neighborhood Application module
+  * Fennec Fox Neighbors Application module
   *
   * @author: Marcin K Szczodrak
   * @updated: 05/22/2011
   */
 
 
-generic configuration NeighborhoodC(process_t process) {
+generic configuration NeighborsC(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -52,35 +52,35 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
-components new NeighborhoodP(process);
-SplitControl = NeighborhoodP;
+components new NeighborsP(process);
+SplitControl = NeighborsP;
 
-Param = NeighborhoodP;
+Param = NeighborsP;
 
-SubAMSend = NeighborhoodP.SubAMSend;
-SubReceive = NeighborhoodP.SubReceive;
-SubSnoop = NeighborhoodP.SubSnoop;
-SubAMPacket = NeighborhoodP.SubAMPacket;
-SubPacket = NeighborhoodP.SubPacket;
-SubPacketAcknowledgements = NeighborhoodP.SubPacketAcknowledgements;
+SubAMSend = NeighborsP.SubAMSend;
+SubReceive = NeighborsP.SubReceive;
+SubSnoop = NeighborsP.SubSnoop;
+SubAMPacket = NeighborsP.SubAMPacket;
+SubPacket = NeighborsP.SubPacket;
+SubPacketAcknowledgements = NeighborsP.SubPacketAcknowledgements;
 
-SubPacketLinkQuality = NeighborhoodP.SubPacketLinkQuality;
-SubPacketTransmitPower = NeighborhoodP.SubPacketTransmitPower;
-SubPacketRSSI = NeighborhoodP.SubPacketRSSI;
+SubPacketLinkQuality = NeighborsP.SubPacketLinkQuality;
+SubPacketTransmitPower = NeighborsP.SubPacketTransmitPower;
+SubPacketRSSI = NeighborsP.SubPacketRSSI;
 
 components LedsC;
-NeighborhoodP.Leds -> LedsC;
+NeighborsP.Leds -> LedsC;
 
 components RandomC;
-NeighborhoodP.Random -> RandomC;
+NeighborsP.Random -> RandomC;
 
 components new TimerMilliC() as SendTimerC;
-NeighborhoodP.SendTimer -> SendTimerC;
+NeighborsP.SendTimer -> SendTimerC;
 
 components new TimerMilliC() as LedTimerC;
-NeighborhoodP.LedTimer -> LedTimerC;
+NeighborsP.LedTimer -> LedTimerC;
 
 components SerialDbgsC;
-NeighborhoodP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+NeighborsP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 
 }

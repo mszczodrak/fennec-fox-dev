@@ -26,7 +26,7 @@
  */
 
 /**
-  * Fennec Fox Neighborhood Application module
+  * Fennec Fox Neighbors Application module
   *
   * @author: Marcin K Szczodrak
   * @updated: 05/22/2011
@@ -34,9 +34,9 @@
 
 
 #include <Fennec.h>
-#include "Neighborhood.h"
+#include "Neighbors.h"
 
-generic module NeighborhoodP(process_t process) {
+generic module NeighborsP(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -123,7 +123,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #endif
 
 #ifdef __DBGS__APPLICATION__
-	NeighborhoodMsg *m = (NeighborhoodMsg*) payload;
+	NeighborsMsg *m = (NeighborsMsg*) payload;
 	call SerialDbgs.dbgs(DBGS_RECEIVE_BEACON, call SubAMPacket.source(msg),
 		//call SubPacketRSSI.get(msg), call SubPacketLinkQuality.get(msg));
 		call SubPacketRSSI.get(msg), m->seq);
@@ -142,15 +142,15 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void SendTimer.fired() {
-	NeighborhoodMsg *msg = (NeighborhoodMsg*) call SubAMSend.getPayload(&packet,
-							sizeof(NeighborhoodMsg));
+	NeighborsMsg *msg = (NeighborsMsg*) call SubAMSend.getPayload(&packet,
+							sizeof(NeighborsMsg));
 	if (msg != NULL && !busy) {
 		busy = TRUE;
 		call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 		msg->src = TOS_NODE_ID;
 		msg->tx = radio_tx_power;
 		msg->seq = ++seqno;
-		call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborhoodMsg));
+		call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg));
 	}
 
 	post send_timer();
