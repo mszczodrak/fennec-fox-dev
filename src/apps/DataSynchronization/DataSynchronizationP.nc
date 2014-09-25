@@ -77,12 +77,14 @@ task void send_msg() {
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
    
 	if (data_msg == NULL) {
+		printf("NULL ptr\n");
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
 	}
 
 	data_msg->sequence = (nx_uint16_t) call FennecData.getDataSeq();
 	data_msg->dump_offset = dump_offset;
+	data_msg->crc = (nx_uint16_t) call FennecData.getDataCrc();
 
 	if (( dump_offset == UNKNOWN ) || ( dump_offset == global_data_len )) {
 		/* regular resend or end of dump */
@@ -112,11 +114,14 @@ task void send_msg() {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - SUCCESS", process);
+		printf("Send DataSync\n");
 	}
 }
 
 event void FennecData.resend(bool immediate) {
+	printf("FennecData.resend(%d)\n", immediate);
 	if (immediate) {
+		call Timer.stop();
 		post send_msg();
 	} else {
 		post schedule_send();
@@ -147,59 +152,34 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("Receive.receive [seg: %d  offset: %d   data_len: %d]  from Node %d\n", 
-	//	data_msg->sequence, data_msg->dump_offset,
-	//	data_msg->data_len, call SubAMPacket.source(msg));
-#endif
+	call Timer.stop();
 
-	if (call FennecData.getDataSeq() + VARIABLE_HISTORY < data_msg->sequence) {
-		/* this node is behind the rest of the network */		
+	if (data_msg->dump_offset != UNKNOWN) {
+		/* this is dump message */
+		if (call FennecData.getDataSeq() == 0) {
+			/* we are synchronizing with the cache dump */
 
-		if (data_msg->dump_offset == UNKNOWN) {
-			/* let others know that we are behind */
+			if ( data_msg->dump_offset < global_data_len ) {
+				uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("We are behind, let others know\n");
+				printf("Keep syncing dump (offset %d, len %d)\n",
+					data_msg->dump_offset, data_msg->data_len);
 #endif
-			signal FennecData.resend(1);
+				memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
+				return msg;
+			}
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+			printf("end of syncing, update history and that's it\n");
+#endif
+		} else {
 			return msg;
-		}
-
-		call Timer.stop();
-
-		/* we are synchronizing with the cache dump */
-		if ( data_msg->dump_offset < global_data_len ) {
-			uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Keep syncing dump (offset %d, len %d)\n",
-				data_msg->dump_offset, data_msg->data_len);
-#endif
-			memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
-			return msg;
-		}
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("end of syncing, update history and that's it\n");
-#endif
-	} else {
-		if (data_msg->dump_offset != UNKNOWN) {
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("ignore cache dump\n");
-#endif
-			/* ignore cache updates */
-			call Timer.stop();
-			return msg;	
 		}
 	}
 
-	/* this is either a regular message update, or end of dump (history) so report to Fennec */
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("Receive -> call updateData (len %d, seq %d)\n",
-	//		data_msg->data_len, data_msg->sequence);
-#endif
+	 printf("Receive len: %d    crc: %u    seq: %d   from: %u\n", data_msg->data_len, data_msg->crc, 
+			data_msg->sequence, call SubAMPacket.source(msg));
 
-	call Timer.stop();
-
-	call FennecData.updateData(data_msg->data, data_msg->data_len, 
+	call FennecData.updateData(data_msg->data, data_msg->data_len, data_msg->crc,
 				data_msg->history, data_msg->sequence);
 	return msg;
 }
@@ -211,11 +191,12 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	/* check if the sent message was part of the dump process */
 	if (data_msg->dump_offset != UNKNOWN) {
 		global_data_len = call FennecData.getNxDataLen();
-		if (dump_offset == global_data_len) {
+		if (dump_offset >= global_data_len) {
 			dump_offset = UNKNOWN;
 		} else {
 			dump_offset += DATA_DUMP_MAX_PAYLOAD;
 			/* continue to dumping cache */
+			printf("continue dumping...\n");
 			post send_msg();
 		}
 	}

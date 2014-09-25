@@ -69,9 +69,9 @@ command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("update delay is %u\n", update_delay);
+	//printf("update delay is %u\n", update_delay);
 	#endif
-	call Timer.startOneShot(update_delay);
+	call Timer.startPeriodic(update_delay);
 
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
@@ -98,40 +98,40 @@ task void updateData() {
 	switch(v) {
 	case 1:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL1, v, d);
+//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+//					TOS_NODE_ID, seqno, VAL1, v, d);
 		#endif
 		call Param.set(VAL1, &d, sizeof(d));
 		break;
 
 	case 2:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL2, v, d);
+//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+//					TOS_NODE_ID, seqno, VAL2, v, d);
 		#endif
 		call Param.set(VAL2, &d, sizeof(d));
 		break;
 
 	case 3:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL3, v, d);
+//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+//					TOS_NODE_ID, seqno, VAL3, v, d);
 		#endif
 		call Param.set(VAL3, &d, sizeof(d));
 		break;
 
 	case 4:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL4, v, d);
+//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+//					TOS_NODE_ID, seqno, VAL4, v, d);
 		#endif
 		call Param.set(VAL4, &d, sizeof(d));
 		break;
 
 	default:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL5, v, d);
+//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+//					TOS_NODE_ID, seqno, VAL5, v, d);
 		#endif
 		call Param.set(VAL5, &d, sizeof(d));
 		break;
@@ -141,10 +141,10 @@ task void updateData() {
 event void Timer.fired() {
 	uint16_t rand_delay = call Random.rand16() % update_delay;
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("fired\n");
+	//printf("fired\n");
 	#endif
 	post updateData();
-	call Timer.startOneShot(update_delay / 2 + rand_delay);
+	call Timer.startPeriodic(update_delay / 2 + rand_delay);
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
@@ -161,7 +161,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Param.updated(uint8_t var_id) {
 	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application var %d updated\n", var_id);
+	//printf("Application var %d updated\n", var_id);
 	#endif
 }
 

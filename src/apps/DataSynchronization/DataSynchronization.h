@@ -8,6 +8,7 @@
 
 nx_struct fennec_network_data {
 	nx_uint16_t dump_offset;
+	nx_uint16_t crc;
 	nx_uint8_t sequence;
 	nx_uint8_t data_len;
 	nx_uint8_t data[DATA_SYNC_MAX_PAYLOAD];
