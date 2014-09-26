@@ -51,6 +51,7 @@ DBGS_NOT_ACKED                          = 52
 DBGS_ACKED                              = 53
 DBGS_CONGESTION				= 54
 
+DBGS_STATUS_UPDATE			= 60
 
 DBGS_SEND_CONTROL_MSG                   = 101
 DBGS_RECEIVE_CONTROL_MSG                = 102
