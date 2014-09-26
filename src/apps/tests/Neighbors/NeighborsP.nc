@@ -129,20 +129,28 @@ void updateNeighborhoodCounter() {
 		}
 	}
 
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Neighborhood size %d (%d) - numbers of neighbors in need %d\n", 
 				neighborhoodCounter, good_quality_neighbors,
 				neighbors_in_need);
+#endif
 
 #ifdef __DBGS__APPLICATION__
-        call SerialDbgs.dbgs(DBGS_MGMT_START, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
+        call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
 #endif
 
 	if (check_different_power) {
-		printf("Time to check different power level\n");
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < radio_tx_power) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 				printf("Set new power to %d\n", radio_powers[i]);
+#endif
+
+#ifdef __DBGS__APPLICATION__
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_powers[i]);
+#endif
 				radio_tx_power = radio_powers[i];
+
 				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 				break;
 			}
@@ -191,9 +199,14 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 		my_data[i].rec = 0;
 	}
 
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
 			src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
-
+#endif
+#ifdef __DBGS__APPLICATION__
+	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE, src, my_data[i].rec, seq);
+#endif
 	updateNeighborhoodCounter();
 }
 
@@ -242,7 +255,12 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 				/* this node hears us with the current radio control */
 				add_receive_node(m->src, m->tx, m->seq, m->size, 1);
 			} else {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 				printf("Node %d has old record\n", m->src);
+#endif
+#ifdef __DBGS__APPLICATION__
+				call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_STATE_FAIL, m->src, m->seq, m->data[i].radio_tx);
+#endif
 				/* this node does not know about us anymore */
 			}
 			return msg;
@@ -250,7 +268,9 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	add_receive_node(m->src, m->tx, m->seq, m->size, 0);
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Node %d does not hear us\n", m->src);
+#endif
 	/* this node does not know about us */
 	return msg;
 }
