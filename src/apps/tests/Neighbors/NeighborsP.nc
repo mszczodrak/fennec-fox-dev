@@ -69,9 +69,9 @@ uint16_t seqno;
 uint8_t min_size;
 uint8_t good_etx;
 uint8_t radio_tx_power;
+uint8_t num_to_check = 100;
 uint16_t tx_delay;
 
-#define CHECK_POWER	100
 #define NUM_RADIO_POWERS 8
 
 uint8_t neighborhoodCounter;
@@ -123,7 +123,7 @@ void updateNeighborhoodCounter() {
 				good_quality_neighbors++;
 			}
 
-			if ( my_data[i].rec > CHECK_POWER ) {
+			if ( my_data[i].rec > num_to_check ) {
 				check_different_power = TRUE;
 			}
 		}
@@ -216,6 +216,7 @@ command error_t SplitControl.start() {
 	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
+	call Param.get(NUM_TO_CHECK, &num_to_check, sizeof(num_to_check));
 
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);

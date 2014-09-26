@@ -55,7 +55,6 @@ uint16_t current_data_crc;
 void update_data_crc() {
 	current_data_crc = crc16(0, call FennecData.getNxDataPtr(),
 					call FennecData.getNxDataLen());
-	printf("new crc is %u\n", current_data_crc);
 }
 
 void reset_data() {
@@ -300,14 +299,14 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 
 	/* requesting dump */
 	if ((in_data_seq == 0) && (current_data_seq != 0)) {
-		printf("someone is requesting sending dump\n");
+		//printf("someone is requesting sending dump\n");
 		signal FennecData.dump();
 		return;
 	}
 
 	/* end of dump */
 	if (( current_data_seq == 0 ) && (in_data_seq > 0)) {
-		printf("after dump\n");
+		//printf("after dump\n");
 		memcpy(var_hist, in_history, VARIABLE_HISTORY);
 		current_data_seq = in_data_seq;
 		update_data_crc();
@@ -333,7 +332,6 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 		uint8_t rep;
 		nx_uint8_t this_max;
 
-		printf("we merge\n");
 		update_data_crc();
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -413,7 +411,7 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 		return;
 	}
 
-	printf("we cannot merge it\n");
+	//printf("we cannot merge it\n");
 
 	if ( current_data_seq > in_data_seq ) {
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -430,7 +428,7 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 		return;
 	}
 	current_data_seq += (call Random.rand16() % RANDOM_DATA_SEQ_UPDATE);
-	printf("increase sequence randomly to %u\n", current_data_seq);
+	//printf("increase sequence randomly to %u\n", current_data_seq);
 
 	signal FennecData.resend(0);
 	return;
