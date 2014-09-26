@@ -55,7 +55,6 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 uses interface Leds;
 uses interface Random;
 uses interface Timer<TMilli> as SendTimer;
-uses interface Timer<TMilli> as TestTimer;
 
 uses interface SerialDbgs;
 }
@@ -83,11 +82,6 @@ NeighborsData my_data[NEIGHBORHOOD_DATA];
 
 message_metadata_t* getMetadata(message_t *msg) {
 	return (message_metadata_t*)msg->metadata;
-}
-
-task void reset_led_timer() {
-	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
-	call TestTimer.startOneShot(2 * tx_delay);
 }
 
 task void send_timer() {
@@ -134,9 +128,14 @@ void updateNeighborhoodCounter() {
 			}
 		}
 	}
+
 	printf("Neighborhood size %d (%d) - numbers of neighbors in need %d\n", 
 				neighborhoodCounter, good_quality_neighbors,
 				neighbors_in_need);
+
+#ifdef __DBGS__APPLICATION__
+        call SerialDbgs.dbgs(DBGS_MGMT_START, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
+#endif
 
 	if (check_different_power) {
 		printf("Time to check different power level\n");
@@ -205,6 +204,9 @@ command error_t SplitControl.start() {
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 
+#ifdef __DBGS__APPLICATION__
+	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
+#endif
 	start_new_radio_tx_test();
 	
 	signal SplitControl.startDone(SUCCESS);
@@ -212,6 +214,11 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
+
+	call SendTimer.stop();
+#ifdef __DBGS__APPLICATION__
+	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -275,10 +282,6 @@ event void SendTimer.fired() {
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
-}
-
-event void TestTimer.fired() {
-	post reset_led_timer();
 }
 
 event void Param.updated(uint8_t var_id) {
