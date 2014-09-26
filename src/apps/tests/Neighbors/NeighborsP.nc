@@ -73,8 +73,11 @@ uint8_t radio_tx_power;
 uint16_t tx_delay;
 
 #define CHECK_POWER	100
+#define NUM_RADIO_POWERS 8
 
 uint8_t neighborhoodCounter;
+
+uint8_t radio_powers[NUM_RADIO_POWERS] = {31, 27, 23, 19, 15, 11, 7, 3};
 
 NeighborsData my_data[NEIGHBORHOOD_DATA];
 
@@ -94,9 +97,18 @@ task void send_timer() {
 }
 
 void start_new_radio_tx_test() {
+	uint8_t i;
+
 	busy = FALSE;
 	neighborhoodCounter = 0;
 	seqno = 0;
+
+	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
+		my_data[i].rec = 0;
+		my_data[i].seq = 0;
+		my_data[i].node = BROADCAST;
+	}
+
 	post send_timer();
 }
 
@@ -128,6 +140,15 @@ void updateNeighborhoodCounter() {
 
 	if (check_different_power) {
 		printf("Time to check different power level\n");
+		for( i = 0; i < NUM_RADIO_POWERS; i++) {
+			if (radio_powers[i] < radio_tx_power) {
+				printf("Set new power to %d\n", radio_powers[i]);
+				radio_tx_power = radio_powers[i];
+				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+				break;
+			}
+		}
+		start_new_radio_tx_test();
 	}
 }
 
@@ -178,18 +199,12 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 }
 
 command error_t SplitControl.start() {
-	uint8_t i;
-
-	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
-		my_data[i].node = BROADCAST;
-	}
 
 	call Param.get(MIN_SIZE, &min_size, sizeof(min_size));
 	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 
-	
 	start_new_radio_tx_test();
 	
 	signal SplitControl.startDone(SUCCESS);
