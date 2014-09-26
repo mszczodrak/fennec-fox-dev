@@ -68,8 +68,11 @@ bool busy;
 uint16_t seqno;
 
 uint8_t min_size;
+uint8_t good_etx;
 uint8_t radio_tx_power;
 uint16_t tx_delay;
+
+#define CHECK_POWER	100
 
 uint8_t neighborhoodCounter;
 
@@ -99,14 +102,33 @@ void start_new_radio_tx_test() {
 
 void updateNeighborhoodCounter() {
 	uint8_t i;
+	uint8_t neighbors_in_need = 0;
+	uint8_t good_quality_neighbors = 0;
+	bool check_different_power = FALSE;
 	neighborhoodCounter = 0;
 
 	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
+		if (( my_data[i].node != BROADCAST ) && ( my_data[i].size < min_size )) {
+			neighbors_in_need++;
+		}
 		if (( my_data[i].radio_tx == radio_tx_power ) && ( my_data[i].rec > 0 )) {
 			neighborhoodCounter++;
+			if ( (my_data[i].rec * 100 / my_data[i].seq) > good_etx ) {
+				good_quality_neighbors++;
+			}
+
+			if ( my_data[i].rec > CHECK_POWER ) {
+				check_different_power = TRUE;
+			}
 		}
 	}
-	printf("Neighborhood size %d\n", neighborhoodCounter);
+	printf("Neighborhood size %d (%d) - numbers of neighbors in need %d\n", 
+				neighborhoodCounter, good_quality_neighbors,
+				neighbors_in_need);
+
+	if (check_different_power) {
+		printf("Time to check different power level\n");
+	}
 }
 
 void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
@@ -163,6 +185,7 @@ command error_t SplitControl.start() {
 	}
 
 	call Param.get(MIN_SIZE, &min_size, sizeof(min_size));
+	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 
