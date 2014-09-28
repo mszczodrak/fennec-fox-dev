@@ -109,6 +109,10 @@ command error_t SplitControl.stop() {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
+
+#ifdef __DBGS__APPLICATION__
+	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, BROADCAST);
+#endif
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -154,7 +158,9 @@ event void SendTimer.fired() {
 		busy = TRUE;
 		msg->src = TOS_NODE_ID;
 		msg->seq = ++seqno;
-		call SubAMSend.send(BROADCAST, &packet, sizeof(RssiMsg));
+		if (call SubAMSend.send(BROADCAST, &packet, sizeof(RssiMsg)) != SUCCESS) {
+			signal SubAMSend.sendDone(&packet, FAIL);
+		}
 	}
 
 	post send_timer();
