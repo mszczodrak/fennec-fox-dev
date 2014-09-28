@@ -240,6 +240,9 @@ command error_t SplitControl.stop() {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 	post send_timer();
+#ifdef __DBGS__APPLICATION__
+        call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, radio_tx_power);
+#endif
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
