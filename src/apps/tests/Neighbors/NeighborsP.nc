@@ -76,7 +76,8 @@ uint8_t radio_tx_power;
 uint8_t num_to_check = 100;
 uint16_t tx_delay;
 
-#define NUM_RADIO_POWERS 8
+#define NUMBER_OF_MISSED_BEACONS	11
+#define NUM_RADIO_POWERS 		8
 
 uint8_t neighborhoodCounter;
 uint8_t good_quality_neighbors;
@@ -221,8 +222,11 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 
 	/* check if there are any old neighbors that should be removed */
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
-		if ( (my_data[i].node != BROADCAST) && ( my_data[i].timestamp + (11 * tx_delay) < now_time ) ) {
+		if ( (my_data[i].node != BROADCAST) && ( my_data[i].timestamp + (NUMBER_OF_MISSED_BEACONS * tx_delay) < now_time ) ) {
 			/* we have missed the last 10 transmissions from node i */
+#ifdef __DBGS__APPLICATION__
+			call SerialDbgs.dbgs(DBGS_SEND_CONTROL_MSG_FAILED, my_data[i].node, my_data[i].node, my_data[i].node);
+#endif
 			clean_record(i);
 		}
 	}
