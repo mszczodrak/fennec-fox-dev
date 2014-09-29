@@ -104,7 +104,6 @@ void clean_record(uint8_t i) {
 	my_data[i].radio_tx = 0;
 	my_data[i].size = 0;
 	my_data[i].etx = 0;
-	my_data[i].hears_us = FALSE;
 }
 
 void start_new_radio_tx_test() {
@@ -125,75 +124,81 @@ void start_new_radio_tx_test() {
 void updateNeighborhoodCounter() {
 	uint8_t i;
 	uint8_t neighbors_in_need = 0;
+	uint8_t dont_hear_us = 0;
 	good_quality_neighbors = 0;
 	neighborhoodCounter = 0;
 
 	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
-		if (( my_data[i].node != BROADCAST ) && ( my_data[i].size < neighbors_neighborhood_min_size )) {
-			neighbors_in_need++;
+		if ( my_data[i].node == BROADCAST ) {
+			continue;
 		}
-		if (( my_data[i].hears_us ) && ( my_data[i].rec > num_to_check )) {
+
+		if ( my_data[i].rec > 0 ) {
 			neighborhoodCounter++;
+
+			if ( my_data[i].size < neighbors_neighborhood_min_size ) {
+				neighbors_in_need++;
+			}
+
 			if ( my_data[i].etx > good_etx ) {
 				good_quality_neighbors++;
 			}
+		} else {
+			dont_hear_us++;
 		}
 	}
-
-
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("Neighborhood size %d (%d) - numbers of neighbors in need %d\n", 
-			neighborhoodCounter, good_quality_neighbors,
-			neighbors_in_need);
-#endif
-
-
 
 #ifdef __DBGS__APPLICATION__
         call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
 #endif
 
-	if ((good_quality_neighbors >= neighborhood_min_size) && (neighbors_in_need <= max_num_of_poor_neighbors)) {
+	if (seqno < num_to_check) {
+		return;
+	}
+
+	
+	if ((good_quality_neighbors > neighborhood_min_size) && (neighbors_in_need <= max_num_of_poor_neighbors)) {
+
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < radio_tx_power) {
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Neighborhood size %d (%d) - numbers of neighbors in need %d -> lower power to %d\n", 
-					neighborhoodCounter, good_quality_neighbors,
-					neighbors_in_need, radio_powers[i]);
-#endif
-
-#ifdef __DBGS__APPLICATION__
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_powers[i]);
-#endif
 				radio_tx_power = radio_powers[i];
-
 				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
-				break;
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+				printf("Lower to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+					radio_tx_power, neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need, dont_hear_us);
+#endif
+	
+#ifdef __DBGS__APPLICATION__
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_tx_power);
+#endif
+				start_new_radio_tx_test();
+				return;
 			}
 		}
-		start_new_radio_tx_test();
 	}
 
-/*
-	if ((neighbors_in_need > max_num_of_poor_neighbors) && (call Random.rand16() % 10 == 0)) {
+	if (good_quality_neighbors < neighborhood_min_size) {
+
 		for( i = 1; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] == radio_tx_power) {
-#ifdef __DBGS__APPLICATION__
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_powers[i]);
-#endif
 				radio_tx_power = radio_powers[i-1];
-	
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Poor neighbors (%d), increase power to %d\n", neighbors_in_need, radio_tx_power);
-#endif
-
-
 				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+				printf("Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+					radio_tx_power, neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need, dont_hear_us);
+#endif
+#ifdef __DBGS__APPLICATION__
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_tx_power);
+#endif
+				start_new_radio_tx_test();
 				break;
 			}
 		}
 	}
-*/
 }
 
 void remove_node(nx_uint16_t src) {
@@ -218,8 +223,6 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
 		if ( (my_data[i].node != BROADCAST) && ( my_data[i].timestamp + (11 * tx_delay) < now_time ) ) {
 			/* we have missed the last 10 transmissions from node i */
-			printf("cmp %lu < %lu\n", my_data[i].timestamp + (11 * tx_delay), now_time);
-			printf("delete node %d\n", my_data[i].node);
 			clean_record(i);
 		}
 	}
@@ -250,21 +253,23 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 		i = candidate;
 	}
 
-	/*   - new entry                           - cannot hear us  */
-	if ((my_data[i].node == BROADCAST) || (hears_us == FALSE)) {
+	if ( my_data[i].node == BROADCAST ) {
 		/* first time */
 		my_data[i].node = src;
-		my_data[i].rec = 0;
 		my_data[i].first_seq = seq;
 	}
-	
+
+	if ( hears_us == FALSE) {	
+		my_data[i].rec = 0;
+	} else {
+		my_data[i].rec++;
+	}
+
 	my_data[i].size = size;
 	my_data[i].last_seq = seq;
 	my_data[i].timestamp = now_time;
-	my_data[i].rec++;
 	my_data[i].radio_tx = tx;
 	my_data[i].etx = (my_data[i].rec * 100) / (my_data[i].last_seq - my_data[i].first_seq + 1);
-	my_data[i].hears_us = hears_us;
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	//printf("Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
@@ -365,8 +370,6 @@ event void SendTimer.fired() {
 		msg->data[i].radio_tx = my_data[i].radio_tx;
 		msg->data[i].etx = my_data[i].etx;
 	}
-
-	printf("number of good neighbors %d\n", good_quality_neighbors);
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsMsg)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);

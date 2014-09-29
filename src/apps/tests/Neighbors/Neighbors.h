@@ -48,7 +48,6 @@ typedef struct NeighborsData {
 	uint16_t	rec;		/* number of receives */
 	uint8_t		radio_tx;	/* the tx power that neighbor has about us */
 	uint8_t		size; 	
-	bool		hears_us;
 	uint8_t		etx;
 } NeighborsData;
 
