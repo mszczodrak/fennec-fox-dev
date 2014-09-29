@@ -125,6 +125,8 @@ void updateNeighborhoodCounter() {
 
 			if ( my_data[i].rec > num_to_check ) {
 				check_different_power = TRUE;
+			} else {
+				check_different_power = FALSE;
 			}
 		}
 	}
@@ -139,7 +141,7 @@ void updateNeighborhoodCounter() {
         call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
 #endif
 
-	if (check_different_power) {
+	if ((check_different_power) && (good_quality_neighbors >= min_size) && (neighbors_in_need < 2)) {
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < radio_tx_power) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -156,6 +158,29 @@ void updateNeighborhoodCounter() {
 			}
 		}
 		start_new_radio_tx_test();
+	} else {
+		/* option to increase radio tx */
+		if ((neighbors_in_need > 0) && (call Random.rand16() % 10 == 0)) {
+			/* help neighbor, increase power */
+
+/*
+			for( i = 1; i < NUM_RADIO_POWERS; i++) {
+				if (radio_powers[i] == radio_tx_power) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+					printf("Increase power to %d\n", radio_powers[i]);
+#endif
+
+#ifdef __DBGS__APPLICATION__
+					call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_powers[i]);
+#endif
+					radio_tx_power = radio_powers[i];
+	
+					call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+					break;
+				}
+			}
+*/
+		}
 	}
 }
 
