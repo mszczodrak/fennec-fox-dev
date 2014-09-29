@@ -66,7 +66,9 @@ message_t packet;
 bool busy;
 uint16_t seqno;
 
-uint8_t min_size;
+uint8_t neighborhood_min_size;
+uint8_t neighbors_neighborhood_min_size;
+uint8_t max_num_of_poor_neighbors;
 uint8_t good_etx;
 uint8_t radio_tx_power;
 uint8_t num_to_check = 100;
@@ -114,7 +116,7 @@ void updateNeighborhoodCounter() {
 	neighborhoodCounter = 0;
 
 	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
-		if (( my_data[i].node != BROADCAST ) && ( my_data[i].size < min_size )) {
+		if (( my_data[i].node != BROADCAST ) && ( my_data[i].size < neighbors_neighborhood_min_size )) {
 			neighbors_in_need++;
 		}
 		if (( my_data[i].radio_tx == radio_tx_power ) && ( my_data[i].rec > 0 )) {
@@ -131,21 +133,18 @@ void updateNeighborhoodCounter() {
 		}
 	}
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Neighborhood size %d (%d) - numbers of neighbors in need %d\n", 
-				neighborhoodCounter, good_quality_neighbors,
-				neighbors_in_need);
-#endif
 
 #ifdef __DBGS__APPLICATION__
         call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
 #endif
 
-	if ((check_different_power) && (good_quality_neighbors >= min_size) && (neighbors_in_need < 2)) {
+	if ((check_different_power) && (good_quality_neighbors >= neighborhood_min_size) && (neighbors_in_need <= max_num_of_poor_neighbors)) {
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < radio_tx_power) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Set new power to %d\n", radio_powers[i]);
+				printf("Neighborhood size %d (%d) - numbers of neighbors in need %d -> increase power to %d\n", 
+					neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need, radio_powers[i]);
 #endif
 
 #ifdef __DBGS__APPLICATION__
@@ -159,6 +158,14 @@ void updateNeighborhoodCounter() {
 		}
 		start_new_radio_tx_test();
 	} else {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		if (check_different_power) {
+			printf("Skip: Neighborhood size %d (%d) - numbers of neighbors in need %d\n", 
+					neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need);
+		}
+#endif
+
 		/* option to increase radio tx */
 		if ((neighbors_in_need > 0) && (call Random.rand16() % 10 == 0)) {
 			/* help neighbor, increase power */
@@ -226,8 +233,8 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
-			src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
+	//printf("Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
+	//		src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
 #endif
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE, src, my_data[i].rec, seq);
@@ -237,7 +244,9 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 
 command error_t SplitControl.start() {
 
-	call Param.get(MIN_SIZE, &min_size, sizeof(min_size));
+	call Param.get(NEIGHBORHOOD_MIN_SIZE, &neighborhood_min_size, sizeof(neighborhood_min_size));
+	call Param.get(NEIGHBORS_NEIGHBORHOOD_MIN_SIZE, &neighbors_neighborhood_min_size, sizeof(neighbors_neighborhood_min_size));
+	call Param.get(MAX_NUM_OF_POOR_NEIGHBORS, &max_num_of_poor_neighbors, sizeof(max_num_of_poor_neighbors));
 	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
 	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
@@ -285,7 +294,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 				add_receive_node(m->src, m->tx, m->seq, m->size, 1);
 			} else {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Node %d has old record\n", m->src);
+				//printf("Node %d has old record\n", m->src);
 #endif
 #ifdef __DBGS__APPLICATION__
 				call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_STATE_FAIL, m->src, m->seq, m->data[i].radio_tx);
@@ -298,7 +307,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	add_receive_node(m->src, m->tx, m->seq, m->size, 0);
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Node %d does not hear us\n", m->src);
+	//printf("Node %d does not hear us\n", m->src);
 #endif
 	/* this node does not know about us */
 	return msg;
