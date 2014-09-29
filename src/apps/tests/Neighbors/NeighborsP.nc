@@ -74,6 +74,7 @@ uint8_t max_num_of_poor_neighbors;
 uint8_t good_etx;
 uint8_t radio_tx_power;
 uint8_t num_to_check = 100;
+bool last_was_increase = FALSE;
 uint16_t tx_delay;
 
 #define NUMBER_OF_MISSED_BEACONS	11
@@ -126,6 +127,7 @@ void updateNeighborhoodCounter() {
 	uint8_t i;
 	uint8_t neighbors_in_need = 0;
 	uint8_t dont_hear_us = 0;
+	uint8_t potential_loss = 0;
 	good_quality_neighbors = 0;
 	neighborhoodCounter = 0;
 
@@ -143,6 +145,9 @@ void updateNeighborhoodCounter() {
 
 			if ( my_data[i].etx > good_etx ) {
 				good_quality_neighbors++;
+				if (my_data[i].radio_tx > radio_tx_power) {
+					potential_loss++;
+				}
 			}
 		} else {
 			dont_hear_us++;
@@ -159,6 +164,9 @@ void updateNeighborhoodCounter() {
 
 	
 	if ((good_quality_neighbors > neighborhood_min_size) && (neighbors_in_need <= max_num_of_poor_neighbors)) {
+		if ((good_quality_neighbors - potential_loss) < neighborhood_min_size) {
+			return;
+		}
 
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < radio_tx_power) {
@@ -166,22 +174,30 @@ void updateNeighborhoodCounter() {
 				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Lower to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+				printf("Lower to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ] - potential loss %d\n", 
 					radio_tx_power, neighborhoodCounter, good_quality_neighbors,
-					neighbors_in_need, dont_hear_us);
+					neighbors_in_need, dont_hear_us, potential_loss);
 #endif
 	
 #ifdef __DBGS__APPLICATION__
 				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_tx_power);
 #endif
 				start_new_radio_tx_test();
+				last_was_increase = FALSE;
 				return;
 			}
 		}
 	}
 
-	if (good_quality_neighbors < neighborhood_min_size) {
+	if ( seqno < ( num_to_check + (call Random.rand16() % num_to_check) ) ) {
+		return;
+	}
 
+
+	if (good_quality_neighbors < neighborhood_min_size) {
+		if (last_was_increase) {
+			return;
+		}
 		for( i = 1; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] == radio_tx_power) {
 				radio_tx_power = radio_powers[i-1];
@@ -196,6 +212,7 @@ void updateNeighborhoodCounter() {
 				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_tx_power);
 #endif
 				start_new_radio_tx_test();
+				last_was_increase = TRUE;
 				break;
 			}
 		}
