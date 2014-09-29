@@ -77,6 +77,9 @@ NeighborsP.Random -> RandomC;
 components new TimerMilliC() as SendTimerC;
 NeighborsP.SendTimer -> SendTimerC;
 
+components LocalTimeMilliC;
+NeighborsP.LocalTime -> LocalTimeMilliC;
+
 components SerialDbgsC;
 NeighborsP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 

@@ -38,19 +38,23 @@
 
 #include "SerialDbgs.h"
 
-#define NEIGHBORHOOD_DATA 	18
+#define NEIGHBORHOOD_DATA 	20
 
-typedef nx_struct NeighborsData {
-	nx_am_addr_t	node;
-	nx_uint16_t	rec;
-	nx_uint8_t	radio_tx;
-	nx_uint16_t	seq;
-	nx_uint8_t	size; 	
+typedef struct NeighborsData {
+	am_addr_t	node;		/* neighbor address */
+	uint16_t	first_seq;	/* seq when we first time we hear neighbor */
+	uint16_t	last_seq;	/* seq when we last time we hear neighbor */
+	uint32_t	timestamp;	/* last time we hear neighbor */
+	uint16_t	rec;		/* number of receives */
+	uint8_t		radio_tx;	/* the tx power that neighbor has about us */
+	uint8_t		size; 	
+	bool		hears_us;
+	uint8_t		etx;
 } NeighborsData;
 
 typedef nx_struct NeighborsEntry {
 	nx_am_addr_t	node;
-	nx_uint16_t	rec;
+	nx_uint8_t	etx;
 	nx_uint8_t	radio_tx;
 } NeighborsEntry;
 
