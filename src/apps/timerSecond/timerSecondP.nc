@@ -60,13 +60,15 @@ implementation {
 uint32_t delay;
 uint16_t src;
 
+#define APP_SECOND_TO_MILLI	1024
+
 command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
 
 	dbg("Application", "timerSecond SplitControl.start()");
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		call Timer.startPeriodic(delay);
+		call Timer.startPeriodic(delay * APP_SECOND_TO_MILLI);
 	}
 
 	signal SplitControl.startDone(SUCCESS);
@@ -97,6 +99,11 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void SubStatus.status(uint8_t layer, uint8_t status_flag) {
 }
+
+event void Param.updated(uint8_t var_id) {
+
+}
+
 
 
 }
