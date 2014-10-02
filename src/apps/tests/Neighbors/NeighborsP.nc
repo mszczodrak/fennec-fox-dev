@@ -155,14 +155,18 @@ void updateNeighborhoodCounter() {
 	}
 
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("[%u] Application Neighbors NeighborCount %u   Good Neighbors %u   In Need %u\n", 
+//			process, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
+#else
         call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, neighborhoodCounter, good_quality_neighbors, neighbors_in_need);
+#endif
 #endif
 
 	if (seqno < num_to_check) {
 		return;
 	}
 
-	
 	if ((good_quality_neighbors > neighborhood_min_size) && (neighbors_in_need <= max_num_of_poor_neighbors)) {
 		if ((good_quality_neighbors - potential_loss) < neighborhood_min_size) {
 			return;
@@ -295,8 +299,8 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("[%u] Application Neighbors Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
-	//		proces, src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
+//	printf("[%u] Application Neighbors Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
+//			process, src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
 #else
 	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE, src, my_data[i].rec, seq);
 #endif
@@ -321,6 +325,7 @@ command error_t SplitControl.start() {
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
 #endif
+
 	start_new_radio_tx_test();
 	
 	signal SplitControl.startDone(SUCCESS);
@@ -386,6 +391,7 @@ event void SendTimer.fired() {
 	uint8_t i;
 	NeighborsMsg *msg = (NeighborsMsg*) call SubAMSend.getPayload(&packet,
 							sizeof(NeighborsMsg));
+
 	if (msg == NULL || busy) {
 		post send_timer();
 	}
