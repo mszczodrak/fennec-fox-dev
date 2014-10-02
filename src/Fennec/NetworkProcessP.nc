@@ -115,9 +115,11 @@ event void ModuleCtrl.startDone(error_t error) {
 	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.startDone(%d)\n", error);
 
 	if (state != S_STARTING) {
+#ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("NetworkProcess in state %u got stopDone from process %u layer %u\n",
 			state, current_process, current_layer);
+#endif
 #endif
 		call Leds.led0On();
 		signal NetworkProcess.stopDone(FAIL);
@@ -141,9 +143,11 @@ event void ModuleCtrl.stopDone(error_t error) {
 	dbg("NetworkProcess", "[-] NetworkProcess ModuleCtrl.stopDone(%d)\n", error);
 
 	if (state != S_STOPPING) {
+#ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("NetworkProcess in state %u got stopDone from process %u layer %u\n",
 			state, current_process, current_layer);
+#endif
 #endif
 		call Leds.led0On();
 		signal NetworkProcess.startDone(FAIL);

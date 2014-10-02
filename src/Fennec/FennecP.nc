@@ -72,30 +72,33 @@ task void check_event() {
 
 task void stop_state() {
 #ifdef __DBGS__FENNEC__
-	call SerialDbgs.dbgs(DBGS_STOP, 0, current_state, current_seq);
-#endif
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("FennecP Stop State: %u Sequence: %u\n", current_state, current_seq);
+#else
+	call SerialDbgs.dbgs(DBGS_STOP, 0, current_state, current_seq);
+#endif
 #endif
 	call SplitControl.stop();
 }
 
 task void start_state() {
 #ifdef __DBGS__FENNEC__
-	call SerialDbgs.dbgs(DBGS_START, 0, current_state, current_seq);
-#endif
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("FennecP Start State: %u Sequence: %u\n", current_state, current_seq);
+#else
+	call SerialDbgs.dbgs(DBGS_START, 0, current_state, current_seq);
+#endif
 #endif
 	call SplitControl.start();
 }
 
 task void stop_done() {
 #ifdef __DBGS__FENNEC__
-	call SerialDbgs.dbgs(DBGS_STOP_DONE, 0, current_state, current_seq);
-#endif
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("FennecP StopDone State: %u Sequence: %u\n", current_state, current_seq);
+#else
+	call SerialDbgs.dbgs(DBGS_STOP_DONE, 0, current_state, current_seq);
+#endif
 #endif
 	event_mask = 0;
 	current_state = next_state;
@@ -105,10 +108,11 @@ task void stop_done() {
 
 task void start_done() {
 #ifdef __DBGS__FENNEC__
-	call SerialDbgs.dbgs(DBGS_START_DONE, 0, current_state, current_seq);
-#endif
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("FennecP StartDone State: %u Sequence: %u\n", current_state, current_seq);
+#else
+	call SerialDbgs.dbgs(DBGS_START_DONE, 0, current_state, current_seq);
+#endif
 #endif
 	state_transitioning = FALSE;
 }
@@ -152,13 +156,17 @@ command void Event.report(process_t process, uint8_t status) {
 	}
 
 	if (status) {
+#ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("FennecP Event %u ON\n", event_id);
 #endif
+#endif
 		event_mask |= (1 << event_id);
 	} else {
+#ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("FennecP Event %u OFF\n", event_id);
+#endif
 #endif
 		event_mask &= ~(1 << event_id);
 	}
