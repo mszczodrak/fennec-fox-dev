@@ -83,7 +83,7 @@ struct network_process {
 	uint8_t am_module;
 	uint8_t am_variables_number;
 	uint8_t am_variables_offset;
-	bool am_level;
+	bool am_dominant;
 };
 
 struct state {
