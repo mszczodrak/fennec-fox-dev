@@ -75,6 +75,7 @@ event void Boot.booted() {
 	Fennec Data interface 
 */
 
+#ifdef __DBGS_FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 void printfDataHistory() {
 	uint8_t i;
@@ -84,6 +85,7 @@ void printfDataHistory() {
 	}
 	printf("\n");
 }
+#endif
 #endif
 
 command uint8_t FennecData.getDataSeq() {
@@ -317,9 +319,11 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 	hist_match_len = longestMatchStart(in_history, var_hist, 
 					&in_hist_index, &current_hist_index);
 
+#ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("Receive -> longestMatchStart returned hist_len %d  msg_ind %d  var_ind %d\n",
 			hist_match_len, in_hist_index, current_hist_index);
+#endif
 #endif
 
 
@@ -334,17 +338,22 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 
 		update_data_crc();
 
+#ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("merge: hist: %d - %d : diff hist %d : crc %u - %u\n", updated,
 				in_hist_index, current_hist_index, in_data_crc, current_data_crc);
+#endif
 #endif
 
 		if (( updated != in_hist_index )) { // || ( ( current_hist_index == 0 ))) && ( in_data_crc != current_data_crc ))) {
 			/* we are missing too many data updates */
 			/* someone needs to give us a dump update */
+
+#ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("merge ERROR -> updated %d != %d in_hist_index, signal FennecData.resend(1)\n",
 				updated, in_hist_index);
+#endif
 #endif
 			goto lost;
 		}
@@ -414,16 +423,20 @@ command void FennecData.updateData(void* in_data, uint8_t in_data_len,
 	//printf("we cannot merge it\n");
 
 	if ( current_data_seq > in_data_seq ) {
-		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+#ifdef __DBGS__FENNEC_CACHE__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> got old sequence %d, signal FennecData.dump() \n", in_data_seq);
-		#endif
+#endif
+#endif
 		signal FennecData.dump();
 		return;
 	}
 	if ( current_data_seq < in_data_seq ) {
-		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+#ifdef __DBGS__FENNEC_CACHE__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("Receive -> got new sequence %d, we are lost\n", in_data_seq);
-		#endif
+#endif
+#endif
 		goto lost;
 		return;
 	}
@@ -445,12 +458,13 @@ sync:
 		
 	globalDataSyncWithNetwork();
 
-	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+#ifdef __DBGS__FENNEC_CACHE__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	//printfGlobalData();
 	printfDataHistory();
 	printf("Sequence: %d\n", current_data_seq);
-	#endif
-
+#endif
+#endif
 	signal FennecData.resend(0);	/* just pass it further */
 }
 
@@ -533,8 +547,10 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	uint8_t i;
 	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
 
+#ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 //	printf("Param.set[%u %u](%u ptr %u)\n", layer, process_id, name, size);
+#endif
 #endif
 
 	if (err != SUCCESS) {
@@ -562,8 +578,10 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 		return SUCCESS;
 	} 
 
+#ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("set variable %d\n", name);
+#endif
 #endif
 
 	signal_global_update(name);
@@ -578,10 +596,12 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	update_data_crc();
 	signal FennecData.resend(1);
 
-	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+#ifdef __DBGS__FENNEC_CACHE__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	//printfGlobalData();
 	printfDataHistory();
-	#endif
+#endif
+#endif
 
 	return SUCCESS;
 }
