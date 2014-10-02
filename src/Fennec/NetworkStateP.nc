@@ -52,7 +52,7 @@ task void start_stack() {
 						(*ordinary)->process_id);
 #ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("NetworkState starts process (o) %u\n", (*ordinary)->process_id);
+		printf("[-] NetworkState starts process (o) %u\n", (*ordinary)->process_id);
 #endif
 #endif
 		call NetworkProcess.start((*ordinary)->process_id);		
@@ -64,7 +64,7 @@ task void start_stack() {
 						(*daemons)->process_id);
 #ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("NetworkState starts process (d) %u\n", (*ordinary)->process_id);
+		printf("[-] NetworkState starts process (d) %u\n", (*ordinary)->process_id);
 #endif
 #endif
 		call NetworkProcess.start((*daemons)->process_id);		
@@ -82,7 +82,7 @@ task void stop_stack() {
 						(*ordinary)->process_id);
 #ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("NetworkState stops process (o) %u\n", (*ordinary)->process_id);
+		printf("[-] NetworkState stops process (o) %u\n", (*ordinary)->process_id);
 #endif
 #endif
 		call NetworkProcess.stop((*ordinary)->process_id);		
@@ -94,7 +94,7 @@ task void stop_stack() {
 						(*daemons)->process_id);
 #ifdef __DBGS__FENNEC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("NetworkState stops process (d) %u\n", (*ordinary)->process_id);
+		printf("[-] NetworkState stops process (d) %u\n", (*ordinary)->process_id);
 #endif
 #endif
 		call NetworkProcess.stop((*daemons)->process_id);		

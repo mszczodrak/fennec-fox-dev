@@ -57,6 +57,7 @@ uses interface Timer<TMilli>;
 
 uses interface SerialDbgs;
 
+uses interface Timer<TMilli> as TestTimer;
 }
 
 implementation {
@@ -69,6 +70,10 @@ uint16_t dest;
 message_t packet;
 uint16_t seqno;
 
+event void TestTimer.fired() {
+	printf("Test fired... is running : %d\n", call Timer.isRunning());
+}
+
 command error_t SplitControl.start() {
 	uint32_t send_delay;
 
@@ -79,7 +84,10 @@ command error_t SplitControl.start() {
 	send_delay = delay * delay_scale;
 	seqno = 0;
 
+	printf("src %u   BRO %u  TOS %u\n", src, BROADCAST, TOS_NODE_ID);
+
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		printf("printf start sending timer\n");
 		call Timer.startPeriodic(send_delay);
 	}
 
@@ -130,7 +138,7 @@ task void sendMessage() {
 
 event void Timer.fired() {
 	seqno++;
-	printf("fired %u\n", seqno);
+	//printf("fired %u\n", seqno);
 	post sendMessage();
 }
 

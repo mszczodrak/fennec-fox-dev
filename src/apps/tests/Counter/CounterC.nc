@@ -78,4 +78,8 @@ CounterP.Timer -> TimerMilliC;
 components SerialDbgsC;
 CounterP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 
+components new TimerMilliC() as TestMilliC;
+CounterP.TestTimer -> TestMilliC;
+
+
 }
