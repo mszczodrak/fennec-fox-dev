@@ -90,6 +90,8 @@ command error_t SplitControl.start() {
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
 #endif
+//	printf("period is %u * %u = %lu\n", delay, delay_scale, send_delay);
+
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -128,6 +130,7 @@ task void sendMessage() {
 
 event void Timer.fired() {
 	seqno++;
+	printf("fired %u\n", seqno);
 	post sendMessage();
 }
 

@@ -185,8 +185,13 @@ implementation {
 
 task void routeUpdate() {
 #ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[-] Network CTP Parent %u   etx %u   changes %lu\n", routeInfo.parent,
+		routeInfo.etx + call LinkEstimator.getLinkQuality(routeInfo.parent), parentChanges);
+#else
         call SerialDbgs.dbgs(DBGS_NETWORK_ROUTING_UPDATE, parentChanges,
 			routeInfo.parent, routeInfo.etx + call LinkEstimator.getLinkQuality(routeInfo.parent));
+#endif
 #endif
 }
 
