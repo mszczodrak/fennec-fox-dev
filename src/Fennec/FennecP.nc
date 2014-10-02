@@ -184,16 +184,20 @@ async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 
 	for (npr = states[current_state].processes; (*npr) != NULL; npr++) {
 		if ((*npr)->am_module == am_module_id) {
-			if (!(*npr)->am_level) {
+			if ((*npr)->am_level) {
 				return (*npr)->process_id;
 			}
 			process_id = (*npr)->process_id;
 		}
 	}
 
+	if (process_id != UNKNOWN) {
+		return process_id;
+	}
+
 	for (npr = daemon_processes; (*npr) != NULL; npr++) {
 		if ((*npr)->am_module == am_module_id) {
-			if (!(*npr)->am_level) {
+			if ((*npr)->am_level) {
 				return (*npr)->process_id;
 			}
 			process_id = (*npr)->process_id;
