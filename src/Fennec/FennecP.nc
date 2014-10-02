@@ -74,12 +74,18 @@ task void stop_state() {
 #ifdef __DBGS__FENNEC__
 	call SerialDbgs.dbgs(DBGS_STOP, 0, current_state, current_seq);
 #endif
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("FennecP Stop State: %u Sequence: %u\n", current_state, current_seq);
+#endif
 	call SplitControl.stop();
 }
 
 task void start_state() {
 #ifdef __DBGS__FENNEC__
 	call SerialDbgs.dbgs(DBGS_START, 0, current_state, current_seq);
+#endif
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("FennecP Start State: %u Sequence: %u\n", current_state, current_seq);
 #endif
 	call SplitControl.start();
 }
@@ -88,16 +94,21 @@ task void stop_done() {
 #ifdef __DBGS__FENNEC__
 	call SerialDbgs.dbgs(DBGS_STOP_DONE, 0, current_state, current_seq);
 #endif
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("FennecP StopDone State: %u Sequence: %u\n", current_state, current_seq);
+#endif
 	event_mask = 0;
 	current_state = next_state;
 	current_seq = next_seq;
-	//printf("Fennec Reconfiguration        v %d                -> %d\n", next_seq, next_state);
 	post start_state();
 }
 
 task void start_done() {
 #ifdef __DBGS__FENNEC__
 	call SerialDbgs.dbgs(DBGS_START_DONE, 0, current_state, current_seq);
+#endif
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("FennecP StartDone State: %u Sequence: %u\n", current_state, current_seq);
 #endif
 	state_transitioning = FALSE;
 }
