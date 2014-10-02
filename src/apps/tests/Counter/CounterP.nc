@@ -84,10 +84,11 @@ command error_t SplitControl.start() {
 	}
 
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Counter start()\n", process);
+#else
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application Module starts\n");
 #endif
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -95,11 +96,13 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
+
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Counter stop()\n", process);
+#else
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application Module stops\n");
 #endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -131,11 +134,12 @@ event void Timer.fired() {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	call Leds.set(seqno);
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Counter SendDone Error: %d  Seqno: %d  Dest: %d\n", process, error, seqno, dest);
+#else
 	call Param.get(DEST, &dest, sizeof(dest));
 	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
 #endif
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application SendDone Error: %d  Seqno: %d  Dest: %d\n", error, seqno, dest);
 #endif
 }
 
@@ -144,10 +148,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	CounterMsg* cm = (CounterMsg*)payload;
 	call Leds.set(cm->seqno);
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Counter Receive Len: %d  Seqno: %d  Source: %d\n", process, len, cm->seqno, cm->source);
+#else
 	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
 #endif
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application Receive Len: %d  Seqno: %d  Source: %d\n", len, cm->seqno, cm->source);
 #endif
 	return msg;
 }

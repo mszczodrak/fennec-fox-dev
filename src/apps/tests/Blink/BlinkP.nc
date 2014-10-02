@@ -63,6 +63,14 @@ command error_t SplitControl.start() {
 	on = 0;
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(LED, &led, sizeof(led));
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Blink start()\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
+#endif
+#endif
 	
 	call Timer.startPeriodic(delay);
 	signal SplitControl.startDone(SUCCESS);
@@ -72,6 +80,14 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 	call Leds.set(0);
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Blink stop()\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
+#endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }

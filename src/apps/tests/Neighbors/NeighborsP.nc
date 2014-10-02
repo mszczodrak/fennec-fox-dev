@@ -173,14 +173,14 @@ void updateNeighborhoodCounter() {
 				tx_power = radio_powers[i];
 				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Lower to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ] - potential loss %d\n", 
-					tx_power, neighborhoodCounter, good_quality_neighbors,
-					neighbors_in_need, dont_hear_us, potential_loss);
-#endif
-	
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+				printf("[%u] Application Neighbors Lower to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ] - potential loss %d\n", 
+					process, tx_power, neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need, dont_hear_us, potential_loss);
+#else
 				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
+#endif
 #endif
 				start_new_radio_tx_test();
 				last_was_increase = FALSE;
@@ -203,13 +203,14 @@ void updateNeighborhoodCounter() {
 				tx_power = radio_powers[i-1];
 				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
-					tx_power, neighborhoodCounter, good_quality_neighbors,
-					neighbors_in_need, dont_hear_us);
-#endif
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+				printf("[%u] Application Neighbors Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+					process, tx_power, neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need, dont_hear_us);
+#else
 				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
+#endif
 #endif
 				start_new_radio_tx_test();
 				last_was_increase = TRUE;
@@ -292,12 +293,13 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 	my_data[i].radio_tx = tx;
 	my_data[i].etx = (my_data[i].rec * 100) / (my_data[i].last_seq - my_data[i].first_seq + 1);
 
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
-	//		src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
-#endif
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	//printf("[%u] Application Neighbors Update: Node %d   NSize %d   TX %d   Rec %d   ETX %d\n",
+	//		proces, src, size, tx, my_data[i].rec, my_data[i].rec * 100 / seq);
+#else
 	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE, src, my_data[i].rec, seq);
+#endif
 #endif
 	updateNeighborhoodCounter();
 }
@@ -313,7 +315,11 @@ command error_t SplitControl.start() {
 	call Param.get(NUM_TO_CHECK, &num_to_check, sizeof(num_to_check));
 
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Neighbor start()\n", process);
+#else
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
+#endif
 #endif
 	start_new_radio_tx_test();
 	
@@ -322,10 +328,14 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-
 	call SendTimer.stop();
+
 #ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Neighbor stop()\n", process);
+#else
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
 #endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
