@@ -56,7 +56,6 @@ uses interface Leds;
 uses interface Timer<TMilli>;
 
 uses interface SerialDbgs;
-
 }
 
 implementation {

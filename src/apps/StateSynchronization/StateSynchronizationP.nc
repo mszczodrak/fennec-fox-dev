@@ -53,6 +53,9 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface FennecState;
 uses interface Random;
+
+uses interface SerialDbgs;
+
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
 }

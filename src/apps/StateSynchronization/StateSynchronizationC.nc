@@ -81,5 +81,8 @@ StateSynchronizationP.Leds -> LedsC;
 components new TimerMilliC() as Timer;
 StateSynchronizationP.Timer -> Timer;
 
+components SerialDbgsC;
+StateSynchronizationP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+
 }
 

@@ -74,4 +74,7 @@ BlinkP.Leds -> LedsC;
 
 components new TimerMilliC() as Timer;
 BlinkP.Timer -> Timer;
+
+components SerialDbgsC;
+BlinkP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 }

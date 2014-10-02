@@ -52,6 +52,8 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
 uses interface Timer<TMilli> as Timer;
+
+uses interface SerialDbgs;
 }
 
 implementation {
