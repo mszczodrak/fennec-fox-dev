@@ -320,7 +320,7 @@ command error_t SplitControl.start() {
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Neighbor start()\n", process);
+//	printf("[%u] Application Neighbor start()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
@@ -337,7 +337,7 @@ command error_t SplitControl.stop() {
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Neighbor stop()\n", process);
+//	printf("[%u] Application Neighbor stop()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
