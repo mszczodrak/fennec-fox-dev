@@ -79,7 +79,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	post startDone();
+	post stopDone();
 	return SUCCESS;
 }
 
