@@ -54,7 +54,7 @@ use application neighbor $(FENNEC_FOX_LIB)/apps/tests/Neighbors (
 		uint8_t max_num_of_poor_neighbors = 1,
 		uint8_t good_etx = 90,
 		uint8_t num_to_check = 100,
-		uint8_t radio_tx_power = 31,
+		uint8_t tx_power = 31,
 		uint16_t tx_delay = 5000)
 
 use application testSerial $(FENNEC_FOX_LIB)/apps/tests/TestSerial ( 

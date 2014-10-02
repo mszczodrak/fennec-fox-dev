@@ -72,7 +72,7 @@ uint8_t neighborhood_min_size;
 uint8_t neighbors_neighborhood_min_size;
 uint8_t max_num_of_poor_neighbors;
 uint8_t good_etx;
-uint8_t radio_tx_power;
+uint8_t tx_power;
 uint8_t num_to_check = 100;
 bool last_was_increase = FALSE;
 uint16_t tx_delay;
@@ -145,7 +145,7 @@ void updateNeighborhoodCounter() {
 
 			if ( my_data[i].etx > good_etx ) {
 				good_quality_neighbors++;
-				if (my_data[i].radio_tx > radio_tx_power) {
+				if (my_data[i].radio_tx > tx_power) {
 					potential_loss++;
 				}
 			}
@@ -169,18 +169,18 @@ void updateNeighborhoodCounter() {
 		}
 
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
-			if (radio_powers[i] < radio_tx_power) {
-				radio_tx_power = radio_powers[i];
-				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+			if (radio_powers[i] < tx_power) {
+				tx_power = radio_powers[i];
+				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 				printf("Lower to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ] - potential loss %d\n", 
-					radio_tx_power, neighborhoodCounter, good_quality_neighbors,
+					tx_power, neighborhoodCounter, good_quality_neighbors,
 					neighbors_in_need, dont_hear_us, potential_loss);
 #endif
 	
 #ifdef __DBGS__APPLICATION__
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_tx_power);
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
 #endif
 				start_new_radio_tx_test();
 				last_was_increase = FALSE;
@@ -199,17 +199,17 @@ void updateNeighborhoodCounter() {
 			return;
 		}
 		for( i = 1; i < NUM_RADIO_POWERS; i++) {
-			if (radio_powers[i] == radio_tx_power) {
-				radio_tx_power = radio_powers[i-1];
-				call Param.set(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+			if (radio_powers[i] == tx_power) {
+				tx_power = radio_powers[i-1];
+				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 				printf("Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
-					radio_tx_power, neighborhoodCounter, good_quality_neighbors,
+					tx_power, neighborhoodCounter, good_quality_neighbors,
 					neighbors_in_need, dont_hear_us);
 #endif
 #ifdef __DBGS__APPLICATION__
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, radio_tx_power);
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
 #endif
 				start_new_radio_tx_test();
 				last_was_increase = TRUE;
@@ -308,7 +308,7 @@ command error_t SplitControl.start() {
 	call Param.get(NEIGHBORS_NEIGHBORHOOD_MIN_SIZE, &neighbors_neighborhood_min_size, sizeof(neighbors_neighborhood_min_size));
 	call Param.get(MAX_NUM_OF_POOR_NEIGHBORS, &max_num_of_poor_neighbors, sizeof(max_num_of_poor_neighbors));
 	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
-	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+	call Param.get(TX_POWER, &tx_power, sizeof(tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 	call Param.get(NUM_TO_CHECK, &num_to_check, sizeof(num_to_check));
 
@@ -335,7 +335,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 	post send_timer();
 #ifdef __DBGS__APPLICATION__
-        call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, radio_tx_power);
+        call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, tx_power);
 #endif
 }
 
@@ -346,7 +346,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
 		if (m->data[i].node == TOS_NODE_ID) {
 			/* this node hears us */
-			if ( m->data[i].radio_tx == radio_tx_power ) {
+			if ( m->data[i].radio_tx == tx_power ) {
 				/* this node hears us with the current radio control */
 				add_receive_node(m->src, m->tx, m->seq, m->size, TRUE);
 				return msg;
@@ -381,9 +381,9 @@ event void SendTimer.fired() {
 	}
 
 	busy = TRUE;
-	call Param.get(RADIO_TX_POWER, &radio_tx_power, sizeof(radio_tx_power));
+	call Param.get(TX_POWER, &tx_power, sizeof(tx_power));
 	msg->src = TOS_NODE_ID;
-	msg->tx = radio_tx_power;
+	msg->tx = tx_power;
 	msg->seq = ++seqno;
 	msg->size = good_quality_neighbors;
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
