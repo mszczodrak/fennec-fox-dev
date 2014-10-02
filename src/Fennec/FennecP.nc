@@ -152,8 +152,14 @@ command void Event.report(process_t process, uint8_t status) {
 	}
 
 	if (status) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("FennecP Event %u ON\n", event_id);
+#endif
 		event_mask |= (1 << event_id);
 	} else {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("FennecP Event %u OFF\n", event_id);
+#endif
 		event_mask &= ~(1 << event_id);
 	}
 	post check_event();
