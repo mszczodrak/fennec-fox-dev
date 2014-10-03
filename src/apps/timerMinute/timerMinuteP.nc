@@ -31,7 +31,11 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration timerSecondC(process_t process) {
+
+#include <Fennec.h>
+#include "timerMinute.h"
+
+generic module timerMinuteP(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -48,27 +52,56 @@ uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Event;
+uses interface Timer<TMilli>;
 }
 
 implementation {
-components new timerSecondP(process);
-SplitControl = timerSecondP;
 
-Param = timerSecondP;
+uint32_t delay;
+uint16_t src;
 
-SubAMSend = timerSecondP.SubAMSend;
-SubReceive = timerSecondP.SubReceive;
-SubSnoop = timerSecondP.SubSnoop;
-SubAMPacket = timerSecondP.SubAMPacket;
-SubPacket = timerSecondP.SubPacket;
-SubPacketAcknowledgements = timerSecondP.SubPacketAcknowledgements;
+#define APP_SECOND_TO_MILLI     1024
 
-SubPacketLinkQuality = timerSecondP.SubPacketLinkQuality;
-SubPacketTransmitPower = timerSecondP.SubPacketTransmitPower;
-SubPacketRSSI = timerSecondP.SubPacketRSSI;
+command error_t SplitControl.start() {
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call Param.get(SRC, &src, sizeof(src));
 
-Event = timerSecondP;
+	dbg("Application", "[%d] timerMinute SplitControl.start()", process);
+	dbg("Application", "[%d] timerMinute src: %d", process, src);
 
-components new TimerMilliC();
-timerSecondP.Timer -> TimerMilliC;
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		dbg("Application", "[%d] timerMinute will fire in %d ms", process, delay);
+		call Timer.startOneShot(delay * APP_SECOND_TO_MILLI);
+	}
+	signal SplitControl.startDone(SUCCESS);
+	return SUCCESS;
+}
+
+command error_t SplitControl.stop() {
+	call Timer.stop();
+	dbg("Application", "[%d] timerMinute SplitControl.stop()", process);
+	signal SplitControl.stopDone(SUCCESS);
+	return SUCCESS;
+}
+
+
+event void Timer.fired() {
+	dbg("Application", "[%d] timerMinute call Event.report(%d, TRUE)", process, process);
+	call Event.report(process, TRUE);
+}
+
+event void SubAMSend.sendDone(message_t *msg, error_t error) {}
+
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event void Param.updated(uint8_t var_id) {
+
+}
+
 }

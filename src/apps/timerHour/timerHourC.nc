@@ -31,7 +31,7 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration timerSecondC(process_t process) {
+generic configuration timerHourC(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -51,24 +51,24 @@ uses interface Event;
 }
 
 implementation {
-components new timerSecondP(process);
-SplitControl = timerSecondP;
+components new timerHourP(process);
+SplitControl = timerHourP;
 
-Param = timerSecondP;
+Param = timerHourP;
 
-SubAMSend = timerSecondP.SubAMSend;
-SubReceive = timerSecondP.SubReceive;
-SubSnoop = timerSecondP.SubSnoop;
-SubAMPacket = timerSecondP.SubAMPacket;
-SubPacket = timerSecondP.SubPacket;
-SubPacketAcknowledgements = timerSecondP.SubPacketAcknowledgements;
+SubAMSend = timerHourP.SubAMSend;
+SubReceive = timerHourP.SubReceive;
+SubSnoop = timerHourP.SubSnoop;
+SubAMPacket = timerHourP.SubAMPacket;
+SubPacket = timerHourP.SubPacket;
+SubPacketAcknowledgements = timerHourP.SubPacketAcknowledgements;
 
-SubPacketLinkQuality = timerSecondP.SubPacketLinkQuality;
-SubPacketTransmitPower = timerSecondP.SubPacketTransmitPower;
-SubPacketRSSI = timerSecondP.SubPacketRSSI;
+SubPacketLinkQuality = timerHourP.SubPacketLinkQuality;
+SubPacketTransmitPower = timerHourP.SubPacketTransmitPower;
+SubPacketRSSI = timerHourP.SubPacketRSSI;
 
-Event = timerSecondP;
+Event = timerHourP;
 
 components new TimerMilliC();
-timerSecondP.Timer -> TimerMilliC;
+timerHourP.Timer -> TimerMilliC;
 }

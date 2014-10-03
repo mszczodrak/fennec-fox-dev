@@ -31,44 +31,9 @@
   * @author: Marcin K Szczodrak
   */
 
-generic configuration timerSecondC(process_t process) {
-provides interface SplitControl;
 
-uses interface Param;
+#ifndef __timerHour_H_
+#define __timerHour_H_
 
-uses interface AMSend as SubAMSend;
-uses interface Receive as SubReceive;
-uses interface Receive as SubSnoop;
-uses interface AMPacket as SubAMPacket;
-uses interface Packet as SubPacket;
-uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 
-uses interface PacketField<uint8_t> as SubPacketLinkQuality;
-uses interface PacketField<uint8_t> as SubPacketTransmitPower;
-uses interface PacketField<uint8_t> as SubPacketRSSI;
-
-uses interface Event;
-}
-
-implementation {
-components new timerSecondP(process);
-SplitControl = timerSecondP;
-
-Param = timerSecondP;
-
-SubAMSend = timerSecondP.SubAMSend;
-SubReceive = timerSecondP.SubReceive;
-SubSnoop = timerSecondP.SubSnoop;
-SubAMPacket = timerSecondP.SubAMPacket;
-SubPacket = timerSecondP.SubPacket;
-SubPacketAcknowledgements = timerSecondP.SubPacketAcknowledgements;
-
-SubPacketLinkQuality = timerSecondP.SubPacketLinkQuality;
-SubPacketTransmitPower = timerSecondP.SubPacketTransmitPower;
-SubPacketRSSI = timerSecondP.SubPacketRSSI;
-
-Event = timerSecondP;
-
-components new TimerMilliC();
-timerSecondP.Timer -> TimerMilliC;
-}
+#endif

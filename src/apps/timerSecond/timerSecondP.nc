@@ -51,8 +51,8 @@ uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
-uses interface Timer<TMilli>;
 uses interface Event;
+uses interface Timer<TMilli>;
 }
 
 implementation {
@@ -60,30 +60,33 @@ implementation {
 uint32_t delay;
 uint16_t src;
 
-#define APP_SECOND_TO_MILLI	1024
+#define APP_SECOND_TO_MILLI     1024
 
 command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
 
-	dbg("Application", "timerSecond SplitControl.start()");
-	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		call Timer.startPeriodic(delay * APP_SECOND_TO_MILLI);
-	}
+	dbg("Application", "[%d] timerSecond SplitControl.start()", process);
+	dbg("Application", "[%d] timerSecond src: %d", process, src);
 
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		dbg("Application", "[%d] timerSecond will fire in %d ms", process, delay);
+		call Timer.startOneShot(delay * APP_SECOND_TO_MILLI);
+	}
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "timerSecond SplitControl.start()");
+	dbg("Application", "[%d] timerSecond SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 
 event void Timer.fired() {
+	dbg("Application", "[%d] timerSecond call Event.report(%d, TRUE)", process, process);
 	call Event.report(process, TRUE);
 }
 
@@ -97,13 +100,8 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 
-event void SubStatus.status(uint8_t layer, uint8_t status_flag) {
-}
-
 event void Param.updated(uint8_t var_id) {
 
 }
-
-
 
 }

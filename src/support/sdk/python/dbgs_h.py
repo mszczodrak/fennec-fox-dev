@@ -81,3 +81,133 @@ DBGS_NETWORK_ROUTING_UPDATE		= 199
 DBGS_TEST_SIGNAL        		= 32767
 
 
+def dbg_translate(dbg_num):
+	if dbg_num == DBGS_NONE:
+		return "None"
+
+	if dbg_num == DBGS_SEND_DATA:
+		return "Send Data"
+
+	if dbg_num == DBGS_SEND_BEACON:
+		return "Send Beacon"
+
+	if dbg_num == DBGS_RECEIVE_DATA:
+		return "Receive Data"
+
+	if dbg_num == DBGS_RECEIVE_BEACON:
+		return "Receive Beacon"
+
+	if dbg_num == DBGS_MGMT_START:
+		return "Mgmt Start"
+
+	if dbg_num == DBGS_MGMT_STOP:
+		return "Mgmt Stop"
+
+	if dbg_num == DBGS_START:
+		return "Start"
+
+	if dbg_num == DBGS_START_DONE:
+		return "Start Done"
+
+	if dbg_num == DBGS_STOP:
+		return "Stop"
+
+	if dbg_num == DBGS_STOP_DONE:
+		return "Stop Done"
+
+	if dbg_num == DBGS_GOT_SEND:
+		return "Got Send"
+
+	if dbg_num == DBGS_GOT_SEND_HEADER_NULL_FAIL:
+		return "Got Send Header Null Fail"
+
+	if dbg_num == DBGS_GOT_SEND_STATE_FAIL:
+		return "Got Send State Fail"
+
+	if dbg_num == DBGS_GOT_SEND_FULL_QUEUE_FAIL:
+		return "Got Send Full Queue Fail"
+
+	if dbg_num == DBGS_GOT_SEND_EMPTY_QUEUE_FAIL:
+		return "Got Send Empty Queue Fail"
+
+	if dbg_num == DBGS_GOT_SEND_FURTHER_SEND_FAIL:
+		return "Got Send Further Send Fail"
+
+	if dbg_num == DBGS_FORWARDING:
+		return "Forwarding"
+
+	if dbg_num == DBGS_GOT_RECEIVE:
+		return "Got Receive"
+
+	if dbg_num == DBGS_GOT_RECEIVE_HEADER_NULL_FAIL:
+		return "Got Receive Header Null Fail"
+
+	if dbg_num == DBGS_GOT_RECEIVE_STATE_FAIL:
+		return "Got Receive State Fail"
+
+	if dbg_num == DBGS_GOT_RECEIVE_FULL_QUEUE_FAIL:
+		return "Got Receive Full Queue Fail"
+
+	if dbg_num == DBGS_GOT_RECEIVE_EMPTY_QUEUE_FAIL:
+		return "Got Receive Empty Queue Fail"
+
+	if dbg_num == DBGS_GOT_RECEIVE_FURTHER_SEND_FAIL:
+		return "Got Receive Further Send Fail"
+
+	if dbg_num == DBGS_GOT_RECEIVE_FORWARDING:
+		return "Got Receive Forwarding"
+
+	if dbg_num == DBGS_GOT_RECEIVE_TYPE_FAIL:
+		return "Got Receive Type Fail"
+
+	if dbg_num == DBGS_GOT_RECEIVE_DUPLICATE:
+		return "Got Receive Duplicate"
+
+	if dbg_num == DBGS_NEW_CHANNEL:
+		return "New Channel"
+
+	if dbg_num == DBGS_CHANNEL_RESET:
+		return "Channel Reset"
+
+	if dbg_num == DBGS_SYNC_PARAMS:
+		return "Sync Params"
+
+	if dbg_num == DBGS_CHANNEL_TIMEOUT_NEXT:
+		return "Channel Timeout Next"
+
+	if dbg_num == DBGS_CHANNEL_TIMEOUT_RESET:
+		return "Channel Timeout Reset"
+
+	if dbg_num == DBGS_SYNC_PARAMS_FAIL:
+		return "Sync Params Fail"
+
+	if dbg_num == DBGS_RADIO_START:
+		return "Radio Start"
+
+	if dbg_num == DBGS_RADIO_START_DONE:
+		return "Radio Start Done"
+
+	if dbg_num == DBGS_RADIO_STOP:
+		return "Radio Stop"
+
+	if dbg_num == DBGS_RADIO_STOP_DONE:
+		return "Radio Stop Done"
+
+	if dbg_num == DBGS_NOT_ACKED_RESEND:
+		return "Not Acked Resend"
+
+	if dbg_num == DBGS_NOT_ACKED_FAILED:
+		return "Not Acked Failed"
+
+	if dbg_num == DBGS_NOT_ACKED:
+		return "Not Acked"
+
+	if dbg_num == DBGS_CONGESTION:
+		return "Congestion"
+
+	if dbg_num == DBGS_STATUS_UPDATE:
+		return "Status Update"
+
+	return None
+
+
