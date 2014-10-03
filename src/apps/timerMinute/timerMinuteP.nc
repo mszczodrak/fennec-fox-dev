@@ -60,8 +60,6 @@ implementation {
 uint32_t delay;
 uint16_t src;
 
-#define APP_MINUTE_TO_MILLI     (1024 * 60)
-
 command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
@@ -70,8 +68,9 @@ command error_t SplitControl.start() {
 	dbg("Application", "[%d] timerMinute src: %d", process, src);
 
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		dbg("Application", "[%d] timerMinute will fire in %d ms", process, delay);
-		call Timer.startOneShot(delay * APP_MINUTE_TO_MILLI);
+		delay *= SECOND_TO_MILLI;
+		delay *= MINUTE_TO_SECOND;
+		call Timer.startOneShot(delay);
 	}
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;

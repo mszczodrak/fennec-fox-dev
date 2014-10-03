@@ -60,6 +60,10 @@ enum {
         UNKNOWN_LAYER           = 255,
 	UNKNOWN_ID		= 0xFFF0,
 
+	SECOND_TO_MILLI		= 1024,
+	MINUTE_TO_SECOND	= 60,
+	HOUR_TO_MINUTE		= 60
+
 };
 
 #endif
