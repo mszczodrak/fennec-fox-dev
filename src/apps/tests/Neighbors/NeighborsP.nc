@@ -173,7 +173,14 @@ void updateNeighborhoodCounter() {
 		if ((good_quality_neighbors - potential_loss) < neighborhood_min_size) {
 			return;
 		}
-
+/*
+		if (radio_powers[NUM_RADIO_POWERS-1] == tx_power) {
+			// we are at the lowest power and if we could we would
+			// continue lowering the power
+			last_safe_tx_power_index = NUM_RADIO_POWERS - 1;
+			return;
+		}
+*/
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < tx_power) {
 				if (last_safe_tx_power_index + 1 < i) {
