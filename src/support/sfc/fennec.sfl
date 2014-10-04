@@ -50,7 +50,6 @@ use application rssi $(FENNEC_FOX_LIB)/apps/tests/Rssi (
 
 use application neighbor $(FENNEC_FOX_LIB)/apps/tests/Neighbors (
 		uint8_t neighborhood_min_size = 4,
-		uint8_t neighbors_neighborhood_min_size = 2,
 		uint8_t max_num_of_poor_neighbors = 1,
 		uint8_t good_etx = 90,
 		uint8_t num_to_check = 100,

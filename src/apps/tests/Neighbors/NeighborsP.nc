@@ -69,13 +69,14 @@ bool busy;
 uint16_t seqno;
 
 uint8_t neighborhood_min_size;
-uint8_t neighbors_neighborhood_min_size;
 uint8_t max_num_of_poor_neighbors;
 uint8_t good_etx;
 uint8_t tx_power;
 uint8_t num_to_check = 100;
-bool last_was_increase = FALSE;
 uint16_t tx_delay;
+uint8_t current_num_to_check;
+
+uint8_t last_safe_tx_power_index = 0;
 
 #define NUMBER_OF_MISSED_BEACONS	11
 #define NUM_RADIO_POWERS 		8
@@ -115,6 +116,7 @@ void start_new_radio_tx_test() {
 	neighborhoodCounter = 0;
 	good_quality_neighbors = 0;
 	seqno = 0;
+	current_num_to_check = num_to_check + (call Random.rand16() % num_to_check);
 
 	for ( i = 0 ; i < NEIGHBORHOOD_DATA; i++ ) {
 		clean_record(i);
@@ -139,7 +141,7 @@ void updateNeighborhoodCounter() {
 		if ( my_data[i].rec > 0 ) {
 			neighborhoodCounter++;
 
-			if ( my_data[i].size < neighbors_neighborhood_min_size ) {
+			if ( my_data[i].size < neighborhood_min_size ) {
 				neighbors_in_need++;
 			}
 
@@ -163,7 +165,7 @@ void updateNeighborhoodCounter() {
 #endif
 #endif
 
-	if (seqno < num_to_check) {
+	if (seqno < current_num_to_check) {
 		return;
 	}
 
@@ -174,6 +176,10 @@ void updateNeighborhoodCounter() {
 
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < tx_power) {
+				if (last_safe_tx_power_index + 1 < i) {
+					last_safe_tx_power_index++;
+				}
+
 				tx_power = radio_powers[i];
 				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
@@ -187,41 +193,45 @@ void updateNeighborhoodCounter() {
 #endif
 #endif
 				start_new_radio_tx_test();
-				last_was_increase = FALSE;
 				return;
 			}
 		}
 	}
 
-	if ( seqno < ( num_to_check + (call Random.rand16() % num_to_check) ) ) {
-		return;
-	}
-
-
 	if (good_quality_neighbors < neighborhood_min_size) {
-		if (last_was_increase) {
-			return;
-		}
 		for( i = 1; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] == tx_power) {
-				tx_power = radio_powers[i-1];
-				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+				if ( i == last_safe_tx_power_index ) {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+					printf("[%u] Application Neighbors Skip at %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+						process, tx_power, neighborhoodCounter, good_quality_neighbors,
+						neighbors_in_need, dont_hear_us);
+#else
+					call SerialDbgs.dbgs(DBGS_CHANNEL_TIMEOUT_RESET, process, i, tx_power);
+#endif
+#endif
+				} else {
+					tx_power = radio_powers[i-1];
+					call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("[%u] Application Neighbors Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
-					process, tx_power, neighborhoodCounter, good_quality_neighbors,
-					neighbors_in_need, dont_hear_us);
+					printf("[%u] Application Neighbors Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+						process, tx_power, neighborhoodCounter, good_quality_neighbors,
+						neighbors_in_need, dont_hear_us);
 #else
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
+					call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
 #endif
 #endif
+				}
 				start_new_radio_tx_test();
-				last_was_increase = TRUE;
 				break;
 			}
 		}
 	}
+
+	start_new_radio_tx_test();
 }
 
 void remove_node(nx_uint16_t src) {
@@ -311,12 +321,13 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 command error_t SplitControl.start() {
 
 	call Param.get(NEIGHBORHOOD_MIN_SIZE, &neighborhood_min_size, sizeof(neighborhood_min_size));
-	call Param.get(NEIGHBORS_NEIGHBORHOOD_MIN_SIZE, &neighbors_neighborhood_min_size, sizeof(neighbors_neighborhood_min_size));
 	call Param.get(MAX_NUM_OF_POOR_NEIGHBORS, &max_num_of_poor_neighbors, sizeof(max_num_of_poor_neighbors));
 	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
 	call Param.get(TX_POWER, &tx_power, sizeof(tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 	call Param.get(NUM_TO_CHECK, &num_to_check, sizeof(num_to_check));
+
+	last_safe_tx_power_index = 0;
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -333,6 +344,7 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
+	uint8_t i;
 	call SendTimer.stop();
 
 #ifdef __DBGS__APPLICATION__
@@ -342,6 +354,10 @@ command error_t SplitControl.stop() {
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
 #endif
+
+	tx_power = radio_powers[last_safe_tx_power_index];
+	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
