@@ -178,6 +178,15 @@ void updateNeighborhoodCounter() {
 			if (radio_powers[i] < tx_power) {
 				if (last_safe_tx_power_index + 1 < i) {
 					last_safe_tx_power_index++;
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+				printf("[%u] Application Neighbors New Safe Channel %d\n", 
+						process, radio_powers[last_safe_tx_power_index]);
+#else
+				call SerialDbgs.dbgs(DBGS_NEW_CHANNEL, process, good_quality_neighbors,
+						radio_powers[last_safe_tx_power_index]);
+#endif
+#endif
 				}
 
 				tx_power = radio_powers[i];
@@ -189,7 +198,7 @@ void updateNeighborhoodCounter() {
 					process, tx_power, neighborhoodCounter, good_quality_neighbors,
 					neighbors_in_need, dont_hear_us, potential_loss);
 #else
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, good_quality_neighbors, tx_power);
 #endif
 #endif
 				start_new_radio_tx_test();
@@ -208,7 +217,7 @@ void updateNeighborhoodCounter() {
 						process, tx_power, neighborhoodCounter, good_quality_neighbors,
 						neighbors_in_need, dont_hear_us);
 #else
-					call SerialDbgs.dbgs(DBGS_CHANNEL_TIMEOUT_RESET, process, i, tx_power);
+					call SerialDbgs.dbgs(DBGS_CHANNEL_TIMEOUT_RESET, process, good_quality_neighbors, tx_power);
 #endif
 #endif
 				} else {
@@ -221,7 +230,7 @@ void updateNeighborhoodCounter() {
 						process, tx_power, neighborhoodCounter, good_quality_neighbors,
 						neighbors_in_need, dont_hear_us);
 #else
-					call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, i, tx_power);
+					call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, good_quality_neighbors, tx_power);
 #endif
 #endif
 				}
@@ -344,7 +353,6 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
-	uint8_t i;
 	call SendTimer.stop();
 
 #ifdef __DBGS__APPLICATION__
