@@ -99,13 +99,13 @@ task void send_timer() {
 
 void clean_record(uint8_t i) {
 	my_data[i].node = BROADCAST;
-	my_data[i].first_seq = 0;
-	my_data[i].last_seq = 0;
-	my_data[i].timestamp = 0;
-	my_data[i].rec = 0;
-	my_data[i].radio_tx = 0;
-	my_data[i].size = 0;
-	my_data[i].etx = 0;
+	my_data[i].first_seq = UNKNOWN;
+	my_data[i].last_seq = UNKNOWN;
+	my_data[i].timestamp = UNKNOWN;
+	my_data[i].rec = UNKNOWN;
+	my_data[i].radio_tx = UNKNOWN;
+	my_data[i].size = UNKNOWN;
+	my_data[i].etx = UNKNOWN;
 }
 
 void start_new_radio_tx_test() {
@@ -295,11 +295,10 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 		/*   first time                   the node has changed tx power */
 		my_data[i].node = src;
 		my_data[i].first_seq = seq;
+		my_data[i].rec = 0;
 	}
 
-	if ( hears_us == FALSE) {	
-		my_data[i].rec = 0;
-	} else {
+	if ( hears_us == TRUE) {	
 		my_data[i].rec++;
 	}
 

@@ -97,6 +97,14 @@ command error_t SplitControl.stop() {
 event void Timer.fired() {
 	on ? call Leds.set(0) : call Leds.set(led) ;
 	on = !on;
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Blink LED #%d -> %d\n", led, on);
+#else
+	call SerialDbgs.dbgs(DBGS_LED_ON, process, led, on);
+#endif
+#endif
+
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {}

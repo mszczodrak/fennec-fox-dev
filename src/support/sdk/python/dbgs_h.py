@@ -16,6 +16,9 @@ DBGS_START_DONE				= 8
 DBGS_STOP				= 9
 DBGS_STOP_DONE 				= 10
 
+DBGS_LED_ON				= 15
+DBGS_LED_OFF				= 16
+
 DBGS_GOT_SEND                           = 20
 DBGS_GOT_SEND_HEADER_NULL_FAIL          = 21
 DBGS_GOT_SEND_STATE_FAIL                = 22
@@ -114,6 +117,12 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_STOP_DONE:
 		return "Stop Done"
+
+	if dbg_num == DBGS_LED_ON:
+		return "Led On"
+
+	if dbg_num == DBGS_LED_OFF:
+		return "Led Off"
 
 	if dbg_num == DBGS_GOT_SEND:
 		return "Got Send"
