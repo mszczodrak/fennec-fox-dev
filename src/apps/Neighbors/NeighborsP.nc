@@ -75,7 +75,6 @@ uint8_t tx_power;
 uint8_t num_to_check = 100;
 uint16_t tx_delay;
 uint8_t current_num_to_check;
-
 uint8_t last_safe_tx_power_index = 0;
 
 #define NUMBER_OF_MISSED_BEACONS	11
@@ -173,14 +172,12 @@ void updateNeighborhoodCounter() {
 		if ((good_quality_neighbors - potential_loss) < neighborhood_min_size) {
 			return;
 		}
-/*
 		if (radio_powers[NUM_RADIO_POWERS-1] == tx_power) {
-			// we are at the lowest power and if we could we would
-			// continue lowering the power
+			/* we are already at the lowest power and can potentially lower it */
+			start_new_radio_tx_test();
 			last_safe_tx_power_index = NUM_RADIO_POWERS - 1;
 			return;
 		}
-*/
 		for( i = 0; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] < tx_power) {
 				if (last_safe_tx_power_index + 1 < i) {
@@ -218,15 +215,7 @@ void updateNeighborhoodCounter() {
 		for( i = 1; i < NUM_RADIO_POWERS; i++) {
 			if (radio_powers[i] == tx_power) {
 				if ( i == last_safe_tx_power_index ) {
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-					printf("[%u] Application Neighbors Skip at %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
-						process, tx_power, neighborhoodCounter, good_quality_neighbors,
-						neighbors_in_need, dont_hear_us);
-#else
-					call SerialDbgs.dbgs(DBGS_CHANNEL_TIMEOUT_RESET, process, good_quality_neighbors, tx_power);
-#endif
-#endif
+					/* We already backed-up to the last safe one */
 				} else {
 					tx_power = radio_powers[i-1];
 					call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
@@ -242,7 +231,7 @@ void updateNeighborhoodCounter() {
 #endif
 				}
 				start_new_radio_tx_test();
-				break;
+				return;
 			}
 		}
 	}
@@ -272,9 +261,6 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
 		if ( (my_data[i].node != BROADCAST) && ( my_data[i].timestamp + (NUMBER_OF_MISSED_BEACONS * tx_delay) < now_time ) ) {
 			/* we have missed the last 10 transmissions from node i */
-#ifdef __DBGS__APPLICATION__
-			call SerialDbgs.dbgs(DBGS_SEND_CONTROL_MSG_FAILED, my_data[i].node, my_data[i].node, my_data[i].node);
-#endif
 			clean_record(i);
 		}
 	}
@@ -305,8 +291,8 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 		i = candidate;
 	}
 
-	if ( my_data[i].node == BROADCAST ) {
-		/* first time */
+	if ( ( my_data[i].node == BROADCAST ) || ( my_data[i].radio_tx != tx ) ) {
+		/*   first time                   the node has changed tx power */
 		my_data[i].node = src;
 		my_data[i].first_seq = seq;
 	}
