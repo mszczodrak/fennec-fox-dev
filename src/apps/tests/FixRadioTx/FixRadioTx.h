@@ -26,69 +26,17 @@
  */
 
 /**
-  * Fennec Fox FixRadioTX Application module
+  * Fennec Fox FixRadioTx Application module
   *
   * @author: Marcin K Szczodrak
   * @updated: 05/22/2011
   */
 
 
-#include <Fennec.h>
-#include "FixRadioTX.h"
+#ifndef __FixRadioTx_APP_H_
+#define __FixRadioTx_APP_H_
 
-generic module FixRadioTXP(process_t process) {
-provides interface SplitControl;
+#include "SerialDbgs.h"
 
-uses interface Param;
+#endif
 
-uses interface AMSend as SubAMSend;
-uses interface Receive as SubReceive;
-uses interface Receive as SubSnoop;
-uses interface AMPacket as SubAMPacket;
-uses interface Packet as SubPacket;
-uses interface PacketAcknowledgements as SubPacketAcknowledgements;
-
-uses interface PacketField<uint8_t> as SubPacketLinkQuality;
-uses interface PacketField<uint8_t> as SubPacketTransmitPower;
-uses interface PacketField<uint8_t> as SubPacketRSSI;
-
-uses interface Leds;
-uses interface Random;
-
-uses interface SerialDbgs;
-}
-
-implementation {
-
-uint8_t radio_powers[NUM_RADIO_POWERS] = {31, 27, 23, 19, 15, 11, 7, 3};
-
-FixRadioTXData my_data[NEIGHBORHOOD_DATA];
-
-command error_t SplitControl.start() {
-
-	
-	tx_power = radio_powers[last_safe_tx_power_index];
-	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
-	signal SplitControl.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t SplitControl.stop() {
-	signal SplitControl.stopDone(SUCCESS);
-	return SUCCESS;
-}
-
-event void SubAMSend.sendDone(message_t *msg, error_t error) {
-}
-
-event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-}
-
-event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-}
-
-event void Param.updated(uint8_t var_id) {
-
-}
-
-}

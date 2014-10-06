@@ -26,44 +26,55 @@
  */
 
 /**
-  * Fennec Fox Neighbors Application module
+  * Fennec Fox FixRadioTx Application module
   *
   * @author: Marcin K Szczodrak
   * @updated: 05/22/2011
   */
 
 
-#ifndef __Neighbors_APP_H_
-#define __Neighbors_APP_H_
+generic configuration FixRadioTxC(process_t process) {
+provides interface SplitControl;
 
-#include "SerialDbgs.h"
+uses interface Param;
 
-#define NEIGHBORHOOD_DATA 	20
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 
-typedef struct NeighborsData {
-	am_addr_t	node;		/* neighbor address */
-	uint16_t	first_seq;	/* seq when we first time we hear neighbor */
-	uint16_t	last_seq;	/* seq when we last time we hear neighbor */
-	uint32_t	timestamp;	/* last time we hear neighbor */
-	uint16_t	rec;		/* number of receives */
-	uint8_t		radio_tx;	/* the tx power that neighbor has about us */
-	uint8_t		size; 	
-	uint8_t		etx;
-} NeighborsData;
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 
-typedef nx_struct NeighborsEntry {
-	nx_am_addr_t	node;
-	nx_uint8_t	etx;
-	nx_uint8_t	radio_tx;
-} NeighborsEntry;
+}
 
-typedef nx_struct NeighborsMsg {
-	nx_am_addr_t	src;
-	nx_uint8_t	tx;
-	nx_uint16_t	seq;
-	nx_uint8_t	size;
-	NeighborsEntry data[NEIGHBORHOOD_DATA];
-} NeighborsMsg;
+implementation {
+components new FixRadioTxP(process);
+SplitControl = FixRadioTxP;
 
-#endif
+Param = FixRadioTxP;
 
+SubAMSend = FixRadioTxP.SubAMSend;
+SubReceive = FixRadioTxP.SubReceive;
+SubSnoop = FixRadioTxP.SubSnoop;
+SubAMPacket = FixRadioTxP.SubAMPacket;
+SubPacket = FixRadioTxP.SubPacket;
+SubPacketAcknowledgements = FixRadioTxP.SubPacketAcknowledgements;
+
+SubPacketLinkQuality = FixRadioTxP.SubPacketLinkQuality;
+SubPacketTransmitPower = FixRadioTxP.SubPacketTransmitPower;
+SubPacketRSSI = FixRadioTxP.SubPacketRSSI;
+
+components LedsC;
+FixRadioTxP.Leds -> LedsC;
+
+components RandomC;
+FixRadioTxP.Random -> RandomC;
+
+components SerialDbgsC;
+FixRadioTxP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+
+}

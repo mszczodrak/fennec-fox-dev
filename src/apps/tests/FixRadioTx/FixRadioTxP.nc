@@ -26,14 +26,17 @@
  */
 
 /**
-  * Fennec Fox FixRadioTX Application module
+  * Fennec Fox FixRadioTx Application module
   *
   * @author: Marcin K Szczodrak
   * @updated: 05/22/2011
   */
 
 
-generic configuration FixRadioTXC(process_t process) {
+#include <Fennec.h>
+#include "FixRadioTx.h"
+
+generic module FixRadioTxP(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -49,38 +52,49 @@ uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
+uses interface Leds;
+uses interface Random;
+
+uses interface SerialDbgs;
 }
 
 implementation {
-components new FixRadioTXP(process);
-SplitControl = FixRadioTXP;
 
-Param = FixRadioTXP;
+void setup_radio_tx() {
 
-SubAMSend = FixRadioTXP.SubAMSend;
-SubReceive = FixRadioTXP.SubReceive;
-SubSnoop = FixRadioTXP.SubSnoop;
-SubAMPacket = FixRadioTXP.SubAMPacket;
-SubPacket = FixRadioTXP.SubPacket;
-SubPacketAcknowledgements = FixRadioTXP.SubPacketAcknowledgements;
+//	tx_power = radio_powers[last_safe_tx_power_index];
+//	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+}
 
-SubPacketLinkQuality = FixRadioTXP.SubPacketLinkQuality;
-SubPacketTransmitPower = FixRadioTXP.SubPacketTransmitPower;
-SubPacketRSSI = FixRadioTXP.SubPacketRSSI;
+task void fix_radio() {
+	setup_radio_tx();
+}
 
-components LedsC;
-FixRadioTXP.Leds -> LedsC;
 
-components RandomC;
-FixRadioTXP.Random -> RandomC;
+command error_t SplitControl.start() {
+	post fix_radio();
+	signal SplitControl.startDone(SUCCESS);
+	return SUCCESS;
+}
 
-components new TimerMilliC() as SendTimerC;
-FixRadioTXP.SendTimer -> SendTimerC;
+command error_t SplitControl.stop() {
+	signal SplitControl.stopDone(SUCCESS);
+	return SUCCESS;
+}
 
-components LocalTimeMilliC;
-FixRadioTXP.LocalTime -> LocalTimeMilliC;
+event void SubAMSend.sendDone(message_t *msg, error_t error) {
+}
 
-components SerialDbgsC;
-FixRadioTXP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
+	return msg;
+}
+
+event void Param.updated(uint8_t var_id) {
+
+}
 
 }
