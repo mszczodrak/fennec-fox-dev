@@ -1,7 +1,8 @@
 #ifndef _FF_SFC_H_
 #define _FF_SFC_H_
 
-#include "fennec_data_values.h"
+#include "global_data_values.h"
+#include "local_data_values.h"
 #include "ff_caches.h"
 #include "ff_modules.h"
 #include "ff_processes.h"

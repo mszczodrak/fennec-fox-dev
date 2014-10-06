@@ -62,12 +62,19 @@ uses interface SerialDbgs;
 
 implementation {
 
+uint16_t offset;
+
 void setup_radio_tx() {
-	uint8_t my_power = fixed_tx_power[TOS_NODE_ID];
+	uint16_t addr = TOS_NODE_ID - offset;
+	uint8_t my_power = 31;
+	if (addr < FIXED_TX_POWER_NUMBER_OF_NODES) {
+		my_power = fixed_tx_power[TOS_NODE_ID];
+	}
 	call Param.set(TX_POWER, &my_power, sizeof(my_power));
 }
 
 command error_t SplitControl.start() {
+	call Param.get(OFFSET, &offset, sizeof(offset));
 	setup_radio_tx();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;

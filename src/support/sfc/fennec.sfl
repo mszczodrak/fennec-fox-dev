@@ -57,7 +57,8 @@ use application neighbor $(FENNEC_FOX_LIB)/apps/Neighbors (
 		uint16_t tx_delay = 5000)
 
 use application fixTX $(FENNEC_FOX_LIB)/apps/tests/FixRadioTx (
-		uint8_t tx_power = 31)
+		uint8_t tx_power = 31,
+		uint16_t offset = 0)
 
 use application testSerial $(FENNEC_FOX_LIB)/apps/tests/TestSerial ( 
 		uint8_t led=1,
