@@ -36,6 +36,8 @@
 #include <Fennec.h>
 #include "FixRadioTx.h"
 
+#include "power_distribution.h"
+
 generic module FixRadioTxP(process_t process) {
 provides interface SplitControl;
 
@@ -61,23 +63,18 @@ uses interface SerialDbgs;
 implementation {
 
 void setup_radio_tx() {
-
-//	tx_power = radio_powers[last_safe_tx_power_index];
-//	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+	uint8_t my_power = fixed_tx_power[TOS_NODE_ID];
+	call Param.set(TX_POWER, &my_power, sizeof(my_power));
 }
-
-task void fix_radio() {
-	setup_radio_tx();
-}
-
 
 command error_t SplitControl.start() {
-	post fix_radio();
+	setup_radio_tx();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
+	setup_radio_tx();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
