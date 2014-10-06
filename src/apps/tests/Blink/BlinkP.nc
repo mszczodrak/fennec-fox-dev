@@ -99,7 +99,7 @@ event void Timer.fired() {
 	on = !on;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Blink LED #%d -> %d\n", led, on);
+	printf("[%u] Application Blink LED #%d -> %d\n", process, led, on);
 #else
 	call SerialDbgs.dbgs(DBGS_LED_ON, process, led, on);
 #endif

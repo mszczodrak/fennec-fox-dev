@@ -184,11 +184,11 @@ void updateNeighborhoodCounter() {
 					last_safe_tx_power_index++;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("[%u] Application Neighbors New Safe Channel %d\n", 
-						process, radio_powers[last_safe_tx_power_index]);
+					printf("[%u] Application Neighbors New Safe Channel %d\n", 
+							process, radio_powers[last_safe_tx_power_index]);
 #else
-				call SerialDbgs.dbgs(DBGS_NEW_CHANNEL, process, good_quality_neighbors,
-						radio_powers[last_safe_tx_power_index]);
+					call SerialDbgs.dbgs(DBGS_NEW_CHANNEL, process, good_quality_neighbors,
+							radio_powers[last_safe_tx_power_index]);
 #endif
 #endif
 				}
@@ -332,7 +332,7 @@ command error_t SplitControl.start() {
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] Application Neighbor start()\n", process);
+	printf("[%u] Application Neighbor start()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
@@ -347,16 +347,26 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call SendTimer.stop();
 
+	/* temporary fix of power */
+	//last_safe_tx_power_index = 3;
+	tx_power = radio_powers[last_safe_tx_power_index];
+	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] Application Neighbor stop()\n", process);
+	printf("[%u] Application Neighbors Final set to %d\n", process, tx_power);
+#else
+	call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, good_quality_neighbors, tx_power);
+#endif
+#endif
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application Neighbor stop()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
 #endif
-
-	tx_power = radio_powers[last_safe_tx_power_index];
-	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
