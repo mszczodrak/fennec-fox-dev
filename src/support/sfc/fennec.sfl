@@ -60,7 +60,7 @@ use application fixTX $(FENNEC_FOX_LIB)/apps/tests/FixRadioTx (
 		uint8_t tx_power = 31,
 		uint16_t offset = 0)
 
-use application fixTX $(FENNEC_FOX_LIB)/apps/tests/FixSensorData (
+use application fixSensorData $(FENNEC_FOX_LIB)/apps/tests/FixSensorData (
 		uint16_t delay,
 		uint16_t delay_scale = 1,
 		uint16_t src = 0,

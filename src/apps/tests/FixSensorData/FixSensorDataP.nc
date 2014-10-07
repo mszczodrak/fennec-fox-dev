@@ -70,17 +70,19 @@ uint16_t seqno;
 uint16_t data;
 
 command error_t SplitControl.start() {
+	uint32_t send_delay;
+
 	call Param.get(SRC, &src, sizeof(src));
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
 	call Param.get(DATA, &data, sizeof(data));
 
-	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		call Timer.startPeriodic(delay);
-	}
-
 	send_delay = delay * delay_scale;
 	seqno = 0;
+
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		call Timer.startPeriodic(send_delay);
+	}
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
