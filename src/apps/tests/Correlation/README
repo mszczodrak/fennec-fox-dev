@@ -1,0 +1,36 @@
+Counter Application Module
+Author: Marcin Szczodrak
+
+Counter is a simple testing application. Periodically, this application
+sends a messages from a source node to a destination node.
+When the source node address is set to BROADCAST (0xFFFF), then every 
+node in the network sends messages to the destination. 
+The application sends messages every delay * scale milliseconds.
+Each node sends a message with the following data structure:
+
+typedef nx_struct CounterMsg {
+	nx_am_addr_t source;
+	nx_uint16_t seqno;
+	nx_uint8_t data[COUNTER_DATA_LENGTH];
+} CounterMsg;
+
+where the source field is set to the address of a node that sends
+the message, seqno is set to a value of a counter that every node
+has and which is increases by 1 after every message transmission,
+and data is filled with 0, with COUNTER_DATA_LENGTH set to 80.
+
+This application module takes four parameters:
+
+uint16_t delay - message transmission period, in units of delay_scale
+		default value: none
+
+uint16_t delay_scale - scale of the transmission period; scale is in ms.
+		default value: none
+		
+uint16_t src - the address of the node that sends messages
+		default value: none
+
+uint16_t dest - the address of the node that receives the messages
+		default value: none
+
+
