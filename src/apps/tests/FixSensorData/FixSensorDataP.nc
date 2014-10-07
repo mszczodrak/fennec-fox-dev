@@ -26,17 +26,19 @@
  */
 
 /**
-  * Counter Test Application Module
+  * Fennec Fox FixSensorData Application module
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/03/2014
+  * @updated: 05/22/2011
   */
 
-#include <Fennec.h>
-#include <Timer.h>
-#include "Counter.h"
 
-generic module CounterP(process_t process) {
+#include <Fennec.h>
+#include "FixSensorData.h"
+
+#include "power_distribution.h"
+
+generic module FixSensorDataP(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -53,6 +55,7 @@ uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Leds;
+uses interface Random;
 uses interface Timer<TMilli>;
 
 uses interface SerialDbgs;
@@ -63,28 +66,25 @@ implementation {
 uint16_t delay;
 uint16_t delay_scale;
 uint16_t src;
-uint16_t dest;
-
-message_t packet;
 uint16_t seqno;
+uint16_t data;
 
 command error_t SplitControl.start() {
-	uint32_t send_delay;
-
 	call Param.get(SRC, &src, sizeof(src));
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
+	call Param.get(DATA, &data, sizeof(data));
+
+	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		call Timer.startPeriodic(delay);
+	}
 
 	send_delay = delay * delay_scale;
 	seqno = 0;
 
-	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		call Timer.startPeriodic(send_delay);
-	}
-
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter start()\n", process);
+	printf("[%u] Application FixSensorData start()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
@@ -98,7 +98,7 @@ command error_t SplitControl.stop() {
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter stop()\n", process);
+	printf("[%u] Application FixSensorData stop()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
@@ -107,53 +107,26 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-task void sendMessage() {
-	error_t e;
-	CounterMsg* msg = (CounterMsg*)call SubAMSend.getPayload(&packet,
-							sizeof(CounterMsg));
-	if (msg == NULL) {
-		return;
-	}
-
-	msg->source = TOS_NODE_ID;
-	msg->seqno = seqno;
-
-	call Param.get(DEST, &dest, sizeof(dest));
-	e = call SubAMSend.send(dest, &packet, sizeof(CounterMsg));
-	if (e != SUCCESS) {
-		signal SubAMSend.sendDone(&packet, e);
-	}
-}
-
 event void Timer.fired() {
 	seqno++;
-	//printf("fired %u\n", seqno);
-	post sendMessage();
+	/* read data from a fixed file */
+	data = seqno;
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application FixSensorData read %d\n", process, data);
+#else
+//	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
+#endif
+	call Param.get(DATA, &data, sizeof(data));
 }
+
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	call Leds.set(seqno);
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter SendDone Error: %d  Seqno: %d  Dest: %d\n", process, error, seqno, dest);
-#else
-	call Param.get(DEST, &dest, sizeof(dest));
-	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
-#endif
-#endif
 }
 
-
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	CounterMsg* cm = (CounterMsg*)payload;
-	call Leds.set(cm->seqno);
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter Receive Len: %d  Seqno: %d  Source: %d\n", process, len, cm->seqno, cm->source);
-#else
-	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
-#endif
-#endif
 	return msg;
 }
 
