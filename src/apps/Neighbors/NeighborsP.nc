@@ -77,6 +77,8 @@ uint16_t tx_delay;
 uint8_t current_num_to_check;
 uint8_t last_safe_tx_power_index = 0;
 
+uint8_t power_change_seq;
+
 #define NUMBER_OF_MISSED_BEACONS	11
 #define NUM_RADIO_POWERS 		8
 
@@ -98,6 +100,9 @@ task void send_timer() {
 }
 
 void clean_record(uint8_t i) {
+#ifdef __DBGS__APPLICATION__
+	call SerialDbgs.dbgs(DBGS_REMOVE_NODE, my_data[i].node, my_data[i].node, my_data[i].node);
+#endif
 	my_data[i].node = BROADCAST;
 	my_data[i].first_seq = UNKNOWN;
 	my_data[i].last_seq = UNKNOWN;
@@ -169,9 +174,10 @@ void updateNeighborhoodCounter() {
 	}
 
 	if ((good_quality_neighbors > neighborhood_min_size) && (neighbors_in_need <= max_num_of_poor_neighbors)) {
-		if ((good_quality_neighbors - potential_loss) < neighborhood_min_size) {
-			return;
-		}
+//		if ((good_quality_neighbors - potential_loss) < neighborhood_min_size) {
+//			start_new_radio_tx_test();
+//			return;
+//		}
 		if (radio_powers[NUM_RADIO_POWERS-1] == tx_power) {
 			/* we are already at the lowest power and can potentially lower it */
 			start_new_radio_tx_test();
@@ -195,6 +201,7 @@ void updateNeighborhoodCounter() {
 
 				tx_power = radio_powers[i];
 				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+				power_change_seq++;
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -202,7 +209,7 @@ void updateNeighborhoodCounter() {
 					process, tx_power, neighborhoodCounter, good_quality_neighbors,
 					neighbors_in_need, dont_hear_us, potential_loss);
 #else
-				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, good_quality_neighbors, tx_power);
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, power_change_seq, good_quality_neighbors, tx_power);
 #endif
 #endif
 				start_new_radio_tx_test();
@@ -216,26 +223,28 @@ void updateNeighborhoodCounter() {
 			if (radio_powers[i] == tx_power) {
 				if ( i == last_safe_tx_power_index ) {
 					/* We already backed-up to the last safe one */
-				} else {
-					tx_power = radio_powers[i-1];
-					call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+					start_new_radio_tx_test();
+					return;
+				}
+
+				tx_power = radio_powers[i-1];
+				call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
+				power_change_seq++;
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-					printf("[%u] Application Neighbors Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
-						process, tx_power, neighborhoodCounter, good_quality_neighbors,
-						neighbors_in_need, dont_hear_us);
+				printf("[%u] Application Neighbors Increase to %d  [ Neighborhood: All: %d   Good: %d   Need Help: %d  Lost: %d ]\n", 
+					process, tx_power, neighborhoodCounter, good_quality_neighbors,
+					neighbors_in_need, dont_hear_us);
 #else
-					call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, process, good_quality_neighbors, tx_power);
+				call SerialDbgs.dbgs(DBGS_CHANNEL_RESET, power_change_seq, good_quality_neighbors, tx_power);
 #endif
 #endif
-				}
 				start_new_radio_tx_test();
 				return;
 			}
 		}
 	}
-
 	start_new_radio_tx_test();
 }
 
@@ -251,7 +260,6 @@ void remove_node(nx_uint16_t src) {
 	}
 }
 
-
 void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 					nx_uint16_t size, uint8_t hears_us) {
 	uint8_t i;
@@ -264,7 +272,6 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 			clean_record(i);
 		}
 	}
-
 
 	/* find the spot of the node */
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
@@ -291,17 +298,17 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 		i = candidate;
 	}
 
-	if ( ( my_data[i].node == BROADCAST ) || ( my_data[i].radio_tx != tx ) ) {
+	if ( ( my_data[i].node == BROADCAST ) || ( my_data[i].radio_tx != tx ) || ( hears_us != TRUE )) {
 		/*   first time                   the node has changed tx power */
 		my_data[i].node = src;
 		my_data[i].first_seq = seq;
 		my_data[i].rec = 0;
+#ifdef __DBGS__APPLICATION__
+		call SerialDbgs.dbgs(DBGS_ADD_NODE, src, tx, hears_us);
+#endif
 	}
 
-	if ( hears_us == TRUE) {	
-		my_data[i].rec++;
-	}
-
+	my_data[i].rec++;
 	my_data[i].size = size;
 	my_data[i].last_seq = seq;
 	my_data[i].timestamp = now_time;
@@ -329,6 +336,7 @@ command error_t SplitControl.start() {
 	call Param.get(NUM_TO_CHECK, &num_to_check, sizeof(num_to_check));
 
 	last_safe_tx_power_index = 0;
+	power_change_seq = 0;
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -337,7 +345,6 @@ command error_t SplitControl.start() {
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
 #endif
-
 	start_new_radio_tx_test();
 	
 	signal SplitControl.startDone(SUCCESS);
@@ -347,8 +354,6 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call SendTimer.stop();
 
-	/* temporary fix of power */
-	//last_safe_tx_power_index = 3;
 	tx_power = radio_powers[last_safe_tx_power_index];
 	call Param.set(TX_POWER, &tx_power, sizeof(tx_power));
 
@@ -367,7 +372,6 @@ command error_t SplitControl.stop() {
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
 #endif
-
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -393,9 +397,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 				return msg;
 			} else {
 				/* here are nodes that we lost since power upgrade */
-#ifdef __DBGS__APPLICATION__
-				call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_STATE_FAIL, m->src, m->seq, m->data[i].radio_tx);
-#endif
 				/* this node does not know about us anymore */
 			}
 			break;

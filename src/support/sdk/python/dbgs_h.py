@@ -56,6 +56,9 @@ DBGS_CONGESTION				= 54
 
 DBGS_STATUS_UPDATE			= 60
 
+DBGS_ADD_NODE				= 70
+DBGS_REMOVE_NODE			= 71
+
 DBGS_SEND_CONTROL_MSG                   = 101
 DBGS_RECEIVE_CONTROL_MSG                = 102
 DBGS_RECEIVE_FIRST_CONTROL_MSG          = 103
@@ -216,6 +219,12 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_STATUS_UPDATE:
 		return "Status Update"
+
+	if dbg_num == DBGS_ADD_NODE:
+		return "Add Node"
+
+	if dbg_num == DBGS_REMOVE_NODE:
+		return "Remove Node"
 
 	return None
 
