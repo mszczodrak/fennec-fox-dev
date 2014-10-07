@@ -68,7 +68,7 @@ void setup_radio_tx() {
 	uint16_t addr = TOS_NODE_ID - offset;
 	uint8_t my_power = 31;
 	if (addr < FIXED_TX_POWER_NUMBER_OF_NODES) {
-		my_power = fixed_tx_power[TOS_NODE_ID];
+		my_power = fixed_tx_power[addr];
 	}
 	call Param.set(TX_POWER, &my_power, sizeof(my_power));
 }
