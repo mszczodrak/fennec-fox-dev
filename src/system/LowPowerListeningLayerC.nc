@@ -78,7 +78,4 @@ implementation
 	
 	LowPowerListeningLayerP.Timer -> TimerMilliC;
 	LowPowerListeningLayerP.SystemLowPowerListening -> SystemLowPowerListeningC;
-
-	components NoLedsC as LedsC;
-	LowPowerListeningLayerP.Leds -> LedsC;
 }

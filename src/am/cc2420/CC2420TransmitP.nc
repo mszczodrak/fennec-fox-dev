@@ -81,7 +81,6 @@ module CC2420TransmitP @safe() {
   uses interface CC2420Ram as TXNONCE;
 
   uses interface CC2420Receive;
-  uses interface Leds;
 
 uses interface SerialDbgs;
 }
@@ -620,7 +619,6 @@ implementation {
 #ifdef CC2420_HW_SECURITY
 
   task void waitTask(){
-    call Leds.led2Toggle();
     if(SECURITYLOCK == 1){
       post waitTask();
     }else{
@@ -674,7 +672,6 @@ implementation {
 	mode = CC2420_NO_SEC;
 	micLength = 4;
       }else if (secHdr->secLevel == CBC_MAC_4){
-	//	call Leds.led0Toggle();
 	mode = CC2420_CBC_MAC;
 	micLength = 4;
       }else if (secHdr->secLevel == CBC_MAC_8){
@@ -684,7 +681,6 @@ implementation {
 	mode = CC2420_CBC_MAC;
 	micLength = 16;
       }else if (secHdr->secLevel == CTR){
-	//	call Leds.led1Toggle();
 	mode = CC2420_CTR;
 	micLength = 4;
       }else if (secHdr->secLevel == CCM_4){

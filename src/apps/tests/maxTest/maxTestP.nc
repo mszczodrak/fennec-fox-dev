@@ -77,7 +77,6 @@ task void send_msg() {
 			sizeof(nx_struct maxMsg)) != SUCCESS) {
 	} else {
 		send_busy = TRUE;
-		call Leds.set(val);
 	}
 }
 

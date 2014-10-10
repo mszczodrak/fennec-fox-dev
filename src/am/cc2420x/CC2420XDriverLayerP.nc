@@ -891,11 +891,9 @@ implementation
 		len = getHeader(msg)->length; // separate FCS/CRC
 	    }
 
-	    call Leds.led1Toggle();
 	    //if (call UartSend.send(uartQueue[uartOut], len) == SUCCESS) {
 	    if (call PppIpv6.transmit(getPayload(msg)+1,
 				      len) == SUCCESS) {
-		//call Leds.led2Toggle();
 		atomic {
 		    if (msg == pppQueue[pppOut]) {
 			if (++pppOut >= PPP_QUEUE_LEN)
@@ -986,7 +984,6 @@ implementation
 
 //for apps/PPPSniffer
 #ifdef PPPSNIFFER
-		call Leds.led0Toggle();
 		atomic {
 		    if (!pppFull) {
 			//ret = pppQueue[pppIn];

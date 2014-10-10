@@ -97,7 +97,6 @@ task void send_serial_message() {
 
 	/* Send message over the serial and check if serial started without error */
 	if (call SerialAMSend.send(sm.dest, &packet, sm.len) != SUCCESS) {
-		call Leds.led1On();
 		signal SerialAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy_serial = TRUE;
@@ -123,8 +122,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	msg_queue_t sm;
 
-	call Leds.led2Toggle();
-
 	/* Check if there is space to save this message */
 	if (call SerialQueue.full()) {
 		return msg;
@@ -147,19 +144,16 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void SerialSplitControl.startDone(error_t error) {
 	if (error != SUCCESS) {
-		call Leds.led0On();
 	}
 	serial_data = (void*) call SerialAMSend.getPayload(&packet, 
 			BRIDGE_MAX_PAYLOAD_SIZE);
 	if (serial_data == NULL) {
-		call Leds.led0On();
 	}
 	signal SplitControl.startDone(SUCCESS);
 }
 
 event void SerialSplitControl.stopDone(error_t error) {
 	if (error != SUCCESS) {
-		call Leds.led0On();
 	}
 	signal SplitControl.stopDone(SUCCESS);
 }
@@ -171,7 +165,6 @@ event message_t* SerialReceive.receive(message_t *msg, void* payload, uint8_t le
 event void SerialAMSend.sendDone(message_t *msg, error_t error) {
 	call SerialQueue.dequeue();
 	busy_serial = FALSE;
-	call Leds.led1Off();
 	post send_serial_message();
 }
 

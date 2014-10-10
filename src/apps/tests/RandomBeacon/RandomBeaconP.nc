@@ -75,7 +75,6 @@ task void set_timer() {
 }
 
 command error_t SplitControl.start() {
-	//call Leds.led0On();
 	post set_timer();
 	sendBusy = FALSE;
 	signal SplitControl.startDone(SUCCESS);
@@ -91,7 +90,6 @@ command error_t SplitControl.stop() {
 void sendMessage() {
 	RandomBeaconMsg* msg = (RandomBeaconMsg*)call SubAMSend.getPayload(&packet,
 							sizeof(RandomBeaconMsg));
-	call Leds.led1Toggle();
 	if (msg == NULL) {
 		return;
 	}
@@ -103,7 +101,6 @@ void sendMessage() {
 					sizeof(RandomBeaconMsg)) != SUCCESS) {
 	} else {
 		sendBusy = TRUE;
-		call Leds.set(msg->seqno);
 	}
 }
 
@@ -121,7 +118,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	RandomBeaconMsg* cm = (RandomBeaconMsg*)payload;
-	call Leds.set(cm->seqno);
 	return msg;
 }
 

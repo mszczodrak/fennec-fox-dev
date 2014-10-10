@@ -121,7 +121,6 @@ event void ModuleCtrl.startDone(error_t error) {
 			state, current_process, current_layer);
 #endif
 #endif
-		call Leds.led0On();
 		signal NetworkProcess.stopDone(FAIL);
 		return;
 	}
@@ -149,7 +148,6 @@ event void ModuleCtrl.stopDone(error_t error) {
 			state, current_process, current_layer);
 #endif
 #endif
-		call Leds.led0On();
 		signal NetworkProcess.startDone(FAIL);
 		return;
 	}

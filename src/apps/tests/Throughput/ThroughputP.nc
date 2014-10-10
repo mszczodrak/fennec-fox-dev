@@ -160,14 +160,12 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
         if (call MessagePool.empty()) {
         /* well, there is not more memory space ... maybe increase pool queue */
-                call Leds.led0On();
                 return msg;
         }
 
         serial_message = call MessagePool.get();
         if (serial_message == NULL) {
         /* something went wrong.... this should never happen */
-                call Leds.led0On();
                 return msg;
         }
 
@@ -181,7 +179,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
         /* Check if there is a space in queue */
         if (call SerialQueue.full()) {
                 /* Queue is full, give up sending the serial message */
-                call Leds.led0On();
                 call MessagePool.put(serial_message);
                 return msg;
         }
@@ -225,7 +222,6 @@ event void Timer.fired() {
 		call Timer.startPeriodic(freq);
 		init = 0;
 	}
-	call Leds.led2Toggle();
         seqno++;
 	prepare_network_message();
 }
@@ -239,14 +235,12 @@ void prepare_network_message() {
 
         if (call MessagePool.empty()) {
         /* well, there is not more memory space ... maybe increase pool queue */
-                call Leds.led0On();
                 return;
         }
 
         network_message = call MessagePool.get();
         if (network_message == NULL) {
         /* something went wrong.... this should never happen */
-                call Leds.led0On();
                 return;
         }
 
@@ -266,7 +260,6 @@ void prepare_network_message() {
         /* Check if there is a space in queue */
         if (call SubQueue.full()) {
                 /* Queue is full, give up sending the serial message */
-                call Leds.led0On();
                 call MessagePool.put(network_message);
                 return;
         }
@@ -299,7 +292,6 @@ task void send_serial_message() {
 	/* Send message */
 
 	if (call SerialAMSend.send(sm->addr, sm->msg, sm->len) != SUCCESS) {
-		call Leds.led0On();
 		signal SerialAMSend.sendDone(sm->msg, FAIL);
 	} else {
 		busy_serial = TRUE;

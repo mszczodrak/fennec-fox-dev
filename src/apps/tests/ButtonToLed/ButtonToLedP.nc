@@ -78,7 +78,9 @@ task void send_message() {
 	if (call SubAMSend.send(BROADCAST, &packet, 
 				sizeof(ButtonToLedMsg)) != SUCCESS) {
         } else {
+#ifdef __USUAL_LEDS__
                 call Leds.set(counter);
+#endif
         }
 	counter = 0;
 }
@@ -101,7 +103,9 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {}
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	ButtonToLedMsg* c = (ButtonToLedMsg*)payload;
+#ifdef __USUAL_LEDS__
 	call Leds.set(c->counter);
+#endif
 	turn_off = TRUE;
 	call Timer.startOneShot(LED_TURNOFF_TIME);
 	return msg;
@@ -114,7 +118,9 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void Timer.fired() {
 	if (turn_off == TRUE) {
 		turn_off = FALSE;
+#ifdef __USUAL_LEDS__
 		call Leds.set(0);
+#endif
 	} else {
 		turn_off = TRUE;
 		call Timer.startOneShot(LED_TURNOFF_TIME);
@@ -129,7 +135,9 @@ event void Notify.notify( button_state_t state ) {
 		call Timer.startOneShot(BUTTON_WAIT_TIME);
 	}
 //	} else if ( state == BUTTON_RELEASED ) {
+#ifdef __USUAL_LEDS__
 //		call Leds.led2Off();
+#endif
 //	}
 }
 

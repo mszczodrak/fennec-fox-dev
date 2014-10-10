@@ -101,9 +101,6 @@ implementation {
   CC2420TransmitP.PacketTimeStamp -> CC2420PacketC;
   CC2420TransmitP.PacketTimeSyncOffset -> CC2420PacketC;
 
-  components LedsC;
-  CC2420TransmitP.Leds -> LedsC;
-
 components SerialDbgsC;
 CC2420TransmitP.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
 

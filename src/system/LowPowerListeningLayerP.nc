@@ -60,7 +60,6 @@ generic module LowPowerListeningLayerP()
 		interface Timer<TMilli>;
 		interface SystemLowPowerListening;
 
-		interface Leds;
 		interface SerialDbgs;
 	}
 }
@@ -133,7 +132,6 @@ implementation
 
 			if( error == SUCCESS )
 			{
-				call Leds.led2On();
 				++state;
 			}
 			else
@@ -147,7 +145,6 @@ implementation
 			if( error == SUCCESS )
 			{
 				++state;
-				call Leds.led2Off();
 			}
 			else
 				post transition();
@@ -300,8 +297,6 @@ implementation
 
 	event message_t* SubReceive.receive(message_t* msg)
 	{
-		call Leds.led0Toggle();
-
 		if( state == SLEEP_SUBSTOP )
 			state = LISTEN_WAIT;
 
@@ -381,9 +376,6 @@ implementation
 			state = SEND_SUBSEND;
 
 		post transition();
-
-		if( error == SUCCESS )
-			call Leds.led1Toggle();
 	}
 
 /*----------------- LowPowerListening -----------------*/

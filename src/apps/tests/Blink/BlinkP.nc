@@ -81,7 +81,9 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
+#ifdef __USUAL_LEDS__
 	call Leds.set(0);
+#endif
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -95,7 +97,9 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
+#ifdef __USUAL_LEDS__
 	on ? call Leds.set(0) : call Leds.set(led) ;
+#endif
 	on = !on;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)

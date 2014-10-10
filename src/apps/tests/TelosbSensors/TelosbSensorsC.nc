@@ -78,9 +78,6 @@ SubPacketRSSI = TelosbSensorsP.SubPacketRSSI;
 components new TimerMilliC();
 TelosbSensorsP.Timer -> TimerMilliC;
 
-components LedsC;
-TelosbSensorsP.Leds -> LedsC;
-
 #ifndef TOSSIM 
 
 components new SensirionSht11C();

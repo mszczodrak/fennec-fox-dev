@@ -64,7 +64,6 @@ uses interface Read<uint16_t> as ReadTemperature;
 uses interface Read<uint16_t> as ReadLight;
 
 uses interface Timer<TMilli> as Timer;
-uses interface Leds;
 }
 
 implementation {
@@ -87,21 +86,17 @@ uint16_t dest;
 uint16_t sampling_rate;
 
 task void report_measurements() {
-	call Leds.led1Toggle();
 	dbgs(F_APPLICATION, S_NONE, data->hum, data->temp, data->light, 0, 0);
 
 	if (call SubAMSend.send(dest, &network_packet,
 			sizeof(telosb_sensors_t)) != SUCCESS) {
-		call Leds.led0On();
 		signal SubAMSend.sendDone(&network_packet, FAIL);
 	}
 }
 
 task void send_serial_message() {
-	call Leds.led2Toggle();
 	if (call SerialAMSend.send(BROADCAST, &serial_packet, sizeof(telosb_sensors_t)) != SUCCESS) {
 		signal SerialAMSend.sendDone(&serial_packet, FAIL);
-		call Leds.led0On();
 	}
 }
 

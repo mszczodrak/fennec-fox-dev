@@ -89,7 +89,6 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
         call Timer.stop();
-        call Leds.set(0);
 	dbg("Application", "TestSerial SplitControl.start()");
 	//call SerialSplitControl.stop();
         signal SplitControl.stopDone(SUCCESS);

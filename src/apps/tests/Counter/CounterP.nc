@@ -134,7 +134,9 @@ event void Timer.fired() {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+#ifdef __USUAL_LEDS__
 	call Leds.set(seqno);
+#endif
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Application Counter SendDone Error: %d  Seqno: %d  Dest: %d\n", process, error, seqno, dest);
@@ -148,7 +150,9 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	CounterMsg* cm = (CounterMsg*)payload;
+#ifdef __USUAL_LEDS__
 	call Leds.set(cm->seqno);
+#endif
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Application Counter Receive Len: %d  Seqno: %d  Source: %d\n", process, len, cm->seqno, cm->source);

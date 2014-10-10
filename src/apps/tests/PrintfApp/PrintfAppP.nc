@@ -58,14 +58,12 @@ uses interface Leds;
 implementation {
 
 command error_t SplitControl.start() {
-	call Leds.led2On();
 	call Timer.startPeriodic(1000);
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	call Leds.led2Off();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -81,7 +79,6 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void Timer.fired() {
-	call Leds.led0Toggle();
 	printf("Hello World!\n");
 	printfflush();
 }

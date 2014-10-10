@@ -87,7 +87,6 @@ task void send_serial_message() {
 	printfflush();
 
 	call SerialQueue.dequeue();
-	call Leds.led1Toggle();
 }
 
 
@@ -108,8 +107,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	msg_queue_t sm;
-
-	call Leds.led2Toggle();
 
 	/* Check if there is space to save this message */
 	if (call SerialQueue.full()) {

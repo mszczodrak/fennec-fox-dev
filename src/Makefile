@@ -6,6 +6,9 @@ PFLAGS+=-DTOSH_DATA_LENGTH=127
 
 CFLAGS += -DLOW_POWER_LISTENING
 
+PFLAGS+=-D__USUAL_LEDS__
+PFLAGS+=-D__FLOCKLAB_LEDS__
+
 include $(FENNEC_FOX_LIB)/support/make/Makerules
 include $(FENNEC_FOX_LIB)/support/make/dbgs.extra
 include $(TINYOS_ROOT_DIR)/Makefile.include

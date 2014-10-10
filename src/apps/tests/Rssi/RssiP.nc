@@ -134,14 +134,20 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	signal LedTimer.fired();
 
+#ifdef __USUAL_LEDS__
 	call Leds.led0On();
+#endif
 
 	if ( rssi_calib  > threshold_1 ) {
+#ifdef __USUAL_LEDS__
 		call Leds.led1On();
+#endif
 	}
 
 	if ( rssi_calib  > threshold_2 ) {
+#ifdef __USUAL_LEDS__
 		call Leds.led2On();
+#endif
 	}
 
 	return msg;
@@ -167,7 +173,9 @@ event void SendTimer.fired() {
 }
 
 event void LedTimer.fired() {
+#ifdef __USUAL_LEDS__
 	call Leds.set(0);
+#endif
 	post reset_led_timer();
 }
 

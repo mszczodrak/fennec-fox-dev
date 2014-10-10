@@ -59,7 +59,6 @@ uses interface Timer<TMilli>;
 uses interface BitVector as Pending;
 uses interface BitVector as Changed;
 uses interface Random;
-uses interface Leds;
 
 uses interface TrickleTimerParams;
 }
