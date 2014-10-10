@@ -264,6 +264,9 @@ void reportStopDone() {
   event void SubControl.startDone(error_t error) {
     if(!error) {
       call RadioPowerState.forceState(S_ON);
+#ifdef __FLOCKLAB_LEDS__
+      call Leds.led1On();
+#endif
 #ifdef __DBGS__RADIO_STATUS__
       on_time = call OffTimer.getNow();
       off_time = on_time - off_time;
@@ -282,6 +285,9 @@ void reportStopDone() {
      */
     if(call SubControlState.isState(S_OFF) || 
       call SubControlState.isState(S_TURNING_OFF)) {
+#ifdef __FLOCKLAB_LEDS__
+      call Leds.led1Off();
+#endif
       call OffTimer.stop();
       call SendDoneTimer.stop();
       call SendState.toIdle();
@@ -299,6 +305,9 @@ void reportStopDone() {
         post startRadio();
         
       } else {        
+#ifdef __FLOCKLAB_LEDS__
+        call Leds.led1Off();
+#endif
         call OffTimer.stop();
         call SendDoneTimer.stop();
 #ifdef __DBGS__RADIO_STATUS__
