@@ -80,12 +80,6 @@ implementation {
   
   /** The length of the current send message */
   uint8_t currentSendLen;
-
-#ifdef __DBGS__RADIO_STATUS__
-  uint32_t on_time;
-  uint32_t off_time;
-#endif
-
   
   /**
    * Radio Power State
@@ -109,15 +103,17 @@ implementation {
     ONE_MESSAGE = 0,
   };
 
+	task void reportStartDone() {
 #ifdef __DBGS__RADIO_STATUS__
-void reportStopDone() {
-	uint32_t now = call OffTimer.getNow();
-	on_time = now - on_time;
-	call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, (uint16_t)(on_time >> 16), (uint16_t)on_time);
-	call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, (uint16_t)(off_time >> 16), (uint16_t)off_time);
-	off_time = now;
-}
+		call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, 0, 0);
 #endif
+	}
+
+	task void reportStopDone() {
+#ifdef __DBGS__RADIO_STATUS__
+		call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, 0, 0);
+#endif
+	}
 
   /***************** Prototypes ***************/
   task void send();
@@ -264,10 +260,7 @@ void reportStopDone() {
   event void SubControl.startDone(error_t error) {
     if(!error) {
       call RadioPowerState.forceState(S_ON);
-#ifdef __DBGS__RADIO_STATUS__
-      on_time = call OffTimer.getNow();
-      off_time = on_time - off_time;
-#endif
+      post reportStartDone();
       
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
           || call SendState.getState() == S_LPL_SENDING) {
@@ -285,9 +278,7 @@ void reportStopDone() {
       call OffTimer.stop();
       call SendDoneTimer.stop();
       call SendState.toIdle();
-#ifdef __DBGS__RADIO_STATUS__
-      reportStopDone();
-#endif
+      post reportStopDone();
       return;
     }
 
@@ -301,9 +292,7 @@ void reportStopDone() {
       } else {        
         call OffTimer.stop();
         call SendDoneTimer.stop();
-#ifdef __DBGS__RADIO_STATUS__
-        reportStopDone();
-#endif
+        post reportStopDone();
       }
     }
   }

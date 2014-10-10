@@ -157,17 +157,17 @@ implementation {
   error_t releaseSpiResource();
   void signalDone( error_t err );
  
-  task void reportCongestion() {
 #ifdef __DBGS__MAC_CONGESTION__
+  task void reportCongestion() {
     call SerialDbgs.dbgs(DBGS_CONGESTION, 242, 0, 0);
-#endif
   }
+#endif
 
-  task void notAcked() {
 #ifdef __DBGS__MAC_NOT_ACKED__
+  task void notAcked() {
     call SerialDbgs.dbgs(DBGS_NOT_ACKED, 242, 0, 0);
-#endif
   }
+#endif
 
   /***************** Init Commands *****************/
   command error_t Init.init() {
@@ -532,7 +532,9 @@ implementation {
         break;
         
       case S_ACK_WAIT:
+#ifdef __DBGS__MAC_NOT_ACKED__
         post notAcked();
+#endif
         signalDone( SUCCESS );
         break;
 
@@ -805,7 +807,9 @@ implementation {
       signal RadioBackoff.requestCongestionBackoff(m_msg);
       call BackoffTimer.start(myCongestionBackoff);
     }
+#ifdef __DBGS__MAC_CONGESTION__
     post reportCongestion();
+#endif
   }
   
   error_t acquireSpiResource() {
