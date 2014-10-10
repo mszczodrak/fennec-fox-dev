@@ -129,7 +129,6 @@ task void sendMessage() {
 
 event void Timer.fired() {
 	seqno++;
-	//printf("fired %u\n", seqno);
 	post sendMessage();
 }
 
