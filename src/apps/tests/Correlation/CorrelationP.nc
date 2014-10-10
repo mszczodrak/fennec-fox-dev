@@ -75,7 +75,8 @@ command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
 
-	send_delay = delay * delay_scale;
+	send_delay = delay;
+	send_delay *= delay_scale;
 	seqno = 0;
 
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
