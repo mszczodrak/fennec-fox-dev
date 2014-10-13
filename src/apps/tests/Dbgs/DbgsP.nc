@@ -90,4 +90,8 @@ event void Timer.fired() {
 	call SerialDbgs.dbgs(DBGS_NONE, process, c, c);
 }
 
+event void Param.updated(uint8_t var_id) {
+
+}
+
 }

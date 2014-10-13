@@ -3,8 +3,10 @@
 # Updated on 4/24/2014
 
 import sys
-flocklab_log_length = 5
+import csv
+from operator import itemgetter
 
+flocklab_log_length = 5
 
 if len(sys.argv) != 2:
 	print("\nusage: %s <serial.csv log file>\n\n");
@@ -16,8 +18,10 @@ time_offset = -1
 
 print "{:>8} {:>6} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "micro", "mote", "ver", "id", "dbg", "d0", "d1", "d2")
 
-for line in f.readlines():
-	l = line.split(",")
+all_lines = [line.split(",") for line in f.readlines()]
+all_lines.sort(key=lambda x: x[0] )
+
+for l in all_lines:
 	if len(l) != flocklab_log_length:
 		continue
 
