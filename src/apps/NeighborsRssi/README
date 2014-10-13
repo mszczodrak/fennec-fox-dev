@@ -1,0 +1,10 @@
+Null Application Module
+Author: Marcin Szczodrak
+
+An example of an empty application layer module.
+The null application connects to all Fennec Fox
+interfaces to make it compatible with the network stack.
+
+The null application is an empty template for more
+advanced applications.
+

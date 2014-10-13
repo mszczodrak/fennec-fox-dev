@@ -56,6 +56,15 @@ use application neighbor $(FENNEC_FOX_LIB)/apps/Neighbors (
 		uint8_t tx_power = 31,
 		uint16_t tx_delay = 5000)
 
+use application neighborSimple $(FENNEC_FOX_LIB)/apps/NeighborsSimple (
+		uint8_t neighborhood_min_size = 4,
+		uint8_t max_num_of_poor_neighbors = 1,
+		uint8_t num_to_check = 100,
+		uint8_t tx_power = 31,
+		uint16_t tx_delay = 5000)
+
+
+
 use application fixTX $(FENNEC_FOX_LIB)/apps/tests/FixRadioTx (
 		uint8_t tx_power = 31,
 		uint16_t offset = 0)
