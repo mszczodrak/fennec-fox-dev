@@ -70,7 +70,9 @@ uint16_t seqno;
 
 uint8_t neighborhood_min_size;
 uint8_t max_num_of_poor_neighbors;
-uint8_t good_etx;
+int8_t good_rssi;
+float rssi_scale;
+int8_t rssi_offset;
 uint8_t tx_power;
 uint8_t num_to_check = 100;
 uint16_t tx_delay;
@@ -110,7 +112,7 @@ void clean_record(uint8_t i) {
 	my_data[i].rec = UNKNOWN;
 	my_data[i].radio_tx = UNKNOWN;
 	my_data[i].size = UNKNOWN;
-	my_data[i].etx = UNKNOWN;
+	my_data[i].rssi_calib = UNKNOWN;
 }
 
 void start_new_radio_tx_test() {
@@ -149,7 +151,7 @@ void updateNeighborhoodCounter() {
 				neighbors_in_need++;
 			}
 
-			if ( my_data[i].etx > good_etx ) {
+			if ( my_data[i].rssi_calib > good_rssi ) {
 				good_quality_neighbors++;
 				if (my_data[i].radio_tx > tx_power) {
 					potential_loss++;
@@ -261,7 +263,7 @@ void remove_node(nx_uint16_t src) {
 }
 
 void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
-					nx_uint16_t size, uint8_t hears_us) {
+					nx_uint16_t size, int8_t rssi_calib, uint8_t hears_us) {
 	uint8_t i;
 	uint32_t now_time = call LocalTime.get();
 
@@ -303,6 +305,7 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 		my_data[i].node = src;
 		my_data[i].first_seq = seq;
 		my_data[i].rec = 0;
+		my_data[i].rssi_calib = -126;
 #ifdef __DBGS__APPLICATION__
 		call SerialDbgs.dbgs(DBGS_ADD_NODE, src, tx, hears_us);
 #endif
@@ -313,7 +316,9 @@ void add_receive_node(nx_uint16_t src, nx_uint8_t tx, nx_uint16_t seq,
 	my_data[i].last_seq = seq;
 	my_data[i].timestamp = now_time;
 	my_data[i].radio_tx = tx;
-	my_data[i].etx = (my_data[i].rec * 100) / (my_data[i].last_seq - my_data[i].first_seq + 1);
+	if (rssi_calib > my_data[i].rssi_calib) {
+		my_data[i].rssi_calib = rssi_calib;
+	}
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -330,10 +335,12 @@ command error_t SplitControl.start() {
 
 	call Param.get(NEIGHBORHOOD_MIN_SIZE, &neighborhood_min_size, sizeof(neighborhood_min_size));
 	call Param.get(MAX_NUM_OF_POOR_NEIGHBORS, &max_num_of_poor_neighbors, sizeof(max_num_of_poor_neighbors));
-	call Param.get(GOOD_ETX, &good_etx, sizeof(good_etx));
+	call Param.get(GOOD_RSSI, &good_rssi, sizeof(good_rssi));
 	call Param.get(TX_POWER, &tx_power, sizeof(tx_power));
 	call Param.get(TX_DELAY, &tx_delay, sizeof(tx_delay));
 	call Param.get(NUM_TO_CHECK, &num_to_check, sizeof(num_to_check));
+        call Param.get(RSSI_SCALE, &rssi_scale, sizeof(rssi_scale));
+        call Param.get(RSSI_OFFSET, &rssi_offset, sizeof(rssi_offset));
 
 	last_safe_tx_power_index = 0;
 	power_change_seq = 0;
@@ -386,14 +393,16 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t i;
+	int8_t rssi = (int8_t) call SubPacketRSSI.get(msg);
+	int8_t rssi_calib = (rssi * rssi_scale) + rssi_offset;
 	NeighborsRssiMsg *m = (NeighborsRssiMsg*) payload;
-
+	
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
 		if (m->data[i].node == TOS_NODE_ID) {
 			/* this node hears us */
 			if ( m->data[i].radio_tx == tx_power ) {
 				/* this node hears us with the current radio control */
-				add_receive_node(m->src, m->tx, m->seq, m->size, TRUE);
+				add_receive_node(m->src, m->tx, m->seq, m->size, rssi_calib, TRUE);
 				return msg;
 			} else {
 				/* here are nodes that we lost since power upgrade */
@@ -406,7 +415,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	/* case when a node does not hears us... */
 	/* may be the case that it used to hear us, but only has older tx_power */
 	/* this node does not know about us */
-	add_receive_node(m->src, m->tx, m->seq, m->size, FALSE);
+	add_receive_node(m->src, m->tx, m->seq, m->size, rssi_calib, FALSE);
 	return msg;
 }
 
@@ -432,7 +441,7 @@ event void SendTimer.fired() {
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
 		msg->data[i].node = my_data[i].node;
 		msg->data[i].radio_tx = my_data[i].radio_tx;
-		msg->data[i].etx = my_data[i].etx;
+		msg->data[i].rssi_calib = my_data[i].rssi_calib;
 	}
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(NeighborsRssiMsg)) != SUCCESS) {

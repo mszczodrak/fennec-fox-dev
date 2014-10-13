@@ -48,12 +48,12 @@ typedef struct NeighborsRssiData {
 	uint16_t	rec;		/* number of receives */
 	uint8_t		radio_tx;	/* the tx power that neighbor has about us */
 	uint8_t		size; 	
-	uint8_t		etx;
+	int8_t		rssi_calib;
 } NeighborsRssiData;
 
 typedef nx_struct NeighborsRssiEntry {
 	nx_am_addr_t	node;
-	nx_uint8_t	etx;
+	nx_int8_t	rssi_calib;
 	nx_uint8_t	radio_tx;
 } NeighborsRssiEntry;
 
