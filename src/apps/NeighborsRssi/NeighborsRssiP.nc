@@ -396,7 +396,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	int8_t rssi = (int8_t) call SubPacketRSSI.get(msg);
 	int8_t rssi_calib = (rssi * rssi_scale) + rssi_offset;
 	NeighborsRssiMsg *m = (NeighborsRssiMsg*) payload;
-	
+
 	for ( i = 0; i < NEIGHBORHOOD_DATA; i++ ) {
 		if (m->data[i].node == TOS_NODE_ID) {
 			/* this node hears us */
