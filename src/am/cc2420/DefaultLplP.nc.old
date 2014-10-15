@@ -84,9 +84,6 @@ implementation {
 #ifdef __DBGS__RADIO_STATUS__
   uint32_t on_time;
   uint32_t off_time;
-  uint32_t sum_on_time = 0;
-  uint32_t sum_off_time = 0;
-  uint16_t seq = 0;
 #endif
 
   
@@ -116,16 +113,8 @@ implementation {
 void reportStopDone() {
 	uint32_t now = call OffTimer.getNow();
 	on_time = now - on_time;
-	seq++;
-	sum_on_time += on_time;
-	sum_off_time += off_time;
-	if (seq == 1200) {
-		call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, (uint16_t)(sum_on_time >> 16), (uint16_t)sum_on_time);
-		call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, (uint16_t)(sum_off_time >> 16), (uint16_t)sum_off_time);
-		seq = 0;
-		sum_on_time = 0;
-		sum_off_time = 0;
-	}
+	call SerialDbgs.dbgs(DBGS_RADIO_START_DONE, 0, (uint16_t)(on_time >> 16), (uint16_t)on_time);
+	call SerialDbgs.dbgs(DBGS_RADIO_STOP_DONE, 0, (uint16_t)(off_time >> 16), (uint16_t)off_time);
 	off_time = now;
 }
 #endif
