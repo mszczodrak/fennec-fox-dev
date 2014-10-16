@@ -8,7 +8,7 @@ uses interface AMPacket as SubAMPacket;
 uses interface Packet as SubPacket;
 uses interface Receive as SubReceive;
 uses interface Receive as SubSnoop;
-
+uses interface Leds;
 
 uses interface Send as QueueSend[uint8_t sid];
 
@@ -134,6 +134,9 @@ event message_t* SubSnoop.receive(message_t *m, void *payload, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t* m, error_t err) {
+#ifdef __FLOCKLAB_LEDS__
+	call Leds.led2Off();
+#endif
 	switch(getRoutingHeader(m)->am) {
 	case AM_CTP_ROUTING:
 		call SubAMPacket.setType(m, CTP_ROUTING_BEACON);
@@ -150,6 +153,9 @@ event void SubAMSend.sendDone(message_t* m, error_t err) {
 }
 
 command error_t SubQueueAMSend.send[uint8_t id](am_addr_t dest, message_t* m, uint8_t len) {
+#ifdef __FLOCKLAB_LEDS__
+	call Leds.led2On();
+#endif
 	return call SubAMSend.send(dest, m, len);
 }
 

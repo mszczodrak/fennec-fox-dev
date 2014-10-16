@@ -122,6 +122,9 @@ task void sendMessage() {
 
 	call Param.get(DEST, &dest, sizeof(dest));
 	e = call SubAMSend.send(dest, &packet, sizeof(CounterMsg));
+#ifdef __FLOCKLAB_LEDS__
+      call Leds.led0On();
+#endif
 	if (e != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, e);
 	}
@@ -143,6 +146,10 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	//call Param.get(DEST, &dest, sizeof(dest));
 	//call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
 #endif
+#endif
+
+#ifdef __FLOCKLAB_LEDS__
+	call Leds.led0Off();
 #endif
 }
 

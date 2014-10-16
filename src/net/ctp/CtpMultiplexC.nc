@@ -34,4 +34,7 @@ SubPacket = CtpMultiplexP.SubPacket;
 
 SubQueueAMSend = CtpMultiplexP.SubQueueAMSend;
 
+components LedsC;
+CtpMultiplexP.Leds -> LedsC;
+
 }
