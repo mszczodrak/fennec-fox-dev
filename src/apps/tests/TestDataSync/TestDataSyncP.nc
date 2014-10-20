@@ -98,40 +98,40 @@ task void updateData() {
 	switch(v) {
 	case 1:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-//					TOS_NODE_ID, seqno, VAL1, v, d);
+			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+					TOS_NODE_ID, seqno, VAL1, v, d);
 		#endif
 		call Param.set(VAL1, &d, sizeof(d));
 		break;
 
 	case 2:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-//					TOS_NODE_ID, seqno, VAL2, v, d);
+			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+					TOS_NODE_ID, seqno, VAL2, v, d);
 		#endif
 		call Param.set(VAL2, &d, sizeof(d));
 		break;
 
 	case 3:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-//					TOS_NODE_ID, seqno, VAL3, v, d);
+			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+					TOS_NODE_ID, seqno, VAL3, v, d);
 		#endif
 		call Param.set(VAL3, &d, sizeof(d));
 		break;
 
 	case 4:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-//					TOS_NODE_ID, seqno, VAL4, v, d);
+			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+					TOS_NODE_ID, seqno, VAL4, v, d);
 		#endif
 		call Param.set(VAL4, &d, sizeof(d));
 		break;
 
 	default:
 		#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-//					TOS_NODE_ID, seqno, VAL5, v, d);
+			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
+					TOS_NODE_ID, seqno, VAL5, v, d);
 		#endif
 		call Param.set(VAL5, &d, sizeof(d));
 		break;

@@ -2,7 +2,10 @@
 
 interface FennecData {
 
-command uint8_t getDataSeq();
+
+command void loadDataMsg(void* pkt);
+command void networkUpdate(void* pkt);
+
 command void* getNxDataPtr();
 command uint16_t getNxDataLen();
 command uint16_t getDataCrc();
@@ -15,7 +18,6 @@ command void updateData(void* in_data, uint8_t in_data_len,
 
 command void checkDataSeq(uint8_t msg_type);
 
-event void resend(bool immediate);
-event void dump();
+event void updated();
 	
 }

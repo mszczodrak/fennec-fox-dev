@@ -3,16 +3,12 @@
 
 #include <Fennec.h>
 
-#define DATA_SYNC_MAX_PAYLOAD	70
-#define DATA_DUMP_MAX_PAYLOAD + VARIABLE_HISTORY
+#define DATA_MAX_PAYLOAD	80
 
 nx_struct fennec_network_data {
-	nx_uint16_t dump_offset;
 	nx_uint16_t crc;
-	nx_uint8_t sequence;
-	nx_uint8_t data_len;
-	nx_uint8_t data[DATA_SYNC_MAX_PAYLOAD];
-	nx_uint8_t history[VARIABLE_HISTORY];
+	nx_uint16_t sequence;
+	nx_uint8_t data[DATA_MAX_PAYLOAD];
 };
 
 #endif

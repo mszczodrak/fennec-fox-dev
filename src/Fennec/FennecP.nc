@@ -360,7 +360,8 @@ bool validProcessId(uint8_t msg_type) @C() {
 nx_uint8_t setFennecType(uint8_t id) @C() {
 	nx_uint8_t newType;
 	newType = id << 4;
-	newType += LOW_DATA_ID(call FennecData.getDataSeq());
+	//newType += LOW_DATA_ID(call FennecData.getDataSeq());
+	newType += LOW_DATA_ID(call FennecData.getDataCrc());
 	return newType;
 }
 

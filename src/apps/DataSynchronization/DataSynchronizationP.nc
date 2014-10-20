@@ -61,8 +61,8 @@ implementation {
 
 uint16_t send_delay;
 message_t packet;
-uint8_t dump_offset = UNKNOWN;
-uint16_t global_data_len = 0;
+nx_uint16_t data_sequence = 0;
+nx_uint16_t data_crc = 0;
 
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
@@ -73,8 +73,7 @@ task void send_msg() {
 	nx_struct fennec_network_data *data_msg;
 	dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg()", process);
 
-	data_msg = (nx_struct fennec_network_data*) 
-	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
+	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
    
 	if (data_msg == NULL) {
 		printf("NULL ptr\n");
@@ -82,39 +81,17 @@ task void send_msg() {
 		return;
 	}
 
-	data_msg->sequence = (nx_uint16_t) call FennecData.getDataSeq();
-	data_msg->dump_offset = dump_offset;
-	data_msg->crc = (nx_uint16_t) call FennecData.getDataCrc();
-
-	if (( dump_offset == UNKNOWN ) || ( dump_offset == global_data_len )) {
-		/* regular resend or end of dump */
-		data_msg->data_len = call FennecData.fillNxDataUpdate(&(data_msg->data), DATA_SYNC_MAX_PAYLOAD);
-		memcpy(data_msg->history, call FennecData.getHistory(), VARIABLE_HISTORY);
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		//printf("sending len %d\n", data_msg->data_len);
-#endif
-	} else {
-		/* dump all the data
-		 * the whole cache is broken down into chunks of size
-		 * no more than DATA_DUMP_MAX_PAYLOAD
-		 */
-		uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
-		global_data_len = call FennecData.getNxDataLen();
-		if (global_data_len > (dump_offset + DATA_DUMP_MAX_PAYLOAD)) {
-			data_msg->data_len = DATA_DUMP_MAX_PAYLOAD;
-		} else {
-			data_msg->data_len = global_data_len - dump_offset;
-		}
-		
-		memcpy(data_msg->data, all_data + dump_offset, data_msg->data_len);
-	}
+	data_msg->sequence = data_sequence;
+	data_msg->crc = data_crc;
+	call FennecData.loadDataMsg(data_msg->data);
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_data)) != SUCCESS) {
 		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - FAIL", process);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - SUCCESS", process);
-		printf("Send DataSync\n");
+
+		printf("[%u] Application DataSynchronization Send DataSync\n", process);
 	}
 }
 
@@ -126,11 +103,6 @@ event void FennecData.resend(bool immediate) {
 	} else {
 		post schedule_send();
 	}
-}
-
-event void FennecData.dump() {
-	dump_offset = 0;
-	post schedule_send();
 }
 
 command error_t SplitControl.start() {
@@ -154,52 +126,34 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	call Timer.stop();
 
-	if (data_msg->dump_offset != UNKNOWN) {
-		/* this is dump message */
-		if (call FennecData.getDataSeq() == 0) {
-			/* we are synchronizing with the cache dump */
-
-			if ( data_msg->dump_offset < global_data_len ) {
-				uint8_t *all_data = (uint8_t*) call FennecData.getNxDataPtr();
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("Keep syncing dump (offset %d, len %d)\n",
-					data_msg->dump_offset, data_msg->data_len);
-#endif
-				memcpy(all_data + data_msg->dump_offset, data_msg->data, data_msg->data_len);
-				return msg;
-			}
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("end of syncing, update history and that's it\n");
-#endif
-		} else {
-			return msg;
+	if (data_msg->crc == data_crc) {
+		if (data_msg->sequence < data_sequence) {
+			/* TODO resend */
 		}
+		if (data_msg->sequence > data_sequence) {
+			data_sequence = data_msg->sequence;
+		} 
+		return msg;
 	}
 
-	 printf("Receive len: %d    crc: %u    seq: %d   from: %u\n", data_msg->data_len, data_msg->crc, 
-			data_msg->sequence, call SubAMPacket.source(msg));
+	if (data_msg->sequence > data_sequence) {
+		call FennecData.networkUpdate(data_msg->data);
+		data_sequence = data_msg->sequence;
+		data_crc = call FennecData.getDataCrc();
+		return msg;
+	}
 
-	call FennecData.updateData(data_msg->data, data_msg->data_len, data_msg->crc,
-				data_msg->history, data_msg->sequence);
+	if (data_msg->sequence < data_sequence) {
+		/* TODO resend */
+		return msg;
+	}
+
+	/* conflict */
+
 	return msg;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*)
-	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_data));
-
-	/* check if the sent message was part of the dump process */
-	if (data_msg->dump_offset != UNKNOWN) {
-		global_data_len = call FennecData.getNxDataLen();
-		if (dump_offset >= global_data_len) {
-			dump_offset = UNKNOWN;
-		} else {
-			dump_offset += DATA_DUMP_MAX_PAYLOAD;
-			/* continue to dumping cache */
-			printf("continue dumping...\n");
-			post send_msg();
-		}
-	}
 }
 
 event void Timer.fired() {
@@ -207,12 +161,17 @@ event void Timer.fired() {
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	//nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
-	//call FennecData.setDataAndSeq(&(data_msg->data), data_msg->history, data_msg->sequence);
 	return msg;
 }
 
 event void Param.updated(uint8_t var_id) {
 }
+
+event void FennecData.updated() {
+	data_sequence++;
+	data_crc = call FennecData.getDataCrc();
+	/* resend */
+}
+
 
 }
