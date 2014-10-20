@@ -47,6 +47,7 @@ uses interface Fennec;
 implementation {
 
 #define RANDOM_DATA_SEQ_UPDATE	10
+uint16_t current_data_crc;
 
 void update_data_crc() {
 	current_data_crc = crc16(0, call FennecData.getNxDataPtr(),
@@ -55,7 +56,6 @@ void update_data_crc() {
 
 event void Boot.booted() {
 	update_data_crc();
-	signal FennecData.updated();
 }
 
 command uint16_t FennecData.getNxDataLen() {
@@ -64,10 +64,6 @@ command uint16_t FennecData.getNxDataLen() {
 
 command void* FennecData.getNxDataPtr() {
 	return &fennec_global_data_nx;
-}
-
-command void* FennecData.getHistory() {
-	return var_hist;
 }
 
 command uint16_t FennecData.getDataCrc() {
@@ -156,27 +152,39 @@ void signal_global_update(nx_uint8_t var_id) {
 	}
 }
 
-command void FennecData.loadDataMsg(void *ptr) {
-
-
+command void FennecData.load(void *ptr) {
+	memcpy(ptr, call FennecData.getNxDataPtr(), call FennecData.getNxDataLen());
 }
 
-command void FennecData.updateData(void* in_data, uint8_t in_data_len, 
-		uint16_t in_data_crc, nx_uint8_t* in_history, uint8_t in_data_seq) {
-		
-	globalDataSyncWithNetwork();
+command void FennecData.update(void* net) {
+	uint8_t i;
+	bool diff = FALSE;
+	void* fgd = call FennecData.getNxDataPtr();
+	for ( i = 0; i < NUMBER_OF_GLOBALS; i++ ) {
+		if (!memcmp(net + global_data_info[i].offset, fgd + global_data_info[i].offset, global_data_info[i].size)) {
+			/* updated var index i */
+			printf("Updating variable %u  index %u\n", global_data_info[i].var_id, i);
+			memcpy(net + global_data_info[i].offset, fgd + global_data_info[i].offset, global_data_info[i].size);
+			signal_global_update(global_data_info[i].var_id);
+			diff = TRUE;
+		}
+	}
+
+	if (diff) {
+		update_data_crc();
+		globalDataSyncWithNetwork();
 
 #ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printfGlobalData();
+		printfGlobalData();
 #endif
 #endif
+	}
 }
 
-
 command void FennecData.checkDataSeq(uint8_t msg_type) {
-	if (LOW_DATA_ID(msg_type) != LOW_DATA_ID(current_data_seq)) {
-		signal FennecData.resend(0);
+	if (LOW_DATA_ID(msg_type) != LOW_DATA_ID(current_data_crc)) {
+		signal FennecData.resend();
 	}
 }
 
@@ -290,6 +298,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	printfGlobalData();
 #endif
 #endif
+	signal FennecData.updated();
 	return SUCCESS;
 }
 

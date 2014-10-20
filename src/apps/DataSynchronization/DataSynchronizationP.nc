@@ -61,8 +61,8 @@ implementation {
 
 uint16_t send_delay;
 message_t packet;
-nx_uint16_t data_sequence = 0;
-nx_uint16_t data_crc = 0;
+nx_uint16_t data_sequence;
+nx_uint16_t data_crc;
 
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
@@ -83,7 +83,7 @@ task void send_msg() {
 
 	data_msg->sequence = data_sequence;
 	data_msg->crc = data_crc;
-	call FennecData.loadDataMsg(data_msg->data);
+	call FennecData.load(data_msg->data);
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_data)) != SUCCESS) {
 		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - FAIL", process);
@@ -95,7 +95,7 @@ task void send_msg() {
 	}
 }
 
-event void FennecData.resend(bool immediate) {
+void resend(bool immediate) {
 	printf("FennecData.resend(%d)\n", immediate);
 	if (immediate) {
 		call Timer.stop();
@@ -106,6 +106,8 @@ event void FennecData.resend(bool immediate) {
 }
 
 command error_t SplitControl.start() {
+	data_sequence = 0;
+	data_crc = 0;
 	dbg("DataSynchronization", "[%d] DataSynchronizationP SplitControl.start()", process);
 	post schedule_send();
 	signal SplitControl.startDone(SUCCESS);
@@ -128,7 +130,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if (data_msg->crc == data_crc) {
 		if (data_msg->sequence < data_sequence) {
-			/* TODO resend */
+			resend(0);
 		}
 		if (data_msg->sequence > data_sequence) {
 			data_sequence = data_msg->sequence;
@@ -137,7 +139,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	if (data_msg->sequence > data_sequence) {
-		call FennecData.networkUpdate(data_msg->data);
+		call FennecData.update(data_msg->data);
 		data_sequence = data_msg->sequence;
 		data_crc = call FennecData.getDataCrc();
 		return msg;
@@ -171,6 +173,10 @@ event void FennecData.updated() {
 	data_sequence++;
 	data_crc = call FennecData.getDataCrc();
 	/* resend */
+}
+
+event void FennecData.resend() {
+	resend(0);
 }
 
 
