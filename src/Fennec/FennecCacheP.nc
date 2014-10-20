@@ -161,10 +161,11 @@ command void FennecData.update(void* net) {
 	bool diff = FALSE;
 	void* fgd = call FennecData.getNxDataPtr();
 	for ( i = 0; i < NUMBER_OF_GLOBALS; i++ ) {
-		if (!memcmp(net + global_data_info[i].offset, fgd + global_data_info[i].offset, global_data_info[i].size)) {
-			/* updated var index i */
-			printf("Updating variable %u  index %u\n", global_data_info[i].var_id, i);
-			memcpy(net + global_data_info[i].offset, fgd + global_data_info[i].offset, global_data_info[i].size);
+		if (memcmp(net + global_data_info[i].offset, fgd + global_data_info[i].offset, global_data_info[i].size)) {
+			memcpy(fgd + global_data_info[i].offset, 
+					net + global_data_info[i].offset,
+					global_data_info[i].size);
+			globalDataSyncWithNetwork(global_data_info[i].var_id);
 			signal_global_update(global_data_info[i].var_id);
 			diff = TRUE;
 		}
@@ -172,8 +173,6 @@ command void FennecData.update(void* net) {
 
 	if (diff) {
 		update_data_crc();
-		globalDataSyncWithNetwork();
-
 #ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printfGlobalData();
@@ -290,7 +289,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 #endif
 	signal_global_update(name);
 
-	globalDataSyncWithLocal();
+	globalDataSyncWithLocal(name);
 	update_data_crc();
 
 #ifdef __DBGS__FENNEC_CACHE__

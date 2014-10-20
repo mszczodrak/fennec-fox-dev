@@ -36,6 +36,8 @@
 #include <Fennec.h>
 #include "hashing.h"
 
+#define DATA_CONFLICT_RAND_OFFSET	10
+
 generic module DataSynchronizationP(process_t process) @safe() {
 provides interface SplitControl;
 
@@ -52,7 +54,7 @@ uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface FennecData;
-uses interface Random;
+uses interface Random; 
 uses interface Timer<TMilli> as Timer;
 uses interface Leds;
 }
@@ -76,7 +78,11 @@ task void send_msg() {
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
    
 	if (data_msg == NULL) {
-		printf("NULL ptr\n");
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] DataSynchronizationP Got NULL ptr\n", process);
+#endif
+#endif
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
 	}
@@ -90,13 +96,15 @@ task void send_msg() {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		dbg("DataSynchronization", "[%d] DataSynchronizationP send_data_sync_msg() - SUCCESS", process);
-
-		printf("[%u] Application DataSynchronization Send DataSync\n", process);
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] DataSynchronizationP Send DataSync\n", process);
+#endif
+#endif
 	}
 }
 
 void resend(bool immediate) {
-	printf("FennecData.resend(%d)\n", immediate);
 	if (immediate) {
 		call Timer.stop();
 		post send_msg();
@@ -139,6 +147,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	if (data_msg->sequence > data_sequence) {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] DataSynchronizationP Syncing...\n", process);
+#endif
+#endif
 		call FennecData.update(data_msg->data);
 		data_sequence = data_msg->sequence;
 		data_crc = call FennecData.getDataCrc();
@@ -146,12 +159,18 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	if (data_msg->sequence < data_sequence) {
-		/* TODO resend */
+		resend(0);
 		return msg;
 	}
 
 	/* conflict */
-
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] DataSynchronizationP Solving Conflict...\n", process);
+#endif
+#endif
+	data_sequence += (call Random.rand16() % DATA_CONFLICT_RAND_OFFSET) + 1; 
+	resend(1);
 	return msg;
 }
 
@@ -170,12 +189,22 @@ event void Param.updated(uint8_t var_id) {
 }
 
 event void FennecData.updated() {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] DataSynchronizationP  - Data updated...\n", process);
+#endif
+#endif
 	data_sequence++;
 	data_crc = call FennecData.getDataCrc();
-	/* resend */
+	resend(1);
 }
 
 event void FennecData.resend() {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] DataSynchronizationP  - resend request\n", process);
+#endif
+#endif
 	resend(0);
 }
 
