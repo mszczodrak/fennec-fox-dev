@@ -46,15 +46,15 @@
 configuration CC2420TimeSyncMessageC {
     provides
     {
-        interface Receive[am_id_t id];
-        interface Receive as Snoop[am_id_t id];
+        interface Receive;
+        interface Receive as Snoop;
         interface Packet;
         interface AMPacket;
     
-        interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz[am_id_t id];
+        interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz;
         interface TimeSyncPacket<T32khz, uint32_t> as TimeSyncPacket32khz;
 
-        interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli[am_id_t id];
+        interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli;
         interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
     }
 
@@ -90,10 +90,10 @@ SubPacket = CC2420TimeSyncMessageP.SubPacket;
         CC2420TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
         CC2420TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
 
-        Receive = CC2420TimeSyncMessageP.Receive;
-        Snoop = CC2420TimeSyncMessageP.Snoop;
-        AMPacket = CC2420TimeSyncMessageP;
+Receive = CC2420TimeSyncMessageP.Receive;
+Snoop = CC2420TimeSyncMessageP.Snoop;
+AMPacket = CC2420TimeSyncMessageP;
 
-        SubReceive = CC2420TimeSyncMessageP.SubReceive;
-        SubSnoop = CC2420TimeSyncMessageP.SubSnoop;
+SubReceive = CC2420TimeSyncMessageP.SubReceive;
+SubSnoop = CC2420TimeSyncMessageP.SubSnoop;
 }

@@ -38,21 +38,21 @@ module CC2420TimeSyncMessageP
 {
     provides
     {
-        interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz[uint8_t id];
-        interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli[uint8_t id];
+        interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz;
+        interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli;
         interface Packet;
         interface AMPacket;
 
         interface TimeSyncPacket<T32khz, uint32_t> as TimeSyncPacket32khz;
         interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
         
-        interface Receive[am_id_t id];
-        interface Receive as Snoop[am_id_t id];
+        interface Receive;
+        interface Receive as Snoop;
     }
 
     uses
     {
-          interface AMSend as SubSend;
+        interface AMSend as SubSend;
         interface Packet as SubPacket;
         interface AMPacket as SubAMPacket;
 
@@ -163,11 +163,10 @@ implementation
 	}
 
 /*----------------- TimeSyncAMSend32khz -----------------*/
-    command error_t TimeSyncAMSend32khz.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len, uint32_t event_time)
+    command error_t TimeSyncAMSend32khz.send(am_addr_t addr, message_t* msg, uint8_t len, uint32_t event_time)
     {
         error_t err;
         timesync_footer_t* footer = (timesync_footer_t*)(msg->data + len);
-        footer->type = id;
         footer->timestamp = event_time;
 
         err = call SubSend.send(addr, msg, len + sizeof(timesync_footer_t));
@@ -175,75 +174,72 @@ implementation
         return err;
     }
 
-    command error_t TimeSyncAMSend32khz.cancel[am_id_t id](message_t* msg)
+    command error_t TimeSyncAMSend32khz.cancel(message_t* msg)
     {
         call PacketTimeSyncOffset.cancel(msg);
         return call SubSend.cancel(msg);
     }
 
-    default event void TimeSyncAMSend32khz.sendDone[am_id_t id](message_t* msg, error_t error) {}
+    default event void TimeSyncAMSend32khz.sendDone(message_t* msg, error_t error) {}
 
-    command uint8_t TimeSyncAMSend32khz.maxPayloadLength[am_id_t id]()
+    command uint8_t TimeSyncAMSend32khz.maxPayloadLength()
     {
         return call SubSend.maxPayloadLength() - sizeof(timesync_footer_t);
     }
 
-    command void* TimeSyncAMSend32khz.getPayload[am_id_t id](message_t* msg, uint8_t len)
+    command void* TimeSyncAMSend32khz.getPayload(message_t* msg, uint8_t len)
     {
         return call SubSend.getPayload(msg, len + sizeof(timesync_footer_t));
     }
 
 /*----------------- TimeSyncAMSendMilli -----------------*/
-    command error_t TimeSyncAMSendMilli.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len, uint32_t event_time)
+    command error_t TimeSyncAMSendMilli.send(am_addr_t addr, message_t* msg, uint8_t len, uint32_t event_time)
     {
         // compute elapsed time in millisecond
         event_time = ((event_time - call LocalTimeMilli.get()) << 5) + call LocalTime32khz.get();
-        return call TimeSyncAMSend32khz.send[id](addr, msg, len, event_time);
+        return call TimeSyncAMSend32khz.send(addr, msg, len, event_time);
     }
 
-    command error_t TimeSyncAMSendMilli.cancel[am_id_t id](message_t* msg)
+    command error_t TimeSyncAMSendMilli.cancel(message_t* msg)
     {
-        return call TimeSyncAMSend32khz.cancel[id](msg);
+        return call TimeSyncAMSend32khz.cancel(msg);
     }
 
-    default event void TimeSyncAMSendMilli.sendDone[am_id_t id](message_t* msg, error_t error){}
+    default event void TimeSyncAMSendMilli.sendDone(message_t* msg, error_t error){}
 
-    command uint8_t TimeSyncAMSendMilli.maxPayloadLength[am_id_t id]()
+    command uint8_t TimeSyncAMSendMilli.maxPayloadLength()
     {
-        return call TimeSyncAMSend32khz.maxPayloadLength[id]();
+        return call TimeSyncAMSend32khz.maxPayloadLength();
     }
 
-    command void* TimeSyncAMSendMilli.getPayload[am_id_t id](message_t* msg, uint8_t len)
+    command void* TimeSyncAMSendMilli.getPayload(message_t* msg, uint8_t len)
     {
-        return call TimeSyncAMSend32khz.getPayload[id](msg, len);
+        return call TimeSyncAMSend32khz.getPayload(msg, len);
     }
 
 /*----------------- SubReceive -------------------*/
 
     event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len)
     {
-        am_id_t id = call AMPacket.type(msg);
-        return signal Receive.receive[id](msg, payload, len - sizeof(timesync_footer_t));
+        return signal Receive.receive(msg, payload, len - sizeof(timesync_footer_t));
     }
 
-    default event message_t* Receive.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) { return msg; }
+    default event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) { return msg; }
 
 /*----------------- SubSnoop -------------------*/
 
     event message_t* SubSnoop.receive(message_t* msg, void* payload, uint8_t len)
     {
-        am_id_t id = call AMPacket.type(msg);
-        return signal Snoop.receive[id](msg, payload, len - sizeof(timesync_footer_t));
+        return signal Snoop.receive(msg, payload, len - sizeof(timesync_footer_t));
     }
 
-    default event message_t* Snoop.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) { return msg; }
+    default event message_t* Snoop.receive(message_t* msg, void* payload, uint8_t len) { return msg; }
 
 /*----------------- SubSend.sendDone -------------------*/
     event void SubSend.sendDone(message_t* msg, error_t error)
     {
-        am_id_t id = call AMPacket.type(msg);
-        signal TimeSyncAMSend32khz.sendDone[id](msg, error);
-        signal TimeSyncAMSendMilli.sendDone[id](msg, error);
+        signal TimeSyncAMSend32khz.sendDone(msg, error);
+        signal TimeSyncAMSendMilli.sendDone(msg, error);
     }
 
 /*----------------- TimeSyncPacket32khz -----------------*/

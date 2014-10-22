@@ -59,8 +59,8 @@ SplitControl      =   TimeSyncP;
 
   //components TimeSyncMessageC as ActiveMessageC;
   components CC2420TimeSyncMessageC as ActiveMessageC;
-  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli[TIMESYNC_AM_FTSP];
-  TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
+  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli;
+  TimeSyncP.Receive         ->  ActiveMessageC.Receive;
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
 
   components LocalTimeMilliC;
