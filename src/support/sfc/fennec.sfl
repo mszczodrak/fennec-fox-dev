@@ -124,7 +124,7 @@ use application TestMax $(FENNEC_FOX_LIB)/apps/tests/TestMax (
 
 use application NetworkRadioSetup $(FENNEC_FOX_LIB)/apps/network_rssi()
 
-use application ftsp $(FENNEC_FOX_LIB)/apps/ftsp (uint32_t send_period, uint32_t sleep_time)
+use application ftsp $(FENNEC_FOX_LIB)/apps/ftsp (uint32_t beacon_rate, uint32_t sleep_time)
 
 # net Modules
 

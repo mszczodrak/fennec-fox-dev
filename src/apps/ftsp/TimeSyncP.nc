@@ -61,26 +61,23 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
-#ifndef TIMESYNC_RATE
-#define TIMESYNC_RATE   10
-#endif
 
-    enum {
+uint32_t beacon_rate;
+
+enum {
         MAX_ENTRIES           = 8,              // number of entries in the table
-        BEACON_RATE           = TIMESYNC_RATE,  // how often send the beacon msg (in seconds)
         ROOT_TIMEOUT          = 5,              //time to declare itself the root if no msg was received (in sync periods)
         IGNORE_ROOT_MSG       = 4,              // after becoming the root ignore other roots messages (in send period)
         ENTRY_VALID_LIMIT     = 4,              // number of entries to become synchronized
         ENTRY_SEND_LIMIT      = 3,              // number of entries to send sync messages
         ENTRY_THROWOUT_LIMIT  = 500,            // if time sync error is bigger than this clear the table
-    };
+};
 
-    typedef struct TableItem
-    {
+typedef struct TableItem {
         uint8_t     state;
         uint32_t    localTime;
         int32_t     timeOffset; // globalTime - localTime
-    } TableItem;
+} TableItem;
 
     enum {
         ENTRY_EMPTY = 0,
@@ -404,7 +401,13 @@ void timeSyncMsgSend() {
 	}
 }
 
+void randomizeSendTimer() {
+	call Timer.startOneShot((beacon_rate / 2) + (call Random.rand16() % beacon_rate));
+}
+	
+
 event void Timer.fired() {
+	randomizeSendTimer();
 	timeSyncMsgSend();
 }
 
@@ -415,6 +418,8 @@ command error_t SplitControl.start() {
             localAverage = 0;
             offsetAverage = 0;
         };
+
+	call Param.get(BEACON_RATE, &beacon_rate, sizeof(beacon_rate));
 
         clearTable();
 
@@ -427,7 +432,7 @@ command error_t SplitControl.start() {
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
 
-	call Timer.startPeriodic((uint32_t)(896U+(call Random.rand16()&0xFF)) * BEACON_RATE);
+	randomizeSendTimer();
 
         signal SplitControl.startDone(SUCCESS);
         return SUCCESS;
