@@ -56,7 +56,21 @@ PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 
+#define TMILLI_SYNC
+#ifdef TMILLI_SYNC
 components new TimeSyncP(TMilli);
+TimeSyncP.Send ->  TimeSyncMessageC.TimeSyncAMSendMilli;
+components LocalTimeMilliC;
+TimeSyncP.LocalTime       ->  LocalTimeMilliC;
+#else
+//components new TimeSyncP(T32khz);
+//TimeSyncP.Send ->  TimeSyncMessageC.TimeSyncAMSend32khz;
+//components Counter32khz32C;
+//components new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
+//LocalTime32khzC.Counter -> Counter32khz32C;
+//TimeSyncP.LocalTime     -> LocalTime32khzC;
+#endif
+
 SplitControl = TimeSyncP;
 components TimeSyncMessageC;
 SubReceive = TimeSyncMessageC.SubReceive;
@@ -70,11 +84,7 @@ SplitControl      =   TimeSyncP;
 //TimeSyncMode    =   TimeSyncP;
 //TimeSyncNotify  =   TimeSyncP;
 
-TimeSyncP.Send            ->  TimeSyncMessageC.TimeSyncAMSendMilli;
 TimeSyncP.TimeSyncPacket  ->  TimeSyncMessageC;
-
-components LocalTimeMilliC;
-TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 
 components new TimerMilliC() as TimerC;
 TimeSyncP.Timer ->  TimerC;
