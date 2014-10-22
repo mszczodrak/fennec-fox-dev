@@ -36,28 +36,22 @@
 
 generic module TimeSyncP(typedef precision_tag) {
 provides interface SplitControl;
-    provides
-    {
-        interface GlobalTime<precision_tag>;
+provides interface GlobalTime<precision_tag>;
 
-        //interfaces for extra functionality: need not to be wired
-        interface TimeSyncInfo;
-        interface TimeSyncMode;
-        interface TimeSyncNotify;
-    }
-    uses
-    {
-        interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
-        interface Receive;
-        interface Timer<TMilli>;
-        interface Random;
-        interface TimeSyncPacket<precision_tag,uint32_t>;
-        interface LocalTime<precision_tag> as LocalTime;
+//interfaces for extra functionality: need not to be wired
+provides interface TimeSyncInfo;
+provides interface TimeSyncMode;
+provides interface TimeSyncNotify;
 
-    }
+uses interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
+uses interface TimeSyncPacket<precision_tag,uint32_t>;
+uses interface LocalTime<precision_tag> as LocalTime;
+uses interface Receive;
+uses interface Timer<TMilli>;
+uses interface Random;
 }
-implementation
-{
+
+implementation {
 #ifndef TIMESYNC_RATE
 #define TIMESYNC_RATE   10
 #endif
