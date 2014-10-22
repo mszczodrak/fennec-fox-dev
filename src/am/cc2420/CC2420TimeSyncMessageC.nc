@@ -51,7 +51,6 @@ configuration CC2420TimeSyncMessageC
         interface Receive as Snoop[am_id_t id];
         interface Packet;
         interface AMPacket;
-        interface PacketAcknowledgements;
     
         interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz[am_id_t id];
         interface TimeSyncPacket<T32khz, uint32_t> as TimeSyncPacket32khz;
@@ -63,7 +62,7 @@ configuration CC2420TimeSyncMessageC
 
 implementation
 {
-        components CC2420TimeSyncMessageP, CC2420ActiveMessageC, CC2420PacketC, LedsC;
+        components CC2420TimeSyncMessageP, CC2420PacketC, LedsC;
 
         TimeSyncAMSend32khz = CC2420TimeSyncMessageP;
         TimeSyncPacket32khz = CC2420TimeSyncMessageP;
@@ -88,7 +87,6 @@ implementation
         CC2420TimeSyncMessageP.Leds -> LedsC;
 
         components ActiveMessageC;
-        PacketAcknowledgements = CC2420ActiveMessageC;
         
         Receive = CC2420TimeSyncMessageP.Receive;
         Snoop = CC2420TimeSyncMessageP.Snoop;
