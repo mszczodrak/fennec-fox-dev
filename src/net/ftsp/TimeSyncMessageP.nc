@@ -119,7 +119,7 @@ implementation
 
 	inline command bool AMPacket.isForMe(message_t* msg)
 	{
-		return call SubAMPacket.isForMe(msg) && call SubAMPacket.type(msg) == AM_TIMESYNCMSG;
+		return call SubAMPacket.isForMe(msg);
 	}
 
 	inline command am_addr_t AMPacket.destination(message_t* msg)
