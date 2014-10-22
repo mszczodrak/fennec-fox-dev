@@ -112,41 +112,35 @@ uint8_t state;
     uint8_t heartBeats; // the number of sucessfully sent messages
                         // since adding a new entry with lower beacon id than ours
 
-    async command uint32_t GlobalTime.getLocalTime()
-    {
-        return call LocalTime.get();
-    }
+async command uint32_t GlobalTime.getLocalTime() {
+	return call LocalTime.get();
+}
 
-    async command error_t GlobalTime.getGlobalTime(uint32_t *time)
-    {
-        *time = call GlobalTime.getLocalTime();
-        return call GlobalTime.local2Global(time);
-    }
+async command error_t GlobalTime.getGlobalTime(uint32_t *time) {
+	*time = call GlobalTime.getLocalTime();
+	return call GlobalTime.local2Global(time);
+}
 
-    error_t is_synced()
-    {
-      if (numEntries>=ENTRY_VALID_LIMIT || outgoingMsg->rootID==TOS_NODE_ID)
-        return SUCCESS;
-      else
-        return FAIL;
-    }
+error_t is_synced() {
+	if (numEntries>=ENTRY_VALID_LIMIT || outgoingMsg->rootID==TOS_NODE_ID)
+		return SUCCESS;
+	else
+		return FAIL;
+}
 
 
-    async command error_t GlobalTime.local2Global(uint32_t *time)
-    {
-        *time += offsetAverage + (int32_t)(skew * (int32_t)(*time - localAverage));
-        return is_synced();
-    }
+async command error_t GlobalTime.local2Global(uint32_t *time) {
+	*time += offsetAverage + (int32_t)(skew * (int32_t)(*time - localAverage));
+	return is_synced();
+}
 
-    async command error_t GlobalTime.global2Local(uint32_t *time)
-    {
-        uint32_t approxLocalTime = *time - offsetAverage;
-        *time = approxLocalTime - (int32_t)(skew * (int32_t)(approxLocalTime - localAverage));
-        return is_synced();
-    }
+async command error_t GlobalTime.global2Local(uint32_t *time) {
+	uint32_t approxLocalTime = *time - offsetAverage;
+	*time = approxLocalTime - (int32_t)(skew * (int32_t)(approxLocalTime - localAverage));
+	return is_synced();
+}
 
-    void calculateConversion()
-    {
+void calculateConversion() {
         float newSkew = skew;
         uint32_t newLocalAverage;
         int32_t newOffsetAverage;
