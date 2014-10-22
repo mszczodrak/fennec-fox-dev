@@ -40,7 +40,6 @@ provides interface GlobalTime<precision_tag>;
 
 //interfaces for extra functionality: need not to be wired
 provides interface TimeSyncInfo;
-provides interface TimeSyncNotify;
 
 uses interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
 uses interface TimeSyncPacket<precision_tag,uint32_t>;
@@ -294,7 +293,6 @@ uint8_t state;
 
         addNewEntry(msg);
         calculateConversion();
-        signal TimeSyncNotify.msg_received();
 
     exit:
         state &= ~STATE_PROCESSING;
@@ -366,7 +364,6 @@ uint8_t state;
         }
         else if( call Send.send(AM_BROADCAST_ADDR, &outgoingMsgBuffer, TIMESYNCMSG_LEN, localTime ) != SUCCESS ){
             state &= ~STATE_SENDING;
-            signal TimeSyncNotify.msg_sent();
         }
     }
 
@@ -384,7 +381,6 @@ uint8_t state;
         }
 
         state &= ~STATE_SENDING;
-        signal TimeSyncNotify.msg_sent();
     }
 
 void timeSyncMsgSend() {
@@ -448,8 +444,5 @@ async command uint16_t  TimeSyncInfo.getRootID() { return outgoingMsg->rootID; }
 async command uint8_t   TimeSyncInfo.getSeqNum() { return outgoingMsg->seqNum; }
 async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
 async command uint8_t   TimeSyncInfo.getHeartBeats() { return heartBeats; }
-
-default event void TimeSyncNotify.msg_received(){}
-default event void TimeSyncNotify.msg_sent(){}
 
 }
