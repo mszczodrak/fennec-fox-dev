@@ -57,7 +57,6 @@ SplitControl      =   TimeSyncP;
   TimeSyncMode    =   TimeSyncP;
   TimeSyncNotify  =   TimeSyncP;
 
-  //components TimeSyncMessageC as ActiveMessageC;
   components CC2420TimeSyncMessageC as ActiveMessageC;
   TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli;
   TimeSyncP.Receive         ->  ActiveMessageC.Receive;
@@ -71,12 +70,5 @@ SplitControl      =   TimeSyncP;
 
   components RandomC;
   TimeSyncP.Random -> RandomC;
-
-#if defined(TIMESYNC_LEDS)
-  components LedsC;
-#else
-  components NoLedsC as LedsC;
-#endif
-  TimeSyncP.Leds  ->  LedsC;
 
 }

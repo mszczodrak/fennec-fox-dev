@@ -51,7 +51,6 @@ provides interface SplitControl;
         interface Receive;
         interface Timer<TMilli>;
         interface Random;
-        interface Leds;
         interface TimeSyncPacket<precision_tag,uint32_t>;
         interface LocalTime<precision_tag> as LocalTime;
 
