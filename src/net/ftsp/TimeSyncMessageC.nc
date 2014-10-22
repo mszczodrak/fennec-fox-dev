@@ -44,19 +44,16 @@
 #include "TimeSyncMessage.h"
 
 configuration TimeSyncMessageC {
-    provides
-    {
-        interface Receive;
-        interface Receive as Snoop;
-        interface Packet;
-        interface AMPacket;
+provides interface Receive;
+provides interface Receive as Snoop;
+provides interface Packet;
+provides interface AMPacket;
     
-        interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz;
-        interface TimeSyncPacket<T32khz, uint32_t> as TimeSyncPacket32khz;
+provides interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz;
+provides interface TimeSyncPacket<T32khz, uint32_t> as TimeSyncPacket32khz;
 
-        interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli;
-        interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
-    }
+provides interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli;
+provides interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
 
 uses interface AMSend as SubAMSend;
 uses interface AMPacket as SubAMPacket;
@@ -68,27 +65,27 @@ uses interface Receive as SubSnoop;
 }
 
 implementation {
-        components TimeSyncMessageP, CC2420PacketC;
+components TimeSyncMessageP, CC2420PacketC;
 
-        TimeSyncAMSend32khz = TimeSyncMessageP;
-        TimeSyncPacket32khz = TimeSyncMessageP;
+TimeSyncAMSend32khz = TimeSyncMessageP;
+TimeSyncPacket32khz = TimeSyncMessageP;
 
-        TimeSyncAMSendMilli = TimeSyncMessageP;
-        TimeSyncPacketMilli = TimeSyncMessageP;
+TimeSyncAMSendMilli = TimeSyncMessageP;
+TimeSyncPacketMilli = TimeSyncMessageP;
 
-        Packet = TimeSyncMessageP;
+Packet = TimeSyncMessageP;
 
 SubAMSend = TimeSyncMessageP.SubSend;
 SubAMPacket = TimeSyncMessageP.SubAMPacket;
 SubPacket = TimeSyncMessageP.SubPacket;
 
-        TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
-        TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
-        TimeSyncMessageP.PacketTimeSyncOffset -> CC2420PacketC;
-        components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
-        LocalTime32khzC.Counter -> Counter32khz32C;
-        TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
-        TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
+TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
+TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
+TimeSyncMessageP.PacketTimeSyncOffset -> CC2420PacketC;
+components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
+LocalTime32khzC.Counter -> Counter32khz32C;
+TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
+TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
 
 Receive = TimeSyncMessageP.Receive;
 Snoop = TimeSyncMessageP.Snoop;
