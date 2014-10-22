@@ -46,8 +46,8 @@ LowPowerListening = ftspP.LowPowerListening;
 RadioChannel = ftspP.RadioChannel;
 
 SubAMSend = ftspP;
-SubReceive = ftspP.SubReceive;
-SubSnoop = ftspP.SubSnoop;
+//SubReceive = ftspP.SubReceive;
+//SubSnoop = ftspP.SubSnoop;
 SubAMPacket = ftspP.SubAMPacket;
 SubPacket = ftspP.SubPacket;
 SubPacketAcknowledgements = ftspP.SubPacketAcknowledgements;
@@ -61,8 +61,8 @@ components MainC, TimeSyncC;
 MainC.SoftwareInit -> TimeSyncC;
 TimeSyncC.Boot -> MainC;
 
-
-
-
+components CC2420TimeSyncMessageC;
+SubReceive = CC2420TimeSyncMessageC.SubReceive;
+SubSnoop = CC2420TimeSyncMessageC.SubSnoop;
 
 }

@@ -15,8 +15,8 @@ uses interface LowPowerListening;
 uses interface RadioChannel;
 
 uses interface AMSend as SubAMSend;
-uses interface Receive as SubReceive;
-uses interface Receive as SubSnoop;
+//uses interface Receive as SubReceive;
+//uses interface Receive as SubSnoop;
 uses interface AMPacket as SubAMPacket;
 uses interface Packet as SubPacket;
 uses interface PacketAcknowledgements as SubPacketAcknowledgements;
@@ -44,10 +44,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	if ((addr == TOS_NODE_ID)) {
 		dbg("Network", "[%d] ftsp NetworkAMSend.sendDone(0x%1x, %d )", process, msg, SUCCESS);
 		signal AMSend.sendDone(msg, SUCCESS);
-		signal SubReceive.receive(msg, 
-		call AMSend.getPayload(msg, len + 
-				sizeof(nx_struct ftsp_header)), 
-		len + sizeof(nx_struct ftsp_header));
 		return SUCCESS;
 	}
 
@@ -79,27 +75,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	signal AMSend.sendDone(msg, error);
 }
 
-event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "[%d] ftsp NetworkReceive.receive(0x%1x, 0x%1x, %d )",
-			process, msg, 
-			ptr + sizeof(nx_struct ftsp_header), 
-			len - sizeof(nx_struct ftsp_header));
-	return signal Receive.receive(msg, 
-			ptr + sizeof(nx_struct ftsp_header), 
-			len - sizeof(nx_struct ftsp_header));
-}
-
-event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
-	uint8_t *ptr = (uint8_t*) payload;
-	dbg("Network", "[%d] ftsp NetworkSnoop.receive(0x%1x, 0x%1x, %d )",
-			process, msg, 
-			ptr + sizeof(nx_struct ftsp_header), 
-			len - sizeof(nx_struct ftsp_header));
-	return signal Snoop.receive(msg, 
-			ptr + sizeof(nx_struct ftsp_header), 
-			len - sizeof(nx_struct ftsp_header));
-}
 
 command am_addr_t AMPacket.address() {
 	return call SubAMPacket.address();

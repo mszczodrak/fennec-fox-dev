@@ -43,8 +43,7 @@
 #include <AM.h>
 #include "CC2420TimeSyncMessage.h"
 
-configuration CC2420TimeSyncMessageC
-{
+configuration CC2420TimeSyncMessageC {
     provides
     {
         interface Receive[am_id_t id];
@@ -58,10 +57,13 @@ configuration CC2420TimeSyncMessageC
         interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli[am_id_t id];
         interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
     }
+
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+
 }
 
-implementation
-{
+implementation {
         components CC2420TimeSyncMessageP, CC2420PacketC, LedsC;
 
         TimeSyncAMSend32khz = CC2420TimeSyncMessageP;
@@ -86,11 +88,10 @@ implementation
         CC2420TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
         CC2420TimeSyncMessageP.Leds -> LedsC;
 
-        components ActiveMessageC;
-        
         Receive = CC2420TimeSyncMessageP.Receive;
         Snoop = CC2420TimeSyncMessageP.Snoop;
         AMPacket = CC2420TimeSyncMessageP;
-        CC2420TimeSyncMessageP.SubReceive -> ActiveMessageC.Receive[AM_TIMESYNCMSG];
-        CC2420TimeSyncMessageP.SubSnoop -> ActiveMessageC.Snoop[AM_TIMESYNCMSG];
+
+        SubReceive = CC2420TimeSyncMessageP.SubReceive;
+        SubSnoop = CC2420TimeSyncMessageP.SubSnoop;
 }
