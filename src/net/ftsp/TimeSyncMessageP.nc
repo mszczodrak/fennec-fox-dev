@@ -41,7 +41,6 @@ module TimeSyncMessageP
         interface TimeSyncAMSend<T32khz, uint32_t> as TimeSyncAMSend32khz;
         interface TimeSyncAMSend<TMilli, uint32_t> as TimeSyncAMSendMilli;
         interface Packet;
-        interface AMPacket;
 
         interface TimeSyncPacket<T32khz, uint32_t> as TimeSyncPacket32khz;
         interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
@@ -54,7 +53,6 @@ module TimeSyncMessageP
     {
         interface AMSend as SubSend;
         interface Packet as SubPacket;
-        interface AMPacket as SubAMPacket;
 
         interface Receive as SubReceive;
         interface Receive as SubSnoop;
@@ -104,63 +102,6 @@ implementation
     {
         return call SubPacket.getPayload(msg, len + sizeof(timesync_footer_t));
     }
-
-/*----------------- AMPacket -----------------*/
-
-	inline command am_addr_t AMPacket.address()
-	{
-		return call SubAMPacket.address();
-	}
-
-	inline command am_group_t AMPacket.localGroup()
-	{
-		return call SubAMPacket.localGroup();
-	}
-
-	inline command bool AMPacket.isForMe(message_t* msg)
-	{
-		return call SubAMPacket.isForMe(msg);
-	}
-
-	inline command am_addr_t AMPacket.destination(message_t* msg)
-	{
-		return call SubAMPacket.destination(msg);
-	}
-
-	inline command void AMPacket.setDestination(message_t* msg, am_addr_t addr)
-	{
-		call SubAMPacket.setDestination(msg, addr);
-	}
-
-	inline command am_addr_t AMPacket.source(message_t* msg)
-	{
-		return call SubAMPacket.source(msg);
-	}
-
-	inline command void AMPacket.setSource(message_t* msg, am_addr_t addr)
-	{
-		call SubAMPacket.setSource(msg, addr);
-	}
-
-	inline command am_id_t AMPacket.type(message_t* msg)
-	{
-		return getFooter(msg)->type;
-	}
-
-	inline command void AMPacket.setType(message_t* msg, am_id_t type)
-	{
-		getFooter(msg)->type = type;
-	}
-
-	inline command am_group_t AMPacket.group(message_t* msg)
-	{
-		return call SubAMPacket.group(msg);
-	}
-
-	inline command void AMPacket.setGroup(message_t* msg, am_group_t grp)
-	{
-		call SubAMPacket.setGroup(msg, grp);
-	}
 
 /*----------------- TimeSyncAMSend32khz -----------------*/
     command error_t TimeSyncAMSend32khz.send(am_addr_t addr, message_t* msg, uint8_t len, uint32_t event_time)

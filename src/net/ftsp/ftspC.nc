@@ -45,9 +45,9 @@ Packet = ftspP.Packet;
 PacketAcknowledgements = ftspP.PacketAcknowledgements;
 LowPowerListening = ftspP.LowPowerListening;
 RadioChannel = ftspP.RadioChannel;
+SubAMPacket = ftspP.SubAMPacket;
 
 SubAMSend = TimeSyncMessageC.SubAMSend;
-SubAMPacket = TimeSyncMessageC.SubAMPacket;
 SubPacket = TimeSyncMessageC.SubPacket;
 SubPacketAcknowledgements = ftspP.SubPacketAcknowledgements;
 SubLinkPacketMetadata = ftspP.SubLinkPacketMetadata;
