@@ -33,8 +33,9 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 implementation {
 
+components TimeSyncC;
 components new ftspP(process);
-SplitControl = ftspP;
+SplitControl = TimeSyncC;
 Param = ftspP;
 AMSend = ftspP.AMSend;
 Receive = ftspP.Receive;
@@ -66,9 +67,6 @@ PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 
-components MainC, TimeSyncC;
-MainC.SoftwareInit -> TimeSyncC;
-TimeSyncC.Boot -> MainC;
 
 
 }

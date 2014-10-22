@@ -34,12 +34,10 @@
  */
 #include "TimeSyncMsg.h"
 
-generic module TimeSyncP(typedef precision_tag)
-{
+generic module TimeSyncP(typedef precision_tag) {
+provides interface SplitControl;
     provides
     {
-        interface Init;
-        interface StdControl;
         interface GlobalTime<precision_tag>;
 
         //interfaces for extra functionality: need not to be wired
@@ -49,7 +47,6 @@ generic module TimeSyncP(typedef precision_tag)
     }
     uses
     {
-        interface Boot;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
         interface Timer<TMilli>;
@@ -438,8 +435,8 @@ implementation
         return FAIL;
     }
 
-    command error_t Init.init()
-    {
+command error_t SplitControl.start() {
+
         atomic{
             skew = 0.0;
             localAverage = 0;
@@ -454,28 +451,21 @@ implementation
         processedMsg = &processedMsgBuffer;
         state = STATE_INIT;
 
-        return SUCCESS;
-    }
-
-    event void Boot.booted()
-    {
-      call StdControl.start();
-    }
-
-    command error_t StdControl.start()
-    {
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
         call TimeSyncMode.setMode(TS_TIMER_MODE);
 
+        signal SplitControl.startDone(SUCCESS);
         return SUCCESS;
-    }
+}
 
-    command error_t StdControl.stop()
-    {
+command error_t SplitControl.stop() {
+        dbg("Network", "[%d] ftsp SplitControl.stop()", process);
         call Timer.stop();
+        signal SplitControl.stopDone(SUCCESS);
         return SUCCESS;
-    }
+}
+
 
     async command float     TimeSyncInfo.getSkew() { return skew; }
     async command uint32_t  TimeSyncInfo.getOffset() { return offsetAverage; }

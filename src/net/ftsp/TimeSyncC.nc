@@ -38,9 +38,7 @@
 
 configuration TimeSyncC
 {
-  uses interface Boot;
-  provides interface Init;
-  provides interface StdControl;
+provides interface SplitControl;
   provides interface GlobalTime<TMilli>;
 
   //interfaces for extra fcionality: need not to be wired
@@ -54,9 +52,7 @@ implementation
   components new TimeSyncP(TMilli);
 
   GlobalTime      =   TimeSyncP;
-  StdControl      =   TimeSyncP;
-  Init            =   TimeSyncP;
-  Boot            =   TimeSyncP;
+SplitControl      =   TimeSyncP;
   TimeSyncInfo    =   TimeSyncP;
   TimeSyncMode    =   TimeSyncP;
   TimeSyncNotify  =   TimeSyncP;

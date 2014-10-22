@@ -2,7 +2,6 @@
 #include "ftsp.h"
 
 generic module ftspP(process_t process) {
-provides interface SplitControl;
 provides interface AMSend as AMSend;
 provides interface Receive as Receive;
 provides interface Receive as Snoop;
@@ -24,18 +23,6 @@ uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 }
 
 implementation {
-
-command error_t SplitControl.start() {
-	dbg("Network", "[%d] ftsp SplitControl.start()", process);
-	signal SplitControl.startDone(SUCCESS);
-	return SUCCESS;
-}
-
-command error_t SplitControl.stop() {
-	dbg("Network", "[%d] ftsp SplitControl.stop()", process);
-	signal SplitControl.stopDone(SUCCESS);
-	return SUCCESS;
-}
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	dbg("Network", "[%d] ftsp NetworkAMSend.send(%d, 0x%1x, %d )",
