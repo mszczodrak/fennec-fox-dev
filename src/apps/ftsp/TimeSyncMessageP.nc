@@ -53,6 +53,7 @@ module TimeSyncMessageP
     {
         interface AMSend as SubAMSend;
         interface Packet as SubPacket;
+        interface AMPacket as SubAMPacket;
 
         interface Receive as SubReceive;
         interface Receive as SubSnoop;

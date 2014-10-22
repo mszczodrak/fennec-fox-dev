@@ -124,13 +124,14 @@ use application TestMax $(FENNEC_FOX_LIB)/apps/tests/TestMax (
 
 use application NetworkRadioSetup $(FENNEC_FOX_LIB)/apps/network_rssi()
 
+use application ftsp $(FENNEC_FOX_LIB)/apps/ftsp (uint32_t send_period, uint32_t sleep_time)
+
 # net Modules
 
 use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
 
 use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0)
 
-use network ftsp $(FENNEC_FOX_LIB)/net/ftsp ()
 
 use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 	uint8_t repeat = 1,

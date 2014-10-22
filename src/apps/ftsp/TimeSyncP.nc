@@ -47,6 +47,17 @@ uses interface LocalTime<precision_tag> as LocalTime;
 uses interface Receive;
 uses interface Timer<TMilli>;
 uses interface Random;
+
+uses interface Param;
+
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
+uses interface LinkPacketMetadata as SubLinkPacketMetadata;
+uses interface LowPowerListening;
+uses interface RadioChannel;
+
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
 }
 
 implementation {
@@ -428,6 +439,15 @@ command error_t SplitControl.stop() {
         signal SplitControl.stopDone(SUCCESS);
         return SUCCESS;
 }
+
+event void Param.updated(uint8_t var_id) {
+
+}
+
+event void RadioChannel.setChannelDone() {
+
+}
+
 
 
 async command float     TimeSyncInfo.getSkew() { return skew; }
