@@ -64,7 +64,7 @@ uses interface Receive as SubSnoop;
 }
 
 implementation {
-        components CC2420TimeSyncMessageP, CC2420PacketC, LedsC;
+        components CC2420TimeSyncMessageP, CC2420PacketC;
 
         TimeSyncAMSend32khz = CC2420TimeSyncMessageP;
         TimeSyncPacket32khz = CC2420TimeSyncMessageP;
@@ -86,7 +86,6 @@ implementation {
         LocalTime32khzC.Counter -> Counter32khz32C;
         CC2420TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
         CC2420TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
-        CC2420TimeSyncMessageP.Leds -> LedsC;
 
         Receive = CC2420TimeSyncMessageP.Receive;
         Snoop = CC2420TimeSyncMessageP.Snoop;
