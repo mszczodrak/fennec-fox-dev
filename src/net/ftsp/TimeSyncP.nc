@@ -367,21 +367,20 @@ uint8_t state;
         }
     }
 
-    event void Send.sendDone(message_t* ptr, error_t error)
-    {
-        if (ptr != &outgoingMsgBuffer)
-          return;
+event void Send.sendDone(message_t* ptr, error_t error) {
+	if (ptr != &outgoingMsgBuffer) {
+		return;
+	}
 
-        if(error == SUCCESS)
-        {
-            ++heartBeats;
+	if(error == SUCCESS) {
+		++heartBeats;
 
-            if( outgoingMsg->rootID == TOS_NODE_ID )
-                ++(outgoingMsg->seqNum);
-        }
-
-        state &= ~STATE_SENDING;
-    }
+		if( outgoingMsg->rootID == TOS_NODE_ID ) {
+			++(outgoingMsg->seqNum);
+		}
+	}
+	state &= ~STATE_SENDING;
+}
 
 void timeSyncMsgSend() {
 
@@ -389,16 +388,16 @@ void timeSyncMsgSend() {
 	printf("[] FTSP SyncMsgSend\n");
 #endif
 
-        if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
-            outgoingMsg->seqNum = 0;
-            outgoingMsg->rootID = TOS_NODE_ID;
-        }
+	if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
+		outgoingMsg->seqNum = 0;
+		outgoingMsg->rootID = TOS_NODE_ID;
+	}
 
-        if( outgoingMsg->rootID != 0xFFFF && (state & STATE_SENDING) == 0 ) {
-           state |= STATE_SENDING;
-           post sendMsg();
-        }
-    }
+	if( outgoingMsg->rootID != 0xFFFF && (state & STATE_SENDING) == 0 ) {
+		state |= STATE_SENDING;
+		post sendMsg();
+	}
+}
 
 event void Timer.fired() {
 	timeSyncMsgSend();
