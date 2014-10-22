@@ -36,26 +36,25 @@
 
 #include "TimeSyncMsg.h"
 
-configuration TimeSyncC
-{
+configuration TimeSyncC {
 provides interface SplitControl;
-  provides interface GlobalTime<TMilli>;
+provides interface GlobalTime<TMilli>;
 
-  //interfaces for extra fcionality: need not to be wired
-  provides interface TimeSyncInfo;
-  provides interface TimeSyncMode;
-  provides interface TimeSyncNotify;
+//interfaces for extra fcionality: need not to be wired
+provides interface TimeSyncInfo;
+provides interface TimeSyncMode;
+provides interface TimeSyncNotify;
 }
 
-implementation
-{
-  components new TimeSyncP(TMilli);
+implementation {
 
-  GlobalTime      =   TimeSyncP;
+components new TimeSyncP(TMilli);
+
+GlobalTime      =   TimeSyncP;
 SplitControl      =   TimeSyncP;
-  TimeSyncInfo    =   TimeSyncP;
-  TimeSyncMode    =   TimeSyncP;
-  TimeSyncNotify  =   TimeSyncP;
+TimeSyncInfo    =   TimeSyncP;
+TimeSyncMode    =   TimeSyncP;
+TimeSyncNotify  =   TimeSyncP;
 
   components TimeSyncMessageC as ActiveMessageC;
   TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli;
