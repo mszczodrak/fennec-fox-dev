@@ -36,8 +36,6 @@ implementation {
 components new ftspP(process);
 
 
-components new TimeSyncP(TMilli);
-SplitControl = TimeSyncP;
 Param = ftspP;
 AMSend = ftspP.AMSend;
 Receive = ftspP.Receive;
@@ -48,11 +46,6 @@ PacketAcknowledgements = ftspP.PacketAcknowledgements;
 LowPowerListening = ftspP.LowPowerListening;
 RadioChannel = ftspP.RadioChannel;
 
-
-components TimeSyncMessageC;
-SubReceive = TimeSyncMessageC.SubReceive;
-SubSnoop = TimeSyncMessageC.SubSnoop;
-
 SubAMSend = TimeSyncMessageC.SubAMSend;
 SubAMPacket = TimeSyncMessageC.SubAMPacket;
 SubPacket = TimeSyncMessageC.SubPacket;
@@ -62,6 +55,12 @@ SubLinkPacketMetadata = ftspP.SubLinkPacketMetadata;
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
+
+components new TimeSyncP(TMilli);
+SplitControl = TimeSyncP;
+components TimeSyncMessageC;
+SubReceive = TimeSyncMessageC.SubReceive;
+SubSnoop = TimeSyncMessageC.SubSnoop;
 
 TimeSyncP.Receive -> TimeSyncMessageC.Receive;
 
