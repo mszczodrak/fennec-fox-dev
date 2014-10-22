@@ -61,13 +61,13 @@ TimeSyncNotify  =   TimeSyncP;
   TimeSyncP.Receive         ->  ActiveMessageC.Receive;
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
 
-  components LocalTimeMilliC;
-  TimeSyncP.LocalTime       ->  LocalTimeMilliC;
+components LocalTimeMilliC;
+TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 
-  components new TimerMilliC() as TimerC;
-  TimeSyncP.Timer ->  TimerC;
+components new TimerMilliC() as TimerC;
+TimeSyncP.Timer ->  TimerC;
 
-  components RandomC;
-  TimeSyncP.Random -> RandomC;
+components RandomC;
+TimeSyncP.Random -> RandomC;
 
 }
