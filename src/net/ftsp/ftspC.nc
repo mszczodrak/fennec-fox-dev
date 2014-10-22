@@ -61,6 +61,6 @@ PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 
-
+TimeSyncC.Receive -> TimeSyncMessageC.Receive;
 
 }

@@ -44,6 +44,8 @@ provides interface GlobalTime<TMilli>;
 provides interface TimeSyncInfo;
 provides interface TimeSyncMode;
 provides interface TimeSyncNotify;
+
+uses interface Receive;
 }
 
 implementation {
@@ -58,7 +60,7 @@ TimeSyncNotify  =   TimeSyncP;
 
   components TimeSyncMessageC as ActiveMessageC;
   TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli;
-  TimeSyncP.Receive         ->  ActiveMessageC.Receive;
+Receive = TimeSyncP.Receive;
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
 
 components LocalTimeMilliC;
