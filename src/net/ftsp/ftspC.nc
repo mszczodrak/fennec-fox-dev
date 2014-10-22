@@ -79,7 +79,6 @@ SubPacket = TimeSyncMessageP.SubPacket;
 //GlobalTime      =   TimeSyncP;
 SplitControl      =   TimeSyncP;
 //TimeSyncInfo    =   TimeSyncP;
-//TimeSyncMode    =   TimeSyncP;
 //TimeSyncNotify  =   TimeSyncP;
 
 TimeSyncP.Receive -> TimeSyncMessageP.Receive;
