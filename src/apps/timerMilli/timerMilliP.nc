@@ -60,14 +60,28 @@ implementation {
 uint32_t delay;
 uint16_t src;
 
+float skew;
+uint32_t localAverage;
+int32_t offsetAverage;
+
+void global2Local(uint32_t *time) {
+	uint32_t approxLocalTime = *time - offsetAverage;
+	*time = approxLocalTime - (int32_t)(skew * (int32_t)(approxLocalTime - localAverage));
+}
+
 command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
+
+	call Param.get(SKEW, &skew, sizeof(skew));
+	call Param.get(LOCALAVERAGE, &localAverage, sizeof(localAverage));
+	call Param.get(OFFSETAVERAGE, &offsetAverage, sizeof(offsetAverage));
 
 	dbg("Application", "[%d] timerMilli SplitControl.start()", process);
 	dbg("Application", "[%d] timerMilli src: %d", process, src);
 
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
+		global2Local(&delay);
 		dbg("Application", "[%d] timerMilli will fire in %d ms", process, delay);
 		call Timer.startOneShot(delay);
 	}

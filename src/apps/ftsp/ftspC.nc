@@ -27,17 +27,8 @@ components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, 
 components TimeSyncMessageP;
 components CC2420PacketC;
 
-components new ftspP(process);
-components new TimerMilliC() as ftspTimerC;
-ftspP.Timer -> ftspTimerC;
-Param = ftspP.Param;
-SplitControl = ftspP.SplitControl;
-ftspP.SubSplitControl -> TimeSyncP.SplitControl;
-ftspP.GlobalTime -> TimeSyncP.GlobalTime;
-//TimeSyncInfo    =   TimeSyncP;
-
-
 Param = TimeSyncP.Param;
+SplitControl = TimeSyncP.SplitControl;
 SubPacketAcknowledgements = TimeSyncP.SubPacketAcknowledgements;
 SubLinkPacketMetadata = TimeSyncP.SubLinkPacketMetadata;
 LowPowerListening = TimeSyncP.LowPowerListening;
