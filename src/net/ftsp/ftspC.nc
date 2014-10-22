@@ -47,8 +47,7 @@ LowPowerListening = ftspP.LowPowerListening;
 RadioChannel = ftspP.RadioChannel;
 SubAMPacket = ftspP.SubAMPacket;
 
-SubAMSend = TimeSyncMessageC.SubAMSend;
-SubPacket = TimeSyncMessageC.SubPacket;
+
 SubPacketAcknowledgements = ftspP.SubPacketAcknowledgements;
 SubLinkPacketMetadata = ftspP.SubLinkPacketMetadata;
 
@@ -59,12 +58,11 @@ PacketRSSI = SubPacketRSSI;
 #define TMILLI_SYNC
 #ifdef TMILLI_SYNC
 components new TimeSyncP(TMilli);
-TimeSyncP.Send ->  TimeSyncMessageC.TimeSyncAMSendMilli;
-components LocalTimeMilliC;
+TimeSyncP.Send ->  TimeSyncMessageP.TimeSyncAMSendMilli;
 TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 #else
 //components new TimeSyncP(T32khz);
-//TimeSyncP.Send ->  TimeSyncMessageC.TimeSyncAMSend32khz;
+//TimeSyncP.Send ->  TimeSyncMessageP.TimeSyncAMSend32khz;
 //components Counter32khz32C;
 //components new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
 //LocalTime32khzC.Counter -> Counter32khz32C;
@@ -72,11 +70,12 @@ TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 #endif
 
 SplitControl = TimeSyncP;
-components TimeSyncMessageC;
-SubReceive = TimeSyncMessageC.SubReceive;
-SubSnoop = TimeSyncMessageC.SubSnoop;
+components TimeSyncMessageP;
+SubReceive = TimeSyncMessageP.SubReceive;
+SubSnoop = TimeSyncMessageP.SubSnoop;
+SubAMSend = TimeSyncMessageP.SubAMSend;
+SubPacket = TimeSyncMessageP.SubPacket;
 
-TimeSyncP.Receive -> TimeSyncMessageC.Receive;
 
 //GlobalTime      =   TimeSyncP;
 SplitControl      =   TimeSyncP;
@@ -84,12 +83,46 @@ SplitControl      =   TimeSyncP;
 //TimeSyncMode    =   TimeSyncP;
 //TimeSyncNotify  =   TimeSyncP;
 
-TimeSyncP.TimeSyncPacket  ->  TimeSyncMessageC;
+TimeSyncP.Receive -> TimeSyncMessageP.Receive;
+TimeSyncP.TimeSyncPacket  ->  TimeSyncMessageP;
 
 components new TimerMilliC() as TimerC;
 TimeSyncP.Timer ->  TimerC;
 
 components RandomC;
 TimeSyncP.Random -> RandomC;
+
+
+components CC2420PacketC;
+
+//TimeSyncAMSend32khz = TimeSyncMessageP;
+//TimeSyncPacket32khz = TimeSyncMessageP;
+
+//TimeSyncAMSendMilli = TimeSyncMessageP;
+//TimeSyncPacketMilli = TimeSyncMessageP;
+
+//Packet = TimeSyncMessageP;
+
+//SubAMSend = TimeSyncMessageP.SubSend;
+//SubPacket = TimeSyncMessageP.SubPacket;
+
+TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
+TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
+TimeSyncMessageP.PacketTimeSyncOffset -> CC2420PacketC;
+
+components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
+LocalTime32khzC.Counter -> Counter32khz32C;
+TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
+TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
+
+//Receive = TimeSyncMessageP.Receive;
+//Snoop = TimeSyncMessageP.Snoop;
+
+//SubReceive = TimeSyncMessageP.SubReceive;
+//SubSnoop = TimeSyncMessageP.SubSnoop;
+
+
+
+
 
 }

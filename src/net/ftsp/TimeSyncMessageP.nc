@@ -51,7 +51,7 @@ module TimeSyncMessageP
 
     uses
     {
-        interface AMSend as SubSend;
+        interface AMSend as SubAMSend;
         interface Packet as SubPacket;
 
         interface Receive as SubReceive;
@@ -110,7 +110,7 @@ implementation
         timesync_footer_t* footer = (timesync_footer_t*)(msg->data + len);
         footer->timestamp = event_time;
 
-        err = call SubSend.send(addr, msg, len + sizeof(timesync_footer_t));
+        err = call SubAMSend.send(addr, msg, len + sizeof(timesync_footer_t));
         call PacketTimeSyncOffset.set(msg);
         return err;
     }
@@ -118,19 +118,19 @@ implementation
     command error_t TimeSyncAMSend32khz.cancel(message_t* msg)
     {
         call PacketTimeSyncOffset.cancel(msg);
-        return call SubSend.cancel(msg);
+        return call SubAMSend.cancel(msg);
     }
 
     default event void TimeSyncAMSend32khz.sendDone(message_t* msg, error_t error) {}
 
     command uint8_t TimeSyncAMSend32khz.maxPayloadLength()
     {
-        return call SubSend.maxPayloadLength() - sizeof(timesync_footer_t);
+        return call SubAMSend.maxPayloadLength() - sizeof(timesync_footer_t);
     }
 
     command void* TimeSyncAMSend32khz.getPayload(message_t* msg, uint8_t len)
     {
-        return call SubSend.getPayload(msg, len + sizeof(timesync_footer_t));
+        return call SubAMSend.getPayload(msg, len + sizeof(timesync_footer_t));
     }
 
 /*----------------- TimeSyncAMSendMilli -----------------*/
@@ -176,8 +176,8 @@ implementation
 
     default event message_t* Snoop.receive(message_t* msg, void* payload, uint8_t len) { return msg; }
 
-/*----------------- SubSend.sendDone -------------------*/
-    event void SubSend.sendDone(message_t* msg, error_t error)
+/*----------------- SubAMSend.sendDone -------------------*/
+    event void SubAMSend.sendDone(message_t* msg, error_t error)
     {
         signal TimeSyncAMSend32khz.sendDone(msg, error);
         signal TimeSyncAMSendMilli.sendDone(msg, error);
