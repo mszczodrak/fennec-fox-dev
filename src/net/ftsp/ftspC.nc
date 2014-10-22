@@ -57,5 +57,12 @@ PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 
+components MainC, TimeSyncC;
+MainC.SoftwareInit -> TimeSyncC;
+TimeSyncC.Boot -> MainC;
+
+
+
+
 
 }
