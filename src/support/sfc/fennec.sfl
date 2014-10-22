@@ -116,7 +116,6 @@ use application TestDataSync $(FENNEC_FOX_LIB)/apps/tests/TestDataSync (
 		uint16_t val5 = 0
 )
 
-
 use application TestMax $(FENNEC_FOX_LIB)/apps/tests/TestMax (
 		uint32_t sense_delay = 5000,
 		uint32_t expire_delay = 614400,		# 10 minutes
