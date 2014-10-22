@@ -40,7 +40,6 @@ provides interface GlobalTime<precision_tag>;
 
 //interfaces for extra functionality: need not to be wired
 provides interface TimeSyncInfo;
-provides interface TimeSyncMode;
 provides interface TimeSyncNotify;
 
 uses interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
@@ -88,7 +87,7 @@ implementation {
         STATE_INIT = 0x04,
     };
 
-    uint8_t state, mode;
+uint8_t state;
 
 /*
     We do linear regression from localTime to timeOffset (globalTime - localTime).
@@ -313,6 +312,11 @@ implementation {
             return msg;
 #endif
 
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[] FTSP Receive.receive\n");
+#endif
+
         if( (state & STATE_PROCESSING) == 0
             && call TimeSyncPacket.isValid(msg)) {
             message_t* old = processedMsg;
@@ -383,8 +387,12 @@ implementation {
         signal TimeSyncNotify.msg_sent();
     }
 
-    void timeSyncMsgSend()
-    {
+void timeSyncMsgSend() {
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[] FTSP SyncMsgSend\n");
+#endif
+
         if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
             outgoingMsg->seqNum = 0;
             outgoingMsg->rootID = TOS_NODE_ID;
@@ -397,35 +405,8 @@ implementation {
     }
 
 event void Timer.fired() {
-	if (mode == TS_TIMER_MODE) {
-		timeSyncMsgSend();
-	} else {
-		call Timer.stop();
-	}
+	timeSyncMsgSend();
 }
-
-command error_t TimeSyncMode.setMode(uint8_t mode_){
-        if (mode_ == TS_TIMER_MODE){
-            call Timer.startPeriodic((uint32_t)(896U+(call Random.rand16()&0xFF)) * BEACON_RATE);
-        }
-        else
-            call Timer.stop();
-
-        mode = mode_;
-        return SUCCESS;
-    }
-
-    command uint8_t TimeSyncMode.getMode(){
-        return mode;
-    }
-
-    command error_t TimeSyncMode.send(){
-        if (mode == TS_USER_MODE){
-            timeSyncMsgSend();
-            return SUCCESS;
-        }
-        return FAIL;
-    }
 
 command error_t SplitControl.start() {
 
@@ -445,7 +426,8 @@ command error_t SplitControl.start() {
 
         heartBeats = 0;
         outgoingMsg->nodeID = TOS_NODE_ID;
-        call TimeSyncMode.setMode(TS_TIMER_MODE);
+
+	call Timer.startPeriodic((uint32_t)(896U+(call Random.rand16()&0xFF)) * BEACON_RATE);
 
         signal SplitControl.startDone(SUCCESS);
         return SUCCESS;

@@ -70,7 +70,6 @@ TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 //TimeSyncP.LocalTime     -> LocalTime32khzC;
 #endif
 
-SplitControl = TimeSyncP;
 SubReceive = TimeSyncMessageP.SubReceive;
 SubSnoop = TimeSyncMessageP.SubSnoop;
 SubAMSend = TimeSyncMessageP.SubAMSend;
