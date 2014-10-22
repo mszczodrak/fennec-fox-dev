@@ -1,5 +1,4 @@
 #include <Fennec.h>
-#include "ftsp.h"
 
 generic module ftspP(process_t process) {
 provides interface AMSend as AMSend;
@@ -25,17 +24,7 @@ uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 implementation {
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	dbg("Network", "[%d] ftsp NetworkAMSend.send(%d, 0x%1x, %d )",
-		process, addr, msg, len);
-
-	if ((addr == TOS_NODE_ID)) {
-		dbg("Network", "[%d] ftsp NetworkAMSend.sendDone(0x%1x, %d )", process, msg, SUCCESS);
-		signal AMSend.sendDone(msg, SUCCESS);
-		return SUCCESS;
-	}
-
-	return call SubAMSend.send(addr, msg, len + 
-		sizeof(nx_struct ftsp_header));
+	return call SubAMSend.send(addr, msg, len);
 }
 
 command error_t AMSend.cancel(message_t* msg) {
@@ -45,23 +34,17 @@ command error_t AMSend.cancel(message_t* msg) {
 
 command uint8_t AMSend.maxPayloadLength() {
 	dbg("Network", "[%d] ftsp NetworkAMSend.maxPayloadLength()", process);
-	return (call SubAMSend.maxPayloadLength() - 
-		sizeof(nx_struct ftsp_header));
+	return call SubAMSend.maxPayloadLength();
 }
 
 command void* AMSend.getPayload(message_t* msg, uint8_t len) {
-	uint8_t *ptr; 
-	dbg("Network", "[%d] ftsp NetworkAMSend.getpayload(0x%1x, %d )", process, msg, len);
-	ptr = (uint8_t*) call SubAMSend.getPayload(msg, 
-				len + sizeof(nx_struct ftsp_header));
-	return (void*) (ptr + sizeof(nx_struct ftsp_header));
+	return call SubAMSend.getPayload(msg, len);
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	dbg("Network", "[%d] ftsp NetworkAMSend.sendDone(0x%1x, %d )", process, msg, error);
 	signal AMSend.sendDone(msg, error);
 }
-
 
 command am_addr_t AMPacket.address() {
 	return call SubAMPacket.address();

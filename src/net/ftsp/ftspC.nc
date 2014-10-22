@@ -34,6 +34,9 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 implementation {
 
 components new ftspP(process);
+components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
+components TimeSyncMessageP;
+components CC2420PacketC;
 
 
 Param = ftspP;
@@ -63,14 +66,11 @@ TimeSyncP.LocalTime       ->  LocalTimeMilliC;
 #else
 //components new TimeSyncP(T32khz);
 //TimeSyncP.Send ->  TimeSyncMessageP.TimeSyncAMSend32khz;
-//components Counter32khz32C;
-//components new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
 //LocalTime32khzC.Counter -> Counter32khz32C;
 //TimeSyncP.LocalTime     -> LocalTime32khzC;
 #endif
 
 SplitControl = TimeSyncP;
-components TimeSyncMessageP;
 SubReceive = TimeSyncMessageP.SubReceive;
 SubSnoop = TimeSyncMessageP.SubSnoop;
 SubAMSend = TimeSyncMessageP.SubAMSend;
@@ -92,37 +92,12 @@ TimeSyncP.Timer ->  TimerC;
 components RandomC;
 TimeSyncP.Random -> RandomC;
 
-
-components CC2420PacketC;
-
-//TimeSyncAMSend32khz = TimeSyncMessageP;
-//TimeSyncPacket32khz = TimeSyncMessageP;
-
-//TimeSyncAMSendMilli = TimeSyncMessageP;
-//TimeSyncPacketMilli = TimeSyncMessageP;
-
-//Packet = TimeSyncMessageP;
-
-//SubAMSend = TimeSyncMessageP.SubSend;
-//SubPacket = TimeSyncMessageP.SubPacket;
-
 TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
 TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
 TimeSyncMessageP.PacketTimeSyncOffset -> CC2420PacketC;
 
-components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
 LocalTime32khzC.Counter -> Counter32khz32C;
 TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
 TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
-
-//Receive = TimeSyncMessageP.Receive;
-//Snoop = TimeSyncMessageP.Snoop;
-
-//SubReceive = TimeSyncMessageP.SubReceive;
-//SubSnoop = TimeSyncMessageP.SubSnoop;
-
-
-
-
 
 }
