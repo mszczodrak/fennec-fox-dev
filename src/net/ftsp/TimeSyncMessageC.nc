@@ -41,9 +41,9 @@
 
 #include <Timer.h>
 #include <AM.h>
-#include "CC2420TimeSyncMessage.h"
+#include "TimeSyncMessage.h"
 
-configuration CC2420TimeSyncMessageC {
+configuration TimeSyncMessageC {
     provides
     {
         interface Receive;
@@ -68,32 +68,32 @@ uses interface Receive as SubSnoop;
 }
 
 implementation {
-        components CC2420TimeSyncMessageP, CC2420PacketC;
+        components TimeSyncMessageP, CC2420PacketC;
 
-        TimeSyncAMSend32khz = CC2420TimeSyncMessageP;
-        TimeSyncPacket32khz = CC2420TimeSyncMessageP;
+        TimeSyncAMSend32khz = TimeSyncMessageP;
+        TimeSyncPacket32khz = TimeSyncMessageP;
 
-        TimeSyncAMSendMilli = CC2420TimeSyncMessageP;
-        TimeSyncPacketMilli = CC2420TimeSyncMessageP;
+        TimeSyncAMSendMilli = TimeSyncMessageP;
+        TimeSyncPacketMilli = TimeSyncMessageP;
 
-        Packet = CC2420TimeSyncMessageP;
+        Packet = TimeSyncMessageP;
 
-SubAMSend = CC2420TimeSyncMessageP.SubSend;
-SubAMPacket = CC2420TimeSyncMessageP.SubAMPacket;
-SubPacket = CC2420TimeSyncMessageP.SubPacket;
+SubAMSend = TimeSyncMessageP.SubSend;
+SubAMPacket = TimeSyncMessageP.SubAMPacket;
+SubPacket = TimeSyncMessageP.SubPacket;
 
-        CC2420TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
-        CC2420TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
-        CC2420TimeSyncMessageP.PacketTimeSyncOffset -> CC2420PacketC;
+        TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
+        TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
+        TimeSyncMessageP.PacketTimeSyncOffset -> CC2420PacketC;
         components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC, LocalTimeMilliC;
         LocalTime32khzC.Counter -> Counter32khz32C;
-        CC2420TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
-        CC2420TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
+        TimeSyncMessageP.LocalTime32khz -> LocalTime32khzC;
+        TimeSyncMessageP.LocalTimeMilli -> LocalTimeMilliC;
 
-Receive = CC2420TimeSyncMessageP.Receive;
-Snoop = CC2420TimeSyncMessageP.Snoop;
-AMPacket = CC2420TimeSyncMessageP;
+Receive = TimeSyncMessageP.Receive;
+Snoop = TimeSyncMessageP.Snoop;
+AMPacket = TimeSyncMessageP;
 
-SubReceive = CC2420TimeSyncMessageP.SubReceive;
-SubSnoop = CC2420TimeSyncMessageP.SubSnoop;
+SubReceive = TimeSyncMessageP.SubReceive;
+SubSnoop = TimeSyncMessageP.SubSnoop;
 }

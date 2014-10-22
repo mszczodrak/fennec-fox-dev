@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, Vanderbilt University
+ * Copyright (c) 2007, Vanderbilt University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holders nor the names of
+ * - Neither the name of the copyright holder nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -29,46 +29,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Miklos Maroti, Brano Kusy, Janos Sallai
- * Date last modified: 3/17/03
- * Ported to T2: 3/17/08 by Brano Kusy (branislav.kusy@gmail.com)
+ * Author: Miklos Maroti
  */
 
-#include "TimeSyncMsg.h"
+#ifndef __TIMESYNCMESSAGE_H__
+#define __TIMESYNCMESSAGE_H__
 
-configuration TimeSyncC
+#ifndef AM_TIMESYNCMSG
+#define AM_TIMESYNCMSG 0x3D
+#endif
+
+// this value is sent in the air
+typedef nx_uint32_t timesync_radio_t;
+
+typedef nx_struct timesync_footer_t
 {
-provides interface SplitControl;
-  provides interface GlobalTime<TMilli>;
+	nx_am_id_t type;
+  timesync_radio_t timestamp;
+} timesync_footer_t;
 
-  //interfaces for extra fcionality: need not to be wired
-  provides interface TimeSyncInfo;
-  provides interface TimeSyncMode;
-  provides interface TimeSyncNotify;
-}
 
-implementation
-{
-  components new TimeSyncP(TMilli);
-
-  GlobalTime      =   TimeSyncP;
-SplitControl      =   TimeSyncP;
-  TimeSyncInfo    =   TimeSyncP;
-  TimeSyncMode    =   TimeSyncP;
-  TimeSyncNotify  =   TimeSyncP;
-
-  components TimeSyncMessageC as ActiveMessageC;
-  TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli;
-  TimeSyncP.Receive         ->  ActiveMessageC.Receive;
-  TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
-
-  components LocalTimeMilliC;
-  TimeSyncP.LocalTime       ->  LocalTimeMilliC;
-
-  components new TimerMilliC() as TimerC;
-  TimeSyncP.Timer ->  TimerC;
-
-  components RandomC;
-  TimeSyncP.Random -> RandomC;
-
-}
+#endif//__TIMESYNCMESSAGE_H__

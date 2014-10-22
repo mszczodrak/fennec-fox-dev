@@ -32,9 +32,9 @@
  * @author: Miklos Maroti
  * @author: Brano Kusy (CC2420 port)
  */
-#include "CC2420TimeSyncMessage.h"
+#include "TimeSyncMessage.h"
 
-module CC2420TimeSyncMessageP
+module TimeSyncMessageP
 {
     provides
     {
