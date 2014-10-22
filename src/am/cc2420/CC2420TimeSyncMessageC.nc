@@ -58,6 +58,10 @@ configuration CC2420TimeSyncMessageC {
         interface TimeSyncPacket<TMilli, uint32_t> as TimeSyncPacketMilli;
     }
 
+uses interface AMSend as SubAMSend;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+
 uses interface Receive as SubReceive;
 uses interface Receive as SubSnoop;
 
@@ -73,11 +77,10 @@ implementation {
         TimeSyncPacketMilli = CC2420TimeSyncMessageP;
 
         Packet = CC2420TimeSyncMessageP;
-        // use the AMSenderC infrastructure to avoid concurrent send clashes
-        components new AMSenderC(AM_TIMESYNCMSG);
-        CC2420TimeSyncMessageP.SubSend -> AMSenderC;
-      	CC2420TimeSyncMessageP.SubAMPacket -> AMSenderC;
-        CC2420TimeSyncMessageP.SubPacket -> AMSenderC;
+
+SubAMSend = CC2420TimeSyncMessageP.SubSend;
+SubAMPacket = CC2420TimeSyncMessageP.SubAMPacket;
+SubPacket = CC2420TimeSyncMessageP.SubPacket;
 
         CC2420TimeSyncMessageP.PacketTimeStamp32khz -> CC2420PacketC;
         CC2420TimeSyncMessageP.PacketTimeStampMilli -> CC2420PacketC;
