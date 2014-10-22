@@ -460,15 +460,15 @@ command error_t SplitControl.stop() {
 }
 
 
-    async command float     TimeSyncInfo.getSkew() { return skew; }
-    async command uint32_t  TimeSyncInfo.getOffset() { return offsetAverage; }
-    async command uint32_t  TimeSyncInfo.getSyncPoint() { return localAverage; }
-    async command uint16_t  TimeSyncInfo.getRootID() { return outgoingMsg->rootID; }
-    async command uint8_t   TimeSyncInfo.getSeqNum() { return outgoingMsg->seqNum; }
-    async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
-    async command uint8_t   TimeSyncInfo.getHeartBeats() { return heartBeats; }
+async command float     TimeSyncInfo.getSkew() { return skew; }
+async command uint32_t  TimeSyncInfo.getOffset() { return offsetAverage; }
+async command uint32_t  TimeSyncInfo.getSyncPoint() { return localAverage; }
+async command uint16_t  TimeSyncInfo.getRootID() { return outgoingMsg->rootID; }
+async command uint8_t   TimeSyncInfo.getSeqNum() { return outgoingMsg->seqNum; }
+async command uint8_t   TimeSyncInfo.getNumEntries() { return numEntries; }
+async command uint8_t   TimeSyncInfo.getHeartBeats() { return heartBeats; }
 
-    default event void TimeSyncNotify.msg_received(){}
-    default event void TimeSyncNotify.msg_sent(){}
+default event void TimeSyncNotify.msg_received(){}
+default event void TimeSyncNotify.msg_sent(){}
 
 }
