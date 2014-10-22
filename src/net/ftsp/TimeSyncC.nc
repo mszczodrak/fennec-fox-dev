@@ -61,8 +61,8 @@ implementation
   TimeSyncMode    =   TimeSyncP;
   TimeSyncNotify  =   TimeSyncP;
 
-  components TimeSyncMessageC as ActiveMessageC;
-  TimeSyncP.RadioControl    ->  ActiveMessageC;
+  //components TimeSyncMessageC as ActiveMessageC;
+  components CC2420TimeSyncMessageC as ActiveMessageC;
   TimeSyncP.Send            ->  ActiveMessageC.TimeSyncAMSendMilli[TIMESYNC_AM_FTSP];
   TimeSyncP.Receive         ->  ActiveMessageC.Receive[TIMESYNC_AM_FTSP];
   TimeSyncP.TimeSyncPacket  ->  ActiveMessageC;
@@ -82,9 +82,5 @@ implementation
   components NoLedsC as LedsC;
 #endif
   TimeSyncP.Leds  ->  LedsC;
-
-#ifdef LOW_POWER_LISTENING
-  TimeSyncP.LowPowerListening -> ActiveMessageC;
-#endif
 
 }

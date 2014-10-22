@@ -50,7 +50,6 @@ generic module TimeSyncP(typedef precision_tag)
     uses
     {
         interface Boot;
-        interface SplitControl as RadioControl;
         interface TimeSyncAMSend<precision_tag,uint32_t> as Send;
         interface Receive;
         interface Timer<TMilli>;
@@ -58,11 +57,6 @@ generic module TimeSyncP(typedef precision_tag)
         interface Leds;
         interface TimeSyncPacket<precision_tag,uint32_t>;
         interface LocalTime<precision_tag> as LocalTime;
-
-
-#ifdef LOW_POWER_LISTENING
-        interface LowPowerListening;
-#endif
 
     }
 }
@@ -371,9 +365,6 @@ implementation
         }
 
         outgoingMsg->globalTime = globalTime;
-#ifdef LOW_POWER_LISTENING
-        call LowPowerListening.setRemoteWakeupInterval(&outgoingMsgBuffer, LPL_INTERVAL);
-#endif
         // we don't send time sync msg, if we don't have enough data
         if( numEntries < ENTRY_SEND_LIMIT && outgoingMsg->rootID != TOS_NODE_ID ){
             ++heartBeats;
@@ -468,7 +459,6 @@ implementation
 
     event void Boot.booted()
     {
-      call RadioControl.start();
       call StdControl.start();
     }
 
@@ -498,6 +488,4 @@ implementation
     default event void TimeSyncNotify.msg_received(){}
     default event void TimeSyncNotify.msg_sent(){}
 
-    event void RadioControl.startDone(error_t error){}
-    event void RadioControl.stopDone(error_t error){}
 }
