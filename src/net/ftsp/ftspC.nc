@@ -33,9 +33,11 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 implementation {
 
-components TimeSyncC;
 components new ftspP(process);
-SplitControl = TimeSyncC;
+
+
+components new TimeSyncP(TMilli);
+SplitControl = TimeSyncP;
 Param = ftspP;
 AMSend = ftspP.AMSend;
 Receive = ftspP.Receive;
@@ -61,6 +63,24 @@ PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 
-TimeSyncC.Receive -> TimeSyncMessageC.Receive;
+TimeSyncP.Receive -> TimeSyncMessageC.Receive;
+
+//GlobalTime      =   TimeSyncP;
+SplitControl      =   TimeSyncP;
+//TimeSyncInfo    =   TimeSyncP;
+//TimeSyncMode    =   TimeSyncP;
+//TimeSyncNotify  =   TimeSyncP;
+
+TimeSyncP.Send            ->  TimeSyncMessageC.TimeSyncAMSendMilli;
+TimeSyncP.TimeSyncPacket  ->  TimeSyncMessageC;
+
+components LocalTimeMilliC;
+TimeSyncP.LocalTime       ->  LocalTimeMilliC;
+
+components new TimerMilliC() as TimerC;
+TimeSyncP.Timer ->  TimerC;
+
+components RandomC;
+TimeSyncP.Random -> RandomC;
 
 }
