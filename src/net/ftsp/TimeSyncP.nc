@@ -306,7 +306,7 @@ void calculateConversion() {
 
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[] FTSP Receive.receive\n");
+	//printf("[] FTSP Receive.receive\n");
 #endif
 
         if( (state & STATE_PROCESSING) == 0
@@ -379,7 +379,7 @@ event void Send.sendDone(message_t* ptr, error_t error) {
 void timeSyncMsgSend() {
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[] FTSP SyncMsgSend\n");
+	//printf("[] FTSP SyncMsgSend\n");
 #endif
 
 	if( outgoingMsg->rootID == 0xFFFF && ++heartBeats >= ROOT_TIMEOUT ) {
