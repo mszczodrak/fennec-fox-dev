@@ -396,16 +396,15 @@ implementation {
         }
     }
 
-    event void Timer.fired()
-    {
-      if (mode == TS_TIMER_MODE) {
-        timeSyncMsgSend();
-      }
-      else
-        call Timer.stop();
-    }
+event void Timer.fired() {
+	if (mode == TS_TIMER_MODE) {
+		timeSyncMsgSend();
+	} else {
+		call Timer.stop();
+	}
+}
 
-    command error_t TimeSyncMode.setMode(uint8_t mode_){
+command error_t TimeSyncMode.setMode(uint8_t mode_){
         if (mode_ == TS_TIMER_MODE){
             call Timer.startPeriodic((uint32_t)(896U+(call Random.rand16()&0xFF)) * BEACON_RATE);
         }
