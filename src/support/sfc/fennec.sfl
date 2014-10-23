@@ -214,7 +214,7 @@ use am nullAM $(FENNEC_FOX_LIB)/am/nullAM ()
 
 # Events
 
-use source timerCalMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff,
+use source timerCalMilliE $(FENNEC_FOX_LIB)/apps/timerCalMilli (uint32_t delay = 1000, uint16_t src = 0xffff,
 		float skew = 1, uint32_t localAverage = 0, int32_t offsetAverage = 0)
 use source timerMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
 use source timerSecondE $(FENNEC_FOX_LIB)/apps/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)
