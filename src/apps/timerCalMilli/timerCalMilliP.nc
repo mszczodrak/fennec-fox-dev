@@ -84,20 +84,21 @@ command error_t SplitControl.start() {
 	dbg("Application", "[%d] timerCalMilli SplitControl.start()", process);
 	dbg("Application", "[%d] timerCalMilli src: %d", process, src);
 
-	printf("Timer orig delay is %lu\n", delay);
+	printf("Timer orig delay is %lu -> skews are %f %lu %li\n", delay,
+		(double)skew, localAverage, offsetAverage);
 
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-//		uint32_t now = call Timer.getNow();
-//		uint32_t now2 = now;
-//		uint32_t now3;
-//		uint32_t now4;
-//		local2Global(&now2);
-//		now3 = now2;
-//		now3 += delay;
-//		now4 = now3;
-//		global2Local(&now4);
+		uint32_t now = call Timer.getNow();
+		uint32_t now2 = now;
+		uint32_t now3 = 0;
+		uint32_t now4 = 0;
+		local2Global(&now2);
+		now3 = now2;
+		now3 += delay;
+		now4 = now3;
+		global2Local(&now4);
 //		delay = now4 - now;
-//		printf("Timer %lu  %lu  %lu  %lu  %lu\n", now, now2, now3, now4, delay);
+		printf("Timer %lu  %lu  %lu  %lu  %lu\n", now, now2, now3, now4, delay);
 		call Timer.startOneShot(delay);
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] TimerMilli sleeps for %lu\n", process, delay);

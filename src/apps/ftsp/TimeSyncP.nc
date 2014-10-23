@@ -214,6 +214,7 @@ void calculateConversion() {
 	call Param.set(SKEW, &skew, sizeof(skew));
 	call Param.set(LOCALAVERAGE, &localAverage, sizeof(localAverage));
 	call Param.set(OFFSETAVERAGE, &offsetAverage, sizeof(offsetAverage));
+	printf("FTPS Timer sets %f, %lu, %li\n", (double)skew, localAverage, offsetAverage);
 }
 
     void clearTable()
