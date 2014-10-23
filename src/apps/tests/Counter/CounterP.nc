@@ -66,7 +66,7 @@ uint16_t src;
 uint16_t dest;
 
 message_t packet;
-uint16_t seqno;
+uint16_t seqno = 0;
 
 command error_t SplitControl.start() {
 	uint32_t send_delay;
@@ -77,8 +77,6 @@ command error_t SplitControl.start() {
 
 	send_delay = delay;
 	send_delay *= delay_scale;
-
-	seqno = 0;
 
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
 		call Timer.startPeriodic(send_delay);
