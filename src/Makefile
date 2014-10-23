@@ -10,7 +10,7 @@ PFLAGS+=-D__USUAL_LEDS__
 
 include $(FENNEC_FOX_LIB)/support/make/Makerules
 #include $(FENNEC_FOX_LIB)/support/make/flocklab.extra
-#include $(FENNEC_FOX_LIB)/support/make/dbgs.extra
+include $(FENNEC_FOX_LIB)/support/make/dbgs.extra
 include $(TINYOS_ROOT_DIR)/Makefile.include
 
 # 2. TinyOS printf

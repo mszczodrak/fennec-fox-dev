@@ -33,9 +33,9 @@
 
 
 #include <Fennec.h>
-#include "timerMilli.h"
+#include "timerCalMilli.h"
 
-generic module timerMilliP(process_t process) {
+generic module timerCalMilliP(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -81,8 +81,8 @@ command error_t SplitControl.start() {
 	call Param.get(LOCALAVERAGE, &localAverage, sizeof(localAverage));
 	call Param.get(OFFSETAVERAGE, &offsetAverage, sizeof(offsetAverage));
 
-	dbg("Application", "[%d] timerMilli SplitControl.start()", process);
-	dbg("Application", "[%d] timerMilli src: %d", process, src);
+	dbg("Application", "[%d] timerCalMilli SplitControl.start()", process);
+	dbg("Application", "[%d] timerCalMilli src: %d", process, src);
 
 	printf("Timer orig delay is %lu\n", delay);
 
@@ -109,14 +109,14 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "[%d] timerMilli SplitControl.stop()", process);
+	dbg("Application", "[%d] timerCalMilli SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 
 event void Timer.fired() {
-	dbg("Application", "[%d] timerMilli call Event.report(%d, TRUE)", process, process);
+	dbg("Application", "[%d] timerCalMilli call Event.report(%d, TRUE)", process, process);
 	call Event.report(process, TRUE);
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] TimerMilli woke up\n", process);

@@ -204,14 +204,17 @@ void calculateConversion() {
         if( localSum != 0 )
             newSkew = (float)offsetSum / (float)localSum;
 
-        atomic
-        {
-            skew = newSkew;
-            offsetAverage = newOffsetAverage;
-            localAverage = newLocalAverage;
-            numEntries = tableEntries;
-        }
-    }
+	atomic {
+		skew = newSkew;
+		offsetAverage = newOffsetAverage;
+		localAverage = newLocalAverage;
+		numEntries = tableEntries;
+	}
+
+	call Param.set(SKEW, &skew, sizeof(skew));
+	call Param.set(LOCALAVERAGE, &localAverage, sizeof(localAverage));
+	call Param.set(OFFSETAVERAGE, &offsetAverage, sizeof(offsetAverage));
+}
 
     void clearTable()
     {
