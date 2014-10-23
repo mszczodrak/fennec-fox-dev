@@ -60,48 +60,16 @@ implementation {
 uint32_t delay;
 uint16_t src;
 
-float skew = 0;
-uint32_t localAverage = 0;
-int32_t offsetAverage = 0;
-
-void local2Global(uint32_t *time) {
-        *time += offsetAverage + (int32_t)(skew * (int32_t)(*time - localAverage));
-}
-
-void global2Local(uint32_t *time) {
-        uint32_t approxLocalTime = *time - offsetAverage;
-        *time = approxLocalTime - (int32_t)(skew * (int32_t)(approxLocalTime - localAverage));
-}
-
 command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
 
-	call Param.get(SKEW, &skew, sizeof(skew));
-	call Param.get(LOCALAVERAGE, &localAverage, sizeof(localAverage));
-	call Param.get(OFFSETAVERAGE, &offsetAverage, sizeof(offsetAverage));
-
 	dbg("Application", "[%d] timerMilli SplitControl.start()", process);
 	dbg("Application", "[%d] timerMilli src: %d", process, src);
 
-	printf("Timer orig delay is %lu\n", delay);
-
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-//		uint32_t now = call Timer.getNow();
-//		uint32_t now2 = now;
-//		uint32_t now3;
-//		uint32_t now4;
-//		local2Global(&now2);
-//		now3 = now2;
-//		now3 += delay;
-//		now4 = now3;
-//		global2Local(&now4);
-//		delay = now4 - now;
-//		printf("Timer %lu  %lu  %lu  %lu  %lu\n", now, now2, now3, now4, delay);
+		dbg("Application", "[%d] timerMilli will fire in %d ms", process, delay);
 		call Timer.startOneShot(delay);
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] TimerMilli sleeps for %lu\n", process, delay);
-#endif
 	}
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -118,9 +86,6 @@ command error_t SplitControl.stop() {
 event void Timer.fired() {
 	dbg("Application", "[%d] timerMilli call Event.report(%d, TRUE)", process, process);
 	call Event.report(process, TRUE);
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] TimerMilli woke up\n", process);
-#endif
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {}
