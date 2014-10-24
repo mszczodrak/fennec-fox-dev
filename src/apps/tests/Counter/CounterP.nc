@@ -64,6 +64,7 @@ uint16_t delay;
 uint16_t delay_scale;
 uint16_t src;
 uint16_t dest;
+uint8_t repeat;
 
 message_t packet;
 uint16_t seqno = 0;
@@ -74,12 +75,17 @@ command error_t SplitControl.start() {
 	call Param.get(SRC, &src, sizeof(src));
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
+	call Param.get(REPEAT, &repeat, sizeof(repeat));
 
 	send_delay = delay;
 	send_delay *= delay_scale;
 
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		call Timer.startPeriodic(send_delay);
+		if (repeat) {
+			call Timer.startPeriodic(send_delay);
+		} else {
+			call Timer.startOneShot(send_delay);
+		}
 	}
 
 #ifdef __DBGS__APPLICATION__
@@ -142,7 +148,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	printf("[%u] Application Counter SendDone Error: %d  Seqno: %d  Dest: %d\n", process, error, seqno, dest);
 #else
 	//call Param.get(DEST, &dest, sizeof(dest));
-	//call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
+	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
 #endif
 #endif
 
