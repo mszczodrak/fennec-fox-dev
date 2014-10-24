@@ -74,6 +74,7 @@ uint8_t channel;
 uint8_t power;
 uint16_t sleepInterval;
 uint16_t sleepDelay;
+bool autoAck;
 	
 command error_t SplitControl.start() {
 	return call SubSplitControl.start();
@@ -96,6 +97,11 @@ task void setChannel() {
 	}
 }
 
+task void setAutoAck() {
+//	call Param.get(AUTOACK, &autoAck, sizeof(autoAck));
+//	call CC2420Config.setAutoAck(autoAck, autoAck);
+//	call CC2420Config.sync();
+}
 
 event void SubSplitControl.startDone(error_t error) {
 	if (error == SUCCESS) {
@@ -110,6 +116,7 @@ event void SubSplitControl.startDone(error_t error) {
 	}
 
 	post setChannel();
+	post setAutoAck();
 
 	return signal SplitControl.startDone(error);
 }

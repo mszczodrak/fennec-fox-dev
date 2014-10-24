@@ -223,5 +223,6 @@ StdControl = AMQueueCtrlP;
 
 components SerialDbgsC;
 Router.SerialDbgs -> SerialDbgsC.SerialDbgs[200];
+Forwarder.SerialDbgs -> SerialDbgsC.SerialDbgs[200];
 
 }

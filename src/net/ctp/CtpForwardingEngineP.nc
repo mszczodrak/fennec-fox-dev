@@ -161,6 +161,7 @@ generic module CtpForwardingEngineP() {
     // as appropriate.
     interface SplitControl as RadioControl;
   }
+	uses interface SerialDbgs;
 }
 implementation {
   /* Helper functions to start the given timer with a random number
@@ -296,6 +297,7 @@ implementation {
   command error_t Send.send[uint8_t client](message_t* msg, uint8_t len) {
     ctp_data_header_t* hdr;
     fe_queue_entry_t *qe;
+    printf("[%u] CTP send application data\n", TOS_NODE_ID);
     dbg("Forwarder", "%s: sending packet from client %hhu: %x, len %hhu\n", __FUNCTION__, client, msg, len);
     if (!hasState(ROUTING_ON)) {return EOFF;}
     if (len > call Send.maxPayloadLength[client]()) {return ESIZE;}
@@ -308,6 +310,7 @@ implementation {
     hdr->thl = 0;
 
     if (clientPtrs[client] == NULL) {
+	printf("CTP Send.send busy\n");
       dbg("Forwarder", "%s: send failed as client is busy.\n", __FUNCTION__);
       return EBUSY;
     }
@@ -329,6 +332,7 @@ implementation {
       dbg("Forwarder", 
           "%s: send failed as packet could not be enqueued.\n", 
           __FUNCTION__);
+	printf("CTP Send.send cannot enqueue\n");
       
       // send a debug message to the uart
       call CollectionDebug.logEvent(NET_C_FE_SEND_QUEUE_FULL);
@@ -374,6 +378,7 @@ implementation {
     uint16_t gradient;
     dbg("Forwarder", "%s: Trying to send a packet. Queue size is %hhu.\n", __FUNCTION__, call SendQueue.size());
     if (hasState(SENDING) || call SendQueue.empty()) {
+	printf("CTP sendTask nothing to send\n");
       call CollectionDebug.logEvent(NET_C_FE_SENDQUEUE_EMPTY);
       return;
     }
@@ -388,6 +393,7 @@ implementation {
        * is lost (e.g., a bug in the routing engine), we retry.
        * Otherwise the forwarder might hang indefinitely. As this test
        * doesn't require radio activity, the energy cost is minimal. */
+	printf("CTP sendTask no route\n");
       dbg("Forwarder", "%s: no route, don't send, try again in %i.\n", __FUNCTION__, NO_ROUTE_RETRY);
       call RetxmitTimer.startOneShot(NO_ROUTE_RETRY);
       call CollectionDebug.logEvent(NET_C_FE_NO_ROUTE);
@@ -407,6 +413,7 @@ implementation {
 	 * send next packet.  Duplicates are only possible for
 	 * forwarded packets, so we can circumvent the client or
 	 * forwarded branch for freeing the buffer. */
+	printf("CTP sendTask drop duplicate\n");
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE_AT_SEND);
         call SendQueue.dequeue();
 	if (call MessagePool.put(qe->msg) != SUCCESS) 
@@ -450,6 +457,8 @@ implementation {
 	}
 	
 	subsendResult = call SubSend.send(dest, qe->msg, payloadLen);
+	printf("[%d] CTP forward from ID:%u to ID:%u - error %u\n", TOS_NODE_ID, call CollectionPacket.getOrigin(qe->msg), dest, subsendResult);
+
 	if (subsendResult == SUCCESS) {
 	  // Successfully submitted to the data-link layer.
 	  setState(SENDING);
@@ -458,6 +467,7 @@ implementation {
 	}
 	// The packet is too big: truncate it and retry.
 	else if (subsendResult == ESIZE) {
+		printf("CTP sendTask packet is too big\n");
 	  dbg("Forwarder", "%s: subsend failed from ESIZE: truncate packet.\n", __FUNCTION__);
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
 	  post sendTask();
@@ -537,6 +547,7 @@ implementation {
 				       call CollectionPacket.getSequenceNumber(msg), 
 				       call CollectionPacket.getOrigin(msg), 
 				       call AMPacket.destination(msg));
+	printf("CTP sendDone failed - retry\n");
       startRetxmitTimer(SENDDONE_FAIL_WINDOW, SENDDONE_FAIL_OFFSET);
     }
     else if (hasState(ACK_PENDING) && !call PacketAcknowledgements.wasAcked(msg)) {
@@ -549,12 +560,23 @@ implementation {
 					 call CollectionPacket.getSequenceNumber(msg), 
 					 call CollectionPacket.getOrigin(msg), 
                                          call AMPacket.destination(msg));
+	printf("CTP sendDone wait for ACK\n");
         startRetxmitTimer(SENDDONE_NOACK_WINDOW, SENDDONE_NOACK_OFFSET);
       } else {
 	/* Hit max retransmit threshold: drop the packet. */
 	call SendQueue.dequeue();
         clearState(SENDING);
         startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
+
+	printf("CTP drop message from %u\n", call CollectionPacket.getOrigin(msg));
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+#else
+        call SerialDbgs.dbgs(DBGS_FORWARDING, call CollectionPacket.getSequenceNumber(msg),
+                                         call CollectionPacket.getOrigin(msg), call UnicastNameFreeRouting.nextHop());
+
+#endif
+#endif
 	
 	packetComplete(qe, msg, FALSE);
       }
@@ -581,11 +603,13 @@ implementation {
     if (call MessagePool.empty()) {
       dbg("Route", "%s cannot forward, message pool empty.\n", __FUNCTION__);
       // send a debug message to the uart
+	printf("CTP forward Pool empty\n");
       call CollectionDebug.logEvent(NET_C_FE_MSG_POOL_EMPTY);
     }
     else if (call QEntryPool.empty()) {
       dbg("Route", "%s cannot forward, queue entry pool empty.\n", 
           __FUNCTION__);
+	printf("CTP problem forward cannot forward QEntryPool empty\n");
       // send a debug message to the uart
       call CollectionDebug.logEvent(NET_C_FE_QENTRY_POOL_EMPTY);
     }
@@ -644,6 +668,7 @@ implementation {
         return newMsg;
       } else {
         // There was a problem enqueuing to the send queue.
+	printf("CTP forward enqueu problem\n");
         if (call MessagePool.put(newMsg) != SUCCESS)
           call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR);
         if (call QEntryPool.put(qe) != SUCCESS)
@@ -654,6 +679,8 @@ implementation {
     // NB: at this point, we have a resource acquistion problem.
     // Log the event, and drop the
     // packet on the floor.
+
+    printf("CTP forward resource problem drop\n");
 
     call CollectionDebug.logEvent(NET_C_FE_SEND_QUEUE_FULL);
     return m;
@@ -694,6 +721,7 @@ implementation {
     //See if we remember having seen this packet
     //We look in the sent cache ...
     if (call SentCache.lookup(msg)) {
+	printf("[%u] CTP problem SentCache drop from ID:%u\n", TOS_NODE_ID, call CollectionPacket.getOrigin(msg));
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE);
         return msg;
     }
@@ -702,6 +730,7 @@ implementation {
       for (i = call SendQueue.size(); i >0; i--) {
 	qe = call SendQueue.element(i-1);
 	if (call CtpPacket.matchInstance(qe->msg, msg)) {
+		printf("[%u] CTP problem SentQueue duplicate drop from ID:%u\n", TOS_NODE_ID, call CollectionPacket.getOrigin(msg));
 	  duplicate = TRUE;
 	  break;
 	}
@@ -728,6 +757,7 @@ implementation {
       return msg;
     else {
       dbg("Route", "Forwarding packet from %hu.\n", getHeader(msg)->origin);
+	printf("CTP forward packet from %u\n", getHeader(msg)->origin);
       return forward(msg);
     }
   }
