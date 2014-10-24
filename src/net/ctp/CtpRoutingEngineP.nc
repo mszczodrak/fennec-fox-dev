@@ -224,9 +224,6 @@ task void routeUpdate() {
     }
 
     command error_t Init.init() {
-#ifdef TOSSIM
-        uint8_t maxLength;
-#endif
         radioOn = FALSE;
         running = FALSE;
         parentChanges = 0;
@@ -234,11 +231,8 @@ task void routeUpdate() {
         routeInfoInit(&routeInfo);
         routingTableInit();
         beaconMsg = call BeaconSend.getPayload(&beaconMsgBuffer, call BeaconSend.maxPayloadLength());
-#ifdef TOSSIM
-        maxLength = call BeaconSend.maxPayloadLength();
         dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
-              sizeof(beaconMsg), maxLength);
-#endif
+              sizeof(beaconMsg), call BeaconSend.maxPayloadLength());
         return SUCCESS;
     }
 
