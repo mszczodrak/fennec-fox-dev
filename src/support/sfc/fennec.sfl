@@ -134,7 +134,6 @@ use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
 
 use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0)
 
-
 use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 	uint8_t repeat = 1,
 	uint8_t retry = 9,
