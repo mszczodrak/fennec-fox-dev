@@ -104,10 +104,12 @@ command error_t SplitControl.start() {
 	dbg("StateSynchronization", "[%d] StateSynchronizationP SplitControl.start()", process);
 
 #ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Application StateSynchronization start()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
+#endif
 #endif
 #endif
 	post schedule_send();
@@ -120,10 +122,12 @@ command error_t SplitControl.stop() {
 	call Timer.stop();
 
 #ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Application StateSynchronization stop()\n", process);
 #else
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
 #endif
 #endif
 	signal SplitControl.stopDone(SUCCESS);
@@ -141,9 +145,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 #ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 //	printf("[%u] Application StateSynchronization receive()\n", process);
 #else
+#endif
 #endif
 #endif
 
@@ -153,10 +159,12 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 #ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Application StateSynchronization sendDone(%d)\n", process, error);
 #else
 //	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
+#endif
 #endif
 #endif
 	call FennecState.resendDone(error);
