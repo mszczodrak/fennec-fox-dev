@@ -105,7 +105,6 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
-	printf("THIS ONE!\n");	
 	call Event.report(process, TRUE);
 }
 

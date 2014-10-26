@@ -230,6 +230,7 @@ task void routeUpdate() {
         state_is_root = 0;
         routeInfoInit(&routeInfo);
         routingTableInit();
+	currentInterval = minInterval;
         beaconMsg = call BeaconSend.getPayload(&beaconMsgBuffer, call BeaconSend.maxPayloadLength());
         dbg("TreeRoutingCtl","TreeRouting initialized. (used payload:%d max payload:%d!\n", 
               sizeof(beaconMsg), call BeaconSend.maxPayloadLength());
@@ -241,7 +242,7 @@ task void routeUpdate() {
       //start will (re)start the sending of messages
       if (!running) {
 	running = TRUE;
-	resetInterval();
+	chooseAdvertiseTime();
 	call RouteTimer.startPeriodic(BEACON_INTERVAL);
 	dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
       }     

@@ -226,9 +226,9 @@ implementation {
   }
 
   command error_t StdControl.stop() {
-    forwardingState = 0;
+    //forwardingState = 0;
     call RetxmitTimer.stop();
-    clearState(ROUTING_ON);
+    //clearState(ROUTING_ON);
     return SUCCESS;
   }
 
