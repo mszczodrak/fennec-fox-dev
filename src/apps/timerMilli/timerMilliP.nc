@@ -67,6 +67,12 @@ command error_t SplitControl.start() {
 	dbg("Application", "[%d] timerMilli SplitControl.start()", process);
 	dbg("Application", "[%d] timerMilli src: %d", process, src);
 
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Event timerMilli start()\n", process);
+#endif
+#endif
+
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
 		dbg("Application", "[%d] timerMilli will fire in %d ms", process, delay);
 		call Timer.startOneShot(delay);
@@ -78,6 +84,13 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 	dbg("Application", "[%d] timerMilli SplitControl.stop()", process);
+
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] Event timerMilli stop()\n", process);
+#endif
+#endif
+
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }

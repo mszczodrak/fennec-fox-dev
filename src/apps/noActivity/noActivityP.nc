@@ -68,8 +68,13 @@ uint16_t event_counter = 0;
 command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Event noActivity start()\n", process);
+#endif
+#endif
 
-	event_count = 0;
+	event_counter = 0;
 
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -77,10 +82,16 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	max_event_count = event_count;
+	max_event_count = event_counter;
 	call Param.get(COMPLETED, &completed, sizeof(completed));
 	threshold = completed * max_event_count;
+
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Event noActivity stop()\n", process);
 	printf("max_event is %d  threshold is %d\n", max_event_count, threshold);
+#endif
+#endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -106,8 +117,8 @@ event void Param.updated(uint8_t var_id) {
 
 	switch(var_id) {
 	case ACTIVITY:
-		event_count++;
-		if (max_event_count && threshold > event_count) {
+		event_counter++;
+		if ((max_event_count > 1) && (threshold > event_counter)) {
 			printf("NoActivity event timer\n");
 			call Timer.startOneShot(delay);
 		}

@@ -67,6 +67,12 @@ command error_t SplitControl.start() {
 	dbg("Application", "[%d] timerHour SplitControl.start()", process);
 	dbg("Application", "[%d] timerHour src: %d", process, src);
 
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] Event timerHour start()\n", process);
+#endif
+#endif
+
 	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
 		delay *= SECOND_TO_MILLI;
 		delay *= MINUTE_TO_SECOND;
@@ -79,6 +85,13 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
+
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] Event timerHour start()\n", process);
+#endif
+#endif
+
 	dbg("Application", "[%d] timerHour SplitControl.stop()", process);
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
