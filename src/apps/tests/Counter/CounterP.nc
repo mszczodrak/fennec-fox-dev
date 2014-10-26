@@ -163,6 +163,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #ifdef __USUAL_LEDS__
 	call Leds.set(cm->seqno);
 #endif
+	call Param.set(RECEIVE_EVENT, &(cm->source), sizeof(cm->source));
+
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Application Counter Receive Len: %d  Seqno: %d  Source: %d\n", process, len, cm->seqno, cm->source);

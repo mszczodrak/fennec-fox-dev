@@ -19,7 +19,7 @@ use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter (
 		uint16_t src = 0,
 		uint16_t dest = 0,
 		uint8_t repeat = 1,
-		uint8_t receive_event )
+		uint16_t receive_event )
 
 use application dbgs $(FENNEC_FOX_LIB)/apps/tests/Dbgs (uint16_t delay = 1024)
 
@@ -219,7 +219,7 @@ use source timerCalMilliE $(FENNEC_FOX_LIB)/apps/timerCalMilli (uint32_t delay =
 		float skew = 1, uint32_t localAverage = 0, int32_t offsetAverage = 0)
 use source timerMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
 use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (uint32_t delay = 1000, uint16_t src = 0xffff,
-			float completed = 0.75, uint8_t activity)
+			float completed = 0.75, uint16_t activity)
 use source timerSecondE $(FENNEC_FOX_LIB)/apps/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)
 use source timerMinuteE $(FENNEC_FOX_LIB)/apps/timerMinute (uint32_t delay = 1, uint16_t src = 0xffff)
 use source timerHourE $(FENNEC_FOX_LIB)/apps/timerHour (uint32_t delay = 1, uint16_t src = 0xffff)

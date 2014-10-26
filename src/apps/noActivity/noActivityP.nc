@@ -82,7 +82,15 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	max_event_count = event_counter;
+
+	if (max_event_count < event_counter) {
+		max_event_count = event_counter;
+	}
+
+	if (max_event_count > event_counter) {
+		max_event_count--;
+	}
+	
 	call Param.get(COMPLETED, &completed, sizeof(completed));
 	threshold = completed * max_event_count;
 
@@ -97,6 +105,7 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
+	printf("THIS ONE!\n");	
 	call Event.report(process, TRUE);
 }
 
@@ -119,7 +128,6 @@ event void Param.updated(uint8_t var_id) {
 	case ACTIVITY:
 		event_counter++;
 		if ((max_event_count > 1) && (threshold > event_counter)) {
-			printf("NoActivity event timer\n");
 			call Timer.startOneShot(delay);
 		}
 		break;
