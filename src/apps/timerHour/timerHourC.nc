@@ -71,4 +71,8 @@ Event = timerHourP;
 
 components new TimerMilliC();
 timerHourP.Timer -> TimerMilliC;
+
+components SerialDbgsC;
+timerHourP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+
 }

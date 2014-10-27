@@ -53,6 +53,8 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Event;
 uses interface Timer<TMilli>;
+
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -101,7 +103,7 @@ command error_t SplitControl.stop() {
 	printf("[%u] Event noActivity stop()\n", process);
 	printf("[%u] Event noActivity max_event is %d  threshold is %d\n", process, max_event_count, threshold);
 #else
-	call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, src, max_event,threshold);
+	call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, src, max_event_count, threshold);
 #endif
 #endif
 	signal SplitControl.stopDone(SUCCESS);
@@ -146,8 +148,6 @@ event void Param.updated(uint8_t var_id) {
 	call SerialDbgs.dbgs(DBGS_BUSY, max_event_count, threshold, event_counter);
 #endif
 #endif
-
-
 		}
 		break;
 	default:

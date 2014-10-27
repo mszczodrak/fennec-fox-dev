@@ -71,4 +71,8 @@ Event = noActivityP;
 
 components new TimerMilliC();
 noActivityP.Timer -> TimerMilliC;
+
+components SerialDbgsC;
+noActivityP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+
 }

@@ -53,6 +53,8 @@ uses interface PacketField<uint8_t> as SubPacketRSSI;
 
 uses interface Event;
 uses interface Timer<TMilli>;
+
+uses interface SerialDbgs;
 }
 
 implementation {
