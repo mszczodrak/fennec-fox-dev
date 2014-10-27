@@ -163,7 +163,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #ifdef __USUAL_LEDS__
 	call Leds.set(cm->seqno);
 #endif
-	call Param.set(RECEIVE_EVENT, &(cm->source), sizeof(cm->source));
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -172,6 +171,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
 #endif
 #endif
+	call Param.set(RECEIVE_EVENT, &(cm->source), sizeof(cm->source));
+
 	return msg;
 }
 
