@@ -71,6 +71,8 @@ command error_t SplitControl.start() {
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Event noActivity start()\n", process);
+#else
+	//call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
 #endif
 
@@ -97,7 +99,9 @@ command error_t SplitControl.stop() {
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Event noActivity stop()\n", process);
-	printf("max_event is %d  threshold is %d\n", max_event_count, threshold);
+	printf("[%u] Event noActivity max_event is %d  threshold is %d\n", process, max_event_count, threshold);
+#else
+	call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, src, max_event,threshold);
 #endif
 #endif
 	signal SplitControl.stopDone(SUCCESS);
@@ -105,6 +109,13 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] Event noActivity fired()\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
+#endif
+#endif
 	call Event.report(process, TRUE);
 }
 
@@ -126,8 +137,17 @@ event void Param.updated(uint8_t var_id) {
 	switch(var_id) {
 	case ACTIVITY:
 		event_counter++;
-		if ((max_event_count > 1) && (threshold > event_counter)) {
+		if ((max_event_count > 1) && (threshold < event_counter)) {
 			call Timer.startOneShot(delay);
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Event noActivity busy\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_BUSY, max_event_count, threshold, event_counter);
+#endif
+#endif
+
+
 		}
 		break;
 	default:

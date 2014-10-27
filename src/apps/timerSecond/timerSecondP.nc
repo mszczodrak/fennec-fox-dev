@@ -64,12 +64,11 @@ command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
 
-	dbg("Application", "[%d] timerSecond SplitControl.start()", process);
-	dbg("Application", "[%d] timerSecond src: %d", process, src);
-
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] Event timerSecond start()\n", process);
+#else
+	//call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
 #endif
 
@@ -83,11 +82,12 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	dbg("Application", "[%d] timerSecond SplitControl.stop()", process);
 
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] Event timerSecond start()\n", process);
+#else
+	//call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
 #endif
 
@@ -97,7 +97,14 @@ command error_t SplitControl.stop() {
 
 
 event void Timer.fired() {
-	dbg("Application", "[%d] timerSecond call Event.report(%d, TRUE)", process, process);
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] Event timerSecond fired()\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
+#endif
+#endif
+
 	call Event.report(process, TRUE);
 }
 
