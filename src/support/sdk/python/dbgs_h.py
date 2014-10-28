@@ -226,6 +226,69 @@ def dbg_translate(dbg_num):
 	if dbg_num == DBGS_REMOVE_NODE:
 		return "Remove Node"
 
+	if dbg_num == DBGS_SEND_CONTROL_MSG:
+		return "Send Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_CONTROL_MSG:
+		return "Receive Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_FIRST_CONTROL_MSG:
+		return "Receive First Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_UNKNOWN_CONTROL_MSG:
+		return "Receive Unknown Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_LOWER_CONTROL_MSG:
+		return "Receive Lower Ctrl Msg"
+		
+	if dbg_num == DBGS_RECEIVE_INCONSISTENT_CONTROL_MSG:
+		return "Receive Inconsistent Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_HIGHER_CONTROL_MSG:
+		return "Receive Higher Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_WRONG_CONF_MSG:
+		return "Receive Wrong Ctrl Msg"
+
+	if dbg_num == DBGS_RECEIVE_AND_RECONFIGURE:
+		return "Receive and Reconfigure"
+
+	if dbg_num == DBGS_SEND_CONTROL_MSG_FAILED:
+		return "Send Ctrl Msg Failed"
+
+	if dbg_num == DBGS_ERROR:
+		return "Error"
+
+	if dbg_num == DBGS_ERROR_SEND_DONE:
+		return "Error Send Done"
+
+	if dbg_num == DBGS_ERROR_RECEIVE:
+		return "Error Receive"
+
+	if dbg_num == DBGS_TIMER_FIRED:
+		return "Timer Fired"
+
+	if dbg_num == DBGS_BUSY:
+		return "Busy"
+
+	if dbg_num == DBGS_SERIAL_SEND_MESSAGE:
+		return "Serial Send Message"
+
+	if dbg_num == DBGS_SERIAL_SEND_FAIL:
+		return "Serial Send Fail"
+
+	if dbg_num == DBGS_SERIAL_QUEUE_FULL:
+		return "Serial Queue Fail"
+
+	if dbg_num == DBGS_SERIAL_NULL_PTR:
+		return "Serial Null Ptr"
+
+	if dbg_num == DBGS_NETWORK_ROUTING_UPDATE:
+		return "Network Routing Update"
+
+	if dbg_num == DBGS_TEST_SIGNAL:
+		return "Test Signal"
+
 	return None
 
 
