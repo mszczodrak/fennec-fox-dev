@@ -141,6 +141,12 @@ use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 	uint16_t retry_delay = 25
 )
 
+use network reTrickle $(FENNEC_FOX_LIB)/net/reTrickle (
+	uint8_t retry = 4,
+	uint16_t delay = 25,
+	uint8_t suppress = 3
+)
+
 use network trickle $(FENNEC_FOX_LIB)/net/trickle (
 		uint16_t low = 1,
 		uint16_t high = 1024,

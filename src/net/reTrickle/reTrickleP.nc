@@ -37,7 +37,7 @@ uint8_t suppress;
 
 bool signal_send_done;
 message_t packet;
-void packet_payload_ptr;
+void *packet_payload_ptr;
 uint8_t packet_len;
 uint8_t packet_tx_repeat;
 
@@ -57,14 +57,14 @@ void send_message() {
 void make_copy(void *new_payload, uint8_t new_payload_len) {
 	call Timer.startPeriodic(delay);
 	packet_payload_ptr = call SubAMSend.getPayload(&packet, new_payload_len);
-	packet_len = payload_len;
+	packet_len = new_payload_len;
 	memcpy(packet_payload_ptr, new_payload, new_payload_len);
 	packet_tx_repeat = repeat;
 	send_message();
 }
 
-bool same_packet(void *in_payload, uint_t in_len) {
-	return ((in_len == payload_len) && !(memcmp(in_payload, packet_payload_ptr, in_len)));
+bool same_packet(void *in_payload, uint8_t in_len) {
+	return ((in_len == packet_len) && !(memcmp(in_payload, packet_payload_ptr, in_len)));
 }
 
 command error_t SplitControl.start() {
@@ -126,7 +126,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	if (packet_tx_repeat <= 0) {
 		call Timer.stop();
 		if (signal_send_done) {
-			signal Send.sendDone(msg, error);
+			signal AMSend.sendDone(msg, error);
 			signal_send_done = FALSE;
 		}
 	}
