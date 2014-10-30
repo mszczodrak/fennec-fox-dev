@@ -112,7 +112,8 @@ command error_t SplitControl.start() {
 #endif
 #endif
 #endif
-	post schedule_send();
+	//post schedule_send();
+	post send_msg();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -147,7 +148,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #ifdef __DBGS__APPLICATION__
 #ifdef __DBGS__STATE_SYNC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] Application StateSynchronization receive()\n", process);
+	//printf("[%u] Application StateSynchronization receive()\n", process);
 #else
 #endif
 #endif

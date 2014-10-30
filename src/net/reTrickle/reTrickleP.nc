@@ -44,15 +44,15 @@ uint8_t packet_tx_repeat;
 nx_struct reTrickle_header* hdr;
 
 void send_message() {
-	receive_same_packet = 0;
+	packet_tx_repeat--;
 	if (busy) {
-		printf("[%u] reTrickle send_message busy\n", process);
+		//printf("[%u] reTrickle send_message busy\n", process);
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
 
 	hdr->repeat = packet_tx_repeat;
-	printf("[%u] reTrickle send_message with repeat %u\n", process, packet_tx_repeat);
+	//printf("[%u] reTrickle send_message with repeat %u\n", process, packet_tx_repeat);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_len + sizeof(nx_struct reTrickle_header)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -62,13 +62,14 @@ void send_message() {
 }
 
 void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
-	printf("[%u] reTrickle make copy\n", process);
+	call Param.get(DELAY, &delay, sizeof(delay));
 	call Timer.startPeriodic(delay);
 	hdr = (nx_struct reTrickle_header*) call SubAMSend.getPayload(&packet,
 				new_payload_len + sizeof(nx_struct reTrickle_header));
 	packet_payload_ptr = ((uint8_t*)hdr) + sizeof(nx_struct reTrickle_header);
 	packet_len = new_payload_len;
 	memcpy(packet_payload_ptr, new_payload, new_payload_len);
+	hdr->crc = (nx_uint16_t) crc16(0, packet_payload_ptr, packet_len);
 	packet_tx_repeat = set_repeat;
 	send_message();
 }
@@ -84,8 +85,6 @@ command error_t SplitControl.start() {
 	packet_payload_ptr = call SubAMSend.getPayload(&packet, 10);
 
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
-	call Param.get(DELAY, &delay, sizeof(delay));
-	call Param.get(SUPPRESS, &suppress, sizeof(suppress));
 
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -100,30 +99,32 @@ command error_t SplitControl.stop() {
 
 event void Timer.fired() {
 	printf("[%u] reTrickle fired\n", process);
-	packet_tx_repeat--;
 
-	if (packet_tx_repeat <= 0 ) {
+	if (packet_tx_repeat == 0 ) {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
 
+	call Param.get(SUPPRESS, &suppress, sizeof(suppress));
+
 	if (receive_same_packet < suppress) {
 		send_message();
 	} else {
-		printf("[%u] reTrickle suppressing tx : %d >= %d\n", process, receive_same_packet, suppress);
+		//printf("[%u] reTrickle suppressing tx : %d >= %d\n", process, receive_same_packet, suppress);
 	}
+	receive_same_packet = 0;
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	void *payload = call SubAMSend.getPayload(msg, len);
+	uint8_t *ptr = call SubAMSend.getPayload(msg, len + sizeof(nx_struct reTrickle_header));
+	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
-	if (same_packet(payload, len)) {
+	if (packet_tx_repeat > 0) {
 		printf("[%u] reTrickle already disseminating\n", process);
 		return SUCCESS;
 	}
 
-	receive_same_packet = 0;
-	make_copy(payload, len, repeat);
+	make_copy(ptr, len, repeat);
 	return SUCCESS;
 }
 
@@ -146,7 +147,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	printf("[%u] reTrickle sendDone\n", process);
 	busy = FALSE;
-	if (packet_tx_repeat <= 0) {
+	if (packet_tx_repeat == 0) {
 		call Timer.stop();
 		printf("[%u] reTrickle no more repeats\n", process);
 		if (signal_send_done) {
@@ -163,16 +164,22 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	uint8_t in_len = len -= sizeof(nx_struct reTrickle_header);
 	in_payload += sizeof(nx_struct reTrickle_header);
 
+	if (in_hdr->crc != (nx_uint16_t) crc16(0, in_payload, in_len)) {
+		printf("[%u] reTrickle drop corrupted message\n", process);
+		return msg;
+	}
+
+
 	if (same_packet(in_payload, in_len)) {
 		receive_same_packet++;
 		printf("[%u] reTrickle already received, #%d\n", process, receive_same_packet);
                 return msg;
         }
 
-	printf("[%u] reTrickle Receive new packet with repeat left %d\n", process, in_hdr->repeat);
 	make_copy(in_payload, in_len, in_hdr->repeat);
+	//printf("[%u] reTrickle Receive new packet with repeat left %d\n", process, in_hdr->repeat);
 
-	return signal Receive.receive(msg, in_payload, in_len);
+	return signal Receive.receive(msg, packet_payload_ptr, in_len);
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
