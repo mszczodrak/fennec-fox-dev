@@ -100,7 +100,7 @@ command error_t SplitControl.stop() {
 event void Timer.fired() {
 	printf("[%u] reTrickle fired\n", process);
 
-	if (packet_tx_repeat == 0 ) {
+	if (packet_tx_repeat > 1 ) {
 		call Timer.stop();
 		if (signal_send_done) {
 			printf("[%u] reTrickle signal sendDone\n", process);
@@ -116,8 +116,6 @@ event void Timer.fired() {
 
 	if (receive_same_packet < suppress) {
 		send_message();
-	} else {
-		//printf("[%u] reTrickle suppressing tx : %d >= %d\n", process, receive_same_packet, suppress);
 	}
 	receive_same_packet = 0;
 }
@@ -126,8 +124,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	uint8_t *ptr = call SubAMSend.getPayload(msg, len + sizeof(nx_struct reTrickle_header));
 	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
-	if (packet_tx_repeat > 0) {
-		printf("[%u] reTrickle already disseminating\n", process);
+	if ((packet_tx_repeat > 0) && same_packet(ptr, len)) {
 		return SUCCESS;
 	}
 
@@ -169,10 +166,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		if (call Timer.isRunning()) {
 			receive_same_packet++;
 			if (in_hdr->repeat > (packet_tx_repeat + 1) ) {
-				printf("UPDATE to lower seq\n");
 				packet_tx_repeat = in_hdr->repeat + 1;
 			}
-			printf("[%u] reTrickle already received, #%d\n", process, receive_same_packet);
 		}
                 return msg;
         }
