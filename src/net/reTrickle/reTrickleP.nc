@@ -45,16 +45,13 @@ nx_struct reTrickle_header* hdr;
 
 void send_message() {
 	if (busy) {
-		printf("[%u] reTrickle send_message busy\n", process);
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
 
 	hdr->repeat = packet_tx_repeat;
-	//printf("[%u] reTrickle send_message with repeat %u\n", process, packet_tx_repeat);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_len + sizeof(nx_struct reTrickle_header)) != SUCCESS) {
-		printf("[%u] reTrickle send_message FAILED with repeat %u\n", process, packet_tx_repeat);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy = TRUE;
@@ -98,12 +95,16 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] reTrickle fired\n", process);
+#endif
 
 	if (packet_tx_repeat > 1 ) {
 		call Timer.stop();
 		if (signal_send_done) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] reTrickle signal sendDone\n", process);
+#endif
 			signal AMSend.sendDone(&packet, SUCCESS);
 			signal_send_done = FALSE;
 		}
