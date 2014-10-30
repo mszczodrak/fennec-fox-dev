@@ -162,7 +162,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	in_payload += sizeof(nx_struct reTrickle_header);
 
 	if (in_hdr->crc != (nx_uint16_t) crc16(0, in_payload, in_len)) {
-		printf("[%u] reTrickle drop corrupted message\n", process);
 		return msg;
 	}
 
@@ -170,6 +169,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		if (call Timer.isRunning()) {
 			receive_same_packet++;
 			if (in_hdr->repeat > (packet_tx_repeat + 1) ) {
+				printf("UPDATE to lower seq\n");
 				packet_tx_repeat = in_hdr->repeat + 1;
 			}
 			printf("[%u] reTrickle already received, #%d\n", process, receive_same_packet);
@@ -178,7 +178,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
         }
 
 	make_copy(in_payload, in_len, in_hdr->repeat);
-	//printf("[%u] reTrickle Receive new packet with repeat left %d\n", process, in_hdr->repeat);
 
 	return signal Receive.receive(msg, packet_payload_ptr, in_len);
 }
