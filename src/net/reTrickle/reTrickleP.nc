@@ -133,7 +133,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
 	if (same_packet(ptr, len)) {
-		printf("reTrickle match!\n");
 		if (call Timer.isRunning()) {
 			return SUCCESS;
 		}
