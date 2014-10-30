@@ -72,7 +72,16 @@ task void schedule_send() {
 
 task void send_msg() {
 	nx_struct fennec_network_state *state_msg;
-	dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg()", process);
+
+#ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application StateSynchronization send_msg()\n", process);
+#else
+
+#endif
+#endif
+#endif
 
 	state_msg = (nx_struct fennec_network_state*) 
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_state));
