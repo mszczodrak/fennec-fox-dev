@@ -233,28 +233,6 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 
 }
 
-
-
-/*
-async command bool PacketTimeStampRadio.isValid(message_t* msg) {
-//	return call TimeStampFlag.get(msg);
-}
-
-async command uint32_t PacketTimeStampRadio.timestamp(message_t* msg) {
-//	return getMeta(msg)->timestamp;
-}
-
-async command void PacketTimeStampRadio.clear(message_t* msg) {
-//	call TimeStampFlag.clear(msg);
-}
-
-async command void PacketTimeStampRadio.set(message_t* msg, uint32_t value) {
-//	call TimeStampFlag.set(msg);
-//	getMeta(msg)->timestamp = value;
-}
-*/
-
-
 event void CC2420Config.syncDone(error_t error) {}
 
 
