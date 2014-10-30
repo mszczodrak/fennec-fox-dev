@@ -44,9 +44,8 @@ uint8_t packet_tx_repeat;
 nx_struct reTrickle_header* hdr;
 
 void send_message() {
-	packet_tx_repeat--;
 	if (busy) {
-		//printf("[%u] reTrickle send_message busy\n", process);
+		printf("[%u] reTrickle send_message busy\n", process);
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
@@ -55,6 +54,7 @@ void send_message() {
 	//printf("[%u] reTrickle send_message with repeat %u\n", process, packet_tx_repeat);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_len + sizeof(nx_struct reTrickle_header)) != SUCCESS) {
+		printf("[%u] reTrickle send_message FAILED with repeat %u\n", process, packet_tx_repeat);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy = TRUE;
@@ -101,9 +101,16 @@ event void Timer.fired() {
 	printf("[%u] reTrickle fired\n", process);
 
 	if (packet_tx_repeat == 0 ) {
-		signal SubAMSend.sendDone(&packet, SUCCESS);
+		call Timer.stop();
+		if (signal_send_done) {
+			printf("[%u] reTrickle signal sendDone\n", process);
+			signal AMSend.sendDone(&packet, SUCCESS);
+			signal_send_done = FALSE;
+		}
 		return;
 	}
+
+	packet_tx_repeat--;
 
 	call Param.get(SUPPRESS, &suppress, sizeof(suppress));
 
@@ -145,17 +152,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	printf("[%u] reTrickle sendDone\n", process);
 	busy = FALSE;
-	if (packet_tx_repeat == 0) {
-		call Timer.stop();
-		printf("[%u] reTrickle no more repeats\n", process);
-		if (signal_send_done) {
-			printf("[%u] reTrickle signal sendDone\n", process);
-			signal AMSend.sendDone(msg, error);
-			signal_send_done = FALSE;
-		}
-	}
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
@@ -169,10 +166,14 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		return msg;
 	}
 
-
 	if (same_packet(in_payload, in_len)) {
-		receive_same_packet++;
-		printf("[%u] reTrickle already received, #%d\n", process, receive_same_packet);
+		if (call Timer.isRunning()) {
+			receive_same_packet++;
+			if (in_hdr->repeat > (packet_tx_repeat + 1) ) {
+				packet_tx_repeat = in_hdr->repeat + 1;
+			}
+			printf("[%u] reTrickle already received, #%d\n", process, receive_same_packet);
+		}
                 return msg;
         }
 
