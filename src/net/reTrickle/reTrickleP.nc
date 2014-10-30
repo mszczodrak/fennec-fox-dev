@@ -44,12 +44,15 @@ uint8_t packet_tx_repeat;
 nx_struct reTrickle_header* hdr;
 
 void send_message() {
+	receive_same_packet = 0;
 	if (busy) {
+		printf("[%u] reTrickle send_message busy\n", process);
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
 
 	hdr->repeat = packet_tx_repeat;
+	printf("[%u] reTrickle send_message with repeat %u\n", process, packet_tx_repeat);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_len + sizeof(nx_struct reTrickle_header)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -59,6 +62,7 @@ void send_message() {
 }
 
 void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
+	printf("[%u] reTrickle make copy\n", process);
 	call Timer.startPeriodic(delay);
 	hdr = (nx_struct reTrickle_header*) call SubAMSend.getPayload(&packet,
 				new_payload_len + sizeof(nx_struct reTrickle_header));
@@ -76,7 +80,6 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 command error_t SplitControl.start() {
 	busy = FALSE;
 	signal_send_done = FALSE;
-	receive_same_packet = 0;
 
 	packet_payload_ptr = call SubAMSend.getPayload(&packet, 10);
 
@@ -96,21 +99,30 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
+	printf("[%u] reTrickle fired\n", process);
 	packet_tx_repeat--;
+
+	if (packet_tx_repeat <= 0 ) {
+		signal SubAMSend.sendDone(&packet, SUCCESS);
+		return;
+	}
+
 	if (receive_same_packet < suppress) {
 		send_message();
+	} else {
+		printf("[%u] reTrickle suppressing tx : %d >= %d\n", process, receive_same_packet, suppress);
 	}
-	receive_same_packet = 0;
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	void *payload = call SubAMSend.getPayload(msg, len);
 	signal_send_done = TRUE;
 	if (same_packet(payload, len)) {
-		printf("Already disseminating\n");
+		printf("[%u] reTrickle already disseminating\n", process);
 		return SUCCESS;
 	}
 
+	receive_same_packet = 0;
 	make_copy(payload, len, repeat);
 	return SUCCESS;
 }
@@ -132,12 +144,13 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	printf("[%u] reTrickle sendDone\n", process);
 	busy = FALSE;
 	if (packet_tx_repeat <= 0) {
 		call Timer.stop();
-		printf("no more repeats\n");
+		printf("[%u] reTrickle no more repeats\n", process);
 		if (signal_send_done) {
-			printf("signal sendDone\n");
+			printf("[%u] reTrickle signal sendDone\n", process);
 			signal AMSend.sendDone(msg, error);
 			signal_send_done = FALSE;
 		}
@@ -152,12 +165,12 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if (same_packet(in_payload, in_len)) {
 		receive_same_packet++;
-		printf("Already received\n");
+		printf("[%u] reTrickle already received, #%d\n", process, receive_same_packet);
                 return msg;
         }
 
-	printf("Receive new packet with repeat left %d\n", in_hdr->repeat);
-	make_copy(payload, len, in_hdr->repeat);
+	printf("[%u] reTrickle Receive new packet with repeat left %d\n", process, in_hdr->repeat);
+	make_copy(in_payload, in_len, in_hdr->repeat);
 
 	return signal Receive.receive(msg, in_payload, in_len);
 }
