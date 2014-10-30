@@ -52,13 +52,12 @@ provides interface PacketField<uint8_t> as PacketRSSI;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
+
 provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface PacketTimeStamp<TRadio, uint32_t> as UnimplementedPacketTimeStampRadio;
-uses interface PacketTimeStamp<TMilli, uint32_t> as UnimplementedPacketTimeStampMilli;
-uses interface PacketTimeStamp<T32khz, uint32_t> as UnimplementedPacketTimeStamp32khz;
 
 }
 
@@ -66,6 +65,7 @@ implementation {
 
 components cc2420P;
 components CC2420ControlC;
+components CC2420PacketC;
 components CC2420ActiveMessageC as AM;
 
 Param = cc2420P;
@@ -84,8 +84,8 @@ cc2420P.CC2420Config -> CC2420ControlC;
 RadioChannel = cc2420P;
 
 PacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
-PacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
-PacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
+PacketTimeStampMilli = CC2420PacketC.PacketTimeStampMilli;
+PacketTimeStamp32khz = CC2420PacketC.PacketTimeStamp32khz;
 
 cc2420P.CC2420Packet -> AM.CC2420Packet;
 cc2420P.SubSplitControl -> AM.SplitControl;
@@ -99,16 +99,6 @@ AMPacket = AM.AMPacket;
 LowPowerListening = AM.LowPowerListening;
 PacketAcknowledgements = AM;
 LinkPacketMetadata = AM.LinkPacketMetadata;
-
-//PacketTimeStampRadio = CC2420ActiveMessageC.PacketTimeStampRadio;
-//PacketTimeStampMilli = CC2420ActiveMessageC.PacketTimeStampMilli;
-//PacketTimeStamp32khz = CC2420ActiveMessageC.PacketTimeStamp32khz;
-
-/*
-PacketTimeStampRadio = cc2420P.PacketTimeStampRadio;
-PacketTimeStampMilli = cc2420P.PacketTimeStampMilli;
-PacketTimeStamp32khz = cc2420P.PacketTimeStamp32khz;
-*/
 
 /* System LowPowerListening Confs */
 components SystemLowPowerListeningC;
