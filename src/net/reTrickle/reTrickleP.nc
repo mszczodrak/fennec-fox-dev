@@ -99,33 +99,33 @@ event void Timer.fired() {
 	printf("[%u] reTrickle fired\n", process);
 #endif
 
-	if (packet_tx_repeat > 1 ) {
-		call Timer.stop();
-		if (signal_send_done) {
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] reTrickle signal sendDone\n", process);
-#endif
-			signal AMSend.sendDone(&packet, SUCCESS);
-			signal_send_done = FALSE;
+	if ( packet_tx_repeat > 0 ) {
+		packet_tx_repeat--;
+
+		call Param.get(SUPPRESS, &suppress, sizeof(suppress));
+
+		if (receive_same_packet < suppress) {
+			send_message();
 		}
+		receive_same_packet = 0;
 		return;
 	}
 
-	packet_tx_repeat--;
-
-	call Param.get(SUPPRESS, &suppress, sizeof(suppress));
-
-	if (receive_same_packet < suppress) {
-		send_message();
+	call Timer.stop();
+	if ( signal_send_done ) {
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] reTrickle signal sendDone\n", process);
+#endif
+		signal AMSend.sendDone(&packet, SUCCESS);
+		signal_send_done = FALSE;
 	}
-	receive_same_packet = 0;
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	uint8_t *ptr = call SubAMSend.getPayload(msg, len + sizeof(nx_struct reTrickle_header));
 	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
-	if ((packet_tx_repeat > 0) && same_packet(ptr, len)) {
+	if (call Timer.isRunning() && same_packet(ptr, len)) {
 		return SUCCESS;
 	}
 
