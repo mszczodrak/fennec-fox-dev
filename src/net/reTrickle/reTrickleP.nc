@@ -38,13 +38,14 @@ uint8_t suppress;
 
 bool signal_send_done;
 message_t packet;
-void *packet_payload_ptr;
 uint8_t packet_len;
 uint8_t packet_tx_repeat;
 
-nx_struct reTrickle_header* hdr;
-
 void send_message() {
+	uint8_t *ptr = call SubAMSend.getPayload(&packet, packet_len +
+					sizeof(nx_struct reTrickle_header));
+	nx_struct reTrickle_header* hdr = (nx_struct reTrickle_header*) ptr;
+
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
@@ -60,36 +61,32 @@ void send_message() {
 }
 
 void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
+	uint8_t *ptr = call SubAMSend.getPayload(&packet, new_payload_len +
+					sizeof(nx_struct reTrickle_header));
+	nx_struct reTrickle_header* hdr = (nx_struct reTrickle_header*) ptr;
+	ptr += sizeof(nx_struct reTrickle_header);
+
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Timer.startPeriodic(delay);
-	hdr = (nx_struct reTrickle_header*) call SubAMSend.getPayload(&packet,
-				new_payload_len + sizeof(nx_struct reTrickle_header));
-	packet_payload_ptr = ((uint8_t*)hdr) + sizeof(nx_struct reTrickle_header);
+
 	packet_len = new_payload_len;
-	memcpy(packet_payload_ptr, new_payload, new_payload_len);
-	hdr->crc = (nx_uint16_t) crc16(0, packet_payload_ptr, packet_len);
+
+	memcpy(ptr, new_payload, new_payload_len);
+	hdr->crc = (nx_uint16_t) crc16(0, ptr, packet_len);
 	packet_tx_repeat = set_repeat;
 	send_message();
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
-	uint8_t *current_payload = call SubAMSend.getPayload(&packet, in_len + sizeof(nx_struct reTrickle_header));
-	current_payload += sizeof(nx_struct reTrickle_header);
-	if (memcmp(in_payload, current_payload, in_len)) {
-		nx_uint16_t *d1 = (nx_uint16_t*)current_payload;
-		nx_uint16_t *d2 = in_payload;
-		printf("[%u] reTrickle same_packet [%u %u %u] vs [%u %u %u] new \n", process,
-			*d1, *(d1+1), *(d1+2), *d2, *(d2+1), *(d2+2));
-
-	}
-	return ((in_len == packet_len) && !(memcmp(in_payload, current_payload, in_len)));
+	uint8_t *ptr = call SubAMSend.getPayload(&packet,
+				in_len + sizeof(nx_struct reTrickle_header));
+	ptr += sizeof(nx_struct reTrickle_header);
+	return ((in_len == packet_len) && !(memcmp(in_payload, ptr, in_len)));
 }
 
 command error_t SplitControl.start() {
 	busy = FALSE;
 	signal_send_done = FALSE;
-
-	packet_payload_ptr = call SubAMSend.getPayload(&packet, 10);
 
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
 
@@ -142,12 +139,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		}
 		make_copy(ptr, len, 1);
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		//printf("[%u] reTrickle re-sends the same version of payload\n", process);
-		{
-		nx_uint16_t *d = packet_payload_ptr;
-		printf("[%u] reTrickle re-sends the same version of payload [%u %u %u]\n", process,
-			*d, *(d+1), *(d+2));
-		}
+		printf("[%u] reTrickle re-sends the same version of payload\n", process);
 #endif
 		return SUCCESS;	
 	}
@@ -155,12 +147,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	make_copy(ptr, len, repeat);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("[%u] reTrickle sends new version of payload\n", process);
-	{
-	nx_uint16_t *d = packet_payload_ptr;
-	printf("[%u] reTrickle sends new version of payload [%u %u %u]\n", process,
-			*d, *(d+1), *(d+2));
-	}
+	printf("[%u] reTrickle sends new version of payload\n", process);
 #endif
 
 	return SUCCESS;
@@ -209,14 +196,9 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	make_copy(in_payload, in_len, in_hdr->repeat);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("[%u] reTrickle received new version of payload\n", process);
-	{
-	nx_uint16_t *d = packet_payload_ptr;
-	printf("[%u] reTrickle received new version of payload [%u %u %u]\n", process,
-			*d, *(d+1), *(d+2));
-	}
+	printf("[%u] reTrickle received new version of payload\n", process);
 #endif
-	return signal Receive.receive(msg, packet_payload_ptr, in_len);
+	return signal Receive.receive(msg, in_payload, in_len);
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
