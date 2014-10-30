@@ -53,13 +53,15 @@ LowPowerListening = reTrickleP.LowPowerListening;
 RadioChannel = reTrickleP.RadioChannel;
 
 components LedsC;
-components new TimerMilliC();
+components new TimerMilliC() as SendTimerC;
 
 reTrickleP.Leds -> LedsC;
-reTrickleP.Timer -> TimerMilliC;
+reTrickleP.SendTimer -> SendTimerC;
 
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 
+components new TimerMilliC() as FinishTimerC;
+reTrickleP.FinishTimer -> FinishTimerC;
 }

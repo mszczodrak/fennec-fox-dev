@@ -23,7 +23,8 @@ uses interface LowPowerListening;
 uses interface RadioChannel;
 
 uses interface Leds;
-uses interface Timer<TMilli>;
+uses interface Timer<TMilli> as SendTimer;
+uses interface Timer<TMilli> as FinishTimer;
 
 }
 
@@ -43,8 +44,12 @@ uint8_t packet_tx_repeat;
 
 void send_message() {
 	uint8_t *ptr = call SubAMSend.getPayload(&packet, packet_len +
-					sizeof(nx_struct reTrickle_header));
+					sizeof(nx_struct reTrickle_header) +
+					sizeof(nx_struct reTrickle_footer));
+
 	nx_struct reTrickle_header* hdr = (nx_struct reTrickle_header*) ptr;
+	nx_struct reTrickle_footer* fdr = (nx_struct reTrickle_footer*) ptr + 
+				packet_len + sizeof(nx_struct reTrickle_header);
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
@@ -52,6 +57,8 @@ void send_message() {
 	}
 
 	hdr->repeat = packet_tx_repeat;
+	hdr->left = call FinishTimer.gett0() + call FinishTimer.getdt() - call FinishTimer.getNow();
+	fdr->offset = hdr->left;
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_len + sizeof(nx_struct reTrickle_header)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -67,7 +74,8 @@ void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
 	ptr += sizeof(nx_struct reTrickle_header);
 
 	call Param.get(DELAY, &delay, sizeof(delay));
-	call Timer.startPeriodic(delay);
+	call SendTimer.startPeriodic(delay);
+	call FinishTimer.startOneShot(delay * set_repeat);
 
 	packet_len = new_payload_len;
 
@@ -96,12 +104,13 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	busy = FALSE;
-	call Timer.stop();
+	call SendTimer.stop();
+	call FinishTimer.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
-event void Timer.fired() {
+event void SendTimer.fired() {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	//printf("[%u] reTrickle fired\n", process);
 #endif
@@ -117,8 +126,10 @@ event void Timer.fired() {
 		receive_same_packet = 0;
 		return;
 	}
+}
 
-	call Timer.stop();
+event void FinishTimer.fired() {
+	call SendTimer.stop();
 	if ( signal_send_done ) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] reTrickle signal sendDone\n", process);
@@ -128,12 +139,13 @@ event void Timer.fired() {
 	}
 }
 
+
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	uint8_t *ptr = call SubAMSend.getPayload(msg, len + sizeof(nx_struct reTrickle_header));
 	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
 	if (same_packet(ptr, len)) {
-		if (call Timer.isRunning()) {
+		if (call FinishTimer.isRunning()) {
 			return SUCCESS;
 		}
 		make_copy(ptr, len, 1);
@@ -183,7 +195,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	if (same_packet(in_payload, in_len)) {
-		if (call Timer.isRunning()) {
+		if (call FinishTimer.isRunning()) {
 			receive_same_packet++;
 			if (in_hdr->repeat > (packet_tx_repeat + 1) ) {
 				packet_tx_repeat = in_hdr->repeat + 1;
