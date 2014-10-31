@@ -30,6 +30,9 @@ uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
+
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 }
 
 implementation {
@@ -55,6 +58,9 @@ LowPowerListening = reTrickleP.LowPowerListening;
 RadioChannel = reTrickleP.RadioChannel;
 SubPacketTimeSyncOffset = reTrickleP.SubPacketTimeSyncOffset;
 
+SubPacketTimeStampMilli = reTrickleP.SubPacketTimeStampMilli;
+SubPacketTimeStamp32khz = reTrickleP.SubPacketTimeStamp32khz;
+
 components LedsC;
 components new TimerMilliC() as SendTimerC;
 
@@ -69,5 +75,6 @@ PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
 components AlarmMultiplexC as Alarm;
 reTrickleP.FinishTimer -> Alarm;
+
 
 }

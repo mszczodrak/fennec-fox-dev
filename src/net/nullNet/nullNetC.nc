@@ -62,6 +62,8 @@ uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 }
 
 implementation {
@@ -90,4 +92,7 @@ PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 PacketTimeSyncOffset = SubPacketTimeSyncOffset;
+
+SubPacketTimeStampMilli = nullNetP.SubPacketTimeStampMilli;
+SubPacketTimeStamp32khz = nullNetP.SubPacketTimeStamp32khz;
 }

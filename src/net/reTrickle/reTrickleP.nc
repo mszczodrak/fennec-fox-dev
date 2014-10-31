@@ -1,6 +1,8 @@
 #include <Fennec.h>
 #include "reTrickle.h"
 
+#define MILLI_2_32KHZ(x) x << 5
+
 generic module reTrickleP(process_t process) {
 provides interface SplitControl;
 provides interface AMSend as AMSend;
@@ -29,6 +31,9 @@ uses interface Alarm<T32khz,uint32_t> as FinishTimer;
 
 uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
+
 }
 
 implementation {
@@ -43,8 +48,6 @@ uint8_t suppress;
 bool signal_send_done;
 message_t packet;
 uint8_t packet_len;
-uint8_t packet_tx_repeat;
-
 
 void send_message() {
 	uint8_t *ptr = call SubAMSend.getPayload(&packet, packet_len +
@@ -61,8 +64,7 @@ void send_message() {
 	}
 
 
-	hdr->repeat = packet_tx_repeat;
-	hdr->left = call FinishTimer.getAlarm() - call FinishTimer.getNow();
+	atomic hdr->left = call FinishTimer.getAlarm() - call FinishTimer.getNow();
 	fdr->offset = hdr->left;
 
 	call SubPacketTimeSyncOffset.set(&packet, hdr->left);
@@ -78,7 +80,7 @@ void send_message() {
 	printf("Sending offset: %lu\n", fdr->offset);
 }
 
-void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
+void make_copy(void *new_payload, uint8_t new_payload_len, uint32_t finish_sending) {
 	uint8_t *ptr = call SubAMSend.getPayload(&packet, new_payload_len +
 					sizeof(nx_struct reTrickle_header) +
 					sizeof(nx_struct reTrickle_footer));
@@ -90,13 +92,12 @@ void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
 
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call SendTimer.startPeriodic(delay);
-	call FinishTimer.start((delay * set_repeat) << 5);
+	call FinishTimer.start(finish_sending);
 
 	packet_len = new_payload_len;
 
 	memcpy(ptr, new_payload, new_payload_len);
 	hdr->crc = (nx_uint16_t) crc16(0, ptr, packet_len);
-	packet_tx_repeat = set_repeat;
 	send_message();
 }
 
@@ -113,6 +114,7 @@ command error_t SplitControl.start() {
 	signal_send_done = FALSE;
 
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
+	call Param.get(DELAY, &delay, sizeof(delay));
 
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -131,17 +133,13 @@ event void SendTimer.fired() {
 	//printf("[%u] reTrickle fired\n", process);
 #endif
 
-	if ( packet_tx_repeat > 0 ) {
-		packet_tx_repeat--;
+	call Param.get(SUPPRESS, &suppress, sizeof(suppress));
 
-		call Param.get(SUPPRESS, &suppress, sizeof(suppress));
-
-		if (receive_same_packet < suppress) {
-			send_message();
-		}
-		receive_same_packet = 0;
-		return;
+	if (receive_same_packet < suppress) {
+		send_message();
 	}
+	receive_same_packet = 0;
+	return;
 }
 
 task void finish() {
@@ -170,14 +168,14 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call FinishTimer.isRunning()) {
 			return SUCCESS;
 		}
-		make_copy(ptr, len, 1);
+		make_copy(ptr, len, MILLI_2_32KHZ(1 * delay));
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] reTrickle re-sends the same version of payload\n", process);
 #endif
 		return SUCCESS;	
 	}
 
-	make_copy(ptr, len, repeat);
+	make_copy(ptr, len, MILLI_2_32KHZ(repeat * delay));
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] reTrickle sends new version of payload\n", process);
@@ -222,6 +220,14 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
 	uint8_t *in_payload = (uint8_t*) payload;
 	nx_struct reTrickle_header *in_hdr = (nx_struct reTrickle_header*) payload;
 	nx_struct reTrickle_footer *in_fdr;
+	uint32_t sender_time_left = call SubPacketTimeStamp32khz.timestamp(msg);
+
+	/* At the moment of receive, how much time was left for receiver */
+	uint32_t receiver_time_left = 0;
+
+	if (call FinishTimer.isRunning()) {
+		receiver_time_left = call FinishTimer.getAlarm() - sender_time_left;
+	}
 
 	in_len -= (sizeof(nx_struct reTrickle_header) + sizeof(nx_struct reTrickle_footer));
 	in_payload += sizeof(nx_struct reTrickle_header);
@@ -231,18 +237,14 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
 		return msg;
 	}
 
-	uint32_t receive_event = call 
-	receive_next_event += in_fdr->offset;
+	/* At the moment of receive, how much time was left for sender */
+	sender_time_left += in_fdr->offset;	/* how much time left on sender */
 
-
-	printf("[%u] reTrickle left %lu, called %lu\n", process, in_hdr->left, in_hdr->left + in_fdr->offset);
+	printf("[%u] reTrickle sender %lu, receiver %lu\n", process, in_hdr->left, in_hdr->left + in_fdr->offset);
 
 	if (same_packet(in_payload, in_len)) {
 		if (call FinishTimer.isRunning()) {
 			receive_same_packet++;
-			if (in_hdr->repeat > (packet_tx_repeat + 1) ) {
-				packet_tx_repeat = in_hdr->repeat + 1;
-			}
 		}
                 return msg;
         }

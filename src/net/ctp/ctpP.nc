@@ -28,6 +28,9 @@ uses interface Receive as CtpReceive;
 uses interface Receive as CtpSnoop;
 uses interface Packet;
 
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
+
 }
 
 implementation {
