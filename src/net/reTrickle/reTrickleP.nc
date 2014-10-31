@@ -93,7 +93,8 @@ void send_message() {
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 	void* payload = call Packet.getPayload(&packet, new_payload_len);
-	memcpy(&packet, msg, sizeof(message_t));
+	//memcpy(&packet, msg, sizeof(message_t));
+	memcpy(payload, new_payload, new_payload_len);
 	header = (nx_struct reTrickle_header*) call SubAMSend.getPayload(&packet, 
 					new_payload_len +
 					sizeof(nx_struct reTrickle_header));
