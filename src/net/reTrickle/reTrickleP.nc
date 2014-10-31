@@ -77,10 +77,9 @@ void send_message() {
 	} else {
 		busy = TRUE;
 	}
-	printf("Sending offset: %lu\n", fdr->offset);
 }
 
-void make_copy(void *new_payload, uint8_t new_payload_len, uint32_t finish_sending) {
+void make_copy(void *new_payload, uint8_t new_payload_len) {
 	uint8_t *ptr = call SubAMSend.getPayload(&packet, new_payload_len +
 					sizeof(nx_struct reTrickle_header) +
 					sizeof(nx_struct reTrickle_footer));
@@ -92,7 +91,6 @@ void make_copy(void *new_payload, uint8_t new_payload_len, uint32_t finish_sendi
 
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call SendTimer.startPeriodic(delay);
-	call FinishTimer.start(finish_sending);
 
 	packet_len = new_payload_len;
 
@@ -168,14 +166,16 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call FinishTimer.isRunning()) {
 			return SUCCESS;
 		}
-		make_copy(ptr, len, MILLI_2_32KHZ(1 * delay));
+		call FinishTimer.start( MILLI_2_32KHZ(1 * delay) );
+		make_copy(ptr, len);
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] reTrickle re-sends the same version of payload\n", process);
 #endif
 		return SUCCESS;	
 	}
 
-	make_copy(ptr, len, MILLI_2_32KHZ(repeat * delay));
+	call FinishTimer.start( MILLI_2_32KHZ(repeat * delay) );
+	make_copy(ptr, len);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] reTrickle sends new version of payload\n", process);
@@ -240,16 +240,19 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
 	/* At the moment of receive, how much time was left for sender */
 	sender_time_left += in_fdr->offset;	/* how much time left on sender */
 
-	printf("[%u] reTrickle sender %lu, receiver %lu\n", process, in_hdr->left, in_hdr->left + in_fdr->offset);
-
 	if (same_packet(in_payload, in_len)) {
 		if (call FinishTimer.isRunning()) {
 			receive_same_packet++;
+			if (receiver_time_left > sender_time_left) {
+				call FinishTimer.startAt( call SubPacketTimeStamp32khz.timestamp(msg), sender_time_left );
+				printf("[%u] reTrickle sender udjusted clock r:%lu > s:%lu\n", process, receiver_time_left, sender_time_left);
+			}
 		}
                 return msg;
         }
 
-	make_copy(in_payload, in_len, in_hdr->repeat);
+	call FinishTimer.startAt( call SubPacketTimeStamp32khz.timestamp(msg), sender_time_left );
+	make_copy(in_payload, in_len);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] reTrickle received new version of payload\n", process);
