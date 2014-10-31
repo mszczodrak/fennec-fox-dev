@@ -4,7 +4,8 @@
 
 nx_struct reTrickle_header {
 	nx_uint16_t crc;
-	nx_uint32_t left;
+	nx_uint32_t now;
+	nx_uint32_t alarm;
 };
 
 nx_struct reTrickle_footer {

@@ -1,7 +1,7 @@
 #include <Fennec.h>
 #include "reTrickle.h"
 
-#define MILLI_2_32KHZ(x) x << 5
+#define MILLI_2_32KHZ(x) ((x) << 5)
 
 generic module reTrickleP(process_t process) {
 provides interface SplitControl;
@@ -51,6 +51,7 @@ uint8_t packet_len;
 
 
 void start_finish_timer(uint32_t t0, uint32_t dt) {
+	printf("[%u] reTrickle start_finish_timer %lu %lu\n", process, t0, dt);
 	call FinishTimer.startAt(t0, dt);
 }
 
@@ -68,12 +69,13 @@ void send_message() {
 		return;
 	}
 
+	hdr->alarm = call FinishTimer.getAlarm();
+	hdr->now = call FinishTimer.getNow();
+	fdr->offset = hdr->now;
 
-	atomic hdr->left = call FinishTimer.getAlarm() - call FinishTimer.getNow();
-	fdr->offset = hdr->left;
-
-	call SubPacketTimeSyncOffset.set(&packet, hdr->left);
+	call SubPacketTimeSyncOffset.set(&packet, hdr->now);
 	
+	printf("[%u] reTrickle sending %lu\n", process, hdr->now);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_len + 
 			sizeof(nx_struct reTrickle_header) +
@@ -165,6 +167,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	uint8_t *ptr = call SubAMSend.getPayload(msg, len +
 					sizeof(nx_struct reTrickle_header) +
 					sizeof(nx_struct reTrickle_footer));
+	printf("[%u] reTrickle AMSend.send now: %lu\n", process, now);
 	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
 	if (same_packet(ptr, len)) {
@@ -232,13 +235,13 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
 		return msg;
 	}
 
-	/* Compare everything with respect to the moment when the message was received */
-	sender_time_left = in_hdr->left + in_fdr->offset;	/* how much time left on sender */
+	sender_time_left = in_fdr->offset;
 
 	if (same_packet(in_payload, in_len)) {
 		if (call FinishTimer.isRunning()) {
 			receive_same_packet++;
-			printf("[%u] reTrickle receive %lu vs %lu\n", process, receiver_time_left, sender_time_left);
+			printf("[%u] reTrickle receive %lu vs %lu (%lu %lu %li)\n", process, receiver_time_left, sender_time_left,
+				in_hdr->alarm, in_hdr->now, (int32_t) in_fdr->offset);
 			if (receiver_time_left > sender_time_left) {
 				start_finish_timer( call SubPacketTimeStamp32khz.timestamp(msg), sender_time_left);
 				printf("[%u] reTrickle sender adjusted clock r:%lu > s:%lu\n", process, receiver_time_left, sender_time_left);
@@ -247,6 +250,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
                 return msg;
         }
 
+	printf("[%u] reTrickle receive new %lu (%lu %lu %li)\n", process, sender_time_left,
+				in_hdr->alarm, in_hdr->now, (int32_t) in_fdr->offset);
 	start_finish_timer( call SubPacketTimeStamp32khz.timestamp(msg), sender_time_left);
 	make_copy(in_payload, in_len);
 
