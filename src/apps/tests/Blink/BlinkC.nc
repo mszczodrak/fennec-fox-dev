@@ -50,6 +50,7 @@ uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 }
 
 implementation {
@@ -68,6 +69,7 @@ SubPacketAcknowledgements = BlinkP.SubPacketAcknowledgements;
 SubPacketLinkQuality = BlinkP.SubPacketLinkQuality;
 SubPacketTransmitPower = BlinkP.SubPacketTransmitPower;
 SubPacketRSSI = BlinkP.SubPacketRSSI;
+SubPacketTimeSyncOffset = BlinkP.SubPacketTimeSyncOffset;
 
 components LedsC;
 BlinkP.Leds -> LedsC;

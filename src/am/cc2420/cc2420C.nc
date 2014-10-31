@@ -49,6 +49,7 @@ uses interface StdControl as AMQueueControl;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
@@ -75,6 +76,8 @@ AMQueueControl = cc2420P.AMQueueControl;
 PacketLinkQuality = cc2420P.PacketLinkQuality;
 PacketTransmitPower = cc2420P.PacketTransmitPower;
 PacketRSSI = cc2420P.PacketRSSI;
+PacketTimeSyncOffset = cc2420P.PacketTimeSyncOffset;
+
 AMSend = cc2420P;
 Receive = cc2420P.Receive;
 Snoop = cc2420P.Snoop;
@@ -93,6 +96,7 @@ cc2420P.SubAMSend -> AM.AMSend;
 cc2420P.SubReceive -> AM.Receive;
 cc2420P.SubSnoop -> AM.Snoop;
 cc2420P.AMPacket -> AM.AMPacket;
+cc2420P.CC2420PacketTimeSyncOffset -> CC2420PacketC.PacketTimeSyncOffset;
 
 Packet = AM.Packet;
 AMPacket = AM.AMPacket;

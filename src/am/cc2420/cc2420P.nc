@@ -44,6 +44,7 @@ provides interface Receive as Snoop[process_t process_id];
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 uses interface Param;
 uses interface StdControl as AMQueueControl;
@@ -65,6 +66,7 @@ provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface CC2420Packet;
 uses interface CC2420Config;
+uses interface PacketTimeSyncOffset as CC2420PacketTimeSyncOffset;
 
 }
 
@@ -231,6 +233,22 @@ async command void PacketRSSI.clear(message_t* msg) {
 
 async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 
+}
+
+async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+	return call CC2420PacketTimeSyncOffset.isSet(msg);
+}
+
+async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+	return call CC2420PacketTimeSyncOffset.get(msg);
+}
+
+async command void PacketTimeSyncOffset.clear(message_t* msg) {
+	return call CC2420PacketTimeSyncOffset.cancel(msg);
+}
+
+async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
+	return call CC2420PacketTimeSyncOffset.set(msg);
 }
 
 event void CC2420Config.syncDone(error_t error) {}

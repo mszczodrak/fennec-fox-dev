@@ -48,6 +48,7 @@ uses interface StdControl as AMQueueControl;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
@@ -86,14 +87,11 @@ AMQueueControl = nullAMP.AMQueueControl;
 PacketLinkQuality = nullAMP.PacketLinkQuality;
 PacketTransmitPower = nullAMP.PacketTransmitPower;
 PacketRSSI = nullAMP.PacketRSSI;
-
-
+PacketTimeSyncOffset = nullAMP.PacketTimeSyncOffset;
 
 PacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
 PacketTimeStampMilli = UnimplementedPacketTimeStampMilli;
 PacketTimeStamp32khz = UnimplementedPacketTimeStamp32khz;
-
-
 
 }
 

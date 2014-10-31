@@ -46,6 +46,7 @@ uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
 uses interface Event;
 }
@@ -66,6 +67,7 @@ SubPacketAcknowledgements = noActivityP.SubPacketAcknowledgements;
 SubPacketLinkQuality = noActivityP.SubPacketLinkQuality;
 SubPacketTransmitPower = noActivityP.SubPacketTransmitPower;
 SubPacketRSSI = noActivityP.SubPacketRSSI;
+SubPacketTimeSyncOffset = noActivityP.SubPacketTimeSyncOffset;
 
 Event = noActivityP;
 

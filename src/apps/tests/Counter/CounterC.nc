@@ -49,6 +49,7 @@ uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 }
 
 implementation {
@@ -68,6 +69,7 @@ SubPacketAcknowledgements = CounterP.SubPacketAcknowledgements;
 SubPacketLinkQuality = CounterP.SubPacketLinkQuality;
 SubPacketTransmitPower = CounterP.SubPacketTransmitPower;
 SubPacketRSSI = CounterP.SubPacketRSSI;
+SubPacketTimeSyncOffset = CounterP.SubPacketTimeSyncOffset;
 
 components LedsC;
 components new TimerMilliC();

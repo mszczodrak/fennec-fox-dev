@@ -12,6 +12,7 @@ provides interface PacketAcknowledgements as PacketAcknowledgements;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 uses interface Param;
 
@@ -28,6 +29,7 @@ uses interface RadioChannel;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 }
 
 implementation {
@@ -72,5 +74,6 @@ SubSnoop = CtpP.SubSnoop;
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
+PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
 }

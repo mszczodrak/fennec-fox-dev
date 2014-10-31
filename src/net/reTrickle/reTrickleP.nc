@@ -26,6 +26,8 @@ uses interface Leds;
 uses interface Timer<TMilli> as SendTimer;
 uses interface Timer<TMilli> as FinishTimer;
 
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
+
 }
 
 implementation {
@@ -56,11 +58,17 @@ void send_message() {
 		return;
 	}
 
+
 	hdr->repeat = packet_tx_repeat;
 	hdr->left = call FinishTimer.gett0() + call FinishTimer.getdt() - call FinishTimer.getNow();
 	fdr->offset = hdr->left;
 
-	if (call SubAMSend.send(BROADCAST, &packet, packet_len + sizeof(nx_struct reTrickle_header)) != SUCCESS) {
+	call SubPacketTimeSyncOffset.set(&packet, hdr->left);
+	
+
+	if (call SubAMSend.send(BROADCAST, &packet, packet_len + 
+			sizeof(nx_struct reTrickle_header) +
+			sizeof(nx_struct reTrickle_footer)) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy = TRUE;
@@ -69,8 +77,12 @@ void send_message() {
 
 void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
 	uint8_t *ptr = call SubAMSend.getPayload(&packet, new_payload_len +
-					sizeof(nx_struct reTrickle_header));
+					sizeof(nx_struct reTrickle_header) +
+					sizeof(nx_struct reTrickle_footer));
+
 	nx_struct reTrickle_header* hdr = (nx_struct reTrickle_header*) ptr;
+//	nx_struct reTrickle_footer* fdr = (nx_struct reTrickle_footer*) ptr + 
+//				packet_len + sizeof(nx_struct reTrickle_header);
 	ptr += sizeof(nx_struct reTrickle_header);
 
 	call Param.get(DELAY, &delay, sizeof(delay));
@@ -86,8 +98,9 @@ void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
-	uint8_t *ptr = call SubAMSend.getPayload(&packet,
-				in_len + sizeof(nx_struct reTrickle_header));
+	uint8_t *ptr = call SubAMSend.getPayload(&packet, in_len +
+					sizeof(nx_struct reTrickle_header) +
+					sizeof(nx_struct reTrickle_footer));
 	ptr += sizeof(nx_struct reTrickle_header);
 	return ((in_len == packet_len) && !(memcmp(in_payload, ptr, in_len)));
 }
@@ -141,7 +154,9 @@ event void FinishTimer.fired() {
 
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	uint8_t *ptr = call SubAMSend.getPayload(msg, len + sizeof(nx_struct reTrickle_header));
+	uint8_t *ptr = call SubAMSend.getPayload(msg, len +
+					sizeof(nx_struct reTrickle_header) +
+					sizeof(nx_struct reTrickle_footer));
 	ptr += sizeof(nx_struct reTrickle_header);
 	signal_send_done = TRUE;
 	if (same_packet(ptr, len)) {
@@ -170,13 +185,15 @@ command error_t AMSend.cancel(message_t* msg) {
 
 command uint8_t AMSend.maxPayloadLength() {
 	return (call SubAMSend.maxPayloadLength() -
-			sizeof(nx_struct reTrickle_header));
+			sizeof(nx_struct reTrickle_header) -
+			sizeof(nx_struct reTrickle_footer));
 }
 
 command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr;
-	ptr = (uint8_t*) call SubAMSend.getPayload(msg,
-			len + sizeof(nx_struct reTrickle_header));
+	ptr = (uint8_t*) call SubAMSend.getPayload(msg, len + 
+				sizeof(nx_struct reTrickle_header) +
+				sizeof(nx_struct reTrickle_footer));
 	return (void*) (ptr + sizeof(nx_struct reTrickle_header));
 }
 
@@ -184,15 +201,20 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 }
 
-event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_len) {
 	uint8_t *in_payload = (uint8_t*) payload;
 	nx_struct reTrickle_header *in_hdr = (nx_struct reTrickle_header*) payload;
-	uint8_t in_len = len -= sizeof(nx_struct reTrickle_header);
+	nx_struct reTrickle_footer *in_fdr;
+
+	in_len -= (sizeof(nx_struct reTrickle_header) + sizeof(nx_struct reTrickle_footer));
 	in_payload += sizeof(nx_struct reTrickle_header);
+	in_fdr = (nx_struct reTrickle_footer*) (in_payload + in_len);
 
 	if (in_hdr->crc != (nx_uint16_t) crc16(0, in_payload, in_len)) {
 		return msg;
 	}
+
+	printf("[%u] reTrickle left %lu, called %lu\n", process, in_hdr->left, in_hdr->left + in_fdr->offset);
 
 	if (same_packet(in_payload, in_len)) {
 		if (call FinishTimer.isRunning()) {

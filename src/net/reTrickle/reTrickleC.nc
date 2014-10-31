@@ -12,6 +12,7 @@ provides interface PacketAcknowledgements;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 uses interface Param;
 
@@ -28,6 +29,7 @@ uses interface RadioChannel;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 }
 
 implementation {
@@ -51,6 +53,7 @@ SubPacketAcknowledgements = reTrickleP.SubPacketAcknowledgements;
 SubLinkPacketMetadata = reTrickleP.SubLinkPacketMetadata;
 LowPowerListening = reTrickleP.LowPowerListening;
 RadioChannel = reTrickleP.RadioChannel;
+SubPacketTimeSyncOffset = reTrickleP.SubPacketTimeSyncOffset;
 
 components LedsC;
 components new TimerMilliC() as SendTimerC;
@@ -58,9 +61,11 @@ components new TimerMilliC() as SendTimerC;
 reTrickleP.Leds -> LedsC;
 reTrickleP.SendTimer -> SendTimerC;
 
+
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
+PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
 components new TimerMilliC() as FinishTimerC;
 reTrickleP.FinishTimer -> FinishTimerC;

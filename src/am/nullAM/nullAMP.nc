@@ -51,6 +51,7 @@ provides interface RadioChannel;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
+provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 }
 
@@ -247,6 +248,20 @@ async command void PacketRSSI.clear(message_t* msg) {
 }
 
 async command void PacketRSSI.set(message_t* msg, uint8_t value) {
+}
+
+async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
+        return TRUE;
+}
+
+async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
+	return 0;
+}
+
+async command void PacketTimeSyncOffset.clear(message_t* msg) {
+}
+
+async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
 }
 
 event void Param.updated(uint8_t var_id) {
