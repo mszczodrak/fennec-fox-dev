@@ -307,7 +307,6 @@ implementation {
         if (call PacketTimeSyncOffset.isSet(m_msg)) {
            uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+call PacketTimeSyncOffset.get(m_msg);
            timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)m_msg+absOffset);
-	   printf("timesync %lu\n", *timesync);
            // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
            *timesync  -= time32;
            call CSN.clr();
@@ -315,7 +314,7 @@ implementation {
            call CSN.set();
            //restoring the event time to the original value
            *timesync  += time32;
-		printf("substracted from %lu, value %lu\n", *timesync, time32);
+     	   printf("substracted from %lu, value %lu\n", (uint32_t)*timesync, time32);
         }
 
         if ( (call CC2420PacketBody.getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {

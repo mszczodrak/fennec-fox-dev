@@ -24,7 +24,8 @@ uses interface RadioChannel;
 
 uses interface Leds;
 uses interface Timer<TMilli> as SendTimer;
-uses interface Timer<TMilli> as FinishTimer;
+
+uses interface Alarm<T32khz,uint32_t> as FinishTimer;
 
 uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
@@ -44,6 +45,7 @@ message_t packet;
 uint8_t packet_len;
 uint8_t packet_tx_repeat;
 
+
 void send_message() {
 	uint8_t *ptr = call SubAMSend.getPayload(&packet, packet_len +
 					sizeof(nx_struct reTrickle_header) +
@@ -60,7 +62,7 @@ void send_message() {
 
 
 	hdr->repeat = packet_tx_repeat;
-	hdr->left = call FinishTimer.gett0() + call FinishTimer.getdt() - call FinishTimer.getNow();
+	hdr->left = call FinishTimer.getAlarm() - call FinishTimer.getNow();
 	fdr->offset = hdr->left;
 
 	call SubPacketTimeSyncOffset.set(&packet, hdr->left);
@@ -88,7 +90,7 @@ void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
 
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call SendTimer.startPeriodic(delay);
-	call FinishTimer.startOneShot(delay * set_repeat);
+	call FinishTimer.start((delay * set_repeat) << 5);
 
 	packet_len = new_payload_len;
 
@@ -142,7 +144,7 @@ event void SendTimer.fired() {
 	}
 }
 
-event void FinishTimer.fired() {
+task void finish() {
 	call SendTimer.stop();
 	if ( signal_send_done ) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -151,6 +153,10 @@ event void FinishTimer.fired() {
 		signal AMSend.sendDone(&packet, SUCCESS);
 		signal_send_done = FALSE;
 	}
+}
+
+async event void FinishTimer.fired() {
+	post finish();
 }
 
 
@@ -199,6 +205,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+/*
         uint8_t *ptr = call SubAMSend.getPayload(&packet, packet_len +
                                         sizeof(nx_struct reTrickle_header) +
                                         sizeof(nx_struct reTrickle_footer));
@@ -206,11 +213,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
         nx_struct reTrickle_header* hdr = (nx_struct reTrickle_header*) ptr;
         nx_struct reTrickle_footer* fdr = (nx_struct reTrickle_footer*) ptr +
                                 packet_len + sizeof(nx_struct reTrickle_header);
-
-
-	printf("Sending sendDone left: %lu   offset: %lu\n", hdr->left, fdr->offset);
-
-
+*/
 
 	busy = FALSE;
 }
@@ -227,6 +230,10 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
 	if (in_hdr->crc != (nx_uint16_t) crc16(0, in_payload, in_len)) {
 		return msg;
 	}
+
+	uint32_t receive_event = call 
+	receive_next_event += in_fdr->offset;
+
 
 	printf("[%u] reTrickle left %lu, called %lu\n", process, in_hdr->left, in_hdr->left + in_fdr->offset);
 

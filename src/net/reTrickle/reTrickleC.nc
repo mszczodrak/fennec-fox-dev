@@ -67,6 +67,7 @@ PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
-components new TimerMilliC() as FinishTimerC;
-reTrickleP.FinishTimer -> FinishTimerC;
+components AlarmMultiplexC as Alarm;
+reTrickleP.FinishTimer -> Alarm;
+
 }
