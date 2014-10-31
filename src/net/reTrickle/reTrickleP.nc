@@ -51,7 +51,6 @@ uint8_t receive_same_packet;
 uint8_t suppress;
 
 uint8_t packet_payload_len;
-void *packet_payload;
 
 message_t *app_pkt = NULL;
 nx_struct reTrickle_header *header = NULL;
@@ -59,7 +58,6 @@ nx_struct reTrickle_header *header = NULL;
 void do_clean() {
 	app_pkt = NULL;
 	packet_payload_len = 0;
-	packet_payload = NULL;
 	header = NULL;
 }
 
@@ -71,10 +69,8 @@ void start_finish_timer(uint32_t t0, uint32_t dt) {
 
 void send_message() {
 	uint32_t now_32khz = call LocalTime.get();
-	nx_uint32_t *timestamp = (nx_uint32_t*)(((uint8_t*)packet_payload) + packet_payload_len);
-	uint8_t sending_len = packet_payload_len + sizeof(nx_struct reTrickle_header) + sizeof(*timestamp);
-
-	printf("msg %p  data %p  packet payload at %p\n", &packet, (&packet)->data, packet_payload);
+	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
+	nx_uint32_t *timestamp = (nx_uint32_t*)(payload + packet_payload_len);
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
@@ -86,10 +82,9 @@ void send_message() {
 	*timestamp = now_32khz;
 	header->left = ((call FinishTimer.gett0() + call FinishTimer.getdt()) << 5) - now_32khz;
 	
-	printf("[%u] reTrickle sending left: %lu footer at %p (%p) set to: %lu  , data %p, sending_len %d\n", process, header->left,
-				timestamp, ((uint8_t*)(&packet)->data) + sending_len, *timestamp, (&packet)->data, sending_len);
+	printf("[%u] reTrickle sending left: %lu timestamp: %lu\n", process, header->left, *timestamp);
 
-	if (call SubAMSend.send(BROADCAST, &packet, sending_len ) != SUCCESS) {
+	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len + sizeof(nx_struct reTrickle_header) + sizeof(*timestamp) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy = TRUE;
@@ -97,6 +92,7 @@ void send_message() {
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
+	void* payload = call Packet.getPayload(&packet, new_payload_len);
 	memcpy(&packet, msg, sizeof(message_t));
 	header = (nx_struct reTrickle_header*) call SubAMSend.getPayload(&packet, 
 					new_payload_len +
@@ -106,17 +102,14 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 	call SendTimer.startPeriodic(delay);
 
 	packet_payload_len = new_payload_len;
-	packet_payload = call Packet.getPayload(&packet, new_payload_len);
 
-	header->crc = (nx_uint16_t) crc16(0, packet_payload, packet_payload_len);
+	header->crc = (nx_uint16_t) crc16(0, payload, packet_payload_len);
 	send_message();
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
-	if (packet_payload == NULL)
-		return FALSE;
-
-	return ((in_len == packet_payload_len) && !(memcmp(in_payload, packet_payload, in_len)));
+	void* payload = call Packet.getPayload(&packet, packet_payload_len);
+	return ((in_len == packet_payload_len) && !(memcmp(in_payload, payload, in_len)));
 }
 
 command error_t SplitControl.start() {
