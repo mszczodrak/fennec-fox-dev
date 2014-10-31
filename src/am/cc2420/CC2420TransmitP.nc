@@ -307,7 +307,9 @@ implementation {
         if (call PacketTimeSyncOffset.isSet(m_msg)) {
            uint8_t absOffset = sizeof(message_header_t)-sizeof(cc2420_header_t)+call PacketTimeSyncOffset.get(m_msg);
            timesync_radio_t *timesync = (timesync_radio_t *)((nx_uint8_t*)m_msg+absOffset);
+	printf("absOffset is %u, time at %p,  msg %p\n", absOffset, timesync, m_msg->data);
            // set timesync event time as the offset between the event time and the SFD interrupt time (TEP  133)
+	printf("reTrickle time offset is %lu - %lu = %lu\n", *timesync, time32, *timesync - time32);
            *timesync  -= time32;
            call CSN.clr();
            call TXFIFO_RAM.write( absOffset, (uint8_t*)timesync, sizeof(timesync_radio_t) );

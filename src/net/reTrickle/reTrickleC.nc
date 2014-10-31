@@ -61,20 +61,21 @@ SubPacketTimeSyncOffset = reTrickleP.SubPacketTimeSyncOffset;
 SubPacketTimeStampMilli = reTrickleP.SubPacketTimeStampMilli;
 SubPacketTimeStamp32khz = reTrickleP.SubPacketTimeStamp32khz;
 
-components LedsC;
-components new TimerMilliC() as SendTimerC;
-
-reTrickleP.Leds -> LedsC;
-reTrickleP.SendTimer -> SendTimerC;
-
-
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
 PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
-components AlarmMultiplexC as Alarm;
-reTrickleP.FinishTimer -> Alarm;
+components LedsC;
+components new TimerMilliC() as SendTimerC;
+components new TimerMilliC() as FinishTimerC;
 
+reTrickleP.Leds -> LedsC;
+reTrickleP.SendTimer -> SendTimerC;
+reTrickleP.FinishTimer -> FinishTimerC;
+
+components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
+LocalTime32khzC.Counter -> Counter32khz32C;
+reTrickleP.LocalTime -> LocalTime32khzC;
 
 }
