@@ -3,9 +3,12 @@
 
 #include "CC2420TimeSyncMessage.h"
 
-#define MILLI_2_32KHZ(x) ((x) << 5)
+#define _MILLI_2_32KHZ(x) ((x) << 5)
+#define _32KHZ_2_MILLI(x) ((x) >> 5)
 
-#define SEND_FREE_MS 3
+#define MILLI_SEC_1	(1 << 5)
+#define MILLI_SEC_2	(2 << 5)
+#define MILLI_SEC_3	(3 << 5)
 
 generic module reTrickleP(process_t process) {
 provides interface SplitControl;
@@ -77,7 +80,7 @@ void send_message() {
 	call SubPacketTimeSyncOffset.set(&packet, now_32khz);
 
 	footer->offset = now_32khz;
-	header->left = ((call FinishTimer.gett0() + call FinishTimer.getdt()) << 5);
+	header->left = _MILLI_2_32KHZ(call FinishTimer.gett0() + call FinishTimer.getdt());
 
 	if (header->left <= now_32khz) {
 		return;
@@ -86,7 +89,7 @@ void send_message() {
 	header->left -= now_32khz;
 
 	/* skip if less than 2ms left */
-	if (header->left < (SEND_FREE_MS << 5)) {
+	if (header->left < MILLI_SEC_3) {
 		return;
 	}
 	
@@ -230,12 +233,12 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if (header->left <= -(footer->offset)) {
-		sender_time_left = 1 << 5;
+		sender_time_left = MILLI_SEC_1;
 	} else {
 		sender_time_left = header->left + footer->offset;
 	}
 
-	receiver_time_left = (((call FinishTimer.gett0() + call FinishTimer.getdt()) << 5) - receiver_receive_time);
+	receiver_time_left = _MILLI_2_32KHZ(call FinishTimer.gett0() + call FinishTimer.getdt()) - receiver_receive_time;
 
 	if (! call FinishTimer.isRunning()) {
 		receiver_time_left = 0;
@@ -245,11 +248,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if (receiver_time_left) {
 			receive_same_packet++;
 			if ( 	call SubPacketTimeStamp32khz.isValid(msg) 		&& 
-				(receiver_time_left > (sender_time_left + (1 << 5))) 	&& 
-				(sender_time_left > (2 << 5)) ) {
+				(receiver_time_left > (sender_time_left + MILLI_SEC_1)) 	&& 
+				(sender_time_left > MILLI_SEC_2) ) {
 //				printf("[%u] reTrickle receive at %lu: sender_sent_left %lu - adjust\n", process, 
 //					receiver_receive_time, sender_time_left);
-//				start_finish_timer( receiver_receive_time >> 5, sender_time_left >> 5 );
+//				start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
 			}
 		}
                 return msg;
@@ -257,9 +260,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] reTrickle received new version of payload %lu %lu -> %lu %lu\n", process,
-			receiver_receive_time, sender_time_left, receiver_receive_time >> 5, sender_time_left >> 5);
+			receiver_receive_time, sender_time_left, _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
 #endif
-	start_finish_timer( receiver_receive_time >> 5, sender_time_left >> 5 );
+	start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
 	make_copy(msg, payload, len);
 	return signal Receive.receive(msg, payload, len);
 }
