@@ -60,7 +60,7 @@ void do_clean() {
 }
 
 void start_finish_timer(uint32_t t0, uint32_t dt) {
-	printf("[%u] reTrickle start_finish_timer %lu %lu   and now %lu\n", process, t0, dt, call FinishTimer.getNow());
+	printf("[%u] reTrickle start_finish_timer %lu %lu\n", process, t0, dt);
 	call FinishTimer.startOneShotAt(t0, dt);
 	//printf("[%u] reTrickle FinishTimer will fire at %lu\n", process, call FinishTimer.gett0() + call FinishTimer.getdt());
 }
