@@ -70,9 +70,11 @@ void start_finish_timer(uint32_t t0, uint32_t dt) {
 }
 
 void send_message() {
-	uint8_t sending_len = packet_payload_len + sizeof(nx_struct reTrickle_header);
 	uint32_t now_32khz = call LocalTime.get();
 	nx_uint32_t *timestamp = (nx_uint32_t*)(((uint8_t*)packet_payload) + packet_payload_len);
+	uint8_t sending_len = packet_payload_len + sizeof(nx_struct reTrickle_header) + sizeof(*timestamp);
+
+	printf("msg %p  data %p  packet payload at %p\n", &packet, (&packet)->data, packet_payload);
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
@@ -81,15 +83,13 @@ void send_message() {
 
 	call SubPacketTimeSyncOffset.set(&packet, now_32khz);
 
-	printf("sending len %u = %u + %u\n", sending_len, packet_payload_len, sizeof(nx_struct reTrickle_header));
 	*timestamp = now_32khz;
 	header->left = ((call FinishTimer.gett0() + call FinishTimer.getdt()) << 5) - now_32khz;
-
 	
-	printf("[%u] reTrickle sending left: %lu footer at %p set to: %lu  , data %p, sending_len %d\n", process, header->left,
-				timestamp, *timestamp, (&packet)->data, sending_len);
+	printf("[%u] reTrickle sending left: %lu footer at %p (%p) set to: %lu  , data %p, sending_len %d\n", process, header->left,
+				timestamp, ((uint8_t*)(&packet)->data) + sending_len, *timestamp, (&packet)->data, sending_len);
 
-	if (call SubAMSend.send(BROADCAST, &packet, sending_len) != SUCCESS) {
+	if (call SubAMSend.send(BROADCAST, &packet, sending_len ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy = TRUE;
@@ -106,7 +106,7 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 	call SendTimer.startPeriodic(delay);
 
 	packet_payload_len = new_payload_len;
-	packet_payload = new_payload;
+	packet_payload = call Packet.getPayload(&packet, new_payload_len);
 
 	header->crc = (nx_uint16_t) crc16(0, packet_payload, packet_payload_len);
 	send_message();
