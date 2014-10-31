@@ -73,6 +73,7 @@ void send_message() {
 	} else {
 		busy = TRUE;
 	}
+	printf("Sending offset: %lu\n", fdr->offset);
 }
 
 void make_copy(void *new_payload, uint8_t new_payload_len, uint8_t set_repeat) {
@@ -198,6 +199,19 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+        uint8_t *ptr = call SubAMSend.getPayload(&packet, packet_len +
+                                        sizeof(nx_struct reTrickle_header) +
+                                        sizeof(nx_struct reTrickle_footer));
+
+        nx_struct reTrickle_header* hdr = (nx_struct reTrickle_header*) ptr;
+        nx_struct reTrickle_footer* fdr = (nx_struct reTrickle_footer*) ptr +
+                                packet_len + sizeof(nx_struct reTrickle_header);
+
+
+	printf("Sending sendDone left: %lu   offset: %lu\n", hdr->left, fdr->offset);
+
+
+
 	busy = FALSE;
 }
 
