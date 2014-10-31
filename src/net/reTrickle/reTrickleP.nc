@@ -159,7 +159,7 @@ event void SendTimer.fired() {
 event void FinishTimer.fired() {
 	call SendTimer.stop();
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] reTrickle FinishTimer fired\n", process);
+//	printf("[%u] reTrickle FinishTimer fired\n", process);
 #endif
 	if ( app_pkt != NULL ) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -178,19 +178,17 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call FinishTimer.isRunning()) {
 			return SUCCESS;
 		}
-//		start_finish_timer( now, 3 * delay );
-//		make_copy(msg, app_payload, len);
-//		return SUCCESS;	
+		start_finish_timer( now, repeat / 2 * delay );
+		make_copy(msg, app_payload, len);
+		return SUCCESS;	
 	}
 
-//	printf("[%u] reTrickle AMSend.send now: %lu\n", process, now);
 	start_finish_timer( now, repeat * delay );
 	make_copy(msg, app_payload, len);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] reTrickle sends new version of payload\n", process);
+//	printf("[%u] reTrickle sends new version of payload\n", process);
 #endif
-
 	return SUCCESS;
 }
 
@@ -246,9 +244,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if (same_packet(payload, len)) {
 		if (receiver_time_left) {
 			receive_same_packet++;
-			if ((call SubPacketTimeStamp32khz.isValid(msg) && 
-				(receiver_time_left > (sender_time_left + (1 << 5))) && 
-				(sender_time_left > (2 << 5))) {
+			if ( 	call SubPacketTimeStamp32khz.isValid(msg) 		&& 
+				(receiver_time_left > (sender_time_left + (1 << 5))) 	&& 
+				(sender_time_left > (2 << 5)) ) {
 //				printf("[%u] reTrickle receive at %lu: sender_sent_left %lu - adjust\n", process, 
 //					receiver_receive_time, sender_time_left);
 //				start_finish_timer( receiver_receive_time >> 5, sender_time_left >> 5 );
