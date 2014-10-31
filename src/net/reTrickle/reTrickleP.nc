@@ -205,41 +205,36 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 }
 
-event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_len) {
-	uint8_t *in_payload = (uint8_t*) payload;
-	nx_struct reTrickle_header *in_hdr = (nx_struct reTrickle_header*) payload;
-	nx_struct reTrickle_footer *in_fdr;
-
-	nx_uint32_t sender_time_left;
+event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
+        nx_struct reTrickle_header *header = (nx_struct reTrickle_header *) in_payload;
+	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct reTrickle_header);
+	uint8_t len = in_len - sizeof(nx_struct reTrickle_header) - sizeof(nx_struct reTrickle_footer);
+        nx_struct reTrickle_footer *footer = (nx_struct reTrickle_footer*)(payload + len);
+	
+	uint32_t sender_time_left;
 	uint32_t receiver_receive_time;
 	uint32_t receiver_time_left = 0;
 
-	in_len -= (sizeof(nx_struct reTrickle_header) + sizeof(nx_struct reTrickle_footer));
-	in_payload += sizeof(nx_struct reTrickle_header);
-	in_fdr = (nx_struct reTrickle_footer*) (in_payload + in_len);
-
-	if (in_hdr->crc != (nx_uint16_t) crc16(0, in_payload, in_len)) {
+	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
 	}
 
-	sender_time_left = in_hdr->left;
+	receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
 
-	receiver_receive_time = (uint32_t) call SubPacketTimeStamp32khz.timestamp(msg);
+//	if (receiver_receive_time < -(footer->offset)) {
+//		return msg;
+//	}
 
-	if (receiver_receive_time < -in_fdr->offset) {
-		return msg;
-	}
-
-	printf("[%u] reTrickle sender_sent_left %lu = %lu + %lu\n", process, 
-			sender_time_left + in_fdr->offset, sender_time_left, in_fdr->offset);
+	printf("[%u] reTrickle receive at %lu: sender_sent_left %lu = %lu + %lu\n", process, 
+			receiver_receive_time,
+			header->left + footer->offset, header->left, footer->offset);
 	
-	sender_time_left += in_fdr->offset;
-
+	sender_time_left = header->left + footer->offset;
 
 	/* At the moment of receive, how much time was left for receiver */
 
 	if (call FinishTimer.isRunning()) {
-		receiver_time_left = ((call FinishTimer.gett0() + call FinishTimer.getdt()) << 5) - receiver_receive_time;
+		receiver_time_left = (((call FinishTimer.gett0() + call FinishTimer.getdt()) << 5) - receiver_receive_time);
 	}
 
 	if (same_packet(in_payload, in_len)) {
@@ -254,13 +249,15 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
                 return msg;
         }
 
-	start_finish_timer( receiver_receive_time >> 5, sender_time_left >> 5);
-	make_copy(msg, in_payload, in_len);
-
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] reTrickle received new version of payload\n", process);
+	printf("[%u] reTrickle new version of payload %lu %lu -> %lu %lu\n", process,
+			receiver_receive_time, sender_time_left, receiver_receive_time >> 5, sender_time_left >> 5);
 #endif
-	return signal Receive.receive(msg, in_payload, in_len);
+
+	start_finish_timer( receiver_receive_time >> 5, sender_time_left >> 5);
+	make_copy(msg, payload, len);
+
+	return signal Receive.receive(msg, payload, len);
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
