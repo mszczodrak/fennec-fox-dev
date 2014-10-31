@@ -52,9 +52,6 @@ bool busy = FALSE;
 
 message_t packet;
 
-uint8_t receive_same_packet;
-uint8_t suppress;
-
 uint8_t packet_payload_len;
 
 message_t *app_pkt = NULL;
@@ -148,13 +145,7 @@ event void SendTimer.fired() {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 //	printf("[%u] reTrickle SendTimer fired\n", process);
 #endif
-
-	call Param.get(SUPPRESS, &suppress, sizeof(suppress));
-
-//	if (receive_same_packet < suppress) {
-		send_message();
-//	}
-	receive_same_packet = 0;
+	send_message();
 	return;
 }
 
@@ -246,7 +237,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	if (same_packet(payload, len)) {
 		if (receiver_time_left) {
-			receive_same_packet++;
 			if ( 	call SubPacketTimeStamp32khz.isValid(msg) 		&& 
 				(receiver_time_left > (sender_time_left + MILLI_SEC_1)) 	&& 
 				(sender_time_left > MILLI_SEC_2) ) {

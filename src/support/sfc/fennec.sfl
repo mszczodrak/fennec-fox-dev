@@ -142,9 +142,8 @@ use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 )
 
 use network reTrickle $(FENNEC_FOX_LIB)/net/reTrickle (
-	uint8_t repeat = 4,
-	uint16_t delay = 25,
-	uint8_t suppress = 3
+	uint8_t repeat = 10,
+	uint16_t delay = 25
 )
 
 use network trickle $(FENNEC_FOX_LIB)/net/trickle (
