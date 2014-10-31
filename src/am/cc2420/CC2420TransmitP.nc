@@ -314,7 +314,6 @@ implementation {
            call CSN.set();
            //restoring the event time to the original value
            *timesync  += time32;
-     	   printf("substracted from %lu, value %lu\n", (uint32_t)*timesync, time32);
         }
 
         if ( (call CC2420PacketBody.getHeader( m_msg ))->fcf & ( 1 << IEEE154_FCF_ACK_REQ ) ) {
