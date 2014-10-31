@@ -234,7 +234,14 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t in_le
 	}
 
 	receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
-	sender_sent_time = receiver_receive_time + (uint32_t)in_fdr->offset;
+
+	if (receiver_receive_time < -in_fdr->offset) {
+		return msg;
+	}
+
+	sender_sent_time = (int32_t)receiver_receive_time + (int32_t)in_fdr->offset;
+	printf("[%u] reTrickle sender_sent_time %lu = %li + %li\n", process, sender_sent_time,
+				(int32_t)receiver_receive_time, (int32_t)in_fdr->offset);
 	sender_alarm_time = sender_sent_time + (in_hdr->alarm - in_hdr->now);
 
 	/* At the moment of receive, how much time was left for receiver */
