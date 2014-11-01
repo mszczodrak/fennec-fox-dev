@@ -78,4 +78,7 @@ components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
 LocalTime32khzC.Counter -> Counter32khz32C;
 SynchronizedDisseminateFinishP.LocalTime -> LocalTime32khzC;
 
+components SerialDbgsC;
+SynchronizedDisseminateFinishP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
+
 }

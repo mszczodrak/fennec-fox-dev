@@ -42,6 +42,7 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
 uses interface LocalTime<T32khz> as LocalTime;
 
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -57,9 +58,15 @@ uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
 
 void start_finish_timer(uint32_t t0, uint32_t dt) {
-	//printf("[%u] SynchronizedDisseminateFinish start_finish_timer %lu %lu\n", process, t0, dt);
 	call FinishTimer.startOneShotAt(t0, dt);
-	//printf("[%u] SynchronizedDisseminateFinish FinishTimer will fire at %lu\n", process, call FinishTimer.gett0() + call FinishTimer.getdt());
+
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] SynchronizedDisseminateFinish start_finish_timer %lu %lu\n", process, t0, dt);
+#else
+	call SerialDbgs.dbgs(DBGS_TIMER_SETUP, process, t0, dt);
+#endif
+#endif
 }
 
 void send_message() {
@@ -142,9 +149,6 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SynchronizedDisseminateFinish SendTimer fired\n", process);
-#endif
 	send_message();
 	return;
 }
@@ -152,14 +156,23 @@ event void SendTimer.fired() {
 
 event void FinishTimer.fired() {
 	call SendTimer.stop();
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SynchronizedDisseminateFinish FinishTimer fired\n", process);
-#endif
 	if ( app_pkt != NULL ) {
+#ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] SynchronizedDisseminateFinish signal sendDone\n", process);
+#else
+		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
+#endif
 #endif
 		signal AMSend.sendDone(app_pkt, SUCCESS);
+	} else {
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] SynchronizedDisseminateFinish signal sendDone\n", process);
+#else
+		call SerialDbgs.dbgs(DBGS_FINISH_PERIOD, process, 0, 0);
+#endif
+#endif
 	}
 	app_pkt = NULL;
 }
@@ -168,6 +181,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	uint32_t now = call FinishTimer.getNow();
 	void *app_payload = call Packet.getPayload(msg, len);
 	app_pkt = msg;
+
 	if (same_packet(app_payload, len)) {
 		if (call FinishTimer.isRunning()) {
 			return SUCCESS;
@@ -180,8 +194,12 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	start_finish_timer( now, repeat * delay );
 	make_copy(msg, app_payload, len);
 
+#ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SynchronizedDisseminateFinish sends new version of payload\n", process);
+	printf("[%u] SynchronizedDisseminateFinish send new local payload\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, process, 0, len);
+#endif
 #endif
 	return SUCCESS;
 }
@@ -248,9 +266,19 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
+
+#ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish received new version of payload %lu %lu -> %lu %lu\n", process,
-			receiver_receive_time, sender_time_left, _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
+	printf("[%u] SynchronizedDisseminateFinish send new remote payload\n", process);
+#else
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, 0, len);
+#endif
+#endif
+
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("[%u] SynchronizedDisseminateFinish received new version of payload %lu %lu -> %lu %lu\n", process,
+//			receiver_receive_time, sender_time_left, _32KHZ_2_MILLI(receiver_receive_time), 
+//			_32KHZ_2_MILLI(sender_time_left) );
 #endif
 	start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
 	make_copy(msg, payload, len);
