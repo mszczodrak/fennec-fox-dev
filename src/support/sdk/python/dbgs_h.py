@@ -84,6 +84,9 @@ DBGS_START_PERIOD			= 165
 DBGS_FINISH_PERIOD			= 166
 DBGS_SIGNAL_FINISH_PERIOD		= 167
 
+DBGS_SAME_LOCAL_PAYLOAD			= 168
+DBGS_SAME_REMOTE_PAYLOAD		= 169
+
 DBGS_SERIAL_SEND_MESSAGE                = 190
 DBGS_SERIAL_SEND_FAIL                   = 191
 DBGS_SERIAL_QUEUE_FULL                  = 192
@@ -292,6 +295,12 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_FINISH_PERIOD:
 		return "Finish Period"
+
+	if dbg_num == DBGS_SAME_LOCAL_PAYLOAD:
+		return "Same Local Payload"
+
+	if dbg_num == DBGS_SAME_REMOTE_PAYLOAD:
+		return "Same Remote Payload"
 
 	if dbg_num == DBGS_SIGNAL_FINISH_PERIOD:
 		return "Signal Finish Period"
