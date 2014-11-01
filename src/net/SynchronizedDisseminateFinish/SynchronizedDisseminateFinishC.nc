@@ -1,6 +1,6 @@
 #include <Fennec.h>
 
-generic configuration reTrickleC(process_t process) {
+generic configuration SynchronizedDisseminateFinishC(process_t process) {
 provides interface SplitControl;
 provides interface AMSend;
 provides interface Receive;
@@ -37,29 +37,29 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
 implementation {
 
-components new reTrickleP(process);
-SplitControl = reTrickleP;
-Param = reTrickleP;
-AMSend = reTrickleP.AMSend;
-Receive = reTrickleP.Receive;
-Snoop = reTrickleP.Snoop;
-AMPacket = reTrickleP.AMPacket;
-Packet = reTrickleP.Packet;
-PacketAcknowledgements = reTrickleP.PacketAcknowledgements;
+components new SynchronizedDisseminateFinishP(process);
+SplitControl = SynchronizedDisseminateFinishP;
+Param = SynchronizedDisseminateFinishP;
+AMSend = SynchronizedDisseminateFinishP.AMSend;
+Receive = SynchronizedDisseminateFinishP.Receive;
+Snoop = SynchronizedDisseminateFinishP.Snoop;
+AMPacket = SynchronizedDisseminateFinishP.AMPacket;
+Packet = SynchronizedDisseminateFinishP.Packet;
+PacketAcknowledgements = SynchronizedDisseminateFinishP.PacketAcknowledgements;
 
-SubAMSend = reTrickleP;
-SubReceive = reTrickleP.SubReceive;
-SubSnoop = reTrickleP.SubSnoop;
-SubAMPacket = reTrickleP.SubAMPacket;
-SubPacket = reTrickleP.SubPacket;
-SubPacketAcknowledgements = reTrickleP.SubPacketAcknowledgements;
-SubLinkPacketMetadata = reTrickleP.SubLinkPacketMetadata;
-LowPowerListening = reTrickleP.LowPowerListening;
-RadioChannel = reTrickleP.RadioChannel;
-SubPacketTimeSyncOffset = reTrickleP.SubPacketTimeSyncOffset;
+SubAMSend = SynchronizedDisseminateFinishP;
+SubReceive = SynchronizedDisseminateFinishP.SubReceive;
+SubSnoop = SynchronizedDisseminateFinishP.SubSnoop;
+SubAMPacket = SynchronizedDisseminateFinishP.SubAMPacket;
+SubPacket = SynchronizedDisseminateFinishP.SubPacket;
+SubPacketAcknowledgements = SynchronizedDisseminateFinishP.SubPacketAcknowledgements;
+SubLinkPacketMetadata = SynchronizedDisseminateFinishP.SubLinkPacketMetadata;
+LowPowerListening = SynchronizedDisseminateFinishP.LowPowerListening;
+RadioChannel = SynchronizedDisseminateFinishP.RadioChannel;
+SubPacketTimeSyncOffset = SynchronizedDisseminateFinishP.SubPacketTimeSyncOffset;
 
-SubPacketTimeStampMilli = reTrickleP.SubPacketTimeStampMilli;
-SubPacketTimeStamp32khz = reTrickleP.SubPacketTimeStamp32khz;
+SubPacketTimeStampMilli = SynchronizedDisseminateFinishP.SubPacketTimeStampMilli;
+SubPacketTimeStamp32khz = SynchronizedDisseminateFinishP.SubPacketTimeStamp32khz;
 
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
@@ -70,12 +70,12 @@ components LedsC;
 components new TimerMilliC() as SendTimerC;
 components new TimerMilliC() as FinishTimerC;
 
-reTrickleP.Leds -> LedsC;
-reTrickleP.SendTimer -> SendTimerC;
-reTrickleP.FinishTimer -> FinishTimerC;
+SynchronizedDisseminateFinishP.Leds -> LedsC;
+SynchronizedDisseminateFinishP.SendTimer -> SendTimerC;
+SynchronizedDisseminateFinishP.FinishTimer -> FinishTimerC;
 
 components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
 LocalTime32khzC.Counter -> Counter32khz32C;
-reTrickleP.LocalTime -> LocalTime32khzC;
+SynchronizedDisseminateFinishP.LocalTime -> LocalTime32khzC;
 
 }

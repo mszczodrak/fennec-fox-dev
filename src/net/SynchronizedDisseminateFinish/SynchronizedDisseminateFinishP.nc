@@ -1,5 +1,5 @@
 #include <Fennec.h>
-#include "reTrickle.h"
+#include "SynchronizedDisseminateFinish.h"
 
 #include "CC2420TimeSyncMessage.h"
 
@@ -10,7 +10,7 @@
 #define MILLI_SEC_2	(2 << 5)
 #define MILLI_SEC_3	(3 << 5)
 
-generic module reTrickleP(process_t process) {
+generic module SynchronizedDisseminateFinishP(process_t process) {
 provides interface SplitControl;
 provides interface AMSend as AMSend;
 provides interface Receive as Receive;
@@ -57,17 +57,17 @@ uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
 
 void start_finish_timer(uint32_t t0, uint32_t dt) {
-	//printf("[%u] reTrickle start_finish_timer %lu %lu\n", process, t0, dt);
+	//printf("[%u] SynchronizedDisseminateFinish start_finish_timer %lu %lu\n", process, t0, dt);
 	call FinishTimer.startOneShotAt(t0, dt);
-	//printf("[%u] reTrickle FinishTimer will fire at %lu\n", process, call FinishTimer.gett0() + call FinishTimer.getdt());
+	//printf("[%u] SynchronizedDisseminateFinish FinishTimer will fire at %lu\n", process, call FinishTimer.gett0() + call FinishTimer.getdt());
 }
 
 void send_message() {
 	uint32_t now_32khz = call LocalTime.get();
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
-	nx_struct reTrickle_header *header = (nx_struct reTrickle_header *) call SubAMSend.getPayload(&packet, 
-				sizeof(nx_struct reTrickle_header) + packet_payload_len + sizeof(nx_struct reTrickle_footer));
-	nx_struct reTrickle_footer *footer = (nx_struct reTrickle_footer*)(payload + packet_payload_len);
+	nx_struct SDF_header *header = (nx_struct SDF_header *) call SubAMSend.getPayload(&packet, 
+				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
+	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
@@ -90,11 +90,11 @@ void send_message() {
 		return;
 	}
 	
-	//printf("[%u] reTrickle sending left: %lu timestamp: %lu\n", process, header->left, footer->offset);
+	//printf("[%u] SynchronizedDisseminateFinish sending left: %lu timestamp: %lu\n", process, header->left, footer->offset);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
-					sizeof(nx_struct reTrickle_header) +
-					sizeof(nx_struct reTrickle_footer) ) != SUCCESS) {
+					sizeof(nx_struct SDF_header) +
+					sizeof(nx_struct SDF_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
 		busy = TRUE;
@@ -103,8 +103,8 @@ void send_message() {
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 	void* payload = call Packet.getPayload(&packet, new_payload_len);
-	nx_struct reTrickle_header *header = (nx_struct reTrickle_header *) call SubAMSend.getPayload(&packet,
-				sizeof(nx_struct reTrickle_header) + packet_payload_len + sizeof(nx_struct reTrickle_footer));
+	nx_struct SDF_header *header = (nx_struct SDF_header *) call SubAMSend.getPayload(&packet,
+				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
 
 	memcpy(payload, new_payload, new_payload_len);
 
@@ -143,7 +143,7 @@ command error_t SplitControl.stop() {
 
 event void SendTimer.fired() {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] reTrickle SendTimer fired\n", process);
+//	printf("[%u] SynchronizedDisseminateFinish SendTimer fired\n", process);
 #endif
 	send_message();
 	return;
@@ -153,11 +153,11 @@ event void SendTimer.fired() {
 event void FinishTimer.fired() {
 	call SendTimer.stop();
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] reTrickle FinishTimer fired\n", process);
+//	printf("[%u] SynchronizedDisseminateFinish FinishTimer fired\n", process);
 #endif
 	if ( app_pkt != NULL ) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] reTrickle signal sendDone\n", process);
+		printf("[%u] SynchronizedDisseminateFinish signal sendDone\n", process);
 #endif
 		signal AMSend.sendDone(app_pkt, SUCCESS);
 	}
@@ -181,7 +181,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	make_copy(msg, app_payload, len);
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] reTrickle sends new version of payload\n", process);
+//	printf("[%u] SynchronizedDisseminateFinish sends new version of payload\n", process);
 #endif
 	return SUCCESS;
 }
@@ -204,10 +204,10 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
 	uint32_t receiver_receive_time_estimate = call LocalTime.get();
-        nx_struct reTrickle_header *header = (nx_struct reTrickle_header *) in_payload;
-	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct reTrickle_header);
-	uint8_t len = in_len - sizeof(nx_struct reTrickle_header) - sizeof(nx_struct reTrickle_footer);
-        nx_struct reTrickle_footer *footer = (nx_struct reTrickle_footer*)(payload + len);
+        nx_struct SDF_header *header = (nx_struct SDF_header *) in_payload;
+	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
+	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
+        nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + len);
 	
 	uint32_t sender_time_left;
 	uint32_t receiver_receive_time;
@@ -240,7 +240,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			if ( 	call SubPacketTimeStamp32khz.isValid(msg) 		&& 
 				(receiver_time_left > (sender_time_left + MILLI_SEC_1)) 	&& 
 				(sender_time_left > MILLI_SEC_2) ) {
-//				printf("[%u] reTrickle receive at %lu: sender_sent_left %lu - adjust\n", process, 
+//				printf("[%u] SynchronizedDisseminateFinish receive at %lu: sender_sent_left %lu - adjust\n", process, 
 //					receiver_receive_time, sender_time_left);
 //				start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
 			}
@@ -249,7 +249,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
         }
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] reTrickle received new version of payload %lu %lu -> %lu %lu\n", process,
+	printf("[%u] SynchronizedDisseminateFinish received new version of payload %lu %lu -> %lu %lu\n", process,
 			receiver_receive_time, sender_time_left, _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
 #endif
 	start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
@@ -258,8 +258,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* in_payload, uint8_t in_len) {
-	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct reTrickle_header);
-	uint8_t len = in_len - sizeof(nx_struct reTrickle_header) - sizeof(nx_struct reTrickle_footer);
+	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
+	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
 	return signal Snoop.receive(msg, payload, len);
 }
 
@@ -321,15 +321,15 @@ command void Packet.setPayloadLength(message_t* msg, uint8_t len) {
 
 command uint8_t Packet.maxPayloadLength() {
 	return (call SubAMSend.maxPayloadLength() -
-			sizeof(nx_struct reTrickle_header) -
-			sizeof(nx_struct reTrickle_footer));
+			sizeof(nx_struct SDF_header) -
+			sizeof(nx_struct SDF_footer));
 }
 
 command void* Packet.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr;
 	ptr = (uint8_t*) call SubAMSend.getPayload(msg, len + 
-				sizeof(nx_struct reTrickle_header));
-	return (void*) (ptr + sizeof(nx_struct reTrickle_header));
+				sizeof(nx_struct SDF_header));
+	return (void*) (ptr + sizeof(nx_struct SDF_header));
 }
 
 async command error_t PacketAcknowledgements.requestAck( message_t* msg ) {
