@@ -78,7 +78,7 @@ DBGS_TIMER_FIRED                        = 160
 DBGS_BUSY                               = 161
 DBGS_TIMER_SETUP			= 162
 DBGS_NEW_LOCAL_PAYLOAD			= 163
-DBGS_REMOTE_LOCAL_PAYLOAD		= 164
+DBGS_NEW_REMOTE_PAYLOAD			= 164
 
 DBGS_START_PERIOD			= 165
 DBGS_FINISH_PERIOD			= 166
@@ -284,8 +284,8 @@ def dbg_translate(dbg_num):
 	if dbg_num == DBGS_NEW_LOCAL_PAYLOAD:
 		return "New Local Payload"
 
-	if dbg_num == DBGS_REMOTE_LOCAL_PAYLOAD:
-		return "Remote Local Payload"
+	if dbg_num == DBGS_NEW_REMOTE_PAYLOAD:
+		return "New Remote Payload"
 
 	if dbg_num == DBGS_START_PERIOD:
 		return "Start Period"
