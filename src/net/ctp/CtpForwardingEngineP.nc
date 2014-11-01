@@ -226,9 +226,13 @@ implementation {
   }
 
   command error_t StdControl.stop() {
-    //forwardingState = 0;
+    clearState(ROUTING_ON);
     call RetxmitTimer.stop();
-    //clearState(ROUTING_ON);
+    call Init.init();
+    call SentCache.flush(); 
+    while (!call SendQueue.empty()) {
+      call SendQueue.dequeue();
+    }
     return SUCCESS;
   }
 
