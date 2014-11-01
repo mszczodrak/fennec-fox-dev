@@ -268,8 +268,12 @@ void reportStopDone() {
       call Leds.led1On();
 #endif
 #ifdef __DBGS__RADIO_STATUS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+      printf("[242] Radio CC2420 startDone\n");
+#else
       on_time = call OffTimer.getNow();
       off_time = on_time - off_time;
+#endif
 #endif
       
       if(call SendState.getState() == S_LPL_FIRST_MESSAGE
@@ -292,7 +296,11 @@ void reportStopDone() {
       call SendDoneTimer.stop();
       call SendState.toIdle();
 #ifdef __DBGS__RADIO_STATUS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+      printf("[242] Radio CC2420 stopDone\n");
+#else
       reportStopDone();
+#endif
 #endif
       return;
     }
