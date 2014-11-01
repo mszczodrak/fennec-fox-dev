@@ -264,7 +264,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #else
 			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD,
 				(uint16_t)(_32KHZ_2_MILLI(receiver_receive_time) >> 16),
-				(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), repeat / 2 * delay);
+				(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
 #endif
 #endif
 		}
@@ -277,11 +277,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %u dt %u\n", process, now, repeat / 2 * delay);
+	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %u dt %u\n", process, now, _32KHZ_2_MILLI(sender_time_left));
 #else
 	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD,
 			(uint16_t)(_32KHZ_2_MILLI(receiver_receive_time) >> 16),
-			(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), repeat / 2 * delay);
+			(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
 #endif
 #endif
 	return signal Receive.receive(msg, payload, len);
