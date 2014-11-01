@@ -76,6 +76,13 @@ DBGS_ERROR_RECEIVE			= 132
 
 DBGS_TIMER_FIRED                        = 160
 DBGS_BUSY                               = 161
+DBGS_TIMER_SETUP			= 162
+DBGS_NEW_LOCAL_PAYLOAD			= 163
+DBGS_REMOTE_LOCAL_PAYLOAD		= 164
+
+DBGS_START_PERIOD			= 165
+DBGS_FINISH_PERIOD			= 166
+DBGS_SIGNAL_FINISH_PERIOD		= 167
 
 DBGS_SERIAL_SEND_MESSAGE                = 190
 DBGS_SERIAL_SEND_FAIL                   = 191
@@ -270,6 +277,24 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_BUSY:
 		return "Busy"
+
+	if dbg_num == DBGS_TIMER_SETUP:
+		return "Timer Setup"
+
+	if dbg_num == DBGS_NEW_LOCAL_PAYLOAD:
+		return "New Local Payload"
+
+	if dbg_num == DBGS_REMOTE_LOCAL_PAYLOAD:
+		return "Remote Local Payload"
+
+	if dbg_num == DBGS_START_PERIOD:
+		return "Start Period"
+
+	if dbg_num == DBGS_FINISH_PERIOD:
+		return "Finish Period"
+
+	if dbg_num == DBGS_SIGNAL_FINISH_PERIOD:
+		return "Signal Finish Period"
 
 	if dbg_num == DBGS_SERIAL_SEND_MESSAGE:
 		return "Serial Send Message"
