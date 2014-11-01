@@ -17,7 +17,7 @@ f = open(sys.argv[1], "r")
 
 time_offset = -1 
 
-print "{:>8} {:>6} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "micro", "mote", "ver", "id", "dbg", "d0", "d1", "d2")
+print "{:>8} {:>3} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "micro", "mote", "ver", "id", "dbg", "d0", "d1", "d2")
 
 for line in f.readlines():
 	if line[0] == "#":
@@ -34,7 +34,7 @@ for line in f.readlines():
 	try:
 		timestamp = l[0].split(".")
 		timestamp_sec = int(float(timestamp[0]))
-		timestamp_micro = int(float(timestamp[1]))
+		timestamp_milli = int(float(timestamp[1]) / 1000.0) 
 		mote_id = int(float(l[1]))
 		dbgs_msg = l[2]
 
@@ -63,7 +63,7 @@ for line in f.readlines():
 
 	timestamp_sec = timestamp_sec - time_offset
 
-	print "{:>8} {:06}".format(timestamp_sec, timestamp_micro),
+	print "{:>8} {:03}".format(timestamp_sec, timestamp_milli),
 	print "{:>7} ".format(mote_id),
 	print "{:>5} ".format(version),
 	print "{:>5} ".format(did),
