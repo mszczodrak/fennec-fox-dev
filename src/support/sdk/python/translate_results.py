@@ -30,7 +30,10 @@ for line in f.readlines():
 	d1 = int("%s"%(l[7]))
 	d2 = int("%s"%(l[8]))
 
-	print "{:>8} {:03}".format(time_stamp_sec, time_stamp_ms),
+	if len(l[1]) == 6:	
+		print "{:>8} {:06}".format(time_stamp_sec, time_stamp_ms),
+	else:
+		print "{:>8} {:03}".format(time_stamp_sec, time_stamp_ms),
 	print "{:>7} ".format(mote_id),
 	print "{:>5} ".format(did),
 	print "{:>35} ".format(dbg_str),
