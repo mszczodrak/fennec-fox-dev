@@ -57,18 +57,6 @@ uint8_t packet_payload_len;
 
 message_t *app_pkt = NULL;
 
-void start_finish_timer(uint32_t t0, uint32_t dt) {
-	call FinishTimer.startOneShotAt(t0, dt);
-
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish start_finish_timer %lu %lu\n", process, t0, dt);
-#else
-	call SerialDbgs.dbgs(DBGS_TIMER_SETUP, process, t0, dt);
-#endif
-#endif
-}
-
 void send_message() {
 	uint32_t now_32khz = call LocalTime.get();
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
@@ -186,19 +174,27 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call FinishTimer.isRunning()) {
 			return SUCCESS;
 		}
-		start_finish_timer( now, repeat / 2 * delay );
+		call FinishTimer.startOneShotAt( now, repeat / 2 * delay );
 		make_copy(msg, app_payload, len);
+
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] SynchronizedDisseminateFinish same local payload: t0 %u dt %u\n", process, now, repeat / 2 * delay);
+#else
+		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, (uint16_t)(now >> 16), (uint16_t)now, repeat / 2 * delay);
+#endif
+#endif
 		return SUCCESS;	
 	}
 
-	start_finish_timer( now, repeat * delay );
+	call FinishTimer.startOneShotAt( now, repeat * delay );
 	make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish send new local payload\n", process);
+	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %u dt %u\n", process, now, repeat / 2 * delay);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, process, 0, len);
+	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)(now >> 16), (uint16_t)now, repeat / 2 * delay);
 #endif
 #endif
 	return SUCCESS;
@@ -254,34 +250,40 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if (same_packet(payload, len)) {
-		if (receiver_time_left) {
-			if ( 	call SubPacketTimeStamp32khz.isValid(msg) 		&& 
+		if (receiver_time_left 								&&
+				call SubPacketTimeStamp32khz.isValid(msg) 			&& 
 				(receiver_time_left > (sender_time_left + MILLI_SEC_1)) 	&& 
 				(sender_time_left > MILLI_SEC_2) ) {
-//				printf("[%u] SynchronizedDisseminateFinish receive at %lu: sender_sent_left %lu - adjust\n", process, 
-//					receiver_receive_time, sender_time_left);
-//				start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
-			}
+
+			call FinishTimer.startOneShotAt( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
+
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+			printf("[%u] SynchronizedDisseminateFinish same remote payload: t0 %u dt %u\n", 
+				process, _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
+#else
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD,
+				(uint16_t)(_32KHZ_2_MILLI(receiver_receive_time) >> 16),
+				(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), repeat / 2 * delay);
+#endif
+#endif
 		}
                 return msg;
         }
 
 
+	call FinishTimer.startOneShotAt( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
+	make_copy(msg, payload, len);
+
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish send new remote payload\n", process);
+	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %u dt %u\n", process, now, repeat / 2 * delay);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, 0, len);
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD,
+			(uint16_t)(_32KHZ_2_MILLI(receiver_receive_time) >> 16),
+			(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), repeat / 2 * delay);
 #endif
 #endif
-
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SynchronizedDisseminateFinish received new version of payload %lu %lu -> %lu %lu\n", process,
-//			receiver_receive_time, sender_time_left, _32KHZ_2_MILLI(receiver_receive_time), 
-//			_32KHZ_2_MILLI(sender_time_left) );
-#endif
-	start_finish_timer( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
-	make_copy(msg, payload, len);
 	return signal Receive.receive(msg, payload, len);
 }
 
