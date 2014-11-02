@@ -68,15 +68,12 @@ PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
 components LedsC;
 components new TimerMilliC() as SendTimerC;
-components new TimerMilliC() as FinishTimerC;
+
+components new MuxAlarm32khz32C();
+SynchronizedDisseminateFinishP.Alarm -> MuxAlarm32khz32C;
 
 SynchronizedDisseminateFinishP.Leds -> LedsC;
 SynchronizedDisseminateFinishP.SendTimer -> SendTimerC;
-SynchronizedDisseminateFinishP.FinishTimer -> FinishTimerC;
-
-components Counter32khz32C, new CounterToLocalTimeC(T32khz) as LocalTime32khzC;
-LocalTime32khzC.Counter -> Counter32khz32C;
-SynchronizedDisseminateFinishP.LocalTime -> LocalTime32khzC;
 
 components SerialDbgsC;
 SynchronizedDisseminateFinishP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];

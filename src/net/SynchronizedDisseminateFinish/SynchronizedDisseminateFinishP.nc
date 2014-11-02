@@ -37,8 +37,7 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
 uses interface Leds;
 uses interface Timer<TMilli> as SendTimer;
-uses interface Timer<TMilli> as FinishTimer;
-uses interface LocalTime<T32khz> as LocalTime;
+uses interface Alarm<T32khz, uint32_t>;
 uses interface Random;
 uses interface SerialDbgs;
 }
@@ -48,21 +47,25 @@ implementation {
 uint16_t delay;
 uint8_t repeat;
 bool busy = FALSE;
-
 message_t packet;
-
 uint8_t packet_payload_len;
-
 message_t *app_pkt = NULL;
 
+uint32_t saved_offset;
+
+uint32_t start_32khz;
+uint32_t end_32khz;
+uint32_t delay_32khz;
+
 void send_message() {
-	uint32_t now_32khz = call LocalTime.get();
+	uint32_t now_32khz = call Alarm.getNow();
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
 	nx_struct SDF_header *header = (nx_struct SDF_header *) call SubAMSend.getPayload(&packet, 
 				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
 	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 
 	if (busy) {
+		printf("[%u] SDF busy\n", process);
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
@@ -70,20 +73,14 @@ void send_message() {
 	call SubPacketTimeSyncOffset.set(&packet, now_32khz);
 
 	footer->offset = now_32khz;
-	header->left = _MILLI_2_32KHZ(call FinishTimer.gett0() + call FinishTimer.getdt());
 
-	if (header->left <= now_32khz) {
-		return;
-	}
-
-	header->left -= now_32khz;
+	header->left = end_32khz - now_32khz;
 
 	/* skip if less than 2ms left */
-	if (header->left < MILLI_SEC_3) {
+	if ( (end_32khz <= now_32khz) || (header->left < MILLI_SEC_2) ) {
+		printf("[%u] SDF too little\n", process);
 		return;
 	}
-	
-	//printf("[%u] SynchronizedDisseminateFinish sending left: %lu timestamp: %lu\n", process, header->left, footer->offset);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
 					sizeof(nx_struct SDF_header) +
@@ -117,6 +114,7 @@ command error_t SplitControl.start() {
 
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
 	call Param.get(DELAY, &delay, sizeof(delay));
+	delay_32khz = _MILLI_2_32KHZ( repeat * delay );
 
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -125,7 +123,7 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	busy = FALSE;
 	call SendTimer.stop();
-	call FinishTimer.stop();
+	call Alarm.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -135,20 +133,19 @@ event void SendTimer.fired() {
 		send_message();
 	}
 
-	if (call FinishTimer.isRunning()) {
+	if (call Alarm.isRunning()) {
 		call Param.get(DELAY, &delay, sizeof(delay));
 		call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
 	}
 	return;
 }
 
-
-event void FinishTimer.fired() {
+task void finish() {
 	call SendTimer.stop();
 	if ( app_pkt != NULL ) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SynchronizedDisseminateFinish signal sendDone\n", process);
+		printf("[%u] SDF signal sendDone\n", process);
 #else
 		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
 #endif
@@ -157,7 +154,7 @@ event void FinishTimer.fired() {
 	} else {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SynchronizedDisseminateFinish signal sendDone (does not signal)\n", process);
+		printf("[%u] SDF signal sendDone (does not signal)\n", process);
 #else
 		call SerialDbgs.dbgs(DBGS_FINISH_PERIOD, process, 0, 0);
 #endif
@@ -166,36 +163,48 @@ event void FinishTimer.fired() {
 	app_pkt = NULL;
 }
 
+async event void Alarm.fired() {
+	post finish();
+}
+
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	uint32_t now = call FinishTimer.getNow();
-	void *app_payload = call Packet.getPayload(msg, len);
+	void *app_payload;
+	start_32khz = call Alarm.getNow();
+	app_payload = call Packet.getPayload(msg, len);
 	app_pkt = msg;
 
 	if (same_packet(app_payload, len)) {
-		if (call FinishTimer.isRunning()) {
+		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		call FinishTimer.startOneShotAt( now, repeat / 2 * delay );
+		call Alarm.startAt(start_32khz, delay_32khz / 2 );
+		end_32khz = ( delay_32khz / 2) + start_32khz;
 		make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SynchronizedDisseminateFinish same local payload: t0 %lu dt %u\n", process, now, repeat / 2 * delay);
+		printf("[%u] SDF same local payload: t0 %lu dt %lu -> %lu\n", 
+			process, start_32khz, ( delay_32khz / 2 ), end_32khz);
 #else
-		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, (uint16_t)(now >> 16), (uint16_t)now, repeat / 2 * delay);
+		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, 0, (uint16_t)((delay_32khz / 2) >> 16), 
+								(uint16_t)(delay_32khz / 2), 0);
 #endif
 #endif
 		return SUCCESS;	
 	}
 
-	call FinishTimer.startOneShotAt( now, repeat * delay );
+	call Alarm.startAt( start_32khz, delay_32khz );
+	end_32khz = delay_32khz + start_32khz;
 	make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %lu dt %u\n", process, now, repeat / 2 * delay);
+	printf("[%u] SDF new local payload: t0 %lu dt %lu -> %lu\n",
+			process, start_32khz, delay_32khz, end_32khz);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)(now >> 16), (uint16_t)now, repeat / 2 * delay);
+	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16),
+						(uint16_t)delay_32khz);
+
 #endif
 #endif
 	return SUCCESS;
@@ -218,7 +227,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
-	uint32_t receiver_receive_time_estimate = call LocalTime.get();
+	uint32_t receiver_receive_time_estimate = call Alarm.getNow();
         nx_struct SDF_header *header = (nx_struct SDF_header *) in_payload;
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
 	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
@@ -244,46 +253,48 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		sender_time_left = header->left + footer->offset;
 	}
 
-	receiver_time_left = _MILLI_2_32KHZ(call FinishTimer.gett0() + call FinishTimer.getdt()) - receiver_receive_time;
+	receiver_time_left = end_32khz - receiver_receive_time;
 
-	if (! call FinishTimer.isRunning()) {
+	if (! call Alarm.isRunning() || (receiver_time_left > delay_32khz) ) {
 		receiver_time_left = 0;
 	}
 
 	if (same_packet(payload, len)) {
 		if (receiver_time_left 								&&
 				call SubPacketTimeStamp32khz.isValid(msg) 			&& 
-				(receiver_time_left > (sender_time_left + MILLI_SEC_1)) 	&& 
-				(sender_time_left > MILLI_SEC_2) ) {
+				(receiver_time_left > (sender_time_left + (MILLI_SEC_1 / 2))) 	&& 
+				(sender_time_left > MILLI_SEC_1) ) {
 
-			call FinishTimer.startOneShotAt( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
-
+				call Alarm.startAt(receiver_receive_time, sender_time_left );
+				end_32khz = receiver_receive_time + sender_time_left;
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] SynchronizedDisseminateFinish same remote payload: t0 %lu dt %lu\n", 
-				process, _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
+			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
+				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD,
-				(uint16_t)(_32KHZ_2_MILLI(receiver_receive_time) >> 16),
-				(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0
+				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
 #endif
 #endif
+		} else {
+			if (receiver_time_left && call SubPacketTimeStamp32khz.isValid(msg)) {
+				printf("[%u] SDF received same but rtl %lu, stl %lu\n", process, receiver_time_left, sender_time_left);
+			}
 		}
                 return msg;
         }
 
-
-	call FinishTimer.startOneShotAt( _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left) );
+	call Alarm.startAt( receiver_receive_time, sender_time_left );
+	end_32khz = receiver_receive_time + sender_time_left;
 	make_copy(msg, payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %lu dt %lu\n", process,
-			_32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
+	printf("[%u] SDF new local payload: t0 %lu dt %lu -> %lu\n",
+				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD,
-			(uint16_t)(_32KHZ_2_MILLI(receiver_receive_time) >> 16),
-			(uint16_t)_32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
+				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
 #endif
 #endif
 	return signal Receive.receive(msg, payload, len);
