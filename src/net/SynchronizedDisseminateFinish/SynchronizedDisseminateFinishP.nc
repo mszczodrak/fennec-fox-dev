@@ -31,17 +31,15 @@ uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
 
-uses interface Leds;
-uses interface Timer<TMilli> as SendTimer;
-uses interface Timer<TMilli> as FinishTimer;
-
 uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
-
 uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
 uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
+uses interface Leds;
+uses interface Timer<TMilli> as SendTimer;
+uses interface Timer<TMilli> as FinishTimer;
 uses interface LocalTime<T32khz> as LocalTime;
-
+uses interface Random;
 uses interface SerialDbgs;
 }
 
@@ -102,14 +100,10 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
 
 	memcpy(payload, new_payload, new_payload_len);
-
-	call Param.get(DELAY, &delay, sizeof(delay));
-	call SendTimer.startPeriodic(delay);
-
 	packet_payload_len = new_payload_len;
 
 	header->crc = (nx_uint16_t) crc16(0, payload, packet_payload_len);
-	send_message();
+	signal SendTimer.fired();
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
@@ -137,7 +131,14 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
-	send_message();
+	if (!busy) {
+		send_message();
+	}
+
+	if (call FinishTimer.isRunning()) {
+		call Param.get(DELAY, &delay, sizeof(delay));
+		call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
+	}
 	return;
 }
 

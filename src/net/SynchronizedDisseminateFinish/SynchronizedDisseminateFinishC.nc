@@ -81,4 +81,7 @@ SynchronizedDisseminateFinishP.LocalTime -> LocalTime32khzC;
 components SerialDbgsC;
 SynchronizedDisseminateFinishP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 
+components RandomC;
+SynchronizedDisseminateFinishP.Random -> RandomC;
+
 }
