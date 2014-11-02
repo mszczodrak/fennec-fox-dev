@@ -186,7 +186,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 			process, start_32khz, ( delay_32khz / 2 ), end_32khz);
 #else
 		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, 0, (uint16_t)((delay_32khz / 2) >> 16), 
-								(uint16_t)(delay_32khz / 2), 0);
+								(uint16_t)(delay_32khz / 2));
 #endif
 #endif
 		return SUCCESS;	
@@ -222,7 +222,6 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	printf("send done %u\n", error);
 	busy = FALSE;
 }
 
@@ -272,8 +271,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
 				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0
-				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
+				(uint16_t)(sender_time_left >> 16), (uint16_t)sender_time_left);
 #endif
 #endif
 		}
