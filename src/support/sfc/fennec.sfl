@@ -224,25 +224,25 @@ use am nullAM $(FENNEC_FOX_LIB)/am/nullAM ()
 use source timerMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (
 		uint32_t delay = 1000, 
 		uint16_t src = 0xffff,
-		uint32_t cali_32khz = 0,
+		uint32_t start_32khz = 0
 )
 
 use source timerSecondE $(FENNEC_FOX_LIB)/apps/timerSecond (
 		uint32_t delay = 1000, 
 		uint16_t src = 0xffff,
-		uint32_t cali_32khz = 0,
+		uint32_t start_32khz = 0
 )
 
 use source timerMinuteE $(FENNEC_FOX_LIB)/apps/timerMinute (
 		uint32_t delay = 1, 
 		uint16_t src = 0xffff,
-		uint32_t cali_32khz = 0,
+		uint32_t start_32khz = 0
 )
 
 use source timerHourE $(FENNEC_FOX_LIB)/apps/timerHour (
 		uint32_t delay = 1,
 		uint16_t src = 0xffff,
-		uint32_t cali_32khz = 0,
+		uint32_t start_32khz = 0
 )
 
 use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (

@@ -46,6 +46,9 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
+#define _MILLI_2_32KHZ(x) ((x) << 5)
+#define _32KHZ_2_MILLI(x) ((x) >> 5)
+
 uint32_t gcdr (uint32_t a, uint32_t b )@C() {
         if ( a==0 ) return b;
         return gcdr ( b%a, a );

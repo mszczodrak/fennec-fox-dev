@@ -77,4 +77,7 @@ timerMinuteP.Timer -> TimerMilliC;
 components SerialDbgsC;
 timerMinuteP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 
+components LocalTime32khzC;
+timerMinuteP.LocalTime -> LocalTime32khzC;
+
 }
