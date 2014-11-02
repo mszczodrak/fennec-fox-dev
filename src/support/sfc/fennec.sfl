@@ -136,15 +136,15 @@ use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
 use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0)
 
 use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
-	uint8_t repeat = 1,
-	uint8_t retry = 9,
-	uint16_t retry_delay = 25
+		uint8_t repeat = 1,
+		uint8_t retry = 9,
+		uint16_t retry_delay = 25
 )
 
 use network SDF $(FENNEC_FOX_LIB)/net/SynchronizedDisseminateFinish (
-	uint8_t repeat = 10,
-	uint16_t delay = 25,
-	uint32_t last_finish = 0
+		uint8_t repeat = 10,
+		uint16_t delay = 25,
+		uint32_t last_finish = 0
 )
 
 use network trickle $(FENNEC_FOX_LIB)/net/trickle (
@@ -221,12 +221,33 @@ use am nullAM $(FENNEC_FOX_LIB)/am/nullAM ()
 
 # Events
 
-use source timerCalMilliE $(FENNEC_FOX_LIB)/apps/timerCalMilli (uint32_t delay = 1000, uint16_t src = 0xffff,
-		float skew = 1, uint32_t localAverage = 0, int32_t offsetAverage = 0)
-use source timerMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (uint32_t delay = 1000, uint16_t src = 0xffff)
-use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (uint32_t delay = 1000, uint16_t src = 0xffff,
-			float completed = 0.75, uint16_t activity)
-use source timerSecondE $(FENNEC_FOX_LIB)/apps/timerSecond (uint32_t delay = 1000, uint16_t src = 0xffff)
-use source timerMinuteE $(FENNEC_FOX_LIB)/apps/timerMinute (uint32_t delay = 1, uint16_t src = 0xffff)
-use source timerHourE $(FENNEC_FOX_LIB)/apps/timerHour (uint32_t delay = 1, uint16_t src = 0xffff)
+use source timerMilliE $(FENNEC_FOX_LIB)/apps/timerMilli (
+		uint32_t delay = 1000, 
+		uint16_t src = 0xffff,
+		uint32_t cali_32khz = 0,
+)
 
+use source timerSecondE $(FENNEC_FOX_LIB)/apps/timerSecond (
+		uint32_t delay = 1000, 
+		uint16_t src = 0xffff,
+		uint32_t cali_32khz = 0,
+)
+
+use source timerMinuteE $(FENNEC_FOX_LIB)/apps/timerMinute (
+		uint32_t delay = 1, 
+		uint16_t src = 0xffff,
+		uint32_t cali_32khz = 0,
+)
+
+use source timerHourE $(FENNEC_FOX_LIB)/apps/timerHour (
+		uint32_t delay = 1,
+		uint16_t src = 0xffff,
+		uint32_t cali_32khz = 0,
+)
+
+use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (
+		uint32_t delay = 1000,
+		uint16_t src = 0xffff,
+		float completed = 0.75, 
+		uint16_t activity
+)
