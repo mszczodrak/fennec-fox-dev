@@ -106,6 +106,11 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 	return ((in_len == packet_payload_len) && !(memcmp(in_payload, payload, in_len)));
 }
 
+void setup_alarm(uint32_t d0, uint32_t dt) {
+	call Alarm.startAt( d0, dt );
+	end_32khz = d0 + dt;
+}
+
 command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
@@ -176,8 +181,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		call Alarm.startAt(start_32khz, delay_32khz / 2 );
-		end_32khz = ( delay_32khz / 2) + start_32khz;
+		setup_alarm( start_32khz, delay_32khz / 2 );
 		make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -192,8 +196,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return SUCCESS;	
 	}
 
-	call Alarm.startAt( start_32khz, delay_32khz );
-	end_32khz = delay_32khz + start_32khz;
+	setup_alarm( start_32khz, delay_32khz );
 	make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -264,8 +267,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 				(receiver_time_left > (sender_time_left + 5)) 	&& 
 				(sender_time_left > 8) ) {
 
-				call Alarm.startAt(receiver_receive_time, sender_time_left );
-				end_32khz = receiver_receive_time + sender_time_left;
+				setup_alarm( receiver_receive_time, sender_time_left );
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
@@ -279,8 +281,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
-	call Alarm.startAt( receiver_receive_time, sender_time_left );
-	end_32khz = receiver_receive_time + sender_time_left;
+	setup_alarm( receiver_receive_time, sender_time_left );
 	make_copy(msg, payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
