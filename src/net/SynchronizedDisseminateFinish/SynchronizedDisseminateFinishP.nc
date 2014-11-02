@@ -65,7 +65,6 @@ void send_message() {
 	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 
 	if (busy) {
-		printf("[%u] SDF busy\n", process);
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
@@ -77,8 +76,7 @@ void send_message() {
 	header->left = end_32khz - now_32khz;
 
 	/* skip if less than 2ms left */
-	if ( (end_32khz <= now_32khz) || (header->left < MILLI_SEC_2) ) {
-		printf("[%u] SDF too little\n", process);
+	if ( end_32khz <= now_32khz + (MILLI_SEC_3) ) {
 		return;
 	}
 
@@ -129,15 +127,16 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
+	if (!call Alarm.isRunning()) {
+		return;
+	}
+
 	if (!busy) {
 		send_message();
 	}
 
-	if (call Alarm.isRunning()) {
-		call Param.get(DELAY, &delay, sizeof(delay));
-		call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
-	}
-	return;
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
 }
 
 task void finish() {
@@ -223,6 +222,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	printf("send done %u\n", error);
 	busy = FALSE;
 }
 
@@ -247,10 +247,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = receiver_receive_time_estimate;
 	}
 
-	if (header->left <= -(footer->offset)) {
-		sender_time_left = MILLI_SEC_1;
-	} else {
-		sender_time_left = header->left + footer->offset;
+	sender_time_left = header->left + footer->offset;
+
+	if (sender_time_left > delay_32khz) {
+		sender_time_left = 0;
 	}
 
 	receiver_time_left = end_32khz - receiver_receive_time;
@@ -276,10 +276,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
 #endif
 #endif
-		} else {
-			if (receiver_time_left && call SubPacketTimeStamp32khz.isValid(msg)) {
-				printf("[%u] SDF received same but rtl %lu, stl %lu\n", process, receiver_time_left, sender_time_left);
-			}
 		}
                 return msg;
         }
@@ -290,7 +286,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SDF new local payload: t0 %lu dt %lu -> %lu\n",
+	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",
 				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
 	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
