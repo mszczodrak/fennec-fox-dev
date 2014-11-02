@@ -262,8 +262,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if (same_packet(payload, len)) {
 		if (receiver_time_left 								&&
 				call SubPacketTimeStamp32khz.isValid(msg) 			&& 
-				(receiver_time_left > (sender_time_left + (MILLI_SEC_1 / 2))) 	&& 
-				(sender_time_left > MILLI_SEC_1) ) {
+				(receiver_time_left > (sender_time_left + 5)) 	&& 
+				(sender_time_left > 8) ) {
 
 				call Alarm.startAt(receiver_receive_time, sender_time_left );
 				end_32khz = receiver_receive_time + sender_time_left;
