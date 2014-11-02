@@ -209,7 +209,6 @@ void reportStopDone() {
       startOffTimer();
       return call SubSend.cancel(msg);
     }
-    
     return FAIL;
   }
   

@@ -115,9 +115,14 @@ implementation {
 
       return rc;
     } else {
+	error_t rc;
       pending_length  = len;
       pending_message = msg;
-      return call RadioResource.request();
+      rc = call RadioResource.request();
+	if (rc == EALREADY) {
+		printf("rc is %d\n", rc);
+	}
+	return rc;
     }
   }
 
