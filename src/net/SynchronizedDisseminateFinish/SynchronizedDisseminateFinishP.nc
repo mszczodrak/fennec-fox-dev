@@ -51,8 +51,6 @@ message_t packet;
 uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
 
-uint32_t saved_offset;
-
 uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
@@ -109,6 +107,7 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 void setup_alarm(uint32_t d0, uint32_t dt) {
 	call Alarm.startAt( d0, dt );
 	end_32khz = d0 + dt;
+	call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
 }
 
 command error_t SplitControl.start() {
