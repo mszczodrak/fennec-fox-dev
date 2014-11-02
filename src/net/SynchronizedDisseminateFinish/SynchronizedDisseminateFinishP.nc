@@ -156,7 +156,7 @@ event void FinishTimer.fired() {
 	} else {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SynchronizedDisseminateFinish signal sendDone\n", process);
+		printf("[%u] SynchronizedDisseminateFinish signal sendDone (does not signal)\n", process);
 #else
 		call SerialDbgs.dbgs(DBGS_FINISH_PERIOD, process, 0, 0);
 #endif
@@ -179,7 +179,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SynchronizedDisseminateFinish same local payload: t0 %u dt %u\n", process, now, repeat / 2 * delay);
+		printf("[%u] SynchronizedDisseminateFinish same local payload: t0 %lu dt %u\n", process, now, repeat / 2 * delay);
 #else
 		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, (uint16_t)(now >> 16), (uint16_t)now, repeat / 2 * delay);
 #endif
@@ -192,7 +192,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %u dt %u\n", process, now, repeat / 2 * delay);
+	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %lu dt %u\n", process, now, repeat / 2 * delay);
 #else
 	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)(now >> 16), (uint16_t)now, repeat / 2 * delay);
 #endif
@@ -259,7 +259,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] SynchronizedDisseminateFinish same remote payload: t0 %u dt %u\n", 
+			printf("[%u] SynchronizedDisseminateFinish same remote payload: t0 %lu dt %lu\n", 
 				process, _32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
 #else
 			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD,
@@ -277,7 +277,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %u dt %u\n", process,
+	printf("[%u] SynchronizedDisseminateFinish new local payload: t0 %lu dt %lu\n", process,
 			_32KHZ_2_MILLI(receiver_receive_time), _32KHZ_2_MILLI(sender_time_left));
 #else
 	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD,
