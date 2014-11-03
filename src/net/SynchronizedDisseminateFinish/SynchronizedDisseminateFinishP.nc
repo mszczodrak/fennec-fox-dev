@@ -72,8 +72,6 @@ void send_message() {
 
 	footer->offset = now_32khz;
 
-	printf("footer offset %lu\n", now_32khz);
-
 	header->left = end_32khz - now_32khz;
 
 	/* skip if less than 2ms left */
@@ -247,10 +245,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
-	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 	busy = FALSE;
-	printf("send done %lu\n", footer->offset);
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
