@@ -12,7 +12,6 @@ provides interface PacketAcknowledgements;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 uses interface Param;
 
@@ -29,7 +28,6 @@ uses interface RadioChannel;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
-uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
 uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
 uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
@@ -56,7 +54,6 @@ SubPacketAcknowledgements = SynchronizedDisseminateFinishP.SubPacketAcknowledgem
 SubLinkPacketMetadata = SynchronizedDisseminateFinishP.SubLinkPacketMetadata;
 LowPowerListening = SynchronizedDisseminateFinishP.LowPowerListening;
 RadioChannel = SynchronizedDisseminateFinishP.RadioChannel;
-SubPacketTimeSyncOffset = SynchronizedDisseminateFinishP.SubPacketTimeSyncOffset;
 
 SubPacketTimeStampMilli = SynchronizedDisseminateFinishP.SubPacketTimeStampMilli;
 SubPacketTimeStamp32khz = SynchronizedDisseminateFinishP.SubPacketTimeStamp32khz;
@@ -64,7 +61,6 @@ SubPacketTimeStamp32khz = SynchronizedDisseminateFinishP.SubPacketTimeStamp32khz
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
-PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
 components LedsC;
 components new TimerMilliC() as SendTimerC;

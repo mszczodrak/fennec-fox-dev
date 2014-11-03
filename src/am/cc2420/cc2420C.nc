@@ -49,7 +49,6 @@ uses interface StdControl as AMQueueControl;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 provides interface LowPowerListening;
 provides interface RadioChannel;
@@ -57,8 +56,6 @@ provides interface RadioChannel;
 provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
 provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
-
-uses interface PacketTimeStamp<TRadio, uint32_t> as UnimplementedPacketTimeStampRadio;
 
 }
 
@@ -76,7 +73,6 @@ AMQueueControl = cc2420P.AMQueueControl;
 PacketLinkQuality = cc2420P.PacketLinkQuality;
 PacketTransmitPower = cc2420P.PacketTransmitPower;
 PacketRSSI = cc2420P.PacketRSSI;
-PacketTimeSyncOffset = cc2420P.PacketTimeSyncOffset;
 
 AMSend = cc2420P;
 Receive = cc2420P.Receive;
@@ -86,9 +82,9 @@ cc2420P.CC2420Config -> CC2420ControlC;
 
 RadioChannel = cc2420P;
 
-PacketTimeStampRadio = UnimplementedPacketTimeStampRadio;
-PacketTimeStampMilli = CC2420PacketC.PacketTimeStampMilli;
-PacketTimeStamp32khz = CC2420PacketC.PacketTimeStamp32khz;
+PacketTimeStampRadio = cc2420P.PacketTimeStampRadio;
+PacketTimeStampMilli = cc2420P.PacketTimeStampMilli;
+PacketTimeStamp32khz = cc2420P.PacketTimeStamp32khz;
 
 cc2420P.CC2420Packet -> AM.CC2420Packet;
 cc2420P.SubSplitControl -> AM.SplitControl;
@@ -97,6 +93,9 @@ cc2420P.SubReceive -> AM.Receive;
 cc2420P.SubSnoop -> AM.Snoop;
 cc2420P.AMPacket -> AM.AMPacket;
 cc2420P.CC2420PacketTimeSyncOffset -> CC2420PacketC.PacketTimeSyncOffset;
+
+cc2420P.SubPacketTimeStamp32khz -> CC2420PacketC.PacketTimeStamp32khz;
+cc2420P.SubPacketTimeStampMilli -> CC2420PacketC.PacketTimeStampMilli;
 
 Packet = AM.Packet;
 AMPacket = AM.AMPacket;

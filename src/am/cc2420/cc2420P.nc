@@ -44,7 +44,10 @@ provides interface Receive as Snoop[process_t process_id];
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
+
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface Param;
 uses interface StdControl as AMQueueControl;
@@ -57,16 +60,13 @@ uses interface AMPacket;
 uses interface Receive as SubReceive[process_t process_id];
 uses interface Receive as SubSnoop[process_t process_id];
 
-
-/*
-provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
-*/
-
 uses interface CC2420Packet;
 uses interface CC2420Config;
 uses interface PacketTimeSyncOffset as CC2420PacketTimeSyncOffset;
+
+uses interface PacketTimeStamp<TRadio, uint32_t> as SubPacketTimeStampRadio;
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
 }
 
@@ -259,22 +259,6 @@ async command void PacketRSSI.set(message_t* msg, uint8_t value) {
 
 }
 
-async command bool PacketTimeSyncOffset.isSet(message_t* msg) {
-	return call CC2420PacketTimeSyncOffset.isSet(msg);
-}
-
-async command uint8_t PacketTimeSyncOffset.get(message_t* msg) {
-	return call CC2420PacketTimeSyncOffset.get(msg);
-}
-
-async command void PacketTimeSyncOffset.clear(message_t* msg) {
-	return call CC2420PacketTimeSyncOffset.cancel(msg);
-}
-
-async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
-	return call CC2420PacketTimeSyncOffset.set(msg);
-}
-
 event void CC2420Config.syncDone(error_t error) {}
 
 
@@ -291,6 +275,58 @@ default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t err) {
 
 event void Param.updated(uint8_t var_id) {
 
+}
+
+async command bool PacketTimeStampRadio.isValid(message_t* msg) {
+	return call SubPacketTimeStamp32khz.isValid(msg);
+}
+
+async command uint32_t PacketTimeStampRadio.timestamp(message_t* msg) {
+	return call SubPacketTimeStamp32khz.timestamp(msg);
+}
+
+async command void PacketTimeStampRadio.clear(message_t* msg) {
+	return call SubPacketTimeStamp32khz.clear(msg);
+}
+
+async command void PacketTimeStampRadio.set(message_t* msg, uint32_t value) {
+	call CC2420PacketTimeSyncOffset.set(msg);
+	return call SubPacketTimeStamp32khz.set(msg, value);
+}
+
+async command bool PacketTimeStamp32khz.isValid(message_t* msg) {
+	return call SubPacketTimeStamp32khz.isValid(msg);
+}
+
+async command uint32_t PacketTimeStamp32khz.timestamp(message_t* msg) {
+	return call SubPacketTimeStamp32khz.timestamp(msg);
+}
+
+async command void PacketTimeStamp32khz.clear(message_t* msg) {
+	return call SubPacketTimeStamp32khz.clear(msg);
+}
+
+async command void PacketTimeStamp32khz.set(message_t* msg, uint32_t value) {
+	call CC2420PacketTimeSyncOffset.set(msg);
+	return call SubPacketTimeStamp32khz.set(msg, value);
+}
+
+
+async command bool PacketTimeStampMilli.isValid(message_t* msg) {
+	return call SubPacketTimeStampMilli.isValid(msg);
+}
+
+async command uint32_t PacketTimeStampMilli.timestamp(message_t* msg) {
+	return call SubPacketTimeStampMilli.timestamp(msg);
+}
+
+async command void PacketTimeStampMilli.clear(message_t* msg) {
+	return call SubPacketTimeStampMilli.clear(msg);
+}
+
+async command void PacketTimeStampMilli.set(message_t* msg, uint32_t value) {
+	call CC2420PacketTimeSyncOffset.set(msg);
+	return call SubPacketTimeStampMilli.set(msg, value);
 }
 
 

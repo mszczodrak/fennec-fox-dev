@@ -26,7 +26,6 @@ uses interface LinkPacketMetadata as SubLinkPacketMetadata;
 uses interface LowPowerListening;
 uses interface RadioChannel;
 
-uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
 uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
@@ -66,7 +65,7 @@ void send_message() {
 
 	busy = TRUE;
 
-	call SubPacketTimeSyncOffset.set(&packet, now_32khz);
+	call SubPacketTimeStamp32khz.set(&packet, now_32khz);
 
 	footer->offset = now_32khz;
 
