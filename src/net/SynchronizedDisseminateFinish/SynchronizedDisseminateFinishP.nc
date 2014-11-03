@@ -52,7 +52,7 @@ uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
 uint32_t min_estimate_offset = 100;
-uint32_t radio_tx_offset = 14;
+uint32_t radio_tx_offset = 15;	/* 14 */
 
 
 void send_message() {
@@ -216,7 +216,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 #else
 	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16),
 						(uint16_t)delay_32khz);
-
 #endif
 #endif
 	return SUCCESS;
