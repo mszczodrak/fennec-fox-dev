@@ -288,8 +288,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
 				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
-				(uint16_t)(sender_time_left >> 16), (uint16_t)sender_time_left);
+//			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
+//				(uint16_t)(sender_time_left >> 16), (uint16_t)sender_time_left);
 #endif
 #endif
 		}
@@ -304,8 +304,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",
 				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
-				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
+//	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
+//				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
 #endif
 #endif
 	return signal Receive.receive(msg, payload, len);
