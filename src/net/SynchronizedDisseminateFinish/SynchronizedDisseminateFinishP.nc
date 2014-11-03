@@ -111,6 +111,10 @@ command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
 
+#ifdef __FLOCKLAB_LEDS__
+	call Leds.led2Off();
+#endif
+
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
 	call Param.get(DELAY, &delay, sizeof(delay));
 	delay_32khz = _MILLI_2_32KHZ( repeat * delay );
@@ -142,6 +146,10 @@ event void SendTimer.fired() {
 
 task void finish() {
 	call SendTimer.stop();
+#ifdef __FLOCKLAB_LEDS__
+	call Leds.led2On();
+#endif
+
 	if ( app_pkt != NULL ) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
