@@ -749,8 +749,6 @@ implementation
 		RADIO_ASSERT(sfd3 == 0);
 		RADIO_ASSERT(sfd4 == 0);
 
-		printf("is set %d\n",  call PacketTimeSyncOffset.isSet(msg) );
-
 		timesync = call PacketTimeSyncOffset.isSet(msg) ? ((void*)msg) + call PacketTimeSyncOffset.get(msg) : 0;
 
 		if( timesync == 0 ) {
@@ -758,7 +756,6 @@ implementation
 			if(length>0)
 				writeTxFifo(data+header, length - 1);
 			state = STATE_BUSY_TX_2_RX_ON;
-			printf("no timesync\n");
 		} else {
 			// timesync required: write the payload before the timesync bytes to the fifo
 			// TODO: we're assuming here that the timestamp is at the end of the message
@@ -792,9 +789,6 @@ implementation
 			// TODO: we're assuming here that the timestamp is at the end of the message			
 			writeTxFifo((uint8_t*)(&timesync_relative), sizeof(timesync_relative));
 			state = STATE_BUSY_TX_2_RX_ON;
-
-			printf("timesync got %lu, did offset %lu, finally %lu\n",  (*(timesync_absolute_t*)timesync), time32,
-                                timesync_relative);
 		}
 
 
