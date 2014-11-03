@@ -152,7 +152,7 @@ task void finish() {
 #ifdef __FLOCKLAB_LEDS__
 	call Leds.led2On();
 #endif
-
+	printf("done\n");
 	if ( app_pkt != NULL ) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -277,10 +277,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if (same_packet(payload, len)) {
-		if (receiver_time_left 								&&
-				call SubPacketTimeStamp32khz.isValid(msg) 			&& 
-				(receiver_time_left > (sender_time_left + 5)) 	&& 
-				(sender_time_left > 8) ) {
+		if (receiver_time_left && call SubPacketTimeStamp32khz.isValid(msg) 	&& 
+					(receiver_time_left > sender_time_left) 	&& 
+					(sender_time_left > 5) ) {
 
 				setup_alarm( receiver_receive_time, sender_time_left );
 #ifdef __DBGS__NETWORK_ACTIONS__
