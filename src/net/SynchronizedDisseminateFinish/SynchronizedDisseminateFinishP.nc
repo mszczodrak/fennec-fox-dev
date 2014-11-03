@@ -113,7 +113,6 @@ void setup_alarm(uint32_t d0, uint32_t dt, bool save_end) {
 }
 
 command error_t SplitControl.start() {
-	printf("start\n");
 	app_pkt = NULL;
 	busy = FALSE;
 
