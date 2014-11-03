@@ -1360,7 +1360,6 @@ implementation
 	{
 		// we do not store the value, the time sync field is always the last 4 bytes
 		RADIO_ASSERT( call PacketTimeSyncOffset.get(msg) == value );
-		printf("setting flag...  OK\n");
 
 		call TimeSyncFlag.set(msg);
 	}
