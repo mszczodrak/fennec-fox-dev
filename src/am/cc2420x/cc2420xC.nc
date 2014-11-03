@@ -92,7 +92,6 @@ LowPowerListening = AM.LowPowerListening;
 RadioChannel = AM.RadioChannel;
 PacketTimeStampRadio = AM.PacketTimeStampRadio;
 PacketTimeStampMilli = AM.PacketTimeStampMilli;
-PacketTimeStamp32khz = AM.PacketTimeStamp32khz;
 PacketAcknowledgements = AM.PacketAcknowledgements;
 LinkPacketMetadata = AM.LinkPacketMetadata;
 PacketLinkQuality = AM.PacketLinkQuality;
@@ -104,6 +103,9 @@ components CC2420XDriverLayerP;
 components SerialDbgsC;
 CC2420XDriverLayerP.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
 #endif
+
+PacketTimeStamp32khz = cc2420xP.PacketTimeStamp32khz;
+cc2420xP.SubPacketTimeStampRadio -> AM.PacketTimeStampRadio;
 
 
 }

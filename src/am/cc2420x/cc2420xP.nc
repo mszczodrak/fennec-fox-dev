@@ -39,6 +39,7 @@ provides interface SplitControl;
 provides interface AMSend[process_t process_id];
 provides interface Receive[process_t process_id];
 provides interface Receive as Snoop[process_t process_id];
+provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface Param;
 uses interface StdControl as RadioParamsControl;
@@ -56,7 +57,7 @@ uses interface Packet;
 uses interface Receive as SubReceive[process_t process_id];
 uses interface Receive as SubSnoop[process_t process_id];
 
-
+uses interface PacketTimeStamp<TRadio, uint32_t> as SubPacketTimeStampRadio;
 }
 
 implementation {
@@ -162,6 +163,22 @@ default event void AMSend.sendDone[am_id_t id](message_t* msg, error_t error) {}
 
 event void Param.updated(uint8_t var_id) {
 
+}
+
+async command bool PacketTimeStamp32khz.isValid(message_t* msg) {
+	return call SubPacketTimeStampRadio.isValid(msg);
+}
+
+async command uint32_t PacketTimeStamp32khz.timestamp(message_t* msg) {
+	return call SubPacketTimeStampRadio.timestamp(msg);
+}
+
+async command void PacketTimeStamp32khz.clear(message_t* msg) {
+	return call SubPacketTimeStampRadio.clear(msg);
+}
+
+async command void PacketTimeStamp32khz.set(message_t* msg, uint32_t value) {
+	return call SubPacketTimeStampRadio.set(msg, value);
 }
 
 
