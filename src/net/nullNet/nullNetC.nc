@@ -43,7 +43,6 @@ provides interface PacketAcknowledgements;
 provides interface PacketField<uint8_t> as PacketLinkQuality;
 provides interface PacketField<uint8_t> as PacketTransmitPower;
 provides interface PacketField<uint8_t> as PacketRSSI;
-provides interface PacketField<uint8_t> as PacketTimeSyncOffset;
 
 uses interface Param;
 
@@ -60,7 +59,6 @@ uses interface RadioChannel;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
-uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
 uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
 uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
@@ -91,7 +89,6 @@ RadioChannel = nullNetP.RadioChannel;
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
-PacketTimeSyncOffset = SubPacketTimeSyncOffset;
 
 SubPacketTimeStampMilli = nullNetP.SubPacketTimeStampMilli;
 SubPacketTimeStamp32khz = nullNetP.SubPacketTimeStamp32khz;

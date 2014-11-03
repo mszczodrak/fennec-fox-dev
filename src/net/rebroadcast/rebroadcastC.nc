@@ -28,6 +28,10 @@ uses interface RadioChannel;
 uses interface PacketField<uint8_t> as SubPacketLinkQuality;
 uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
+
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
+
 }
 
 implementation {
@@ -61,4 +65,8 @@ rebroadcastP.Timer -> TimerMilliC;
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;
+
+SubPacketTimeStampMilli = rebroadcastP.SubPacketTimeStampMilli;
+SubPacketTimeStamp32khz = rebroadcastP.SubPacketTimeStamp32khz;
+
 }
