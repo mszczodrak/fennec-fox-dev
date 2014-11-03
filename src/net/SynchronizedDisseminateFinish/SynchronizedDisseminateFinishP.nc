@@ -44,6 +44,9 @@ bool busy = FALSE;
 message_t packet;
 uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
+#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
+bool new_data = FALSE;
+#endif
 
 uint32_t start_32khz;
 uint32_t end_32khz;
@@ -150,26 +153,35 @@ event void SendTimer.fired() {
 task void finish() {
 	call SendTimer.stop();
 #ifdef __FLOCKLAB_LEDS__
-	call Leds.led2On();
+	if (new_data) {
+		call Leds.led2On();
+	}
 #endif
 	if ( app_pkt != NULL ) {
 #ifdef __DBGS__NETWORK_ACTIONS__
+		if (new_data) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SDF signal sendDone\n", process);
+			printf("[%u] SDF signal sendDone\n", process);
 #else
-		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
+			call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
 #endif
+		}
 #endif
 		signal AMSend.sendDone(app_pkt, SUCCESS);
 	} else {
 #ifdef __DBGS__NETWORK_ACTIONS__
+		if (new_data) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SDF signal sendDone (does not signal)\n", process);
+			printf("[%u] SDF signal sendDone (does not signal)\n", process);
 #else
-		call SerialDbgs.dbgs(DBGS_FINISH_PERIOD, process, 0, 0);
+			call SerialDbgs.dbgs(DBGS_FINISH_PERIOD, process, 0, 0);
 #endif
+		}
 #endif
 	}
+#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
+	new_data = FALSE;
+#endif
 	app_pkt = NULL;
 }
 
@@ -213,6 +225,10 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16),
 						(uint16_t)delay_32khz);
 #endif
+#endif
+
+#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
+	new_data = TRUE;
 #endif
 	return SUCCESS;
 }
@@ -304,6 +320,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 //	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
 //				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
 #endif
+#endif
+
+#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
+	new_data = TRUE;
 #endif
 	return signal Receive.receive(msg, payload, len);
 }
