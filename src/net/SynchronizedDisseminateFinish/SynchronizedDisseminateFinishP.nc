@@ -155,7 +155,6 @@ task void finish() {
 #ifdef __FLOCKLAB_LEDS__
 	call Leds.led2On();
 #endif
-	printf("done\n");
 	if ( app_pkt != NULL ) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
