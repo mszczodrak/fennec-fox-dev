@@ -54,6 +54,7 @@ uint32_t delay_32khz;
 uint32_t min_estimate_offset = 100;
 uint32_t radio_tx_offset = 14;
 
+
 void send_message() {
 	uint32_t now_32khz = call Alarm.getNow();
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
@@ -104,10 +105,12 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 	return ((in_len == packet_payload_len) && !(memcmp(in_payload, payload, in_len)));
 }
 
-void setup_alarm(uint32_t d0, uint32_t dt) {
+void setup_alarm(uint32_t d0, uint32_t dt, bool save_end) {
 	call Alarm.startAt( d0, dt );
 	end_32khz = d0 + dt;
-	call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
+	if (save_end) {
+		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
+	}
 }
 
 command error_t SplitControl.start() {
@@ -188,7 +191,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		setup_alarm( start_32khz, delay_32khz / 2 );
+		setup_alarm( start_32khz, delay_32khz / 2, FALSE );
 		make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -203,7 +206,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return SUCCESS;	
 	}
 
-	setup_alarm( start_32khz, delay_32khz );
+	setup_alarm( start_32khz, delay_32khz, TRUE );
 	make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -281,7 +284,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 					(receiver_time_left > sender_time_left) 	&& 
 					(sender_time_left > 5) ) {
 
-				setup_alarm( receiver_receive_time, sender_time_left );
+				setup_alarm( receiver_receive_time, sender_time_left, TRUE );
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
@@ -295,7 +298,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
-	setup_alarm( receiver_receive_time, sender_time_left );
+	setup_alarm( receiver_receive_time, sender_time_left, TRUE );
 	make_copy(msg, payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
