@@ -340,5 +340,9 @@ async command uint16_t RandomCollisionConfig.getCongestionBackoff(message_t* msg
 		return 5;
 	}
 
+	event void Param.updated(uint8_t var_id) {
+
+	}
+
 
 }

@@ -1,8 +1,6 @@
 #include <Fennec.h>
 #include "SynchronizedDisseminateFinish.h"
 
-#include "CC2420TimeSyncMessage.h"
-
 #define MILLI_SEC_1	(1 << 5)
 #define MILLI_SEC_2	(2 << 5)
 #define MILLI_SEC_3	(3 << 5)
