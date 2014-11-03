@@ -259,6 +259,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint32_t receiver_receive_time;
 	uint32_t receiver_time_left = 0;
 
+	printf("receive\n");
+
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
 	}
@@ -268,14 +270,13 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
 		if ((receiver_receive_time_estimate - receiver_receive_time) < min_estimate_offset) {
 			min_estimate_offset = receiver_receive_time_estimate - receiver_receive_time;
-			printf("valid receive %lu\n", receiver_receive_time);
+			//printf("valid receive %lu\n", receiver_receive_time);
 		}
 	} else {
 		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
 	}
 
 	/* calibrate sender timestamp */
-	printf("sender left %lu = %lu - %lu\n", header->left + footer->offset, header->left, footer->offset);
 	sender_time_left = header->left + footer->offset;
 
 	/* remove default radio_tx_offset from the sender timestamp */
@@ -297,6 +298,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 					(sender_time_left > 5) ) {
 
 				setup_alarm( receiver_receive_time, sender_time_left, TRUE );
+	printf("sender left %lu = %lu - %lu\n", header->left + footer->offset, header->left, footer->offset);
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
@@ -313,6 +315,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	setup_alarm( receiver_receive_time, sender_time_left, TRUE );
 	make_copy(msg, payload, len);
 
+	printf("sender left %lu = %lu - %lu\n", header->left + footer->offset, header->left, footer->offset);
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",

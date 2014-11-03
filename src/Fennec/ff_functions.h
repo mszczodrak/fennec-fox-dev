@@ -39,9 +39,11 @@
 #include <Fennec.h>
 #include "ff_structs.h"
 
-#define LOW_PROC_ID(x) (x >> 4)
-#define LOW_DATA_ID(x) (x & 0x0E)
-#define LOW_ID(x)      (x & 0x0F)
+/*   0    byte    1   byte    2
+ *   |  PROC_ID   |  DATA_ID  |      
+ */
+#define LOW_PROC_ID(x) (x >> 8)
+#define LOW_DATA_ID(x) (x & 0x00FF)
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -54,8 +56,8 @@ uint32_t gcdr (uint32_t a, uint32_t b )@C() {
         return gcdr ( b%a, a );
 }
 
-bool validProcessId(uint8_t msg_type);
-nx_uint8_t setFennecType(uint8_t id);
+bool validProcessId(uint16_t msg_group);
+nx_uint16_t setFennecType(uint8_t id);
 
 #ifdef FENNEC_LOGGER
 void insertLog(uint16_t from, uint16_t message);
