@@ -90,22 +90,29 @@ Packet = AM.Packet;
 AMPacket = AM.AMPacket;
 LowPowerListening = AM.LowPowerListening;
 RadioChannel = AM.RadioChannel;
-PacketTimeStampRadio = AM.PacketTimeStampRadio;
-PacketTimeStampMilli = AM.PacketTimeStampMilli;
 PacketAcknowledgements = AM.PacketAcknowledgements;
 LinkPacketMetadata = AM.LinkPacketMetadata;
 PacketLinkQuality = AM.PacketLinkQuality;
 PacketTransmitPower = AM.PacketTransmitPower;
 PacketRSSI = AM.PacketRSSI;
 
-#ifdef __DBGS__
+
 components CC2420XDriverLayerP;
+
+
+PacketTimeStampRadio = cc2420xP.PacketTimeStampRadio;
+PacketTimeStamp32khz = cc2420xP.PacketTimeStamp32khz;
+PacketTimeStampMilli = cc2420xP.PacketTimeStampMilli;
+
+cc2420xP.SubPacketTimeStampRadio -> AM.PacketTimeStampRadio;
+cc2420xP.SubPacketTimeStamp32khz -> AM.PacketTimeStamp32khz;
+cc2420xP.SubPacketTimeStampMilli -> AM.PacketTimeStampMilli;
+
+cc2420xP.SubPacketTimeSyncOffset -> CC2420XDriverLayerP.PacketTimeSyncOffset;
+
+#ifdef __DBGS__
 components SerialDbgsC;
 CC2420XDriverLayerP.SerialDbgs -> SerialDbgsC.SerialDbgs[242];
 #endif
-
-PacketTimeStamp32khz = cc2420xP.PacketTimeStamp32khz;
-cc2420xP.SubPacketTimeStampRadio -> AM.PacketTimeStampRadio;
-
 
 }

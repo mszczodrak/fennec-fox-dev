@@ -72,6 +72,8 @@ void send_message() {
 
 	footer->offset = now_32khz;
 
+	printf("footer offset %lu\n", now_32khz);
+
 	header->left = end_32khz - now_32khz;
 
 	/* skip if less than 2ms left */
@@ -245,7 +247,10 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
+	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 	busy = FALSE;
+	printf("send done %lu\n", footer->offset);
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
@@ -268,12 +273,14 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
 		if ((receiver_receive_time_estimate - receiver_receive_time) < min_estimate_offset) {
 			min_estimate_offset = receiver_receive_time_estimate - receiver_receive_time;
+			printf("valid receive %lu\n", receiver_receive_time);
 		}
 	} else {
 		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
 	}
 
 	/* calibrate sender timestamp */
+	printf("sender left %lu = %lu - %lu\n", header->left + footer->offset, header->left, footer->offset);
 	sender_time_left = header->left + footer->offset;
 
 	/* remove default radio_tx_offset from the sender timestamp */

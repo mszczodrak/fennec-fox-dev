@@ -39,6 +39,9 @@ provides interface SplitControl;
 provides interface AMSend[process_t process_id];
 provides interface Receive[process_t process_id];
 provides interface Receive as Snoop[process_t process_id];
+
+provides interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
+provides interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
 provides interface PacketTimeStamp<T32khz, uint32_t> as PacketTimeStamp32khz;
 
 uses interface Param;
@@ -58,6 +61,9 @@ uses interface Receive as SubReceive[process_t process_id];
 uses interface Receive as SubSnoop[process_t process_id];
 
 uses interface PacketTimeStamp<TRadio, uint32_t> as SubPacketTimeStampRadio;
+uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
+uses interface PacketTimeStamp<TMilli, uint32_t> as SubPacketTimeStampMilli;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 }
 
 implementation {
@@ -165,6 +171,23 @@ event void Param.updated(uint8_t var_id) {
 
 }
 
+async command bool PacketTimeStampRadio.isValid(message_t* msg) {
+	return call SubPacketTimeStampRadio.isValid(msg);
+}
+
+async command uint32_t PacketTimeStampRadio.timestamp(message_t* msg) {
+	return call SubPacketTimeStampRadio.timestamp(msg);
+}
+
+async command void PacketTimeStampRadio.clear(message_t* msg) {
+	return call SubPacketTimeStampRadio.clear(msg);
+}
+
+async command void PacketTimeStampRadio.set(message_t* msg, uint32_t value) {
+	call SubPacketTimeSyncOffset.set(msg, value);
+	return call SubPacketTimeStampRadio.set(msg, value);
+}
+
 async command bool PacketTimeStamp32khz.isValid(message_t* msg) {
 	return call SubPacketTimeStampRadio.isValid(msg);
 }
@@ -178,10 +201,26 @@ async command void PacketTimeStamp32khz.clear(message_t* msg) {
 }
 
 async command void PacketTimeStamp32khz.set(message_t* msg, uint32_t value) {
+	call SubPacketTimeSyncOffset.set(msg, value);
 	return call SubPacketTimeStampRadio.set(msg, value);
 }
 
+async command bool PacketTimeStampMilli.isValid(message_t* msg) {
+	return call SubPacketTimeStampMilli.isValid(msg);
+}
 
+async command uint32_t PacketTimeStampMilli.timestamp(message_t* msg) {
+	return call SubPacketTimeStampMilli.timestamp(msg);
+}
+
+async command void PacketTimeStampMilli.clear(message_t* msg) {
+	return call SubPacketTimeStampMilli.clear(msg);
+}
+
+async command void PacketTimeStampMilli.set(message_t* msg, uint32_t value) {
+	call SubPacketTimeSyncOffset.set(msg, value);
+	return call SubPacketTimeStampMilli.set(msg, value);
+}
 
 
 }
