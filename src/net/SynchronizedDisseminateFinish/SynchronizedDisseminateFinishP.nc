@@ -51,6 +51,8 @@ message_t *app_pkt = NULL;
 uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
+uint32_t min_estimate_offset = 100;
+uint32_t radio_tx_offset = 14;
 
 void send_message() {
 	uint32_t now_32khz = call Alarm.getNow();
@@ -63,6 +65,8 @@ void send_message() {
 		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
+
+	busy = TRUE;
 
 	call SubPacketTimeSyncOffset.set(&packet, now_32khz);
 
@@ -79,8 +83,6 @@ void send_message() {
 					sizeof(nx_struct SDF_header) +
 					sizeof(nx_struct SDF_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
-	} else {
-		busy = TRUE;
 	}
 }
 
@@ -93,7 +95,8 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 	packet_payload_len = new_payload_len;
 
 	header->crc = (nx_uint16_t) crc16(0, payload, packet_payload_len);
-	signal SendTimer.fired();
+	send_message();
+	call SendTimer.startPeriodic(1);
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
@@ -247,13 +250,21 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
+	/* if SFD receive timestamp is not valid, try to estimate it */
 	if (call SubPacketTimeStamp32khz.isValid(msg)) {
 		receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
+		if ((receiver_receive_time_estimate - receiver_receive_time) < min_estimate_offset) {
+			min_estimate_offset = receiver_receive_time_estimate - receiver_receive_time;
+		}
 	} else {
-		receiver_receive_time = receiver_receive_time_estimate;
+		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
 	}
 
+	/* calibrate sender timestamp */
 	sender_time_left = header->left + footer->offset;
+
+	/* remove default radio_tx_offset from the sender timestamp */
+	sender_time_left -= radio_tx_offset;
 
 	if (sender_time_left > delay_32khz) {
 		sender_time_left = 0;
