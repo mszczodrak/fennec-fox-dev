@@ -51,7 +51,8 @@ bool new_data = FALSE;
 uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
-uint32_t radio_tx_offset = 5;	/* 5 */
+uint32_t min_estimate_offset = 100;	/* 100 */
+uint32_t radio_tx_offset = 15;	/* 15 */
 
 void send_message() {
 	uint32_t now_32khz = call Alarm.getNow();
@@ -74,7 +75,7 @@ void send_message() {
 	header->left = end_32khz - now_32khz;
 
 	/* skip if less than 2ms left */
-	if ( end_32khz <= now_32khz + (MILLI_SEC_2) ) {
+	if ( end_32khz <= now_32khz + (MILLI_SEC_3) ) {
 		return;
 	}
 
@@ -249,26 +250,26 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
 	uint32_t receiver_receive_time_estimate = call Alarm.getNow();
-	uint32_t receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
         nx_struct SDF_header *header = (nx_struct SDF_header *) in_payload;
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
 	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
         nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + len);
-	uint32_t min_estimate_offset = *((uint8_t*)(msg)) * 1.5;
+	
 	uint32_t sender_time_left;
+	uint32_t receiver_receive_time;
 	uint32_t receiver_time_left = 0;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
 	}
 
-
 	/* if SFD receive timestamp is not valid, try to estimate it */
-	if ((!call SubPacketTimeStamp32khz.isValid(msg)) || (receiver_receive_time > receiver_receive_time_estimate)) {
-		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
-	}
-
-	if ((receiver_receive_time_estimate - receiver_receive_time) > (4 * min_estimate_offset)) {
+	if (call SubPacketTimeStamp32khz.isValid(msg)) {
+		receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
+		if ((receiver_receive_time_estimate - receiver_receive_time) < min_estimate_offset) {
+			min_estimate_offset = receiver_receive_time_estimate - receiver_receive_time;
+		}
+	} else {
 		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
 	}
 
@@ -307,11 +308,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
-	if (sender_time_left > 5) {
-		setup_alarm( receiver_receive_time, sender_time_left, TRUE );
-	} else {
-		setup_alarm( receiver_receive_time, delay_32khz, TRUE );
-	}
+	setup_alarm( receiver_receive_time, sender_time_left, TRUE );
 	make_copy(msg, payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
