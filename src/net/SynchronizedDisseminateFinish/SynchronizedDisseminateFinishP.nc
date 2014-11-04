@@ -52,7 +52,7 @@ uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
 uint32_t min_estimate_offset = 100;	/* 100 */
-uint32_t radio_tx_offset = 0;	/* 15 */
+uint32_t radio_tx_offset = 15;	/* 15 */
 
 void send_message() {
 	uint32_t now_32khz = call Alarm.getNow();
