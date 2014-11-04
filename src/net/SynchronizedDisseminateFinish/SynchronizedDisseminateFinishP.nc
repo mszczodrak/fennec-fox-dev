@@ -51,7 +51,7 @@ bool new_data = FALSE;
 uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
-uint32_t min_estimate_offset = 0;	/* 100 */
+uint32_t min_estimate_offset = 100;	/* 100 */
 uint32_t radio_tx_offset = 0;	/* 15 */
 
 void send_message() {
@@ -203,11 +203,11 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SDF same local payload: t0 %lu dt %lu -> %lu\n", 
-			process, start_32khz, ( delay_32khz / 2 ), end_32khz);
+//		printf("[%u] SDF same local payload: t0 %lu dt %lu -> %lu\n", 
+//			process, start_32khz, ( delay_32khz / 2 ), end_32khz);
 #else
-		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, 0, (uint16_t)((delay_32khz / 2) >> 16), 
-								(uint16_t)(delay_32khz / 2));
+//		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, 0, (uint16_t)((delay_32khz / 2) >> 16), 
+//								(uint16_t)(delay_32khz / 2));
 #endif
 #endif
 		return SUCCESS;	
@@ -218,11 +218,11 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SDF new local payload: t0 %lu dt %lu -> %lu\n",
-			process, start_32khz, delay_32khz, end_32khz);
+//	printf("[%u] SDF new local payload: t0 %lu dt %lu -> %lu\n",
+//			process, start_32khz, delay_32khz, end_32khz);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16),
-						(uint16_t)delay_32khz);
+//	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16),
+//						(uint16_t)delay_32khz);
 #endif
 #endif
 
@@ -268,7 +268,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
 		if ((receiver_receive_time_estimate - receiver_receive_time) < min_estimate_offset) {
 			min_estimate_offset = receiver_receive_time_estimate - receiver_receive_time;
-			//printf("valid receive %lu\n", receiver_receive_time);
 		}
 	} else {
 		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
@@ -296,7 +295,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 					(sender_time_left > 5) ) {
 
 				setup_alarm( receiver_receive_time, sender_time_left, TRUE );
-//	printf("sender left %lu = %lu + %d\n", header->left + footer->offset, header->left, footer->offset);
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 //			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
@@ -313,7 +311,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	setup_alarm( receiver_receive_time, sender_time_left, TRUE );
 	make_copy(msg, payload, len);
 
-//	printf("sender left %lu = %lu + %d\n", header->left + footer->offset, header->left, footer->offset);
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 //	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",
