@@ -96,9 +96,7 @@ PacketLinkQuality = AM.PacketLinkQuality;
 PacketTransmitPower = AM.PacketTransmitPower;
 PacketRSSI = AM.PacketRSSI;
 
-
 components CC2420XDriverLayerP;
-
 
 PacketTimeStampRadio = cc2420xP.PacketTimeStampRadio;
 PacketTimeStamp32khz = cc2420xP.PacketTimeStamp32khz;

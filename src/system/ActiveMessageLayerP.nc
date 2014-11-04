@@ -87,10 +87,7 @@ implementation
 		call Packet.setPayloadLength(msg, len);
 		call AMPacket.setSource(msg, call AMPacket.address());
 		call AMPacket.setGroup(msg, call AMPacket.localGroup());
-
-		call AMPacket.setGroup(msg, setFennecType(id));
-
-		call AMPacket.setType(msg, id);
+		call AMPacket.setType(msg, setFennecType(id));
 		call AMPacket.setDestination(msg, addr);
 
 		signal SendNotifier.aboutToSend[id](addr, msg);
@@ -178,7 +175,7 @@ implementation
 	inline command bool AMPacket.isForMe(message_t* msg)
 	{
 		am_addr_t addr = call AMPacket.destination(msg);
-		
+
 		return (addr == AM_BROADCAST_ADDR || addr == call AMPacket.address()) && call AMPacket.group(msg) == call AMPacket.localGroup();
 	}
 

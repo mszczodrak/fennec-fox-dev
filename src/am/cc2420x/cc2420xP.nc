@@ -140,17 +140,17 @@ command void* AMSend.getPayload[am_id_t id](message_t* msg, uint8_t len) {
 }
 
 event message_t * SubReceive.receive[process_t id](message_t* msg, void* payload, uint8_t len) {
-	if (!validProcessId(call AMPacket.group(msg))) {
+	if (!validProcessId(call AMPacket.type(msg))) {
 		return msg;
 	}
-	return signal Receive.receive[LOW_PROC_ID(call AMPacket.group(msg))](msg, payload, len);
+	return signal Receive.receive[LOW_PROC_ID(call AMPacket.type(msg))](msg, payload, len);
 }
 
 event message_t * SubSnoop.receive[process_t id](message_t* msg, void* payload, uint8_t len) {
-	if (!validProcessId(call AMPacket.group(msg))) {
+	if (!validProcessId(call AMPacket.type(msg))) {
 		return msg;
 	}
-	return signal Snoop.receive[LOW_PROC_ID(call AMPacket.group(msg))](msg, payload, len);
+	return signal Snoop.receive[LOW_PROC_ID(call AMPacket.type(msg))](msg, payload, len);
 }
 
 

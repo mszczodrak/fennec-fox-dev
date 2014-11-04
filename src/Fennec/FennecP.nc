@@ -337,17 +337,17 @@ default event void FennecState.resend() {}
 	Global C-like functions - part of ff_functions 
 */
 
-bool validProcessId(uint16_t msg_group) @C() {
+bool validProcessId(nx_uint8_t msg_type) @C() {
 	struct network_process **npr;
 
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
-		if (((*npr)->process_id) == LOW_PROC_ID(msg_group)) {
+		if (((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
 		}
 	}
 
 	for(npr = states[current_state].processes; (*npr) != NULL ; npr++) {
-		if (((*npr)->process_id) == LOW_PROC_ID(msg_group)) {
+		if (((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;
 		}
 	}
@@ -357,9 +357,9 @@ bool validProcessId(uint16_t msg_group) @C() {
 	return FALSE;
 }
 
-nx_uint16_t setFennecType(uint8_t id) @C() {
-	nx_uint16_t newType;
-	newType = id << 8;
+nx_uint8_t setFennecType(nx_uint8_t id) @C() {
+	nx_uint8_t newType;
+	newType = id << 4;
 	//newType += LOW_DATA_ID(call FennecData.getDataSeq());
 	newType += LOW_DATA_ID(call FennecData.getDataCrc());
 	return newType;

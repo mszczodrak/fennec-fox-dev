@@ -51,8 +51,8 @@ bool new_data = FALSE;
 uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
-uint32_t min_estimate_offset = 100;
-uint32_t radio_tx_offset = 15;	/* 15 */
+uint32_t min_estimate_offset = 0;	/* 100 */
+uint32_t radio_tx_offset = 0;	/* 15 */
 
 void send_message() {
 	uint32_t now_32khz = call Alarm.getNow();
@@ -259,8 +259,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint32_t receiver_receive_time;
 	uint32_t receiver_time_left = 0;
 
-	printf("receive\n");
-
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
 	}
@@ -298,11 +296,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 					(sender_time_left > 5) ) {
 
 				setup_alarm( receiver_receive_time, sender_time_left, TRUE );
-	printf("sender left %lu = %lu - %lu\n", header->left + footer->offset, header->left, footer->offset);
+//	printf("sender left %lu = %lu + %d\n", header->left + footer->offset, header->left, footer->offset);
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
-				process, receiver_receive_time, sender_time_left, end_32khz);
+//			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
+//				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
 //			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
 //				(uint16_t)(sender_time_left >> 16), (uint16_t)sender_time_left);
@@ -315,11 +313,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	setup_alarm( receiver_receive_time, sender_time_left, TRUE );
 	make_copy(msg, payload, len);
 
-	printf("sender left %lu = %lu - %lu\n", header->left + footer->offset, header->left, footer->offset);
+//	printf("sender left %lu = %lu + %d\n", header->left + footer->offset, header->left, footer->offset);
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",
-				process, receiver_receive_time, sender_time_left, end_32khz);
+//	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",
+//				process, receiver_receive_time, sender_time_left, end_32khz);
 #else
 //	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
 //				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
