@@ -94,10 +94,9 @@ implementation {
       return ESIZE;
     }
 
-    header->type = id;
+    header->type = setFennecType(id);
     header->dest = addr;
     header->destpan = call CC2420Config.getPanAddr();
-    header->destpan = setFennecType(id);
     header->src = call AMPacket.address();
     header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
       ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
