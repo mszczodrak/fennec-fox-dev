@@ -143,7 +143,7 @@ use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 
 use network SDF $(FENNEC_FOX_LIB)/net/SynchronizedDisseminateFinish (
 		uint8_t repeat = 10,
-		uint16_t delay = 25,
+		uint16_t delay = 15,
 		uint32_t last_finish = 0
 )
 
