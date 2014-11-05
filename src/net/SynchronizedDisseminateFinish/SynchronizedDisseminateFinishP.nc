@@ -136,33 +136,20 @@ event void SendTimer.fired() {
 
 task void finish() {
 	call SendTimer.stop();
-	if (new_data) {
+	if ( new_data && app_pkt ) {
 #ifdef __FLOCKLAB_LEDS__
 		call Leds.led2On();
 #endif
-		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
-	}
-	if ( app_pkt != NULL ) {
+
 #ifdef __DBGS__NETWORK_ACTIONS__
-		if (new_data) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] SDF signal sendDone\n", process);
+		printf("[%u] SDF signal sendDone\n", process);
 #else
-			call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
+		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
 #endif
-		}
 #endif
 		signal AMSend.sendDone(app_pkt, SUCCESS);
-	} else {
-#ifdef __DBGS__NETWORK_ACTIONS__
-		if (new_data) {
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] SDF signal sendDone (does not signal)\n", process);
-#else
-			call SerialDbgs.dbgs(DBGS_FINISH_PERIOD, process, 0, 0);
-#endif
-		}
-#endif
+		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
 	}
 	new_data = FALSE;
 	app_pkt = NULL;
