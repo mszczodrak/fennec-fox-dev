@@ -110,6 +110,7 @@ void setup_alarm(uint32_t d0, uint32_t dt ) {
 command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
+	sync = FALSE;
 
 #ifdef __FLOCKLAB_LEDS__
 	call Leds.led2Off();
@@ -269,32 +270,18 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			if (((receiver_receive_time + sender_time_left) < end_32khz) && (sync == TRUE)) {
 				setup_alarm( receiver_receive_time, sender_time_left );
 				sync = FALSE;
-				if (TOS_NODE_ID == 11) {
-					printf("%lu < %lu\n", receiver_receive_time + sender_time_left, end_32khz);
-				}
 			}
 		}
                 return msg;
         }
 
-	sync = FALSE;
 	if ( (sender_time_left < delay_32khz) && (call SubPacketTimeStamp32khz.isValid(msg)) ) {
 		setup_alarm( receiver_receive_time, sender_time_left );
 	} else {
 		setup_alarm( now, delay_32khz );
 	}
+	sync = FALSE;
 	make_copy(msg, payload, len);
-
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SDF new remote payload: t0 %lu dt %lu -> %lu\n",
-//				process, receiver_receive_time, sender_time_left, end_32khz);
-#else
-//	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 0,
-//				(uint16_t)(sender_time_left >> 16), (uint16_t)(sender_time_left));
-#endif
-#endif
-
 	new_data = TRUE;
 	return signal Receive.receive(msg, payload, len);
 }
