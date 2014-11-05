@@ -43,27 +43,26 @@ message_t *app_pkt = NULL;
 bool new_data = FALSE;
 bool sync;
 
-uint32_t start_32khz;
 uint32_t end_32khz;
 uint32_t delay_32khz;
 uint32_t radio_tx_offset = 5;	/* 5 */
 
-void send_message() {
-	uint32_t now_32khz = call Alarm.getNow();
+void send_message(uint32_t now) {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
 	nx_struct SDF_header *header = (nx_struct SDF_header *) call SubAMSend.getPayload(&packet, 
 				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
 	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 
 	if (busy) {
+		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
 	}
 
 	busy = TRUE;
 
-	header->left = end_32khz - now_32khz;
-	footer->offset = now_32khz;
-	call SubPacketTimeStamp32khz.set(&packet, now_32khz);
+	header->left = end_32khz - now;
+	footer->offset = now;
+	call SubPacketTimeStamp32khz.set(&packet, now);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
 					sizeof(nx_struct SDF_header) +
@@ -80,8 +79,9 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 	memcpy(payload, new_payload, new_payload_len);
 	packet_payload_len = new_payload_len;
 
+	new_data = TRUE;
+
 	header->crc = (nx_uint16_t) crc16(0, payload, packet_payload_len);
-	send_message();
 	call SendTimer.startPeriodic(2);
 }
 
@@ -99,11 +99,19 @@ command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
 	sync = FALSE;
+	new_data = FALSE;
 
 #ifdef __FLOCKLAB_LEDS__
 	call Leds.led2Off();
 #endif
 
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("[%u] SDF start\n", process);
+#else
+//	call SerialDbgs.dbgs(DBGS_START_PERIOD, process, 0, 0);
+#endif
+#endif
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
 	call Param.get(DELAY, &delay, sizeof(delay));
 	delay_32khz = _MILLI_2_32KHZ( repeat * delay );
@@ -127,7 +135,8 @@ event void SendTimer.fired() {
 	}
 
 	if (!busy) {
-		send_message();
+		uint32_t now = call Alarm.getNow();
+		send_message(  now );
 	}
 
 	call Param.get(DELAY, &delay, sizeof(delay));
@@ -160,24 +169,22 @@ async event void Alarm.fired() {
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	void *app_payload;
-	start_32khz = call Alarm.getNow();
-	app_payload = call Packet.getPayload(msg, len);
+	uint32_t now = call Alarm.getNow();
+	void *app_payload = call Packet.getPayload(msg, len);
 	app_pkt = msg;
 	sync = FALSE;
 
-	if (same_packet(app_payload, len)) {
+	if (same_packet( app_payload, len )) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		send_message();
 		post finish();
-		return SUCCESS;	
+		send_message( 0 );
+	} else {
+		setup_alarm( now, delay_32khz );
+		make_copy(msg, app_payload, len);
+		send_message( now );
 	}
-
-	setup_alarm( start_32khz, delay_32khz );
-	make_copy(msg, app_payload, len);
-	new_data = TRUE;
 	return SUCCESS;
 }
 
@@ -227,14 +234,17 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
+	sync = FALSE;
+
 	if ( (sender_time_left < delay_32khz) && (call SubPacketTimeStamp32khz.isValid(msg)) ) {
 		setup_alarm( receiver_receive_time, sender_time_left );
 	} else {
 		setup_alarm( now, delay_32khz );
 	}
-	sync = FALSE;
+
 	make_copy(msg, payload, len);
-	new_data = TRUE;
+	send_message( now );
+
 	return signal Receive.receive(msg, payload, len);
 }
 
