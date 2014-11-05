@@ -105,13 +105,6 @@ command error_t SplitControl.start() {
 	call Leds.led2Off();
 #endif
 
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SDF start\n", process);
-#else
-//	call SerialDbgs.dbgs(DBGS_START_PERIOD, process, 0, 0);
-#endif
-#endif
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
 	call Param.get(DELAY, &delay, sizeof(delay));
 	delay_32khz = _MILLI_2_32KHZ( repeat * delay );
