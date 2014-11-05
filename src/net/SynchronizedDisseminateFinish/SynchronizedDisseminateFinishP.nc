@@ -44,9 +44,7 @@ bool busy = FALSE;
 message_t packet;
 uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
-#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
 bool new_data = FALSE;
-#endif
 
 uint32_t start_32khz;
 uint32_t end_32khz;
@@ -103,11 +101,11 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 	return ((in_len == packet_payload_len) && !(memcmp(in_payload, payload, in_len)));
 }
 
-void setup_alarm(uint32_t d0, uint32_t dt, bool save_end) {
+void setup_alarm(uint32_t d0, uint32_t dt ) {
 	call Alarm.startAt( d0, dt );
-	end_32khz = d0 + dt;
-	if (save_end) {
-		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
+	end_32khz = d0 + dt + 1;
+	if (TOS_NODE_ID == 11) {
+		printf("%lu, %lu -> end32_khz = %lu\n", d0, dt, end_32khz);
 	}
 }
 
@@ -150,11 +148,12 @@ event void SendTimer.fired() {
 
 task void finish() {
 	call SendTimer.stop();
-#ifdef __FLOCKLAB_LEDS__
 	if (new_data) {
+#ifdef __FLOCKLAB_LEDS__
 		call Leds.led2On();
-	}
 #endif
+		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
+	}
 	if ( app_pkt != NULL ) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 		if (new_data) {
@@ -177,9 +176,7 @@ task void finish() {
 		}
 #endif
 	}
-#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
 	new_data = FALSE;
-#endif
 	app_pkt = NULL;
 }
 
@@ -197,7 +194,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		setup_alarm( start_32khz, delay_32khz / 2, FALSE );
+		setup_alarm( start_32khz, delay_32khz / 2 );
 		make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -212,7 +209,9 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return SUCCESS;	
 	}
 
-	setup_alarm( start_32khz, delay_32khz, TRUE );
+	printf("start\n");
+
+	setup_alarm( start_32khz, delay_32khz );
 	make_copy(msg, app_payload, len);
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -225,9 +224,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 #endif
 #endif
 
-#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
 	new_data = TRUE;
-#endif
 	return SUCCESS;
 }
 
@@ -248,69 +245,41 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
-	uint32_t receiver_receive_time_estimate = call Alarm.getNow();
+	uint32_t now = call Alarm.getNow();
 	uint32_t receiver_receive_time = call SubPacketTimeStamp32khz.timestamp(msg);
         nx_struct SDF_header *header = (nx_struct SDF_header *) in_payload;
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
 	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
         nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + len);
-	uint32_t min_estimate_offset = *((uint8_t*)(msg)) * 1.5;
 	uint32_t sender_time_left;
-	uint32_t receiver_time_left = 0;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
-	}
-
-
-	/* if SFD receive timestamp is not valid, try to estimate it */
-	if ((!call SubPacketTimeStamp32khz.isValid(msg)) || (receiver_receive_time > receiver_receive_time_estimate)) {
-		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
-	}
-
-	if ((receiver_receive_time_estimate - receiver_receive_time) > (4 * min_estimate_offset)) {
-		receiver_receive_time = receiver_receive_time_estimate - min_estimate_offset;
 	}
 
 	/* calibrate sender timestamp */
 	sender_time_left = header->left + footer->offset;
 
 	/* remove default radio_tx_offset from the sender timestamp */
-	sender_time_left -= radio_tx_offset;
+	//sender_time_left -= radio_tx_offset;
 
-	if (sender_time_left > delay_32khz) {
-		sender_time_left = 0;
-	}
-
-	receiver_time_left = end_32khz - receiver_receive_time;
-
-	if (! call Alarm.isRunning() || (receiver_time_left > delay_32khz) ) {
-		receiver_time_left = 0;
-	}
-
+	
 	if (same_packet(payload, len)) {
-		if (receiver_time_left && call SubPacketTimeStamp32khz.isValid(msg) 	&& 
-					(receiver_time_left > sender_time_left) 	&& 
-					(sender_time_left > 5) ) {
-
-				setup_alarm( receiver_receive_time, sender_time_left, TRUE );
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//			printf("[%u] SDF same remote payload: t0 %lu dt %lu -> %lu\n", 
-//				process, receiver_receive_time, sender_time_left, end_32khz);
-#else
-//			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
-//				(uint16_t)(sender_time_left >> 16), (uint16_t)sender_time_left);
-#endif
-#endif
+		if (call Alarm.isRunning() && call SubPacketTimeStamp32khz.isValid(msg)) {
+			if (((receiver_receive_time + sender_time_left) < end_32khz)) {
+				setup_alarm( receiver_receive_time, sender_time_left );
+				if (TOS_NODE_ID == 11) {
+					printf("%lu < %lu\n", receiver_receive_time + sender_time_left, end_32khz);
+				}
+			}
 		}
                 return msg;
         }
 
-	if (sender_time_left > 5) {
-		setup_alarm( receiver_receive_time, sender_time_left, TRUE );
+	if ( (sender_time_left < delay_32khz) && (call SubPacketTimeStamp32khz.isValid(msg)) ) {
+		setup_alarm( receiver_receive_time, sender_time_left );
 	} else {
-		setup_alarm( receiver_receive_time, delay_32khz, TRUE );
+		setup_alarm( now, delay_32khz );
 	}
 	make_copy(msg, payload, len);
 
@@ -324,9 +293,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 #endif
 
-#if defined(__DBGS__NETWORK_ACTIONS__) || defined(__FLOCKLAB_LEDS__)
 	new_data = TRUE;
-#endif
 	return signal Receive.receive(msg, payload, len);
 }
 
