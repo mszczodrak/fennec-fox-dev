@@ -1,10 +1,6 @@
 #include <Fennec.h>
 #include "SynchronizedDisseminateFinish.h"
 
-#define MILLI_SEC_1	(1 << 5)
-#define MILLI_SEC_2	(2 << 5)
-#define MILLI_SEC_3	(3 << 5)
-
 generic module SynchronizedDisseminateFinishP(process_t process) {
 provides interface SplitControl;
 provides interface AMSend as AMSend;
@@ -60,22 +56,14 @@ void send_message() {
 	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 
 	if (busy) {
-		signal SubAMSend.sendDone(&packet, SUCCESS);
 		return;
 	}
 
 	busy = TRUE;
 
-	call SubPacketTimeStamp32khz.set(&packet, now_32khz);
-
-	footer->offset = now_32khz;
-
 	header->left = end_32khz - now_32khz;
-
-	/* skip if less than 2ms left */
-	if ( end_32khz <= now_32khz + (MILLI_SEC_2) ) {
-		return;
-	}
+	footer->offset = now_32khz;
+	call SubPacketTimeStamp32khz.set(&packet, now_32khz);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
 					sizeof(nx_struct SDF_header) +
@@ -94,7 +82,7 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 
 	header->crc = (nx_uint16_t) crc16(0, payload, packet_payload_len);
 	send_message();
-	call SendTimer.startPeriodic(1);
+	call SendTimer.startPeriodic(2);
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
@@ -134,6 +122,7 @@ command error_t SplitControl.stop() {
 
 event void SendTimer.fired() {
 	if (!call Alarm.isRunning()) {
+		call SendTimer.stop();
 		return;
 	}
 
@@ -194,8 +183,8 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		setup_alarm( start_32khz, delay_32khz / 2 );
-		make_copy(msg, app_payload, len);
+		send_message();
+		post finish();
 		return SUCCESS;	
 	}
 
@@ -229,25 +218,24 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
 	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
         nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + len);
-	uint32_t sender_time_left;
+	uint32_t sender_time_left = header->left + footer->offset;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
 	}
 
 	/* calibrate sender timestamp */
-	sender_time_left = header->left + footer->offset;
-
 	/* remove default radio_tx_offset from the sender timestamp */
 	//sender_time_left -= radio_tx_offset;
-
 	
 	if (same_packet(payload, len)) {
-		if (call Alarm.isRunning() && call SubPacketTimeStamp32khz.isValid(msg)) {
-			if (((receiver_receive_time + sender_time_left) < end_32khz) && (sync == TRUE)) {
-				setup_alarm( receiver_receive_time, sender_time_left );
-				sync = FALSE;
-			}
+		if ( call Alarm.isRunning() && 
+				call SubPacketTimeStamp32khz.isValid(msg) && 
+				(sender_time_left < delay_32khz) &&
+				((receiver_receive_time + sender_time_left) < end_32khz) && 
+				(sync == TRUE) ) {
+			setup_alarm( receiver_receive_time, sender_time_left );
+			sync = FALSE;
 		}
                 return msg;
         }
