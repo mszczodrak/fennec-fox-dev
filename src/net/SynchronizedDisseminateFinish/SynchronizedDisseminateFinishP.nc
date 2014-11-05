@@ -45,6 +45,7 @@ message_t packet;
 uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
 bool new_data = FALSE;
+bool sync;
 
 uint32_t start_32khz;
 uint32_t end_32khz;
@@ -104,9 +105,6 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 void setup_alarm(uint32_t d0, uint32_t dt ) {
 	call Alarm.startAt( d0, dt );
 	end_32khz = d0 + dt + 1;
-	if (TOS_NODE_ID == 11) {
-		printf("%lu, %lu -> end32_khz = %lu\n", d0, dt, end_32khz);
-	}
 }
 
 command error_t SplitControl.start() {
@@ -189,6 +187,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	start_32khz = call Alarm.getNow();
 	app_payload = call Packet.getPayload(msg, len);
 	app_pkt = msg;
+	sync = FALSE;
 
 	if (same_packet(app_payload, len)) {
 		if (call Alarm.isRunning()) {
@@ -242,6 +241,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
+	sync = TRUE;
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
@@ -266,8 +266,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	
 	if (same_packet(payload, len)) {
 		if (call Alarm.isRunning() && call SubPacketTimeStamp32khz.isValid(msg)) {
-			if (((receiver_receive_time + sender_time_left) < end_32khz)) {
+			if (((receiver_receive_time + sender_time_left) < end_32khz) && (sync == TRUE)) {
 				setup_alarm( receiver_receive_time, sender_time_left );
+				sync = FALSE;
 				if (TOS_NODE_ID == 11) {
 					printf("%lu < %lu\n", receiver_receive_time + sender_time_left, end_32khz);
 				}
@@ -276,6 +277,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
+	sync = FALSE;
 	if ( (sender_time_left < delay_32khz) && (call SubPacketTimeStamp32khz.isValid(msg)) ) {
 		setup_alarm( receiver_receive_time, sender_time_left );
 	} else {
