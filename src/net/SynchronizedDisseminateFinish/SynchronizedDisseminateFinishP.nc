@@ -196,34 +196,11 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		}
 		setup_alarm( start_32khz, delay_32khz / 2 );
 		make_copy(msg, app_payload, len);
-
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//		printf("[%u] SDF same local payload: t0 %lu dt %lu -> %lu\n", 
-//			process, start_32khz, ( delay_32khz / 2 ), end_32khz);
-#else
-//		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, 0, (uint16_t)((delay_32khz / 2) >> 16), 
-//								(uint16_t)(delay_32khz / 2));
-#endif
-#endif
 		return SUCCESS;	
 	}
 
-	printf("start\n");
-
 	setup_alarm( start_32khz, delay_32khz );
 	make_copy(msg, app_payload, len);
-
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] SDF new local payload: t0 %lu dt %lu -> %lu\n",
-//			process, start_32khz, delay_32khz, end_32khz);
-#else
-//	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16),
-//						(uint16_t)delay_32khz);
-#endif
-#endif
-
 	new_data = TRUE;
 	return SUCCESS;
 }
