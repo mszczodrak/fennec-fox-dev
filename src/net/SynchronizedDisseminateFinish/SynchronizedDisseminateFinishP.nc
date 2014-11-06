@@ -248,7 +248,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		/* looks good */
 		setup_alarm( receiver_receive_time, sender_time_left );
 	} else {
-		if ( sender_time_left > ((1 << 32) - delay_32khz) ) {
+		if ( sender_time_left > ((uint32_t)(-delay_32khz)) ) {
 			/* we might be behid */
 			end_32khz = receiver_receive_time + sender_time_left;
 			make_copy(msg, payload, len);
