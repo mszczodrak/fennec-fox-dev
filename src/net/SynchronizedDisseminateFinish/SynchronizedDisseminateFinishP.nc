@@ -1,7 +1,7 @@
 #include <Fennec.h>
 #include "SynchronizedDisseminateFinish.h"
 
-generic module SynchronizedDisseminateFinishP(process_t process) {
+generic module SynchronizedDisseminateFinishP(process_t process) @safe() {
 provides interface SplitControl;
 provides interface AMSend as AMSend;
 provides interface Receive as Receive;
@@ -41,16 +41,16 @@ message_t packet;
 uint8_t packet_payload_len;
 message_t *app_pkt = NULL;
 bool new_data = FALSE;
-bool sync;
+bool once = FALSE;
 
-uint32_t end_32khz;
-uint32_t delay_32khz;
+norace uint32_t end_32khz;
+uint32_t delay_32khz = 0;
 uint32_t radio_tx_offset = 5;	/* 5 */
 
-void send_message(uint32_t now) {
+task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
-	nx_struct SDF_header *header = (nx_struct SDF_header *) call SubAMSend.getPayload(&packet, 
-				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
+//	nx_struct SDF_header *header = (nx_struct SDF_header *) call SubAMSend.getPayload(&packet, 
+//				sizeof(nx_struct SDF_header) + packet_payload_len + sizeof(nx_struct SDF_footer));
 	nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + packet_payload_len);
 
 	if (busy) {
@@ -59,10 +59,8 @@ void send_message(uint32_t now) {
 	}
 
 	busy = TRUE;
-
-	header->left = end_32khz - now;
-	footer->offset = now;
-	call SubPacketTimeStamp32khz.set(&packet, now);
+	footer->left = end_32khz;
+	call SubPacketTimeStamp32khz.set(&packet, end_32khz);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
 					sizeof(nx_struct SDF_header) +
@@ -98,8 +96,8 @@ void setup_alarm(uint32_t d0, uint32_t dt ) {
 command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
-	sync = FALSE;
 	new_data = FALSE;
+	once = FALSE;
 
 #ifdef __FLOCKLAB_LEDS__
 	call Leds.led2Off();
@@ -117,6 +115,7 @@ command error_t SplitControl.stop() {
 	busy = FALSE;
 	call SendTimer.stop();
 	call Alarm.stop();
+	delay_32khz = 0;
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -128,8 +127,7 @@ event void SendTimer.fired() {
 	}
 
 	if (!busy) {
-		uint32_t now = call Alarm.getNow();
-		send_message(  now );
+		post send_message();
 	}
 
 	call Param.get(DELAY, &delay, sizeof(delay));
@@ -138,6 +136,7 @@ event void SendTimer.fired() {
 
 task void finish() {
 	call SendTimer.stop();
+
 	if ( new_data && app_pkt ) {
 #ifdef __FLOCKLAB_LEDS__
 		call Leds.led2On();
@@ -150,11 +149,17 @@ task void finish() {
 		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
 #endif
 #endif
-		signal AMSend.sendDone(app_pkt, SUCCESS);
-		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
 	}
-	new_data = FALSE;
-	app_pkt = NULL;
+
+	if ( new_data ) {
+		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
+		new_data = FALSE;
+	}
+
+	if ( app_pkt ) {
+		signal AMSend.sendDone(app_pkt, SUCCESS);
+		app_pkt = NULL;
+	}
 }
 
 async event void Alarm.fired() {
@@ -165,18 +170,17 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	uint32_t now = call Alarm.getNow();
 	void *app_payload = call Packet.getPayload(msg, len);
 	app_pkt = msg;
-	sync = FALSE;
 
 	if (same_packet( app_payload, len )) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
 		}
-		post finish();
-		send_message( 0 );
+		once = TRUE;
+		post send_message();
 	} else {
 		setup_alarm( now, delay_32khz );
 		make_copy(msg, app_payload, len);
-		send_message( now );
+		post send_message();
 	}
 	return SUCCESS;
 }
@@ -195,7 +199,11 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
-	sync = TRUE;
+	if (once) {
+		signal AMSend.sendDone(app_pkt, error);
+		once = FALSE;
+		app_pkt = NULL;
+	}
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
@@ -205,7 +213,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct SDF_header);
 	uint8_t len = in_len - sizeof(nx_struct SDF_header) - sizeof(nx_struct SDF_footer);
         nx_struct SDF_footer *footer = (nx_struct SDF_footer*)(payload + len);
-	uint32_t sender_time_left = header->left + footer->offset;
+	uint32_t sender_time_left = footer->left;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
@@ -219,25 +227,41 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if ( call Alarm.isRunning() && 
 				call SubPacketTimeStamp32khz.isValid(msg) && 
 				(sender_time_left < delay_32khz) &&
-				((receiver_receive_time + sender_time_left) < end_32khz) && 
-				(sync == TRUE) ) {
+				((receiver_receive_time + sender_time_left) < end_32khz)) {
 			setup_alarm( receiver_receive_time, sender_time_left );
-			sync = FALSE;
 		}
                 return msg;
         }
 
-	sync = FALSE;
 
-	if ( (sender_time_left < delay_32khz) && (call SubPacketTimeStamp32khz.isValid(msg)) ) {
+	if (delay_32khz == 0) {
+	        call Param.get(REPEAT, &repeat, sizeof(repeat));
+        	call Param.get(DELAY, &delay, sizeof(delay));
+	        delay_32khz = _MILLI_2_32KHZ( repeat * delay );
+	}
+
+	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
+		receiver_receive_time = now;
+	}
+
+	if ( sender_time_left < delay_32khz ) {
+		/* looks good */
 		setup_alarm( receiver_receive_time, sender_time_left );
 	} else {
-		setup_alarm( now, delay_32khz );
+		if ( sender_time_left > ((1 << 32) - delay_32khz) ) {
+			/* we might be behid */
+			end_32khz = receiver_receive_time + sender_time_left;
+			make_copy(msg, payload, len);
+			post send_message();
+			post finish();
+			return signal Receive.receive(msg, payload, len);
+		} else {
+			setup_alarm( receiver_receive_time, delay_32khz );
+		}
 	}
 
 	make_copy(msg, payload, len);
-	send_message( now );
-
+	post send_message();
 	return signal Receive.receive(msg, payload, len);
 }
 
