@@ -45,7 +45,7 @@ bool once = FALSE;
 
 norace uint32_t end_32khz;
 uint32_t delay_32khz = 0;
-uint32_t radio_tx_offset = 5;	/* 5 */
+uint32_t radio_tx_offset = 2;	/* 2 */
 
 task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
@@ -221,7 +221,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	/* calibrate sender timestamp */
 	/* remove default radio_tx_offset from the sender timestamp */
-	//sender_time_left -= radio_tx_offset;
+	sender_time_left -= radio_tx_offset;
 	
 	if (same_packet(payload, len)) {
 		if ( call Alarm.isRunning() && 
