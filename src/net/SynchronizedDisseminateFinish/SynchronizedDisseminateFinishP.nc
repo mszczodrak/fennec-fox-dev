@@ -229,6 +229,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 				(sender_time_left < delay_32khz) &&
 				((receiver_receive_time + sender_time_left) < end_32khz)) {
 			setup_alarm( receiver_receive_time, sender_time_left );
+			if (!busy) {
+				post send_message();
+			}
 		}
                 return msg;
         }
