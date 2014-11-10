@@ -296,8 +296,9 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Network State sequnce has increased */
 	if ((check_sequence(new_seq, current_seq) > 0) && (new_state == current_state)) {
+		next_state = new_state;
 		next_seq = new_seq;
-		current_seq = next_seq;
+		state_transitioning = TRUE;
 		signal FennecState.resend();
 		return SUCCESS;
 	}
