@@ -141,7 +141,7 @@ use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 		uint16_t retry_delay = 25
 )
 
-use network SDF $(FENNEC_FOX_LIB)/net/SynchronizedDisseminateFinish (
+use network EED $(FENNEC_FOX_LIB)/net/EED (
 		uint8_t repeat = 10,
 		uint16_t delay = 15,
 		uint32_t last_finish = 0
