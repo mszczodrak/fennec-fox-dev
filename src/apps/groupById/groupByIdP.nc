@@ -26,17 +26,16 @@
  */
 
 /**
-  * Counter Test Application Module
+  * Fennec Fox timer event application module
   *
   * @author: Marcin K Szczodrak
-  * @updated: 01/03/2014
   */
 
-#include <Fennec.h>
-#include <Timer.h>
-#include "Counter.h"
 
-generic module CounterP(process_t process) {
+#include <Fennec.h>
+#include "groupById.h"
+
+generic module groupByIdP(process_t process) {
 provides interface SplitControl;
 
 uses interface Param;
@@ -53,49 +52,33 @@ uses interface PacketField<uint8_t> as SubPacketTransmitPower;
 uses interface PacketField<uint8_t> as SubPacketRSSI;
 uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
-uses interface Leds;
+uses interface Event;
 uses interface Timer<TMilli>;
+uses interface LocalTime<T32khz>;
 
 uses interface SerialDbgs;
 }
 
 implementation {
 
-uint16_t delay;
-uint16_t delay_scale;
-uint16_t src;
-uint16_t dest;
-uint8_t repeat;
-
-message_t packet;
-uint16_t seqno = 0;
+uint16_t first_address;
+uint16_t last_address;
 
 command error_t SplitControl.start() {
-	uint32_t send_delay;
+	call Param.get(FIRST_ADDRESS, &first_address, sizeof(first_address));
+	call Param.get(LAST_ADDRESS, &last_address, sizeof(last_address));
 
-	call Param.get(SRC, &src, sizeof(src));
-	call Param.get(DELAY, &delay, sizeof(delay));
-	call Param.get(DELAY_SCALE, &delay_scale, sizeof(delay_scale));
-	call Param.get(REPEAT, &repeat, sizeof(repeat));
-
-	send_delay = delay;
-	send_delay *= delay_scale;
-
-	if ((src == BROADCAST) || (src == TOS_NODE_ID)) {
-		if (repeat) {
-			call Timer.startPeriodic(send_delay);
-		} else {
-			call Timer.startOneShot(send_delay);
-		}
-	}
-
-#ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter start()\n", process);
+	printf("[%u] Event groupById start()\n", process);
 #else
 	//call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
 #endif
+
+	if ((TOS_NODE_ID >= first_address) && (TOS_NODE_ID <= last_address)) {
+			call Timer.startOneShot(1);
+	}
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -103,77 +86,33 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	call Timer.stop();
 
-#ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter stop()\n", process);
+        printf("[%u] Event groupById stop()\n", process);
 #else
 	//call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
 #endif
+
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
-task void sendMessage() {
-	error_t e;
-	CounterMsg* msg = (CounterMsg*)call SubAMSend.getPayload(&packet,
-							sizeof(CounterMsg));
-	if (msg == NULL) {
-		return;
-	}
-
-	msg->source = TOS_NODE_ID;
-	msg->seqno = seqno;
-
-	call Param.get(DEST, &dest, sizeof(dest));
-	e = call SubAMSend.send(dest, &packet, sizeof(CounterMsg));
-#ifdef __FLOCKLAB_LEDS__
-      call Leds.led0On();
-#endif
-	if (e != SUCCESS) {
-		signal SubAMSend.sendDone(&packet, e);
-	}
-}
 
 event void Timer.fired() {
-	seqno++;
-	post sendMessage();
-}
-
-event void SubAMSend.sendDone(message_t *msg, error_t error) {
-#ifdef __USUAL_LEDS__
-	call Leds.set(seqno);
-#endif
-#ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter SendDone Error: %d  Seqno: %d  Dest: %d\n", process, error, seqno, dest);
+        printf("[%u] Event groupById fired()\n", process);
 #else
-	//call Param.get(DEST, &dest, sizeof(dest));
-	//call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
+	call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
 #endif
 #endif
-
-#ifdef __FLOCKLAB_LEDS__
-	call Leds.led0Off();
-#endif
+	call Event.report(process, TRUE);
 }
 
+event void SubAMSend.sendDone(message_t *msg, error_t error) {}
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	CounterMsg* cm = (CounterMsg*)payload;
-#ifdef __USUAL_LEDS__
-	call Leds.set(cm->seqno);
-#endif
-
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application Counter Receive Len: %d  Seqno: %d  Source: %d\n", process, len, cm->seqno, cm->source);
-#else
-	call SerialDbgs.dbgs(DBGS_RECEIVE_DATA, len, cm->seqno, cm->source);
-#endif
-#endif
-	call Param.set(RECEIVE_EVENT, &(cm->source), sizeof(cm->source));
-
 	return msg;
 }
 

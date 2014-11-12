@@ -26,82 +26,14 @@
  */
 
 /**
-  * Fennec Fox structs
+  * Fennec Fox timer event application module
   *
   * @author: Marcin K Szczodrak
-  * @updated: 09/08/2013
   */
 
 
-#ifndef FF_STRUCTURES_H
-#define FF_STRUCTURES_H
+#ifndef __groupById_H_
+#define __groupById_H_
 
-#include "ff_consts.h"
-#include "platform_message.h"
-#include "global_data.h"
-#include "local_data.h"
-
-#ifndef TOSH_DATA_LENGTH
-#define TOSH_DATA_LENGTH 127
-#endif
-
-#ifndef TOS_BCAST_ADDR
-#define TOS_BCAST_ADDR 0xFFFF
-#endif
-
-#define RADIO_SEND_RESOURCE "RADIO_SEND_RESOURCE"
-
-typedef uint8_t state_t;
-typedef uint8_t module_t;
-typedef uint8_t layer_t;
-typedef uint8_t event_t;
-typedef uint8_t process_t;
-
-struct variable_reference {
-	uint8_t	var_id;
-	void*	ptr;
-	uint8_t global_id;
-}; 
-
-struct variable_info {
-	uint8_t var_id;
-	uint8_t offset;
-	uint8_t size;
-};
-
-struct network_process {
-	process_t process_id;
-	uint8_t application;
-	uint8_t network;
-	uint8_t am;
-	uint8_t application_module;
-	uint8_t application_variables_number;
-	uint8_t application_variables_offset;
-	uint8_t network_module;
-	uint8_t network_variables_number;
-	uint8_t network_variables_offset;
-	uint8_t am_module;
-	uint8_t am_variables_number;
-	uint8_t am_variables_offset;
-	bool am_dominant;
-};
-
-struct state {
-        state_t 		state_id;
-	struct network_process **processes;
-	uint8_t 		level;
-};
-
-struct event_process {
-	event_t 	event_id;
-	process_t	process_id;
-};
-
-struct fennec_policy {
-	uint8_t fast;
-	uint16_t  src_conf;
-	uint16_t event_mask;
-	uint16_t  dst_conf;
-};
 
 #endif

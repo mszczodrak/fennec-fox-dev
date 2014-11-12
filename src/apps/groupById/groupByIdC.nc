@@ -26,82 +26,58 @@
  */
 
 /**
-  * Fennec Fox structs
+  * Fennec Fox timer event application module
   *
   * @author: Marcin K Szczodrak
-  * @updated: 09/08/2013
   */
 
+generic configuration groupByIdC(process_t process) {
+provides interface SplitControl;
 
-#ifndef FF_STRUCTURES_H
-#define FF_STRUCTURES_H
+uses interface Param;
 
-#include "ff_consts.h"
-#include "platform_message.h"
-#include "global_data.h"
-#include "local_data.h"
+uses interface AMSend as SubAMSend;
+uses interface Receive as SubReceive;
+uses interface Receive as SubSnoop;
+uses interface AMPacket as SubAMPacket;
+uses interface Packet as SubPacket;
+uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 
-#ifndef TOSH_DATA_LENGTH
-#define TOSH_DATA_LENGTH 127
-#endif
+uses interface PacketField<uint8_t> as SubPacketLinkQuality;
+uses interface PacketField<uint8_t> as SubPacketTransmitPower;
+uses interface PacketField<uint8_t> as SubPacketRSSI;
+uses interface PacketField<uint8_t> as SubPacketTimeSyncOffset;
 
-#ifndef TOS_BCAST_ADDR
-#define TOS_BCAST_ADDR 0xFFFF
-#endif
+uses interface Event;
+}
 
-#define RADIO_SEND_RESOURCE "RADIO_SEND_RESOURCE"
+implementation {
+components new groupByIdP(process);
+SplitControl = groupByIdP;
 
-typedef uint8_t state_t;
-typedef uint8_t module_t;
-typedef uint8_t layer_t;
-typedef uint8_t event_t;
-typedef uint8_t process_t;
+Param = groupByIdP;
 
-struct variable_reference {
-	uint8_t	var_id;
-	void*	ptr;
-	uint8_t global_id;
-}; 
+SubAMSend = groupByIdP.SubAMSend;
+SubReceive = groupByIdP.SubReceive;
+SubSnoop = groupByIdP.SubSnoop;
+SubAMPacket = groupByIdP.SubAMPacket;
+SubPacket = groupByIdP.SubPacket;
+SubPacketAcknowledgements = groupByIdP.SubPacketAcknowledgements;
 
-struct variable_info {
-	uint8_t var_id;
-	uint8_t offset;
-	uint8_t size;
-};
+SubPacketLinkQuality = groupByIdP.SubPacketLinkQuality;
+SubPacketTransmitPower = groupByIdP.SubPacketTransmitPower;
+SubPacketRSSI = groupByIdP.SubPacketRSSI;
+SubPacketTimeSyncOffset = groupByIdP.SubPacketTimeSyncOffset;
 
-struct network_process {
-	process_t process_id;
-	uint8_t application;
-	uint8_t network;
-	uint8_t am;
-	uint8_t application_module;
-	uint8_t application_variables_number;
-	uint8_t application_variables_offset;
-	uint8_t network_module;
-	uint8_t network_variables_number;
-	uint8_t network_variables_offset;
-	uint8_t am_module;
-	uint8_t am_variables_number;
-	uint8_t am_variables_offset;
-	bool am_dominant;
-};
+Event = groupByIdP;
 
-struct state {
-        state_t 		state_id;
-	struct network_process **processes;
-	uint8_t 		level;
-};
+components new TimerMilliC();
+groupByIdP.Timer -> TimerMilliC;
 
-struct event_process {
-	event_t 	event_id;
-	process_t	process_id;
-};
+components SerialDbgsC;
+groupByIdP.SerialDbgs -> SerialDbgsC.SerialDbgs[process];
 
-struct fennec_policy {
-	uint8_t fast;
-	uint16_t  src_conf;
-	uint16_t event_mask;
-	uint16_t  dst_conf;
-};
+components LocalTime32khzC;
+groupByIdP.LocalTime -> LocalTime32khzC;
 
-#endif
+}
