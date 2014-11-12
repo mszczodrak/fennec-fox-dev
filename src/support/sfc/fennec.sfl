@@ -251,3 +251,9 @@ use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (
 		float completed = 0.75, 
 		uint16_t activity
 )
+
+use source groupById $(FENNEC_FOX_LIB)/apps/groupById (
+		uint16_t first_address = 0xffff,
+		uint16_t last_address = 0xffff
+)
+
