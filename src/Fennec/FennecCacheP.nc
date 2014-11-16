@@ -159,12 +159,20 @@ command void FennecData.load(void *ptr) {
 	memcpy(ptr, call FennecData.getNxDataPtr(), call FennecData.getNxDataLen());
 }
 
-command void FennecData.update(void* net, uint8_t global_id) {
-	bool diff = FALSE;
+command error_t FennecData.cmpData(void *net, uint8_t global_id) {
 	void* fgd = call FennecData.getNxDataPtr();
 	if (memcmp(net + global_data_info[global_id].offset, 
 				fgd + global_data_info[global_id].offset,
-				global_data_info[global_id].size)) {
+				global_data_info[global_id].size) == 0) {
+		return SUCCESS;
+	}
+	return FAIL;
+}
+
+command void FennecData.update(void* net, uint8_t global_id) {
+	bool diff = FALSE;
+	void* fgd = call FennecData.getNxDataPtr();
+	if (call FennecData.cmpData(net, global_id) != SUCCESS) {
 		memcpy(fgd + global_data_info[global_id].offset, 
 				net + global_data_info[global_id].offset,
 				global_data_info[global_id].size);

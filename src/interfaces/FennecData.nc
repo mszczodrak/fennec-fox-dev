@@ -5,6 +5,7 @@ interface FennecData {
 
 command void load(void* pkt);
 command void update(void* pkt, uint8_t global_id);
+command error_t cmpData(void *pkt, uint8_t global_id);
 
 command void* getNxDataPtr();
 command uint16_t getNxDataLen();
