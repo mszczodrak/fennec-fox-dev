@@ -28,7 +28,7 @@ uint16_t offset;
 void setup_dest() {
 	uint16_t addr = TOS_NODE_ID - offset;
 	uint16_t dest = 0;
-	if (addr < SET_DEST_NUMBER_OF_NODES) {
+	if (addr < FIX_DEST_NUMBER_OF_NODES) {
 		dest = fixed_dest[addr];
 	}
 	call Param.set(DEST, &dest, sizeof(dest));
