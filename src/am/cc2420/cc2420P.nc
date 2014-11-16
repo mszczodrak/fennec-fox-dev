@@ -82,6 +82,25 @@ bool pending_stop;
 uint8_t pending_process_id;
 message_t *pending_msg;
 	
+task void setChannel() {
+	uint8_t new_channel;
+	call Param.get(CHANNEL, &new_channel, sizeof(new_channel));
+	
+	if (call RadioChannel.getChannel() == new_channel) {
+		return;
+	}
+
+	if (call RadioChannel.setChannel(new_channel) != SUCCESS) {
+		post setChannel();
+	}
+}
+
+task void setAutoAck() {
+//	call Param.get(AUTOACK, &autoAck, sizeof(autoAck));
+//	call CC2420Config.setAutoAck(autoAck, autoAck);
+//	call CC2420Config.sync();
+}
+
 command error_t SplitControl.start() {
 	pending_stop = FALSE;
 	pending_msg = NULL;
@@ -97,27 +116,6 @@ command error_t SplitControl.stop() {
 	}
 		
 	return call SubSplitControl.stop();
-}
-
-
-task void setChannel() {
-	call Param.get(CHANNEL, &channel, sizeof(channel));
-	printf("channel %u\n", channel);
-
-	if (call RadioChannel.getChannel() == channel) {
-		return;
-	}
-
-	if (call RadioChannel.setChannel(channel) != SUCCESS) {
-		post setChannel();
-	}
-	printf("set channel %u\n", channel);
-}
-
-task void setAutoAck() {
-//	call Param.get(AUTOACK, &autoAck, sizeof(autoAck));
-//	call CC2420Config.setAutoAck(autoAck, autoAck);
-//	call CC2420Config.sync();
 }
 
 event void SubSplitControl.startDone(error_t error) {
@@ -201,10 +199,12 @@ task void setChannelDone() {
 }
 
 command error_t RadioChannel.setChannel(uint8_t ch) {
+	error_t err;
 	call CC2420Config.setChannel( ch );
+	err = call CC2420Config.sync();
 	channel = ch;
 	post setChannelDone();
-	return SUCCESS;
+	return err;
 }
 
 command uint8_t RadioChannel.getChannel() {
