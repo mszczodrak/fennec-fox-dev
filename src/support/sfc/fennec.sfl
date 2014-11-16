@@ -129,6 +129,11 @@ use application NetworkRadioSetup $(FENNEC_FOX_LIB)/apps/network_rssi()
 use application ftsp $(FENNEC_FOX_LIB)/apps/ftsp (uint32_t beacon_rate,
 		float skew, uint32_t localAverage, int32_t offsetAverage)
 
+use application fixDest $(FENNEC_FOX_LIB)/apps/tests/FixDest(
+		uint16_t dest = 0,
+		uint16_t offset = 0)
+
+
 # net Modules
 
 use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
