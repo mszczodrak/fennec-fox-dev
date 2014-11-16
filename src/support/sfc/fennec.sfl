@@ -133,8 +133,8 @@ use application fixDest $(FENNEC_FOX_LIB)/apps/tests/FixDest(
 		uint16_t dest = 0,
 		uint16_t offset = 0)
 
-use application fixChannel $(FENNEC_FOX_LIB)/apps/tests/FixChannel(
-		uint16_t channel = 0,
+use application fixChannel $(FENNEC_FOX_LIB)/apps/tests/FixRadioChannel(
+		uint8_t channel = 0,
 		uint16_t offset = 0)
 
 

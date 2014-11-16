@@ -102,6 +102,7 @@ command error_t SplitControl.stop() {
 
 task void setChannel() {
 	call Param.get(CHANNEL, &channel, sizeof(channel));
+	printf("channel %u\n", channel);
 
 	if (call RadioChannel.getChannel() == channel) {
 		return;
@@ -110,6 +111,7 @@ task void setChannel() {
 	if (call RadioChannel.setChannel(channel) != SUCCESS) {
 		post setChannel();
 	}
+	printf("set channel %u\n", channel);
 }
 
 task void setAutoAck() {

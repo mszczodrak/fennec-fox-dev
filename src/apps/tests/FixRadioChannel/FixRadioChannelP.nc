@@ -66,22 +66,22 @@ uint16_t offset;
 
 void setup_radio_channel() {
 	uint16_t addr = TOS_NODE_ID - offset;
-	uint8_t my_channel = 26;
+	uint8_t channel = 26;
 	if (addr < FIXED_CHANNEL_NUMBER_OF_NODES) {
-		my_power = fixed_channel[addr];
+		channel = fixed_channel[addr];
 	}
 	call Param.set(CHANNEL, &channel, sizeof(channel));
 }
 
 command error_t SplitControl.start() {
 	call Param.get(OFFSET, &offset, sizeof(offset));
-	setup_radio_tx();
+	setup_radio_channel();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	setup_radio_tx();
+	setup_radio_channel();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
