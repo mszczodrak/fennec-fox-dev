@@ -148,12 +148,15 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	if (data_msg->sequence > data_sequence) {
+		uint8_t i;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] DataSynchronizationP Syncing...\n", process);
 #endif
 #endif
-		call FennecData.update(data_msg->data);
+		for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
+			call FennecData.update(data_msg->data, i);
+		}
 		data_sequence = data_msg->sequence;
 		data_crc = call FennecData.getDataCrc();
 		return msg;
@@ -189,7 +192,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void Param.updated(uint8_t var_id) {
 }
 
-event void FennecData.updated() {
+event void FennecData.updated(uint8_t global_id) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] DataSynchronizationP  - Data updated...\n", process);

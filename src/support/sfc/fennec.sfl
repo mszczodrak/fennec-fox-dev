@@ -110,7 +110,7 @@ use application DataSync $(FENNEC_FOX_LIB)/apps/DataSynchronization (
 )
 
 use application TestDataSync $(FENNEC_FOX_LIB)/apps/tests/TestDataSync (
-		uint16_t update_delay = 5000,
+		uint32_t update_delay = 25000,
 		uint16_t val1 = 0,
 		uint16_t val2 = 0,
 		uint16_t val3 = 0,

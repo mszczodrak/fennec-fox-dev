@@ -367,7 +367,7 @@ nx_uint8_t setFennecType(nx_uint8_t id) @C() {
 	return newType;
 }
 
-event void FennecData.updated() {}
+event void FennecData.updated(uint8_t global_id) {}
 event void FennecData.resend() {}
 
 }

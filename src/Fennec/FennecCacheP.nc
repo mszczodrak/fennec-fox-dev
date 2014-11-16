@@ -70,6 +70,10 @@ command uint16_t FennecData.getDataCrc() {
 	return current_data_crc;
 }
 
+command uint8_t FennecData.getNumOfGlobals() {
+	return NUMBER_OF_GLOBALS;
+}
+
 struct variable_info * getVariableInfo(uint8_t var_id) {
 	uint8_t i;
 	//printf("Get variable info: %d\n", var_id);
@@ -156,19 +160,18 @@ command void FennecData.load(void *ptr) {
 	memcpy(ptr, call FennecData.getNxDataPtr(), call FennecData.getNxDataLen());
 }
 
-command void FennecData.update(void* net) {
-	uint8_t i;
+command void FennecData.update(void* net, uint8_t global_id) {
 	bool diff = FALSE;
 	void* fgd = call FennecData.getNxDataPtr();
-	for ( i = 0; i < NUMBER_OF_GLOBALS; i++ ) {
-		if (memcmp(net + global_data_info[i].offset, fgd + global_data_info[i].offset, global_data_info[i].size)) {
-			memcpy(fgd + global_data_info[i].offset, 
-					net + global_data_info[i].offset,
-					global_data_info[i].size);
-			globalDataSyncWithNetwork(global_data_info[i].var_id);
-			signal_global_update(global_data_info[i].var_id);
-			diff = TRUE;
-		}
+	if (memcmp(net + global_data_info[global_id].offset, 
+				fgd + global_data_info[global_id].offset,
+				global_data_info[global_id].size)) {
+		memcpy(fgd + global_data_info[global_id].offset, 
+				net + global_data_info[global_id].offset,
+				global_data_info[global_id].size);
+		globalDataSyncWithNetwork(global_data_info[global_id].var_id);
+		signal_global_update(global_data_info[global_id].var_id);
+		diff = TRUE;
 	}
 
 	if (diff) {
@@ -297,7 +300,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	printfGlobalData();
 #endif
 #endif
-	signal FennecData.updated();
+	signal FennecData.updated(name);
 	return SUCCESS;
 }
 
