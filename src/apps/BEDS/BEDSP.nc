@@ -67,13 +67,18 @@ message_t packet;
 nx_uint16_t data_sequence;
 nx_uint16_t data_crc;
 
+#define MAX_HIST_VARS	20
+nx_uint8_t var_hist[MAX_HIST_VARS];
+
+
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
 	call Timer.startOneShot(send_delay / 2 + (call Random.rand16() % send_delay) + 1);
 }
 
 task void send_msg() {
-	nx_struct fennec_network_data *data_msg;
+	nx_struct BEDS_data *data_msg;
+	void *vh;
 	dbg("BEDS", "[%d] BEDSP send_data_sync_msg()", process);
 
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
@@ -91,8 +96,10 @@ task void send_msg() {
 	data_msg->sequence = data_sequence;
 	data_msg->crc = data_crc;
 	call FennecData.load(data_msg->data);
+	vh = ((uint8_t*)(data_msg)) + call FennecData.getNxDataLen() + 4;
+	memcpy(&var_hist, vh, call FennecData.getNumOfGlobals());
 
-	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_data)) != SUCCESS) {
+	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data) + call FennecData.getNumOfGlobals()) != SUCCESS) {
 		dbg("BEDS", "[%d] BEDSP send_data_sync_msg() - FAIL", process);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
@@ -115,6 +122,10 @@ void resend(bool immediate) {
 }
 
 command error_t SplitControl.start() {
+	uint8_t i;
+	for (i = 0; i < MAX_HIST_VARS; i++) {
+		var_hist[i] = 0;
+	}
 	data_sequence = 0;
 	data_crc = 0;
 	dbg("BEDS", "[%d] BEDSP SplitControl.start()", process);
@@ -131,7 +142,7 @@ command error_t SplitControl.stop() {
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	nx_struct fennec_network_data *data_msg = (nx_struct fennec_network_data*) payload;
+	nx_struct BEDS_data *data_msg = (nx_struct BEDS_data*) payload;
 	dbg("BEDS", "[%d] BEDSP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
@@ -199,6 +210,7 @@ event void FennecData.updated(uint8_t global_id) {
 #endif
 #endif
 	data_sequence++;
+	var_hist[global_id] = data_sequence;
 	data_crc = call FennecData.getDataCrc();
 	resend(1);
 }

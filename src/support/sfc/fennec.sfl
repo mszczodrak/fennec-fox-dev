@@ -109,6 +109,10 @@ use application DataSync $(FENNEC_FOX_LIB)/apps/DataSynchronization (
 		uint16_t send_delay = 1000
 )
 
+use application BEDS $(FENNEC_FOX_LIB)/apps/BEDS (
+		uint16_t send_delay = 1000
+)
+
 use application TestDataSync $(FENNEC_FOX_LIB)/apps/tests/TestDataSync (
 		uint32_t update_delay = 25000,
 		uint16_t val1 = 0,
