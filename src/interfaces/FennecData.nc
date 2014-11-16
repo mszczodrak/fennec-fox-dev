@@ -13,7 +13,7 @@ command uint8_t getNumOfGlobals();
 
 command void checkDataSeq(uint8_t msg_type);
 
-event void updated(uint8_t global_id);
+event void updated(uint8_t global_id, uint8_t var_index);
 event void resend();
 	
 }

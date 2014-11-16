@@ -300,7 +300,15 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	printfGlobalData();
 #endif
 #endif
-	signal FennecData.updated(name);
+
+	// Find index of the variable in the global_data_info
+        for (i = 0; i < NUMBER_OF_GLOBALS; i++) {
+                if (global_data_info[i].var_id == name) {
+			break;
+                }
+        }
+
+	signal FennecData.updated(name, i);
 	return SUCCESS;
 }
 

@@ -78,7 +78,7 @@ task void schedule_send() {
 
 task void send_msg() {
 	nx_struct BEDS_data *data_msg;
-	void *vh;
+	nx_uint8_t *vh;
 	dbg("BEDS", "[%d] BEDSP send_data_sync_msg()", process);
 
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
@@ -96,8 +96,8 @@ task void send_msg() {
 	data_msg->sequence = data_sequence;
 	data_msg->crc = data_crc;
 	call FennecData.load(data_msg->data);
-	vh = ((uint8_t*)(data_msg)) + call FennecData.getNxDataLen() + 4;
-	memcpy(&var_hist, vh, call FennecData.getNumOfGlobals());
+	vh = (nx_uint8_t*)(((uint8_t*)(data_msg)) + sizeof(nx_struct BEDS_data));
+	memcpy(vh, &var_hist, call FennecData.getNumOfGlobals());
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data) + call FennecData.getNumOfGlobals()) != SUCCESS) {
 		dbg("BEDS", "[%d] BEDSP send_data_sync_msg() - FAIL", process);
@@ -143,6 +143,8 @@ command error_t SplitControl.stop() {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct BEDS_data *data_msg = (nx_struct BEDS_data*) payload;
+	nx_uint8_t *vh = (nx_uint8_t*)(((uint8_t*)payload) + sizeof(nx_struct BEDS_data));
+	uint8_t i;
 	dbg("BEDS", "[%d] BEDSP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
@@ -159,14 +161,17 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	if (data_msg->sequence > data_sequence) {
-		uint8_t i;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] BEDSP Syncing...\n", process);
 #endif
 #endif
 		for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-			call FennecData.update(data_msg->data, i);
+			printf("%u vs %u\n", vh[i], var_hist[i]);
+			if (vh[i] > var_hist[i]) {	
+				var_hist[i] = vh[i];
+				call FennecData.update(data_msg->data, i);
+			}
 		}
 		data_sequence = data_msg->sequence;
 		data_crc = call FennecData.getDataCrc();
@@ -184,7 +189,15 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	printf("[%u] BEDSP Solving Conflict...\n", process);
 #endif
 #endif
-	data_sequence += (call Random.rand16() % DATA_CONFLICT_RAND_OFFSET) + 1; 
+	//data_sequence += (call Random.rand16() % DATA_CONFLICT_RAND_OFFSET) + 1; 
+
+	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {
+		if (vh[i] > var_hist[i]) {	
+			var_hist[i] = vh[i];
+			call FennecData.update(data_msg->data, i);
+		}
+	}
+
 	resend(1);
 	return msg;
 }
@@ -203,14 +216,15 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void Param.updated(uint8_t var_id) {
 }
 
-event void FennecData.updated(uint8_t global_id) {
+event void FennecData.updated(uint8_t global_id, uint8_t var_index) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] BEDSP  - Data updated...\n", process);
 #endif
 #endif
 	data_sequence++;
-	var_hist[global_id] = data_sequence;
+	printf("Index %d  -> Seq: %d\n", var_index, data_sequence);
+	var_hist[var_index] = data_sequence;
 	data_crc = call FennecData.getDataCrc();
 	resend(1);
 }
