@@ -159,36 +159,32 @@ command void FennecData.load(void *ptr) {
 	memcpy(ptr, call FennecData.getNxDataPtr(), call FennecData.getNxDataLen());
 }
 
-command error_t FennecData.cmpData(void *net, uint8_t global_id) {
+command error_t FennecData.matchData(void *net, uint8_t global_data_index) {
 	void* fgd = call FennecData.getNxDataPtr();
-	if (memcmp(net + global_data_info[global_id].offset, 
-				fgd + global_data_info[global_id].offset,
-				global_data_info[global_id].size) == 0) {
+	if (memcmp(net + global_data_info[global_data_index].offset, 
+				fgd + global_data_info[global_data_index].offset,
+				global_data_info[global_data_index].size) == 0) {
 		return SUCCESS;
 	}
 	return FAIL;
 }
 
-command void FennecData.update(void* net, uint8_t global_id) {
-	bool diff = FALSE;
+command void FennecData.update(void* net, uint8_t global_data_index) {
 	void* fgd = call FennecData.getNxDataPtr();
-	if (call FennecData.cmpData(net, global_id) != SUCCESS) {
-		memcpy(fgd + global_data_info[global_id].offset, 
-				net + global_data_info[global_id].offset,
-				global_data_info[global_id].size);
-		globalDataSyncWithNetwork(global_data_info[global_id].var_id);
-		signal_global_update(global_data_info[global_id].var_id);
-		diff = TRUE;
-	}
+	if (call FennecData.matchData(net, global_data_index) != SUCCESS) {
+		memcpy(fgd + global_data_info[global_data_index].offset, 
+				net + global_data_info[global_data_index].offset,
+				global_data_info[global_data_index].size);
+		globalDataSyncWithNetwork(global_data_info[global_data_index].var_id);
+		signal_global_update(global_data_info[global_data_index].var_id);
 
-	if (diff) {
 		update_data_crc();
 #ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printfGlobalData();
 #else
-		call SerialDbgs.dbgs(DBGS_UPDATE_NETWORK_DATA, 0, global_id, 
-			*((nx_uint16_t*)(fgd + global_data_info[global_id].offset)));
+		call SerialDbgs.dbgs(DBGS_UPDATE_NETWORK_DATA, 0, global_data_index, 
+			*((nx_uint16_t*)(fgd + global_data_info[global_data_index].offset)));
 #endif
 #endif
 	}

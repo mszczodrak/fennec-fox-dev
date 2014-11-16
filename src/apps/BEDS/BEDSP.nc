@@ -165,44 +165,26 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 		return msg;
 	}
 
-	if (data_msg->sequence > data_sequence) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] BEDSP Syncing...\n", process);
+	printf("[%u] BEDSP Syncing...\n", process);
 #endif
 #endif
-		for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-			//printf("%u vs1 %u\n", data_msg->var_hist[i], var_hist[i]);
-			if (data_msg->var_hist[i] >= var_hist[i]) {	
-				var_hist[i] = data_msg->var_hist[i];
-				call FennecData.update(data_msg->data, i);
-			}
-		}
-		data_sequence = data_msg->sequence;
-		data_crc = call FennecData.getDataCrc();
-		return msg;
-	}
-
-	if (data_msg->sequence < data_sequence) {
-		resend(0);
-		return msg;
-	}
-
-	/* conflict */
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] BEDSP Solving Conflict...\n", process);
-#endif
-#endif
-	//data_sequence += (call Random.rand16() % DATA_CONFLICT_RAND_OFFSET) + 1; 
-
-	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {
+	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
+		//printf("%u vs1 %u\n", data_msg->var_hist[i], var_hist[i]);
 		if (data_msg->var_hist[i] >= var_hist[i]) {	
 			var_hist[i] = data_msg->var_hist[i];
+		}
+		if (call FennecData.matchData(data_msg->data, i) != SUCCESS) {
 			call FennecData.update(data_msg->data, i);
 		}
 	}
 
+	if (data_msg->sequence > data_sequence) {
+		data_sequence = data_msg->sequence;
+	}
+
+	data_crc = call FennecData.getDataCrc();
 	resend(1);
 	return msg;
 }
