@@ -105,6 +105,9 @@ enum {
 #define DBGS_ACKED				53
 #define DBGS_CONGESTION				54
 
+#define DBGS_UPDATE_LOCAL_DATA			55
+#define DBGS_UPDATE_NETWORK_DATA		56
+
 #define DBGS_STATUS_UPDATE			60
 
 #define DBGS_ADD_NODE				70

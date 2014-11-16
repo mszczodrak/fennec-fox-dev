@@ -42,6 +42,8 @@ provides interface Param[process_t process, uint8_t layer];
 uses interface Boot;
 uses interface Random;
 uses interface Fennec;
+
+uses interface SerialDbgs;
 }
 
 implementation {
@@ -176,6 +178,9 @@ command void FennecData.update(void* net, uint8_t global_id) {
 #ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printfGlobalData();
+#else
+		call SerialDbgs.dbgs(DBGS_UPDATE_NETWORK_DATA, 0, global_id, 
+			*((nx_uint16_t*)(fgd + global_data_info[global_id].offset)));
 #endif
 #endif
 	}
@@ -286,18 +291,21 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	globalDataSyncWithLocal(name);
 	update_data_crc();
 
-#ifdef __DBGS__FENNEC_CACHE__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printfGlobalData();
-#endif
-#endif
-
 	// Find index of the variable in the global_data_info
         for (i = 0; i < NUMBER_OF_GLOBALS; i++) {
                 if (global_data_info[i].var_id == name) {
 			break;
                 }
         }
+
+#ifdef __DBGS__FENNEC_CACHE__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printfGlobalData();
+#else
+	call SerialDbgs.dbgs(DBGS_UPDATE_LOCAL_DATA, i, name,
+				*((uint16_t*)(variable_lookup[i].ptr)) );
+#endif
+#endif
 
 	signal FennecData.updated(name, i);
 	return SUCCESS;

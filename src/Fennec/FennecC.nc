@@ -85,6 +85,7 @@ components SerialStartC;
 
 components SerialDbgsC;
 FennecP.SerialDbgs -> SerialDbgsC.SerialDbgs[250];
+FennecCacheP.SerialDbgs -> SerialDbgsC.SerialDbgs[250];
 
 }
 
