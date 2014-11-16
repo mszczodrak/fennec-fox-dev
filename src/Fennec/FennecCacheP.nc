@@ -76,14 +76,11 @@ command uint8_t FennecData.getNumOfGlobals() {
 
 struct variable_info * getVariableInfo(uint8_t var_id) {
 	uint8_t i;
-	//printf("Get variable info: %d\n", var_id);
 	for (i = 0; i < VARIABLE_HISTORY; i++) {
 		if (global_data_info[i].var_id == var_id) {
-			//printf("Found var info\n");
 			return &(global_data_info[i]);
 		}
 	}
-	//printf("NULL\n");
 	return NULL;
 }
 
@@ -210,10 +207,8 @@ error_t layer_variables(process_t process_id, uint8_t layer, uint8_t *num, uint8
 	}
 
 	/* find for which process radio is dominant */
-	//printf("checking for radio layer module %d\n", process_id);
 	if (layer == F_AM) {
 		process_id = call Fennec.getProcessIdFromAM(process_id);
-		//printf("new process id is %d\n", process_id);
 		*num = processes[process_id].am_variables_number;
 		*off = processes[process_id].am_variables_offset;
 		return SUCCESS;
@@ -230,9 +225,6 @@ command error_t Param.get[uint8_t layer, process_t process_id](uint8_t name, voi
 	uint8_t var_offset;
 	uint8_t i;
 	error_t err = layer_variables(process_id, layer, &var_number, &var_offset);
-
-	//printf("param get l:%d p:%d  n:%d   vnum:%d    voff:%d\n", layer, process_id, name, var_number, var_offset);
-	//printfflush();
 
 	if (err != SUCCESS) {
 		return err;
@@ -287,7 +279,6 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 
 #ifdef __DBGS__FENNEC_CACHE__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("set variable %d\n", name);
 #endif
 #endif
 	signal_global_update(name);

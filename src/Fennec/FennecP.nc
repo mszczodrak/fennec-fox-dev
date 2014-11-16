@@ -342,6 +342,8 @@ default event void FennecState.resend() {}
 bool validProcessId(nx_uint8_t msg_type) @C() {
 	struct network_process **npr;
 
+	call FennecData.checkDataSeq(msg_type);
+
 	for(npr = daemon_processes; (*npr) != NULL ; npr++) {
 		if (((*npr)->process_id) == LOW_PROC_ID(msg_type)) {
 			return TRUE;

@@ -172,8 +172,8 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #endif
 #endif
 		for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-			printf("%u vs1 %u\n", data_msg->var_hist[i], var_hist[i]);
-			if (data_msg->var_hist[i] > var_hist[i]) {	
+			//printf("%u vs1 %u\n", data_msg->var_hist[i], var_hist[i]);
+			if (data_msg->var_hist[i] >= var_hist[i]) {	
 				var_hist[i] = data_msg->var_hist[i];
 				call FennecData.update(data_msg->data, i);
 			}
@@ -197,8 +197,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	//data_sequence += (call Random.rand16() % DATA_CONFLICT_RAND_OFFSET) + 1; 
 
 	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {
-		printf("%u vs2 %u\n", data_msg->var_hist[i], var_hist[i]);
-		if (data_msg->var_hist[i] > var_hist[i]) {	
+		if (data_msg->var_hist[i] >= var_hist[i]) {	
 			var_hist[i] = data_msg->var_hist[i];
 			call FennecData.update(data_msg->data, i);
 		}
@@ -225,11 +224,9 @@ event void Param.updated(uint8_t var_id) {
 event void FennecData.updated(uint8_t global_id, uint8_t var_index) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] BEDSP  - Data updated...\n", process);
 #endif
 #endif
 	data_sequence++;
-	printf("Index %d  -> Seq: %d\n", var_index, data_sequence);
 	var_hist[var_index] = data_sequence;
 	data_crc = call FennecData.getDataCrc();
 	resend(1);
