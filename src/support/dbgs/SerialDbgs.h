@@ -104,7 +104,6 @@ enum {
 #define DBGS_NOT_ACKED				52
 #define DBGS_ACKED				53
 #define DBGS_CONGESTION				54
-
 #define DBGS_UPDATE_LOCAL_DATA			55
 #define DBGS_UPDATE_NETWORK_DATA		56
 

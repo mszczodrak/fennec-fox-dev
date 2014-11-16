@@ -53,6 +53,8 @@ DBGS_NOT_ACKED_FAILED                   = 51
 DBGS_NOT_ACKED                          = 52
 DBGS_ACKED                              = 53
 DBGS_CONGESTION				= 54
+DBGS_UPDATE_LOCAL_DATA			= 55
+DBGS_UPDATE_NETWORK_DATA		= 56
 
 DBGS_STATUS_UPDATE			= 60
 
@@ -226,6 +228,12 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_CONGESTION:
 		return "Congestion"
+
+	if dbg_num == DBGS_UPDATE_LOCAL_DATA:
+		return "Local Data Update"
+
+	if dbg_num == DBGS_UPDATE_NETWORK_DATA:
+		return "Network Data Update"
 
 	if dbg_num == DBGS_STATUS_UPDATE:
 		return "Status Update"
