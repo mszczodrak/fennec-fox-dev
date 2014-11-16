@@ -78,7 +78,6 @@ task void schedule_send() {
 
 task void send_msg() {
 	nx_struct BEDS_data *data_msg;
-	nx_uint8_t *vh;
 	dbg("BEDS", "[%d] BEDSP send_data_sync_msg()", process);
 
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
@@ -94,12 +93,14 @@ task void send_msg() {
 	}
 
 	data_msg->sequence = data_sequence;
-	data_msg->crc = data_crc;
+	data_msg->data_crc = data_crc;
 	call FennecData.load(data_msg->data);
-	vh = (nx_uint8_t*)(((uint8_t*)(data_msg)) + sizeof(nx_struct BEDS_data));
-	memcpy(vh, &var_hist, call FennecData.getNumOfGlobals());
+	memcpy(data_msg->var_hist, &var_hist, call FennecData.getNumOfGlobals());
+	data_msg->packet_crc = (nx_uint16_t) crc16(0, (uint8_t*) data_msg,
+                sizeof(nx_struct BEDS_data) -
+                sizeof(((nx_struct BEDS_data *)0)->packet_crc));
 
-	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data) + call FennecData.getNumOfGlobals()) != SUCCESS) {
+	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data))  != SUCCESS) {
 		dbg("BEDS", "[%d] BEDSP send_data_sync_msg() - FAIL", process);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
@@ -143,14 +144,18 @@ command error_t SplitControl.stop() {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct BEDS_data *data_msg = (nx_struct BEDS_data*) payload;
-	nx_uint8_t *vh = (nx_uint8_t*)(((uint8_t*)payload) + sizeof(nx_struct BEDS_data));
 	uint8_t i;
 	dbg("BEDS", "[%d] BEDSP SubReceive.receive(0x%1x, 0x%1x, %d)",
 		process, msg, payload, len);
 
+	if (data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) data_msg,
+		len - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
+		return msg;
+	}
+
 	call Timer.stop();
 
-	if (data_msg->crc == data_crc) {
+	if (data_msg->data_crc == data_crc) {
 		if (data_msg->sequence < data_sequence) {
 			resend(0);
 		}
@@ -167,9 +172,9 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 #endif
 #endif
 		for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-			printf("%u vs %u\n", vh[i], var_hist[i]);
-			if (vh[i] > var_hist[i]) {	
-				var_hist[i] = vh[i];
+			printf("%u vs1 %u\n", data_msg->var_hist[i], var_hist[i]);
+			if (data_msg->var_hist[i] > var_hist[i]) {	
+				var_hist[i] = data_msg->var_hist[i];
 				call FennecData.update(data_msg->data, i);
 			}
 		}
@@ -192,8 +197,9 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	//data_sequence += (call Random.rand16() % DATA_CONFLICT_RAND_OFFSET) + 1; 
 
 	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {
-		if (vh[i] > var_hist[i]) {	
-			var_hist[i] = vh[i];
+		printf("%u vs2 %u\n", data_msg->var_hist[i], var_hist[i]);
+		if (data_msg->var_hist[i] > var_hist[i]) {	
+			var_hist[i] = data_msg->var_hist[i];
 			call FennecData.update(data_msg->data, i);
 		}
 	}
