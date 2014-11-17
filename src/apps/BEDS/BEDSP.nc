@@ -64,7 +64,7 @@ implementation {
 
 uint16_t send_delay;
 message_t packet;
-nx_uint16_t data_sequence;
+nx_uint8_t data_sequence;
 nx_uint16_t data_crc;
 
 #define MAX_HIST_VARS	20
@@ -78,16 +78,10 @@ task void schedule_send() {
 
 task void send_msg() {
 	nx_struct BEDS_data *data_msg;
-	dbg("BEDS", "[%d] BEDSP send_data_sync_msg()", process);
 
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
    
 	if (data_msg == NULL) {
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] BEDSP Got NULL ptr\n", process);
-#endif
-#endif
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
 	}
@@ -101,15 +95,8 @@ task void send_msg() {
                 sizeof(((nx_struct BEDS_data *)0)->packet_crc));
 
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data))  != SUCCESS) {
-		dbg("BEDS", "[%d] BEDSP send_data_sync_msg() - FAIL", process);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
-		dbg("BEDS", "[%d] BEDSP send_data_sync_msg() - SUCCESS", process);
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] BEDSP Send DataSync\n", process);
-#endif
-#endif
 	}
 }
 
@@ -129,14 +116,12 @@ command error_t SplitControl.start() {
 	}
 	data_sequence = 0;
 	data_crc = 0;
-	dbg("BEDS", "[%d] BEDSP SplitControl.start()", process);
 	post schedule_send();
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("BEDS", "[%d] BEDSP SplitControl.stop()", process);
 	call Timer.stop();
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
@@ -145,8 +130,6 @@ command error_t SplitControl.stop() {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct BEDS_data *data_msg = (nx_struct BEDS_data*) payload;
 	uint8_t i;
-	dbg("BEDS", "[%d] BEDSP SubReceive.receive(0x%1x, 0x%1x, %d)",
-		process, msg, payload, len);
 
 	if (data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) data_msg,
 		len - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
@@ -156,31 +139,23 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	call Timer.stop();
 
 	if (data_msg->data_crc == data_crc) {
-		if (data_msg->sequence < data_sequence) {
-			resend(0);
-		}
-		if (data_msg->sequence > data_sequence) {
-			data_sequence = data_msg->sequence;
-		} 
 		return msg;
 	}
 
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] BEDSP Syncing...\n", process);
-#endif
-#endif
 	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-		//printf("%u vs1 %u\n", data_msg->var_hist[i], var_hist[i]);
-		if (data_msg->var_hist[i] >= var_hist[i]) {	
+		if (((data_msg->var_hist[i] >= var_hist[i]) && ((data_msg->var_hist[i] - var_hist[i]) < BEDS_WRAPPER)) || 
+				/* wrap around */
+			((var_hist[i] >= data_msg->var_hist[i]) && ((var_hist[i] - data_msg->var_hist[i]) > BEDS_WRAPPER))) {
 			var_hist[i] = data_msg->var_hist[i];
-		}
-		if (call FennecData.matchData(data_msg->data, i) != SUCCESS) {
-			call FennecData.update(data_msg->data, i);
+			if (call FennecData.matchData(data_msg->data, i) != SUCCESS) {
+				call FennecData.update(data_msg->data, i);
+			}
 		}
 	}
 
-	if (data_msg->sequence > data_sequence) {
+	if (((data_msg->sequence > data_sequence) && (data_msg->sequence - data_sequence) < BEDS_WRAPPER) ||
+				/* wrap around */ 
+		((data_sequence > data_msg->sequence) && ((data_sequence - data_msg->sequence) > BEDS_WRAPPER))) {
 		data_sequence = data_msg->sequence;
 	}
 
@@ -215,11 +190,6 @@ event void FennecData.updated(uint8_t global_id, uint8_t var_index) {
 }
 
 event void FennecData.resend() {
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] BEDSP  - resend request\n", process);
-#endif
-#endif
 	resend(0);
 }
 

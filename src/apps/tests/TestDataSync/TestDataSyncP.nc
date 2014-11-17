@@ -63,7 +63,6 @@ uses interface SerialDbgs;
 implementation {
 
 uint32_t update_delay;
-uint16_t seqno;
 
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
@@ -91,15 +90,14 @@ command error_t SplitControl.stop() {
 task void updateData() {
 	uint8_t v = call Random.rand16() % 5;	
 	uint16_t d = call Random.rand16();
-	seqno++;
-
 
 	switch(v) {
 	case 1:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL1, v, d);
+			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL1, v, d);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL1, v, d);
 #endif
 #endif
 		call Param.set(VAL1, &d, sizeof(d));
@@ -108,8 +106,9 @@ task void updateData() {
 	case 2:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL2, v, d);
+			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL2, v, d);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL2, v, d);
 #endif
 #endif
 		call Param.set(VAL2, &d, sizeof(d));
@@ -118,8 +117,9 @@ task void updateData() {
 	case 3:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL3, v, d);
+			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL3, v, d);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL3, v, d);
 #endif
 #endif
 		call Param.set(VAL3, &d, sizeof(d));
@@ -128,8 +128,9 @@ task void updateData() {
 	case 4:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL4, v, d);
+			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL4, v, d);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL4, v, d);
 #endif
 #endif
 		call Param.set(VAL4, &d, sizeof(d));
@@ -138,8 +139,9 @@ task void updateData() {
 	default:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("Node [%d] seq %u - set var ID %d (var %u) to %u\n", 
-					TOS_NODE_ID, seqno, VAL5, v, d);
+			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL5, v, d);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL5, v, d);
 #endif
 #endif
 		call Param.set(VAL5, &d, sizeof(d));
@@ -149,10 +151,6 @@ task void updateData() {
 
 event void Timer.fired() {
 	uint32_t rand_delay = call Random.rand32() % update_delay;
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-#endif
-#endif
 	post updateData();
 	call Timer.startPeriodic(update_delay / 2 + rand_delay);
 }
@@ -172,7 +170,9 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void Param.updated(uint8_t var_id) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("Application var %d updated\n", var_id);
+	printf("[%u] TestDataSync get var %u update\n", process, var_id);
+#else
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, var_id, var_id, var_id);
 #endif
 #endif
 }
