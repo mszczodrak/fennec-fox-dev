@@ -6,8 +6,6 @@
 #define DATA_MAX_PAYLOAD	50
 #define MAX_HIST_VARS   	20
 
-#define BEDS_UPPER_WRAP		240
-#define BEDS_LOWER_WRAP		10
 #define BEDS_WRAPPER		122
 
 nx_struct BEDS_data {
