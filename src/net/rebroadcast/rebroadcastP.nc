@@ -62,23 +62,28 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
+task void send_msg() {
+	if (busy)
+		return;
+
+	busy = TRUE;
+
+	if (call SubAMSend.send(pkt_addr, pkt_msg, pkt_len) != SUCCESS) {
+		signal SubAMSend.sendDone(pkt_msg, FAIL);
+	}
+}
+
+
 event void Timer.fired() {
-	signal SubAMSend.sendDone(pkt_msg, pkt_err);
+	post send_msg();
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	nx_struct rebroadcast_header *hdr;
 
-	dbg("", "[%d] rebroadcast AMSend.send(%d, 0x%1x, %d )",
-		process, addr, msg, len);
-
-	if (busy)
-		return EBUSY;
-
-	busy = TRUE;
-
 	call Param.get(RETRY, &retry, sizeof(retry));
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
+	call Param.get(RETRY_DELAY, &retry_delay, sizeof(retry_delay));
 
 	pkt_len = len + sizeof(nx_struct rebroadcast_header);
 	pkt_addr = addr;
@@ -87,8 +92,9 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	hdr = (nx_struct rebroadcast_header*) call SubAMSend.getPayload(pkt_msg, pkt_len);
 	hdr->repeat = repeat;
 
+	call Timer.startPeriodic(retry_delay);
+
 	if (pkt_addr == TOS_NODE_ID) {
-		dbg("", "[%d] rebroadcast AMSend.sendDone(0x%1x, %d )", process, pkt_msg, SUCCESS);
 		hdr->repeat = 0;
 		signal AMSend.sendDone(pkt_msg, SUCCESS);
 		signal SubReceive.receive(msg, 
@@ -97,12 +103,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return SUCCESS;
 	}
 
-	pkt_err = call SubAMSend.send(pkt_addr, pkt_msg, pkt_len);
-
-	if (pkt_err != SUCCESS) {
-		call Param.get(RETRY_DELAY, &retry_delay, sizeof(retry_delay));
-		call Timer.startOneShot(retry_delay);
-	}
+	post send_msg();
 
 	return SUCCESS;
 }
@@ -139,18 +140,14 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 		hdr->repeat--;
 	}
 
+	busy = FALSE;
+
 	if ((retry == 0) || (hdr->repeat == 0)) {
 		signal AMSend.sendDone(msg, error);
-		busy = FALSE;
+		call Timer.stop();
 		return;
 	}
 
-	pkt_err = call SubAMSend.send(pkt_addr, msg, pkt_len);
-
-	if (pkt_err != SUCCESS) {
-		call Param.get(RETRY_DELAY, &retry_delay, sizeof(retry_delay));
-		call Timer.startOneShot(retry_delay);
-	}
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
