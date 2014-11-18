@@ -63,13 +63,15 @@ uses interface SerialDbgs;
 implementation {
 
 uint32_t update_delay;
+uint32_t next_delay;
 
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
+	next_delay = call Random.rand32();
+	next_delay *= TOS_NODE_ID;
+	next_delay %= update_delay;
 
-	#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	#endif
-	call Timer.startPeriodic((call Random.rand16() * TOS_NODE_ID) % update_delay);
+	call Timer.startPeriodic(next_delay);
 
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
@@ -150,9 +152,13 @@ task void updateData() {
 }
 
 event void Timer.fired() {
-	uint32_t rand_delay = call Random.rand32() % update_delay;
 	post updateData();
-	call Timer.startPeriodic(update_delay / 2 + rand_delay);
+
+	next_delay = call Random.rand32();
+	next_delay *= TOS_NODE_ID;
+	next_delay %= update_delay;
+	next_delay += (update_delay / 2);
+	call Timer.startPeriodic(next_delay);
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
@@ -198,7 +204,7 @@ event void Param.updated(uint8_t var_id) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] TestDataSync get var ID %u (var %u) to %u\n", process, var_id, v, d);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, var_id, v, value);
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, var_id, v, d);
 #endif
 #endif
 }
