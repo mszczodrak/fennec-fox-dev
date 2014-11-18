@@ -95,7 +95,7 @@ task void updateData() {
 	case 1:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL1, v, d);
+			printf("[%u] TestDataSync  SET  var ID %u (var %u) to %u\n", process, VAL1, v, d);
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL1, v, d);
 #endif
@@ -106,7 +106,7 @@ task void updateData() {
 	case 2:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL2, v, d);
+			printf("[%u] TestDataSync  SET  var ID %u (var %u) to %u\n", process, VAL2, v, d);
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL2, v, d);
 #endif
@@ -117,7 +117,7 @@ task void updateData() {
 	case 3:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL3, v, d);
+			printf("[%u] TestDataSync  SET  var ID %u (var %u) to %u\n", process, VAL3, v, d);
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL3, v, d);
 #endif
@@ -128,7 +128,7 @@ task void updateData() {
 	case 4:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL4, v, d);
+			printf("[%u] TestDataSync  SET  var ID %u (var %u) to %u\n", process, VAL4, v, d);
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL4, v, d);
 #endif
@@ -139,7 +139,7 @@ task void updateData() {
 	default:
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] TestDataSync set var ID %u (var %u) to %u\n", process, VAL5, v, d);
+			printf("[%u] TestDataSync  SET  var ID %u (var %u) to %u\n", process, VAL5, v, d);
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL5, v, d);
 #endif
@@ -170,7 +170,8 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 event void Param.updated(uint8_t var_id) {
 #ifdef __DBGS__APPLICATION__
 	uint8_t v = 0;
-	uint16_t d = call Param.get(var_id, &d, sizeof(d));
+	uint16_t d;
+	call Param.get(var_id, &d, sizeof(d));
 	switch(var_id) {
 	case VAL1:
 		v = 0;
