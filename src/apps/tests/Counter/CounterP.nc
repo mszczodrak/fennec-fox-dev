@@ -149,7 +149,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	printf("[%u] Application Counter SendDone Error: %d  Seqno: %d  Dest: %d\n", process, error, seqno, dest);
 #else
 	//call Param.get(DEST, &dest, sizeof(dest));
-	//call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
+	call SerialDbgs.dbgs(DBGS_SEND_DATA, error, seqno, dest);
 #endif
 #endif
 

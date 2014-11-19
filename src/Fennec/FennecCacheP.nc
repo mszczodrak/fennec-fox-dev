@@ -86,7 +86,7 @@ struct variable_info * getVariableInfo(uint8_t var_id) {
 	return NULL;
 }
 
-void send_param_update(uint8_t var_id, process_t process_id) {
+void send_param_update(uint8_t var_id, process_t process_id, bool conflict) {
 	uint8_t var_number;
 	uint8_t var_offset;
 	uint8_t i;
@@ -131,7 +131,7 @@ void send_param_update(uint8_t var_id, process_t process_id) {
 	}
 }
 
-void signal_global_update(nx_uint8_t var_id) {
+void signal_global_update(nx_uint8_t var_id, bool conflict) {
 
 	struct network_process **daemons = NULL;
 	struct network_process **ordinary = NULL;
@@ -143,14 +143,14 @@ void signal_global_update(nx_uint8_t var_id) {
 	while ((ordinary != NULL) && (*ordinary != NULL)) {
 		//dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (ordinary)\n",
                 //                                (*ordinary)->process_id);
-		send_param_update(var_id, (*ordinary)->process_id);
+		send_param_update(var_id, (*ordinary)->process_id, conflict);
 		ordinary++;
 	}
 
 	while ((daemons != NULL) && (*daemons != NULL)) {
 		//dbg("NetworkState", "[-] NetworkState call NetworkProcess.start(%d) (daemons)\n",
                 //                                (*daemons)->process_id);
-		send_param_update(var_id, (*daemons)->process_id);
+		send_param_update(var_id, (*daemons)->process_id, conflict);
 		daemons++;
 	}
 }
@@ -169,14 +169,14 @@ command error_t FennecData.matchData(void *net, uint8_t global_data_index) {
 	return FAIL;
 }
 
-command void FennecData.update(void* net, uint8_t global_data_index) {
+command void FennecData.update(void* net, uint8_t global_data_index, bool conflict) {
 	void* fgd = call FennecData.getNxDataPtr();
 	if (call FennecData.matchData(net, global_data_index) != SUCCESS) {
 		memcpy(fgd + global_data_info[global_data_index].offset, 
 				net + global_data_info[global_data_index].offset,
 				global_data_info[global_data_index].size);
 		globalDataSyncWithNetwork(global_data_info[global_data_index].var_id);
-		signal_global_update(global_data_info[global_data_index].var_id);
+		signal_global_update(global_data_info[global_data_index].var_id, conflict);
 
 		update_data_crc();
 #ifdef __DBGS__FENNEC_CACHE__
@@ -290,7 +290,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 #endif
 #endif
-	signal_global_update(name);
+	signal_global_update(name, FALSE);
 
 	globalDataSyncWithLocal(name);
 	update_data_crc();

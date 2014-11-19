@@ -4,7 +4,7 @@ interface FennecData {
 
 
 command void load(void* pkt);
-command void update(void* pkt, uint8_t global_data_index);
+command void update(void* pkt, uint8_t global_data_index, bool conflict);
 command error_t matchData(void *pkt, uint8_t global_data_index);
 
 command void* getNxDataPtr();
