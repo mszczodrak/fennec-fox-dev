@@ -7,6 +7,7 @@
 #define MAX_HIST_VARS   	20
 
 #define BEDS_WRAPPER		122
+#define BEDS_RANDOM_INCREASE	10
 
 nx_struct BEDS_data {
 	nx_uint16_t data_crc;
