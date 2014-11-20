@@ -53,4 +53,6 @@
 #include <AM.h>
 #include <message.h>
 
+#define REPORT_INVALID_PROCESS	5
+
 #endif

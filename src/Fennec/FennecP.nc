@@ -59,6 +59,7 @@ norace event_t event_mask;
 norace state_t next_state = 0;
 norace uint16_t next_seq = 0;
 norace bool state_transitioning = TRUE;
+uint8_t invalid_process = 0;
 
 task void check_event() {
 	uint8_t i;
@@ -133,6 +134,7 @@ event void Boot.booted() {
 
 event void SplitControl.startDone(error_t err) {
 	event_mask = 0;
+	invalid_process = 0;
 	post start_done();
 }
 
@@ -231,8 +233,6 @@ async command process_t Fennec.getProcessIdFromAM(module_t am_module_id) {
 
 	return process_id;
 }
-
-
 
 
 /** FennecState Interface **/
@@ -357,7 +357,10 @@ bool validProcessId(nx_uint8_t msg_type) @C() {
 	}
 
 	/* we should report it */
-	post send_state_update();	
+	if (++invalid_process > REPORT_INVALID_PROCESS) {
+		post send_state_update();	
+		invalid_process = 0;
+	}
 	return FALSE;
 }
 
