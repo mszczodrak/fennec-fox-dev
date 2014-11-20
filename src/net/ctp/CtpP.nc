@@ -118,7 +118,7 @@ implementation {
     CACHE_SIZE = 4,
   };
 
-  components new CtpForwardingEngineP() as Forwarder;
+  components new CtpForwardingEngineP(0) as Forwarder;
   components MainC, LedsC;
   
   Send = Forwarder;

@@ -104,7 +104,7 @@
 #include <CtpForwardingEngine.h>
 #include <CtpDebugMsg.h>
    
-generic module CtpForwardingEngineP() {
+generic module CtpForwardingEngineP(process_t process) {
   provides {
     interface Init;
     interface StdControl;
@@ -418,7 +418,15 @@ implementation {
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR); 
 	if (call QEntryPool.put(qe) != SUCCESS) 
 	  call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR); 
-	  
+	 
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP sendTask duplicate in SentCache - drop msg from %u\n",
+		process, getHeader(qe->msg)->origin);
+
+#endif
+#endif
+ 
         post sendTask();
         return;
       }
@@ -460,6 +468,13 @@ implementation {
 	  // Successfully submitted to the data-link layer.
 	  setState(SENDING);
 	  dbg("Forwarder", "%s: subsend succeeded with %p.\n", __FUNCTION__, qe->msg);
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP sendTask ok for msg from %u\n", 
+		process, getHeader(qe->msg)->origin);
+#endif
+#endif
 	  return;
 	}
 	// The packet is too big: truncate it and retry.
@@ -468,9 +483,20 @@ implementation {
 	  call Packet.setPayloadLength(qe->msg, call Packet.maxPayloadLength());
 	  post sendTask();
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP sendTask too big msg from %u\n", process, getHeader(qe->msg)->origin);
+#endif
+#endif
 	}
 	else {
 	  dbg("Forwarder", "%s: subsend failed from %i\n", __FUNCTION__, (int)subsendResult);
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP sendTask FAIL for msg from %u\n", process, getHeader(qe->msg)->origin);
+#endif
+#endif
 	}
       }
     }
@@ -645,6 +671,11 @@ implementation {
 					 call CollectionPacket.getSequenceNumber(m), 
 					 call CollectionPacket.getOrigin(m), 
                                          call AMPacket.destination(m));
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP loop in msg from %u\n", process, getHeader(m)->origin);
+#endif
+#endif
           }
         }
 
@@ -665,6 +696,13 @@ implementation {
           call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR);
       }
     }
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP problem - drop msg from %u\n", process, getHeader(m)->origin);
+
+#endif
+#endif
 
     // NB: at this point, we have a resource acquistion problem.
     // Log the event, and drop the
@@ -710,6 +748,11 @@ implementation {
     //See if we remember having seen this packet
     //We look in the sent cache ...
     if (call SentCache.lookup(msg)) {
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP drop duplicate in SentCache from %u\n", process, getHeader(msg)->origin);
+#endif
+#endif
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE);
         return msg;
     }
@@ -719,6 +762,11 @@ implementation {
 	qe = call SendQueue.element(i-1);
 	if (call CtpPacket.matchInstance(qe->msg, msg)) {
 	  duplicate = TRUE;
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP drop duplicate in SendQueue from %u\n", process, getHeader(msg)->origin);
+#endif
+#endif
 	  break;
 	}
       }
@@ -732,6 +780,11 @@ implementation {
     // If I'm the root, signal receive. 
     else if (call RootControl.isRoot()) {
       call SentCache.insert(msg);
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP receive from %u\n", process, getHeader(msg)->origin);
+#endif
+#endif
       return signal Receive.receive[collectid](msg, 
 					       call Packet.getPayload(msg, call Packet.payloadLength(msg)), 
 					       call Packet.payloadLength(msg));
@@ -744,6 +797,11 @@ implementation {
       return msg;
     else {
       dbg("Route", "Forwarding packet from %hu.\n", getHeader(msg)->origin);
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP forward from %u\n", process, getHeader(msg)->origin);
+#endif
+#endif
       return forward(msg);
     }
   }
