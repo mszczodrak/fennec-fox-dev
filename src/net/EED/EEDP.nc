@@ -144,9 +144,10 @@ task void finish() {
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] SDF signal sendDone\n", process);
+		printf("[%u] EED signal sendDone\n", process);
 #else
-		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, process, 0, 0);
+		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, 0, 
+				(uint16_t)(end_32khz >> 16), (uint16_t) end_32khz);
 #endif
 #endif
 	}
@@ -177,10 +178,24 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		}
 		once = TRUE;
 		post send_message();
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] EED old local send\n", process);
+#else
+		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, process, (uint16_t)(now >> 16), (uint16_t)now);
+#endif
+#endif
 	} else {
 		setup_alarm( now, delay_32khz );
 		make_copy(msg, app_payload, len);
 		post send_message();
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] EED new local send\n", process);
+#else
+		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16), (uint16_t)delay_32khz);
+#endif
+#endif
 	}
 	return SUCCESS;
 }
@@ -232,10 +247,18 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			if (!busy) {
 				post send_message();
 			}
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] EED same remote payload\n", process);
+#else
+		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
+					(uint16_t)(sender_time_left >> 16),
+					(uint16_t)sender_time_left);
+#endif
+#endif
 		}
                 return msg;
         }
-
 
 	if (delay_32khz == 0) {
 	        call Param.get(REPEAT, &repeat, sizeof(repeat));
@@ -250,16 +273,41 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if ( sender_time_left < delay_32khz ) {
 		/* looks good */
 		setup_alarm( receiver_receive_time, sender_time_left );
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] EED new remote payload\n", process);
+#else
+		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 1, 
+					(uint16_t)(sender_time_left >> 16),
+					(uint16_t)sender_time_left);
+#endif
+#endif
 	} else {
 		if ( sender_time_left > ((uint32_t)(-delay_32khz)) ) {
-			/* we might be behid */
+			/* we might be behind */
 			end_32khz = receiver_receive_time + sender_time_left;
 			make_copy(msg, payload, len);
 			post send_message();
 			post finish();
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+			printf("[%u] EED new remote payload\n", process);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 2, 0, 0);
+#endif
+#endif
 			return signal Receive.receive(msg, payload, len);
 		} else {
 			setup_alarm( receiver_receive_time, delay_32khz );
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+			printf("[%u] EED new remote payload\n", process);
+#else
+			call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 3, 
+					(uint16_t)(delay_32khz >> 16),
+					(uint16_t)delay_32khz);
+#endif
+#endif
 		}
 	}
 
