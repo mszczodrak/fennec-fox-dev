@@ -115,7 +115,7 @@ implementation {
     FORWARD_COUNT = 12,
     TREE_ROUTING_TABLE_SIZE = 10,
     QUEUE_SIZE = CLIENT_COUNT + FORWARD_COUNT,
-    CACHE_SIZE = 4,
+    CACHE_SIZE = 8,
   };
 
   components new CtpForwardingEngineP(0) as Forwarder;

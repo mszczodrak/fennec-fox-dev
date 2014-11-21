@@ -232,13 +232,21 @@ implementation {
     clearState(SENDING);
     call RetxmitTimer.stop();
 
-/*
     while (!call SendQueue.empty()) {
-       fe_queue_entry_t *qe = call SendQueue.head();
+       fe_queue_entry_t *qe = call SendQueue.head();  
+       if (qe->client < CLIENT_COUNT) {
+          clientPtrs[qe->client] = qe;
+          signal Send.sendDone[qe->client](qe->msg, FAIL);
+       }
+       call MessagePool.put(qe->msg);
+       call QEntryPool.put(qe);
        call SendQueue.dequeue();
-       packetComplete(qe, qe->msg, FALSE);
     }
-*/
+
+    call SentCache.flush();
+
+    printf("POOL and QUEUE: %u %u %u\n", call SendQueue.size(), call QEntryPool.size(), call MessagePool.size());
+
 
     return SUCCESS;
   }
@@ -569,6 +577,10 @@ implementation {
     fe_queue_entry_t *qe = call SendQueue.head();
     dbg("Forwarder", "%s to %hu and %hhu\n", __FUNCTION__, call AMPacket.destination(msg), error);
 
+    if (!hasState(ROUTING_ON)) {
+       return;
+    }
+
     if (error != SUCCESS) {
       /* The radio wasn't able to send the packet: retransmit it. */
       dbg("Forwarder", "%s: send failed\n", __FUNCTION__);
@@ -756,6 +768,10 @@ implementation {
     bool duplicate = FALSE;
     fe_queue_entry_t* qe;
     uint8_t i, thl;
+
+    if (!hasState(ROUTING_ON)) {
+       return msg;
+    }
 
     if (getHeader(msg)->origin > 200) {
       return msg;
