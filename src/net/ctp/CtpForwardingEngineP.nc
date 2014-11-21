@@ -225,14 +225,21 @@ implementation {
     return SUCCESS;
   }
 
+  void packetComplete(fe_queue_entry_t* qe, message_t* msg, bool success);
+
   command error_t StdControl.stop() {
     clearState(ROUTING_ON);
+    clearState(SENDING);
     call RetxmitTimer.stop();
-    call Init.init();
-    call SentCache.flush(); 
+
+/*
     while (!call SendQueue.empty()) {
-      call SendQueue.dequeue();
+       fe_queue_entry_t *qe = call SendQueue.head();
+       call SendQueue.dequeue();
+       packetComplete(qe, qe->msg, FALSE);
     }
+*/
+
     return SUCCESS;
   }
 
@@ -471,8 +478,8 @@ implementation {
 
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] CTP sendTask ok for msg from %u\n", 
-		process, getHeader(qe->msg)->origin);
+        printf("[%u] CTP sendTask ok for msg from %u, next to %u\n", 
+		process, getHeader(qe->msg)->origin, dest);
 #endif
 #endif
 	  return;
@@ -485,7 +492,7 @@ implementation {
 	  call CollectionDebug.logEvent(NET_C_FE_SUBSEND_SIZE);
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] CTP sendTask too big msg from %u\n", process, getHeader(qe->msg)->origin);
+        printf("[%u] CTP sendTask too big msg from %u, next to %u\n", process, getHeader(qe->msg)->origin, dest);
 #endif
 #endif
 	}
@@ -494,7 +501,7 @@ implementation {
 
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] CTP sendTask FAIL for msg from %u\n", process, getHeader(qe->msg)->origin);
+        printf("[%u] CTP sendTask FAIL for msg from %u, next to %u\n", process, getHeader(qe->msg)->origin, dest);
 #endif
 #endif
 	}
@@ -570,6 +577,13 @@ implementation {
 				       call CollectionPacket.getOrigin(msg), 
 				       call AMPacket.destination(msg));
       startRetxmitTimer(SENDDONE_FAIL_WINDOW, SENDDONE_FAIL_OFFSET);
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP sendDone != SUCCESS for msg from %u, next hop %u\n", process, getHeader(msg)->origin,
+		call UnicastNameFreeRouting.nextHop());
+#endif
+#endif
+
     }
     else if (hasState(ACK_PENDING) && !call PacketAcknowledgements.wasAcked(msg)) {
       /* No ack: if countdown is not 0, retransmit, else drop the packet. */
@@ -582,6 +596,12 @@ implementation {
 					 call CollectionPacket.getOrigin(msg), 
                                          call AMPacket.destination(msg));
         startRetxmitTimer(SENDDONE_NOACK_WINDOW, SENDDONE_NOACK_OFFSET);
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP missed ACK, retry for msg from %u with THL %u\n", process, getHeader(msg)->origin, call CtpPacket.getThl(msg));
+#endif
+#endif
       } else {
 	/* Hit max retransmit threshold: drop the packet. */
 	call SendQueue.dequeue();
@@ -590,6 +610,7 @@ implementation {
 
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP missed ACK, drop msg from %u\n", process, getHeader(msg)->origin);
 #else
         call SerialDbgs.dbgs(DBGS_FORWARDING, call CollectionPacket.getSequenceNumber(msg),
                                          call CollectionPacket.getOrigin(msg), call UnicastNameFreeRouting.nextHop());
@@ -609,6 +630,14 @@ implementation {
       startRetxmitTimer(SENDDONE_OK_WINDOW, SENDDONE_OK_OFFSET);
       call LinkEstimator.txAck(call AMPacket.destination(msg));
       packetComplete(qe, msg, TRUE);
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] CTP sendDone SUCCESS for msg from %u with THL %u\n", process, getHeader(msg)->origin, call CtpPacket.getThl(msg));
+#endif
+#endif
+
+
     }
   }
 
@@ -728,6 +757,15 @@ implementation {
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
+    if (getHeader(msg)->origin > 200) {
+      return msg;
+    }
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP receive from from %u with THL %u\n", process, getHeader(msg)->origin, call CtpPacket.getThl(msg));
+#endif
+#endif
 
     collectid = call CtpPacket.getType(msg);
 
@@ -744,6 +782,7 @@ implementation {
     if (len > call SubSend.maxPayloadLength()) {
       return msg;
     }
+
 
     //See if we remember having seen this packet
     //We look in the sent cache ...
