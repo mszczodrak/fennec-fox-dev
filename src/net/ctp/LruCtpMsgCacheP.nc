@@ -92,15 +92,15 @@ implementation {
 	  call CtpPacket.getSequenceNumber(m) == cache[idx].seqno &&
 //	  call CtpPacket.getThl(m)            == cache[idx].thl &&
 	  call CtpPacket.getType(m)           == cache[idx].type) {
-		printf(" %04x %02x %02x %02x vs %04x %02x %02x %02x\n", 
-			call CtpPacket.getOrigin(m), call CtpPacket.getSequenceNumber(m), call CtpPacket.getType(m), call CtpPacket.getThl(m),
-			cache[idx].origin, cache[idx].seqno, cache[idx].type, cache[idx].thl);
+//		printf(" %04x %02x %02x %02x vs %04x %02x %02x %02x\n", 
+//			call CtpPacket.getOrigin(m), call CtpPacket.getSequenceNumber(m), call CtpPacket.getType(m), call CtpPacket.getThl(m),
+//			cache[idx].origin, cache[idx].seqno, cache[idx].type, cache[idx].thl);
 
 	}
 
       if (call CtpPacket.getOrigin(m)         == cache[idx].origin &&
 	  call CtpPacket.getSequenceNumber(m) == cache[idx].seqno &&
-	  //call CtpPacket.getThl(m)            == cache[idx].thl &&
+//	  call CtpPacket.getThl(m)            == cache[idx].thl &&
 	  call CtpPacket.getType(m)           == cache[idx].type) {
 	break;
       }

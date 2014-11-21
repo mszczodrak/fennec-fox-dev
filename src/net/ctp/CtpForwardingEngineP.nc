@@ -245,9 +245,6 @@ implementation {
 
     call SentCache.flush();
 
-    printf("POOL and QUEUE: %u %u %u\n", call SendQueue.size(), call QEntryPool.size(), call MessagePool.size());
-
-
     return SUCCESS;
   }
 
@@ -765,7 +762,6 @@ implementation {
   event message_t* 
   SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
     collection_id_t collectid;
-    bool duplicate = FALSE;
     fe_queue_entry_t* qe;
     uint8_t i, thl;
 
@@ -802,6 +798,27 @@ implementation {
 
     //See if we remember having seen this packet
     //We look in the sent cache ...
+    //... and in the queue for duplicates
+
+    if (call SendQueue.size() > 0) {
+      for (i = call SendQueue.size(); i >0; i--) {
+	qe = call SendQueue.element(i-1);
+//	if (call CtpPacket.matchInstance(qe->msg, msg)) {
+	if (call CtpPacket.matchPacket(qe->msg, msg)) {
+           if (call CtpPacket.getThl(qe->msg) > thl) {
+              call CtpPacket.setThl(qe->msg, thl); 
+           }     
+           qe->retries = MAX_RETRIES;
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP drop duplicate in SendQueue from %u\n", process, getHeader(msg)->origin);
+#endif
+#endif
+          return msg;
+	}
+      }
+    }
+
     if (call SentCache.lookup(msg)) {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -809,26 +826,6 @@ implementation {
 #endif
 #endif
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE);
-        return msg;
-    }
-    //... and in the queue for duplicates
-    if (call SendQueue.size() > 0) {
-      for (i = call SendQueue.size(); i >0; i--) {
-	qe = call SendQueue.element(i-1);
-	if (call CtpPacket.matchInstance(qe->msg, msg)) {
-	  duplicate = TRUE;
-#ifdef __DBGS__NETWORK_ROUTING__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] CTP drop duplicate in SendQueue from %u\n", process, getHeader(msg)->origin);
-#endif
-#endif
-	  break;
-	}
-      }
-    }
-    
-    if (duplicate) {
-        call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_QUEUE);
         return msg;
     }
 
