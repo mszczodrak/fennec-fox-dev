@@ -435,7 +435,9 @@ implementation {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP sendTask duplicate in SentCache - drop msg from %u\n",
 		process, getHeader(qe->msg)->origin);
-
+#else
+        call SerialDbgs.dbgs(DBGS_GOT_SEND_DUPLICATE, call CollectionPacket.getSequenceNumber(qe->msg), 
+				getHeader(qe->msg)->origin, call UnicastNameFreeRouting.nextHop());
 #endif
 #endif
  
@@ -507,6 +509,9 @@ implementation {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP sendTask FAIL for msg from %u, next to %u\n", process, getHeader(qe->msg)->origin, dest);
+#else
+        call SerialDbgs.dbgs(DBGS_GOT_SEND_STATE_FAIL, call CollectionPacket.getSequenceNumber(qe->msg), 
+					getHeader(qe->msg)->origin, dest);
 #endif
 #endif
 	}
@@ -621,9 +626,8 @@ implementation {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP missed ACK, drop msg from %u\n", process, getHeader(msg)->origin);
 #else
-        call SerialDbgs.dbgs(DBGS_FORWARDING, call CollectionPacket.getSequenceNumber(msg),
+        call SerialDbgs.dbgs(DBGS_GOT_SEND_NO_ACK, call CollectionPacket.getSequenceNumber(msg),
                                          call CollectionPacket.getOrigin(msg), call UnicastNameFreeRouting.nextHop());
-
 #endif
 #endif
 	
@@ -645,8 +649,6 @@ implementation {
 	printf("[%u] CTP sendDone SUCCESS for msg from %u with THL %u\n", process, getHeader(msg)->origin, call CtpPacket.getThl(msg));
 #endif
 #endif
-
-
     }
   }
 
@@ -691,7 +693,6 @@ implementation {
       qe->msg = m;
       qe->client = 0xff;
       qe->retries = MAX_RETRIES;
-
       
       if (call SendQueue.enqueue(qe) == SUCCESS) {
         dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
@@ -738,14 +739,15 @@ implementation {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP problem - drop msg from %u\n", process, getHeader(m)->origin);
-
+#else
+        call SerialDbgs.dbgs(DBGS_GOT_SEND_FULL_QUEUE_FAIL, call CollectionPacket.getSequenceNumber(m),
+                                         call CollectionPacket.getOrigin(m), call UnicastNameFreeRouting.nextHop());
 #endif
 #endif
 
     // NB: at this point, we have a resource acquistion problem.
     // Log the event, and drop the
     // packet on the floor.
-
 
     call CollectionDebug.logEvent(NET_C_FE_SEND_QUEUE_FULL);
     return m;
@@ -812,6 +814,9 @@ implementation {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP drop duplicate in SendQueue from %u\n", process, getHeader(msg)->origin);
+#else
+	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 0, call CollectionPacket.getOrigin(msg),
+			call CollectionPacket.getSequenceNumber(msg));
 #endif
 #endif
           return msg;
@@ -823,6 +828,9 @@ implementation {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP drop duplicate in SentCache from %u\n", process, getHeader(msg)->origin);
+#else
+	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 1, call CollectionPacket.getOrigin(msg),
+			call CollectionPacket.getSequenceNumber(msg));
 #endif
 #endif
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE);
@@ -852,6 +860,9 @@ implementation {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP forward from %u\n", process, getHeader(msg)->origin);
+#else
+	call SerialDbgs.dbgs(DBGS_FORWARDING, call CollectionPacket.getSequenceNumber(msg),
+		call CollectionPacket.getOrigin(msg), call UnicastNameFreeRouting.nextHop());
 #endif
 #endif
       return forward(msg);

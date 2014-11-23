@@ -26,6 +26,9 @@ DBGS_GOT_SEND_FULL_QUEUE_FAIL           = 23
 DBGS_GOT_SEND_EMPTY_QUEUE_FAIL          = 24
 DBGS_GOT_SEND_FURTHER_SEND_FAIL         = 25
 DBGS_FORWARDING				= 26
+DBGS_GOT_SEND_DUPLICATE 		= 27
+DBGS_GOT_SEND_NO_ACK 			= 28
+DBGS_GOT_SEND_DROP			= 29
 
 DBGS_GOT_RECEIVE                        = 30
 DBGS_GOT_RECEIVE_HEADER_NULL_FAIL       = 31
@@ -159,6 +162,15 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_FORWARDING:
 		return "Forwarding"
+
+	if dbg_num == DBGS_GOT_SEND_DUPLICATE:
+		return "Got Send Duplicate"
+
+	if dbg_num == DBGS_GOT_SEND_NO_ACK:
+		return "Got Send No ACK"
+
+	if dbg_num == DBGS_GOT_SEND_DROP:
+		return "Got Send Drop"
 
 	if dbg_num == DBGS_GOT_RECEIVE:
 		return "Got Receive"
