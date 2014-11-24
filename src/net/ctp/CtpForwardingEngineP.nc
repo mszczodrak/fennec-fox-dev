@@ -662,10 +662,30 @@ message_t* ONE forward(message_t* ONE m) {
 	if (call MessagePool.empty()) {
 		// send a debug message to the uart
 		call CollectionDebug.logEvent(NET_C_FE_MSG_POOL_EMPTY);
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        	printf("[%u] CTP problem - drop msg from %u\n", process, getHeader(m)->origin);
+#else
+	        call SerialDbgs.dbgs(DBGS_GOT_SEND_FULL_QUEUE_FAIL, call CollectionPacket.getSequenceNumber(m),
+                                         call CollectionPacket.getOrigin(m), 1);
+#endif
+#endif
+
 	} else 
 		if (call QEntryPool.empty()) {
 			// send a debug message to the uart
 			call CollectionDebug.logEvent(NET_C_FE_QENTRY_POOL_EMPTY);
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		        printf("[%u] CTP problem - drop msg from %u\n", process, getHeader(m)->origin);
+#else
+		        call SerialDbgs.dbgs(DBGS_GOT_SEND_FULL_QUEUE_FAIL, call CollectionPacket.getSequenceNumber(m),
+                                         call CollectionPacket.getOrigin(m), 2);
+#endif
+#endif
+
 		} else {
 			message_t* newMsg;
 			fe_queue_entry_t *qe;
@@ -723,23 +743,24 @@ message_t* ONE forward(message_t* ONE m) {
         
 				// Successful function exit point:
 				return newMsg;
-		} else {
-			// There was a problem enqueuing to the send queue.
-			if (call MessagePool.put(newMsg) != SUCCESS)
-				call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR);
-			if (call QEntryPool.put(qe) != SUCCESS)
-				call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR);
-		}
-	}
+			} else {
+				// There was a problem enqueuing to the send queue.
+				if (call MessagePool.put(newMsg) != SUCCESS)
+					call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR);
+				if (call QEntryPool.put(qe) != SUCCESS)
+					call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR);
+
 
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] CTP problem - drop msg from %u\n", process, getHeader(m)->origin);
+			        printf("[%u] CTP problem - drop msg from %u\n", process, getHeader(m)->origin);
 #else
-        call SerialDbgs.dbgs(DBGS_GOT_SEND_FULL_QUEUE_FAIL, call CollectionPacket.getSequenceNumber(m),
-                                         call CollectionPacket.getOrigin(m), call UnicastNameFreeRouting.nextHop());
+			        call SerialDbgs.dbgs(DBGS_GOT_SEND_FULL_QUEUE_FAIL, call CollectionPacket.getSequenceNumber(m),
+                                         call CollectionPacket.getOrigin(m), 3);
 #endif
 #endif
+			}
+	}
 
 	// NB: at this point, we have a resource acquistion problem.
 	// Log the event, and drop the
