@@ -658,83 +658,79 @@ implementation {
    * message in the pool, it returns the passed message and does not
    * put it on the send queue.
    */
-  message_t* ONE forward(message_t* ONE m) {
-    if (call MessagePool.empty()) {
-      dbg("Route", "%s cannot forward, message pool empty.\n", __FUNCTION__);
-      // send a debug message to the uart
-      call CollectionDebug.logEvent(NET_C_FE_MSG_POOL_EMPTY);
-    }
-    else if (call QEntryPool.empty()) {
-      dbg("Route", "%s cannot forward, queue entry pool empty.\n", 
-          __FUNCTION__);
-      // send a debug message to the uart
-      call CollectionDebug.logEvent(NET_C_FE_QENTRY_POOL_EMPTY);
-    }
-    else {
-      message_t* newMsg;
-      fe_queue_entry_t *qe;
-      uint16_t gradient;
+message_t* ONE forward(message_t* ONE m) {
+	if (call MessagePool.empty()) {
+		// send a debug message to the uart
+		call CollectionDebug.logEvent(NET_C_FE_MSG_POOL_EMPTY);
+	} else 
+		if (call QEntryPool.empty()) {
+			// send a debug message to the uart
+			call CollectionDebug.logEvent(NET_C_FE_QENTRY_POOL_EMPTY);
+		} else {
+			message_t* newMsg;
+			fe_queue_entry_t *qe;
+			uint16_t gradient;
       
-      qe = call QEntryPool.get();
-      if (qe == NULL) {
-        call CollectionDebug.logEvent(NET_C_FE_GET_MSGPOOL_ERR);
-        return m;
-      }
+			qe = call QEntryPool.get();
+			if (qe == NULL) {
+				call CollectionDebug.logEvent(NET_C_FE_GET_MSGPOOL_ERR);
+				return m;
+			}
 
-      newMsg = call MessagePool.get();
-      if (newMsg == NULL) {
-        call CollectionDebug.logEvent(NET_C_FE_GET_QEPOOL_ERR);
-        return m;
-      }
+			newMsg = call MessagePool.get();
+			if (newMsg == NULL) {
+				call CollectionDebug.logEvent(NET_C_FE_GET_QEPOOL_ERR);
+				return m;
+			}
 
-      memset(newMsg, 0, sizeof(message_t));
-      memset(m->metadata, 0, sizeof(message_metadata_t));
+			memset(newMsg, 0, sizeof(message_t));
+			memset(m->metadata, 0, sizeof(message_metadata_t));
       
-      qe->msg = m;
-      qe->client = 0xff;
-      qe->retries = MAX_RETRIES;
+			qe->msg = m;
+			qe->client = 0xff;
+			qe->retries = MAX_RETRIES;
       
-      if (call SendQueue.enqueue(qe) == SUCCESS) {
-        dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
-        // Loop-detection code:
-        if (call CtpInfo.getEtx(&gradient) == SUCCESS) {
-          // We only check for loops if we know our own metric
-          if (call CtpPacket.getEtx(m) <= gradient) {
-            // If our etx metric is less than or equal to the etx value
-	    // on the packet (etx of the previous hop node), then we believe
-	    // we are in a loop.
-	    // Trigger a route update and backoff.
-            call CtpInfo.triggerImmediateRouteUpdate();
-            startRetxmitTimer(LOOPY_WINDOW, LOOPY_OFFSET);
-            call CollectionDebug.logEventMsg(NET_C_FE_LOOP_DETECTED,
-					 call CollectionPacket.getSequenceNumber(m), 
-					 call CollectionPacket.getOrigin(m), 
-                                         call AMPacket.destination(m));
+			if (call SendQueue.enqueue(qe) == SUCCESS) {
+				dbg("Forwarder,Route", "%s forwarding packet %p with queue size %hhu\n", __FUNCTION__, m, call SendQueue.size());
+				// Loop-detection code:
+				if (call CtpInfo.getEtx(&gradient) == SUCCESS) {
+					// We only check for loops if we know our own metric
+					if (call CtpPacket.getEtx(m) <= gradient) {
+						// If our etx metric is less than or equal to the etx value
+						// on the packet (etx of the previous hop node), then we believe
+						// we are in a loop.
+						// Trigger a route update and backoff.
+						call CtpInfo.triggerImmediateRouteUpdate();
+						startRetxmitTimer(LOOPY_WINDOW, LOOPY_OFFSET);
+						call CollectionDebug.logEventMsg(NET_C_FE_LOOP_DETECTED,
+								call CollectionPacket.getSequenceNumber(m), 
+								call CollectionPacket.getOrigin(m), 
+								call AMPacket.destination(m));
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] CTP loop in msg from %u\n", process, getHeader(m)->origin);
+						printf("[%u] CTP loop in msg from %u\n", process, getHeader(m)->origin);
 #endif
 #endif
-          }
-        }
+					}
+				}
 
-        if (!call RetxmitTimer.isRunning()) {
-          // sendTask is only immediately posted if we don't detect a
-          // loop.
-	  dbg("FHangBug", "%s: posted sendTask.\n", __FUNCTION__);
-          post sendTask();
-        }
+				if (!call RetxmitTimer.isRunning()) {
+					// sendTask is only immediately posted if we don't detect a
+					// loop.
+					dbg("FHangBug", "%s: posted sendTask.\n", __FUNCTION__);
+					post sendTask();
+				}
         
-        // Successful function exit point:
-        return newMsg;
-      } else {
-        // There was a problem enqueuing to the send queue.
-        if (call MessagePool.put(newMsg) != SUCCESS)
-          call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR);
-        if (call QEntryPool.put(qe) != SUCCESS)
-          call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR);
-      }
-    }
+				// Successful function exit point:
+				return newMsg;
+		} else {
+			// There was a problem enqueuing to the send queue.
+			if (call MessagePool.put(newMsg) != SUCCESS)
+				call CollectionDebug.logEvent(NET_C_FE_PUT_MSGPOOL_ERR);
+			if (call QEntryPool.put(qe) != SUCCESS)
+				call CollectionDebug.logEvent(NET_C_FE_PUT_QEPOOL_ERR);
+		}
+	}
 
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -745,13 +741,13 @@ implementation {
 #endif
 #endif
 
-    // NB: at this point, we have a resource acquistion problem.
-    // Log the event, and drop the
-    // packet on the floor.
+	// NB: at this point, we have a resource acquistion problem.
+	// Log the event, and drop the
+	// packet on the floor.
 
-    call CollectionDebug.logEvent(NET_C_FE_SEND_QUEUE_FULL);
-    return m;
-  }
+	call CollectionDebug.logEvent(NET_C_FE_SEND_QUEUE_FULL);
+	return m;
+}
  
   /*
    * Received a message to forward. Check whether it is a duplicate by
