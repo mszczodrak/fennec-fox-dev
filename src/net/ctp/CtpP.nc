@@ -112,8 +112,8 @@ uses interface Receive as SubSnoop;
 implementation {
   enum {
     CLIENT_COUNT = uniqueCount(UQ_CTP_CLIENT),
-    FORWARD_COUNT = 15,
-    TREE_ROUTING_TABLE_SIZE = 15,
+    FORWARD_COUNT = 20,
+    TREE_ROUTING_TABLE_SIZE = 20,
     QUEUE_SIZE = CLIENT_COUNT + FORWARD_COUNT,
     CACHE_SIZE = 4,
   };

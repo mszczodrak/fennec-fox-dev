@@ -242,6 +242,7 @@ task void routeUpdate() {
       //start will (re)start the sending of messages
       if (!running) {
 	running = TRUE;
+        currentInterval = minInterval;
 	chooseAdvertiseTime();
 	call RouteTimer.startPeriodic(BEACON_INTERVAL);
 	dbg("TreeRoutingCtl","%s running: %d radioOn: %d\n", __FUNCTION__, running, radioOn);
