@@ -100,7 +100,7 @@ void send_param_update(uint8_t var_id, process_t process_id, bool conflict) {
 			//signal Param.updated[F_APPLICATION, process_id]
 			/* nesC bug (issue #33) - reverse order */
 			signal Param.updated[process_id, F_APPLICATION]
-						(variable_lookup[i].var_id);
+						(variable_lookup[i].var_id, conflict);
                 }
         }
 
@@ -113,7 +113,7 @@ void send_param_update(uint8_t var_id, process_t process_id, bool conflict) {
 			//signal Param.updated[F_NETWORK, process_id]
 			/* nesC bug (issue #33) - reverse order */
 			signal Param.updated[process_id, F_NETWORK]
-						(variable_lookup[i].var_id);
+						(variable_lookup[i].var_id, conflict);
                 }
         }
 
@@ -126,7 +126,7 @@ void send_param_update(uint8_t var_id, process_t process_id, bool conflict) {
 			//signal Param.updated[F_AM, processes[process_id].am_module]
 			/* nesC bug (issue #33) - reverse order */
 			signal Param.updated[processes[process_id].am_module, F_AM]
-						(variable_lookup[i].var_id);
+						(variable_lookup[i].var_id, conflict);
 		}
 	}
 }
@@ -315,7 +315,7 @@ command error_t Param.set[uint8_t layer, process_t process_id](uint8_t name, voi
 	return SUCCESS;
 }
 
-default event void Param.updated[uint8_t layer, process_t process_id](uint8_t var_id) {
+default event void Param.updated[uint8_t layer, process_t process_id](uint8_t var_id, bool conflict) {
 }
 
 }

@@ -218,7 +218,7 @@ async command bool PacketAcknowledgements.wasAcked(message_t* msg) {
 event void RadioChannel.setChannelDone() {
 }
 
-event void Param.updated(uint8_t var_id) {
+event void Param.updated(uint8_t var_id, bool conflict) {
 
 }
 

@@ -189,7 +189,7 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	return msg;
 }
 
-event void Param.updated(uint8_t var_id) {
+event void Param.updated(uint8_t var_id, bool conflict) {
 }
 
 event void FennecData.updated(uint8_t global_id, uint8_t var_index) {

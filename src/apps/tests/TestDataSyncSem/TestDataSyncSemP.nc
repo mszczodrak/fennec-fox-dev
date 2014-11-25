@@ -65,26 +65,11 @@ implementation {
 uint32_t update_delay;
 uint32_t next_delay;
 
-uint16_t lvar1;
-uint16_t lvar2;
-uint16_t lvar3;
-uint16_t lvar4;
-uint16_t lvar5;
-
-void reset_vars() {
-	lvar1 = 0;
-	lvar2 = 0;
-	lvar3 = 0;
-	lvar4 = 0;
-	lvar5 = 0;
-}
-
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 	next_delay = call Random.rand32();
 	next_delay *= TOS_NODE_ID;
 	next_delay %= update_delay;
-	reset_vars();
 
 	call Timer.startPeriodic(next_delay);
 
@@ -97,17 +82,9 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	reset_vars();
 #ifdef __DBGS__APPLICATION__
 	call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
 #endif
-
-	call Param.set(VAL1, &lvar1, sizeof(lvar1));
-	call Param.set(VAL1, &lvar2, sizeof(lvar2));
-	call Param.set(VAL1, &lvar3, sizeof(lvar3));
-	call Param.set(VAL1, &lvar4, sizeof(lvar4));
-	call Param.set(VAL1, &lvar5, sizeof(lvar5));
-
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -118,11 +95,6 @@ task void updateData() {
 
 	switch(v) {
 	case 1:
-		if (d < lvar1) {
-			printf("skip1 small %u < %u\n", d, lvar1);
-			break;
-		}
-		lvar1 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL1, v, d);
@@ -134,11 +106,6 @@ task void updateData() {
 		break;
 
 	case 2:
-		if (d < lvar2) {
-			printf("skip2 small %u < %u\n", d, lvar2);
-			break;
-		}
-		lvar2 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL2, v, d);
@@ -150,11 +117,6 @@ task void updateData() {
 		break;
 
 	case 3:
-		if (d < lvar3) {
-			printf("skip3 small %u < %u\n", d, lvar3);
-			break;
-		}
-		lvar3 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL3, v, d);
@@ -166,11 +128,6 @@ task void updateData() {
 		break;
 
 	case 4:
-		if (d < lvar4) {
-			printf("skip4 small %u < %u\n", d, lvar4);
-			break;
-		}
-		lvar4 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL4, v, d);
@@ -182,11 +139,6 @@ task void updateData() {
 		break;
 
 	default:
-		if (d < lvar5) {
-			printf("skip5 small %u < %u\n", d, lvar5);
-			break;
-		}
-		lvar5 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL5, v, d);
@@ -225,57 +177,27 @@ event void Param.updated(uint8_t var_id) {
 #ifdef __DBGS__APPLICATION__
 	uint8_t v = 0;
 	uint16_t d;
-
-	if (! call Timer.isRunning()) {
-		return;
-	}
-
 	call Param.get(var_id, &d, sizeof(d));
 	switch(var_id) {
 	case VAL1:
 		v = 0;
-		if (d < lvar1) {
-			call Param.set(VAL1, &lvar1, sizeof(lvar1));
-			return;
-		}
-		lvar1 = d;
 		break;
 
 	case VAL2:
 		v = 1;
-		if (d < lvar2) {
-			call Param.set(VAL2, &lvar2, sizeof(lvar2));
-			return;
-		}
-		lvar2 = d;
 		break;
 
 	case VAL3:
 		v = 2;
-		if (d < lvar3) {
-			call Param.set(VAL3, &lvar3, sizeof(lvar3));
-			return;
-		}
-		lvar3 = d;
 		break;
 
 
 	case VAL4:
 		v = 4;
-		if (d < lvar4) {
-			call Param.set(VAL4, &lvar4, sizeof(lvar4));
-			return;
-		}
-		lvar4 = d;
 		break;
 
 	case VAL5:
 		v = 5;
-		if (d < lvar5) {
-			call Param.set(VAL5, &lvar5, sizeof(lvar5));
-			return;
-		}
-		lvar5 = d;
 		break;
 	}
 

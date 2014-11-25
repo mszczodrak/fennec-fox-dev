@@ -264,7 +264,7 @@ async command void PacketTimeSyncOffset.clear(message_t* msg) {
 async command void PacketTimeSyncOffset.set(message_t* msg, uint8_t value) {
 }
 
-event void Param.updated(uint8_t var_id) {
+event void Param.updated(uint8_t var_id, bool conflict) {
 
 }
 
