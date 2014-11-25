@@ -203,8 +203,11 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] TestDataSync get var ID %u (var %u) to %u\n", process, var_id, v, d);
+	if (conflict) {
+		printf("[%u] TestDataSync Conflict\n", process);
+	}
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, var_id, v, d);
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, var_id, conflict, d);
 #endif
 #endif
 }
