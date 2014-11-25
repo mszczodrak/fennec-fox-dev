@@ -118,10 +118,11 @@ task void updateData() {
 
 	switch(v) {
 	case 1:
-		if (v < lvar1) {
+		if (d < lvar1) {
+			printf("skip1 small %u < %u\n", d, lvar1);
 			break;
 		}
-		lvar1 = v;
+		lvar1 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL1, v, d);
@@ -133,10 +134,11 @@ task void updateData() {
 		break;
 
 	case 2:
-		if (v < lvar2) {
+		if (d < lvar2) {
+			printf("skip2 small %u < %u\n", d, lvar2);
 			break;
 		}
-		lvar2 = v;
+		lvar2 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL2, v, d);
@@ -148,10 +150,11 @@ task void updateData() {
 		break;
 
 	case 3:
-		if (v < lvar3) {
+		if (d < lvar3) {
+			printf("skip3 small %u < %u\n", d, lvar3);
 			break;
 		}
-		lvar3 = v;
+		lvar3 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL3, v, d);
@@ -163,10 +166,11 @@ task void updateData() {
 		break;
 
 	case 4:
-		if (v < lvar4) {
+		if (d < lvar4) {
+			printf("skip4 small %u < %u\n", d, lvar4);
 			break;
 		}
-		lvar4 = v;
+		lvar4 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL4, v, d);
@@ -178,10 +182,11 @@ task void updateData() {
 		break;
 
 	default:
-		if (v < lvar5) {
+		if (d < lvar5) {
+			printf("skip5 small %u < %u\n", d, lvar5);
 			break;
 		}
-		lvar5 = v;
+		lvar5 = d;
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] TestDataSyncSem  SET  var ID %u (var %u) to %u\n", process, VAL5, v, d);
