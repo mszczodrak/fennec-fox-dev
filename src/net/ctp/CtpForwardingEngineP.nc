@@ -232,6 +232,20 @@ implementation {
     clearState(SENDING);
     call RetxmitTimer.stop();
 
+    if (! call SendQueue.empty() ) {
+
+#ifdef __DBGS__NETWORK_ROUTING__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        printf("[%u] CTP Stop without sending all messages to %u\n",
+                process, call UnicastNameFreeRouting.nextHop();
+#else
+        call SerialDbgs.dbgs(DBGS_GOT_SEND_FURTHER_SEND_FAIL, call SendQueue.size(),
+                                call MessagePool.maxSize() - call MessagePool.size(), 
+				call UnicastNameFreeRouting.nextHop());
+#endif
+#endif
+    }
+
     while (!call SendQueue.empty()) {
        fe_queue_entry_t *qe = call SendQueue.head();  
        if (qe->client < CLIENT_COUNT) {
@@ -832,8 +846,8 @@ message_t* ONE forward(message_t* ONE m) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP drop duplicate in SendQueue from %u\n", process, getHeader(msg)->origin);
 #else
-	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 0, call CollectionPacket.getOrigin(msg),
-			call CollectionPacket.getSequenceNumber(msg));
+//	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 0, call CollectionPacket.getOrigin(msg),
+//			call CollectionPacket.getSequenceNumber(msg));
 #endif
 #endif
           return msg;
@@ -846,8 +860,8 @@ message_t* ONE forward(message_t* ONE m) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP drop duplicate in SentCache from %u\n", process, getHeader(msg)->origin);
 #else
-	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 1, call CollectionPacket.getOrigin(msg),
-			call CollectionPacket.getSequenceNumber(msg));
+//	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 1, call CollectionPacket.getOrigin(msg),
+//			call CollectionPacket.getSequenceNumber(msg));
 #endif
 #endif
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE);
