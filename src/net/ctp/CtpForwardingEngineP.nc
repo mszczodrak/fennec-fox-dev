@@ -436,8 +436,8 @@ implementation {
         printf("[%u] CTP sendTask duplicate in SentCache - drop msg from %u\n",
 		process, getHeader(qe->msg)->origin);
 #else
-        call SerialDbgs.dbgs(DBGS_GOT_SEND_DUPLICATE, call CollectionPacket.getSequenceNumber(qe->msg), 
-				getHeader(qe->msg)->origin, call UnicastNameFreeRouting.nextHop());
+//        call SerialDbgs.dbgs(DBGS_GOT_SEND_DUPLICATE, call CollectionPacket.getSequenceNumber(qe->msg), 
+//				getHeader(qe->msg)->origin, call UnicastNameFreeRouting.nextHop());
 #endif
 #endif
  
@@ -832,8 +832,8 @@ message_t* ONE forward(message_t* ONE m) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP drop duplicate in SendQueue from %u\n", process, getHeader(msg)->origin);
 #else
-	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 0, call CollectionPacket.getOrigin(msg),
-			call CollectionPacket.getSequenceNumber(msg));
+//	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 0, call CollectionPacket.getOrigin(msg),
+//			call CollectionPacket.getSequenceNumber(msg));
 #endif
 #endif
           return msg;
@@ -846,8 +846,8 @@ message_t* ONE forward(message_t* ONE m) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP drop duplicate in SentCache from %u\n", process, getHeader(msg)->origin);
 #else
-	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 1, call CollectionPacket.getOrigin(msg),
-			call CollectionPacket.getSequenceNumber(msg));
+//	call SerialDbgs.dbgs(DBGS_GOT_RECEIVE_DUPLICATE, 1, call CollectionPacket.getOrigin(msg),
+//			call CollectionPacket.getSequenceNumber(msg));
 #endif
 #endif
         call CollectionDebug.logEvent(NET_C_FE_DUPLICATE_CACHE);
@@ -878,8 +878,8 @@ message_t* ONE forward(message_t* ONE m) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP forward from %u\n", process, getHeader(msg)->origin);
 #else
-	call SerialDbgs.dbgs(DBGS_FORWARDING, call CollectionPacket.getSequenceNumber(msg),
-		call CollectionPacket.getOrigin(msg), call UnicastNameFreeRouting.nextHop());
+//	call SerialDbgs.dbgs(DBGS_FORWARDING, call CollectionPacket.getSequenceNumber(msg),
+//		call CollectionPacket.getOrigin(msg), call UnicastNameFreeRouting.nextHop());
 #endif
 #endif
       return forward(msg);
