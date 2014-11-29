@@ -83,7 +83,7 @@ command error_t SplitControl.start() {
 		delay *= SECOND_TO_MILLI;
 
 		if ((start_32khz == 0) || ((now - start_32khz) > _MILLI_2_32KHZ(30))) {
-			/* do not calibrate is offset is higher than 30 milliseconds */
+			/* do not calibrate if offset is higher than 30 milliseconds */
 			call Timer.startOneShot(delay);
 		} else {
 			call Timer.startOneShotAt( _32KHZ_2_MILLI(start_32khz), delay );
