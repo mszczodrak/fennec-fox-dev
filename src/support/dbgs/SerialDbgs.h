@@ -69,6 +69,7 @@ enum {
 
 #define DBGS_LED_ON		15
 #define DBGS_LED_OFF		16
+#define DBGS_CALIBRATE		17
 
 #define DBGS_GOT_SEND				20
 #define DBGS_GOT_SEND_HEADER_NULL_FAIL		21
