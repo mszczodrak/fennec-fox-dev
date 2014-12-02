@@ -71,13 +71,27 @@ implementation {
 uint8_t channel;
 uint8_t power;
 uint16_t sleepInterval;
+
+bool pending_stop;
+uint8_t pending_process_id;
+message_t *pending_msg;
 	
 command error_t SplitControl.start() {
+        pending_stop = FALSE;
+        pending_msg = NULL;
+        pending_process_id = UNKNOWN;
+
 	call RadioParamsControl.start();
 	return call SubSplitControl.start();
 }
 
 command error_t SplitControl.stop() {
+        if (pending_msg != NULL) {
+                pending_stop = TRUE;
+                call SubAMSend.cancel[pending_process_id](pending_msg);
+                return SUCCESS;
+        }
+
 	call RadioParamsControl.stop();
 	return call SubSplitControl.stop();
 }
@@ -118,13 +132,24 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t 
 	call Param.get(POWER, &power, sizeof(power));
 	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
 
+	pending_msg = msg;
+	pending_process_id = id;
+
 	//call LowPowerListening.setRemoteWakeupInterval(msg, sleepInterval);
 	call PacketTransmitPower.set(msg, power);
 	return call SubAMSend.send[id](addr, msg, len);
 }
 
 event void SubAMSend.sendDone[am_id_t id](message_t* msg, error_t error) {
+        pending_msg = NULL;
+        pending_process_id = UNKNOWN;
+
 	signal AMSend.sendDone[id](msg, error);
+
+        if (pending_stop == TRUE) {
+                call SubSplitControl.stop();
+                pending_stop = FALSE;
+        }
 }
 
 command error_t AMSend.cancel[am_id_t id](message_t* msg) {
