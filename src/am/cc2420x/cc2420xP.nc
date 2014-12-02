@@ -192,7 +192,7 @@ default event message_t* Snoop.receive[am_id_t id](message_t* msg, void* payload
 
 default event void AMSend.sendDone[am_id_t id](message_t* msg, error_t error) {}
 
-event void Param.updated(uint8_t var_id) {
+event void Param.updated(uint8_t var_id, bool conflict) {
 
 }
 
