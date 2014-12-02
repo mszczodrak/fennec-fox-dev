@@ -18,6 +18,7 @@ DBGS_STOP_DONE 				= 10
 
 DBGS_LED_ON				= 15
 DBGS_LED_OFF				= 16
+DBGS_CALIBRATE				= 17
 
 DBGS_GOT_SEND                           = 20
 DBGS_GOT_SEND_HEADER_NULL_FAIL          = 21
@@ -141,6 +142,9 @@ def dbg_translate(dbg_num):
 
 	if dbg_num == DBGS_LED_OFF:
 		return "Led Off"
+
+	if dbg_num == DBGS_CALIBRATE:
+		return "Calibrate"
 
 	if dbg_num == DBGS_GOT_SEND:
 		return "Got Send"
