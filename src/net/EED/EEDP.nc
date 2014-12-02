@@ -144,7 +144,7 @@ task void finish() {
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED signal sendDone\n", process);
+		printf("[%u] EED signal sendDone                  T %lu\n", process, end_32khz);
 #else
 		call SerialDbgs.dbgs(DBGS_SIGNAL_FINISH_PERIOD, 0, 
 				(uint16_t)(end_32khz >> 16), (uint16_t) end_32khz);
@@ -180,7 +180,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		post send_message();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED old local send\n", process);
+		printf("[%u] EED old local send                   T %lu\n", process, now);
 #else
 		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, process, (uint16_t)(now >> 16), (uint16_t)now);
 #endif
@@ -191,7 +191,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		post send_message();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED new local send\n", process);
+		printf("[%u] EED new local send                   T %lu\n", process, delay_32khz);
 #else
 		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16), (uint16_t)delay_32khz);
 #endif
@@ -249,7 +249,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			}
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED same remote payload\n", process);
+		printf("[%u] EED same remote payload from %3u     T %lu\n", process, 
+					call SubAMPacket.source(msg), sender_time_left);
 #else
 		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
 					(uint16_t)(sender_time_left >> 16),
@@ -275,7 +276,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		setup_alarm( receiver_receive_time, sender_time_left );
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED new remote payload\n", process);
+		printf("[%u] EED  new remote payload from %3u     T %lu\n", process,
+					call SubAMPacket.source(msg), sender_time_left);
 #else
 		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 1, 
 					(uint16_t)(sender_time_left >> 16),
@@ -291,7 +293,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			post finish();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED new remote payload\n", process);
+			printf("[%u] EED  new remote payload from %3u     T 0\n", process,
+					call SubAMPacket.source(msg));
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 2, 0, 0);
 #endif
@@ -301,7 +304,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			setup_alarm( receiver_receive_time, delay_32khz );
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED new remote payload\n", process);
+			printf("[%u] EED  new remote payload from %3u     T %lu\n", process,
+					call SubAMPacket.source(msg), delay_32khz);
 #else
 			call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 3, 
 					(uint16_t)(delay_32khz >> 16),
