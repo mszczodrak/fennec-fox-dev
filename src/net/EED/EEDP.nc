@@ -229,6 +229,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
 	uint32_t sender_time_left = footer->left;
+	uint32_t receive_overhead = now - receiver_receive_time;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
@@ -238,12 +239,17 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	/* remove default radio_tx_offset from the sender timestamp */
 	sender_time_left -= radio_tx_offset;
 
-//	printf("TS %lu - %lu = %lu\n", now, receiver_receive_time, now - receiver_receive_time);
 
-	if ((now - receiver_receive_time < 70) || (now - receiver_receive_time > 73)) {
+	if ((receive_overhead < 65) || (receive_overhead > 75)) {
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("TS %lu - %lu = %lu\n", now, receiver_receive_time, now - receiver_receive_time);
+#else
 		call SerialDbgs.dbgs(DBGS_CALIBRATE, 0,
-					(uint16_t)((now - receiver_receive_time) >> 16),
-					(uint16_t)(now - receiver_receive_time));
+					(uint16_t)(receive_overhead >> 16),
+					(uint16_t)receive_overhead);
+#endif
+#endif
 		receiver_receive_time = now - 71;
 	}
 	
@@ -252,7 +258,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if ( call Alarm.isRunning() && 
 				call SubPacketTimeStamp32khz.isValid(msg) && 
 				(sender_time_left < delay_32khz) &&
-				((receiver_receive_time + sender_time_left) < end_32khz)) {
+				((receiver_receive_time + sender_time_left) < (end_32khz - 10))) {
 			setup_alarm( receiver_receive_time, sender_time_left );
 			if (!busy) {
 				post send_message();
