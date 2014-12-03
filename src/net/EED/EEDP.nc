@@ -45,7 +45,7 @@ bool once = FALSE;
 
 norace uint32_t end_32khz;
 uint32_t delay_32khz = 0;
-uint32_t radio_tx_offset = 2;	/* 2 */
+uint32_t radio_tx_offset = 1;	/* 2 */
 
 task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
@@ -229,7 +229,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
 	uint32_t sender_time_left = footer->left;
-	uint32_t receive_overhead = now - receiver_receive_time;
+	uint32_t new_end = receiver_receive_time + sender_time_left;
+	uint8_t payload_copy[100];
+	memcpy(&payload_copy, payload, len);
+	payload = payload_copy;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
@@ -239,36 +242,29 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	/* remove default radio_tx_offset from the sender timestamp */
 	sender_time_left -= radio_tx_offset;
 
-
-	if ((receive_overhead < 65) || (receive_overhead > 75)) {
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("TS %lu - %lu = %lu\n", now, receiver_receive_time, now - receiver_receive_time);
-#else
-		call SerialDbgs.dbgs(DBGS_CALIBRATE, 0,
-					(uint16_t)(receive_overhead >> 16),
-					(uint16_t)receive_overhead);
-#endif
-#endif
-		receiver_receive_time = now - 71;
+	if (delay_32khz == 0) {
+	        call Param.get(REPEAT, &repeat, sizeof(repeat));
+        	call Param.get(DELAY, &delay, sizeof(delay));
+	        delay_32khz = _MILLI_2_32KHZ( repeat * delay );
 	}
-	
 
 	if (same_packet(payload, len)) {
 		if ( call Alarm.isRunning() && 
 				call SubPacketTimeStamp32khz.isValid(msg) && 
 				(sender_time_left < delay_32khz) &&
-				((receiver_receive_time + sender_time_left) < (end_32khz - 10))) {
+				(new_end < (end_32khz - 10))) {
+			uint32_t adjust_by = end_32khz;
 			setup_alarm( receiver_receive_time, sender_time_left );
+			adjust_by -= new_end;
 			if (!busy) {
 				post send_message();
 			}
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED same remote payload from %3u     T %lu @ %lu\n", process, 
-					call SubAMPacket.source(msg), sender_time_left, receiver_receive_time);
+			printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
+					call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, adjust_by);
 #else
-		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 0,
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)adjust_by,
 					(uint16_t)(sender_time_left >> 16),
 					(uint16_t)sender_time_left);
 #endif
@@ -276,12 +272,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		}
                 return msg;
         }
-
-	if (delay_32khz == 0) {
-	        call Param.get(REPEAT, &repeat, sizeof(repeat));
-        	call Param.get(DELAY, &delay, sizeof(delay));
-	        delay_32khz = _MILLI_2_32KHZ( repeat * delay );
-	}
 
 	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
 		receiver_receive_time = now;
@@ -301,34 +291,17 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 #endif
 	} else {
-		if ( sender_time_left > ((uint32_t)(-delay_32khz)) ) {
-			/* we might be behind */
-			end_32khz = receiver_receive_time + sender_time_left;
-			make_copy(msg, payload, len);
-			post send_message();
-			post finish();
+		setup_alarm( receiver_receive_time, delay_32khz );
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED  new remote payload from %3u     T 0\n", process,
-					call SubAMPacket.source(msg));
+		printf("[%u] EED  new remote payload from %3u     T %lu @ %lu\n", process,
+				call SubAMPacket.source(msg), delay_32khz, receiver_receive_time);
 #else
-			call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 2, 0, 0);
+		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 3, 
+				(uint16_t)(delay_32khz >> 16),
+				(uint16_t)delay_32khz);
 #endif
 #endif
-			return signal Receive.receive(msg, payload, len);
-		} else {
-			setup_alarm( receiver_receive_time, delay_32khz );
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED  new remote payload from %3u     T %lu @ %lu\n", process,
-					call SubAMPacket.source(msg), delay_32khz, receiver_receive_time);
-#else
-			call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 3, 
-					(uint16_t)(delay_32khz >> 16),
-					(uint16_t)delay_32khz);
-#endif
-#endif
-		}
 	}
 
 	make_copy(msg, payload, len);
