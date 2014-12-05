@@ -274,6 +274,12 @@ use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (
 		uint16_t activity
 )
 
+use source networkMinE $(FENNEC_FOX_LIB)/apps/networkMin (
+		uint16_t local = 0xFFFE,
+		uint16_t global = 0xFFFE,
+		uint16_t threshold = 300
+)
+
 use source groupById $(FENNEC_FOX_LIB)/apps/groupById (
 		uint16_t first_address = 0xffff,
 		uint16_t last_address = 0xffff
