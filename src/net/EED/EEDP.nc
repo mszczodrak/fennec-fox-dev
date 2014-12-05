@@ -62,7 +62,7 @@ task void send_message() {
 	busy = TRUE;
         header->left = now;
         header->left -= end_32khz;
-	footer->left = end_32khz;
+	footer->left = now;
 	call SubPacketTimeStamp32khz.set(&packet, end_32khz);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
@@ -231,9 +231,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct EED_header);
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
-	uint32_t sender_time_left = footer->left;
+	uint32_t sender_time_left = header->left + footer->left;
 	uint32_t new_end = receiver_receive_time + sender_time_left;
-	uint32_t sending_overhead = header->left - footer->left;
+//	uint32_t sending_overhead = header->left - footer->left;
 	uint8_t payload_copy[100];
 	memcpy(&payload_copy, payload, len);
 	payload = payload_copy;
@@ -258,7 +258,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	new_end = receiver_receive_time + sender_time_left;
 
-	printf("overhead %lu  %lu\n", sending_overhead, sender_time_left);
+//	printf("overhead %lu  %lu\n", sending_overhead, sender_time_left);
 
 
 	if (same_packet(payload, len)) {
