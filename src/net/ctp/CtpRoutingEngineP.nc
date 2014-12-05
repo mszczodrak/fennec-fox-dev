@@ -128,6 +128,7 @@ generic module CtpRoutingEngineP(uint8_t routingTableSize, uint32_t minInterval,
 	interface CompareBit;
 
     }
+    uses interface Param;
     uses interface SerialDbgs;
 }
 
@@ -184,15 +185,17 @@ implementation {
     bool tHasPassed;
 
 task void routeUpdate() {
+	uint16_t new_etx = routeInfo.etx + call LinkEstimator.getLinkQuality(routeInfo.parent);
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[-] Network CTP Parent %u   etx %u   changes %lu\n", routeInfo.parent,
 		routeInfo.etx + call LinkEstimator.getLinkQuality(routeInfo.parent), parentChanges);
 #else
         call SerialDbgs.dbgs(DBGS_NETWORK_ROUTING_UPDATE, parentChanges,
-			routeInfo.parent, routeInfo.etx + call LinkEstimator.getLinkQuality(routeInfo.parent));
+			routeInfo.parent, new_etx);
 #endif
 #endif
+	call Param.set(ETX, &new_etx, sizeof(new_etx));
 }
 
     void chooseAdvertiseTime() {
@@ -386,6 +389,8 @@ task void routeUpdate() {
             }
         }    
 
+        post routeUpdate();
+
         /* Finally, tell people what happened:  */
         /* We can only loose a route to a parent if it has been evicted. If it hasn't 
          * been just evicted then we already did not have a route */
@@ -448,7 +453,6 @@ task void routeUpdate() {
     }
 
     event void BeaconSend.sendDone(message_t* msg, error_t error) {
-        post routeUpdate();
         if ((msg != &beaconMsgBuffer) || !sending) {
             //something smells bad around here
             return;
@@ -845,5 +849,9 @@ task void routeUpdate() {
     command am_addr_t CtpInfo.getNeighborAddr(uint8_t n) {
       return (n < routingTableActive)? routingTable[n].neighbor:AM_BROADCAST_ADDR;
     }
+
+
+event void Param.updated(uint8_t var_id, bool conflict) {
+}
     
 } 

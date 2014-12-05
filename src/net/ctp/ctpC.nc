@@ -74,6 +74,8 @@ SubPacketAcknowledgements = CtpP.SubPacketAcknowledgements;
 SubReceive = CtpP.SubReceive;
 SubSnoop = CtpP.SubSnoop;
 
+CtpP.Param = Param;
+
 PacketLinkQuality = SubPacketLinkQuality;
 PacketTransmitPower = SubPacketTransmitPower;
 PacketRSSI = SubPacketRSSI;

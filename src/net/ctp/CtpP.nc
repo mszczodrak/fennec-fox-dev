@@ -107,6 +107,7 @@ uses interface PacketAcknowledgements as SubPacketAcknowledgements;
 uses interface Receive as SubReceive;
 uses interface Receive as SubSnoop;
 
+uses interface Param;
 }
 
 implementation {
@@ -154,6 +155,7 @@ implementation {
   StdControl = Estimator;
   RootControl = Router;
   UnicastNameFreeRouting = Router;
+  Param = Router;
 
   MainC.SoftwareInit -> Router;
   Router.BeaconSend -> Estimator.Send;

@@ -155,7 +155,7 @@ use application fixChannel $(FENNEC_FOX_LIB)/apps/tests/FixRadioChannel(
 
 use network nullNet $(FENNEC_FOX_LIB)/net/nullNet ()
 
-use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0)
+use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0, uint16_t etx = 64000)
 
 use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 		uint8_t repeat = 3,

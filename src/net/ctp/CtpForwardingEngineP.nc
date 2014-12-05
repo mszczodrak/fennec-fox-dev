@@ -237,7 +237,7 @@ implementation {
 #ifdef __DBGS__NETWORK_ROUTING__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
         printf("[%u] CTP Stop without sending all messages to %u\n",
-                process, call UnicastNameFreeRouting.nextHop();
+                process, call UnicastNameFreeRouting.nextHop());
 #else
         call SerialDbgs.dbgs(DBGS_GOT_SEND_FURTHER_SEND_FAIL, call SendQueue.size(),
                                 call MessagePool.maxSize() - call MessagePool.size(), 
