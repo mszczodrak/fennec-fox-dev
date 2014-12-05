@@ -62,7 +62,7 @@ task void send_message() {
 	busy = TRUE;
         header->left = now;
         header->left -= end_32khz;
-	footer->left = now;
+	footer->left = end_32khz;
 	call SubPacketTimeStamp32khz.set(&packet, end_32khz);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
@@ -231,9 +231,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct EED_header);
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
-	uint32_t sender_time_left = header->left + footer->left;
-	uint32_t new_end = receiver_receive_time + sender_time_left;
-//	uint32_t sending_overhead = header->left - footer->left;
+	//uint32_t sender_time_left = header->left + footer->left;
+	uint32_t sender_time_left = footer->left;
+	uint32_t new_end;
 	uint8_t payload_copy[100];
 	memcpy(&payload_copy, payload, len);
 	payload = payload_copy;
@@ -285,7 +285,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
-	if ( sender_time_left < delay_32khz ) {
+//	if ( sender_time_left < delay_32khz ) {
 		/* looks good */
 		setup_alarm( receiver_receive_time, sender_time_left );
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -298,6 +298,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 					(uint16_t)sender_time_left);
 #endif
 #endif
+/*
 	} else {
 		setup_alarm( receiver_receive_time, delay_32khz );
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -311,7 +312,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 #endif
 	}
-
+*/
 	make_copy(msg, payload, len);
 	post send_message();
 	return signal Receive.receive(msg, payload, len);
