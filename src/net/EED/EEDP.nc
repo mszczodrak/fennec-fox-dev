@@ -49,9 +49,10 @@ uint32_t radio_tx_offset = 1;	/* 2 */
 
 task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
-//	nx_struct EED_header *header = (nx_struct EED_header *) call SubAMSend.getPayload(&packet, 
-//				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
+	nx_struct EED_header *header = (nx_struct EED_header *) call SubAMSend.getPayload(&packet, 
+				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
+        //uint32_t now = call Alarm.getNow();
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -59,6 +60,7 @@ task void send_message() {
 	}
 
 	busy = TRUE;
+        header->left = end_32khz;
 	footer->left = end_32khz;
 	call SubPacketTimeStamp32khz.set(&packet, end_32khz);
 
@@ -248,9 +250,12 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	        delay_32khz = _MILLI_2_32KHZ( repeat * delay );
 	}
 
+	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
+		receiver_receive_time = now;
+	}
+
 	if (same_packet(payload, len)) {
 		if ( call Alarm.isRunning() && 
-				call SubPacketTimeStamp32khz.isValid(msg) && 
 				(sender_time_left < delay_32khz) &&
 				(new_end < (end_32khz - 10))) {
 			uint32_t adjust_by = end_32khz;
@@ -272,10 +277,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		}
                 return msg;
         }
-
-	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
-		receiver_receive_time = now;
-	}
 
 	if ( sender_time_left < delay_32khz ) {
 		/* looks good */
