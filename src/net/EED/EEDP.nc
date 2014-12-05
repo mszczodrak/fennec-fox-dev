@@ -52,7 +52,7 @@ task void send_message() {
 	nx_struct EED_header *header = (nx_struct EED_header *) call SubAMSend.getPayload(&packet, 
 				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
-        //uint32_t now = call Alarm.getNow();
+        uint32_t now = call Alarm.getNow();
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -60,7 +60,8 @@ task void send_message() {
 	}
 
 	busy = TRUE;
-        header->left = end_32khz;
+        header->left = now;
+        header->left -= end_32khz;
 	footer->left = end_32khz;
 	call SubPacketTimeStamp32khz.set(&packet, end_32khz);
 
@@ -232,6 +233,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
 	uint32_t sender_time_left = footer->left;
 	uint32_t new_end = receiver_receive_time + sender_time_left;
+	uint32_t sending_overhead = header->left - footer->left;
 	uint8_t payload_copy[100];
 	memcpy(&payload_copy, payload, len);
 	payload = payload_copy;
@@ -253,6 +255,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
 		receiver_receive_time = now;
 	}
+
+	new_end = receiver_receive_time + sender_time_left;
+
+	printf("overhead %lu  %lu\n", sending_overhead, sender_time_left);
+
 
 	if (same_packet(payload, len)) {
 		if ( call Alarm.isRunning() && 
