@@ -62,6 +62,7 @@ implementation {
 
 uint16_t local;
 uint16_t global;
+uint32_t delay;
 uint16_t threshold = 0;
 
 task void new_local() {
@@ -74,23 +75,33 @@ task void new_local() {
 #endif
 #endif
 
-	if (local < global) {
+	if (local > global) {
 		global = local;
+		call Param.set(GLOBAL, &global, sizeof(global));
+
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] Event networkMin global %u\n", process, global);
+		printf("[%u] Event networkMin local -> global %u\n", process, global);
 #else
 //		call SerialDbgs.dbgs(DBGS_BUSY, max_event_count, threshold, event_counter);
 #endif
 #endif
 	}
+
+	if (global > threshold) {
+		call Timer.startOneShot(delay);
+	}
+
 }
 
 task void new_global() {
 	uint16_t tmp_global;
 	call Param.get(GLOBAL, &tmp_global, sizeof(tmp_global));
 
-	if (tmp_global < global) {
+	if (tmp_global < local) {
+		global = local;
+		call Param.set(GLOBAL, &global, sizeof(global));
+	} else {
 		global = tmp_global;
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -101,14 +112,16 @@ task void new_global() {
 #endif
 	}
 
-	if (tmp_global > global) {
-		call Param.set(GLOBAL, &global, sizeof(global));
+	if (global > threshold) {
+		call Timer.startOneShot(delay);
 	}
+
 }
 
 command error_t SplitControl.start() {
 	call Param.get(LOCAL, &local, sizeof(local));
 	call Param.get(GLOBAL, &global, sizeof(global));
+	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(THRESHOLD, &threshold, sizeof(threshold));
 
 #ifdef __DBGS__EVENT__
@@ -146,6 +159,13 @@ event void Timer.fired() {
 //	call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
 #endif
 #endif
+
+	if (global > threshold) {
+
+	} else {
+
+	}
+
 //	call Event.report(process, TRUE);
 }
 

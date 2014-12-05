@@ -195,7 +195,9 @@ task void routeUpdate() {
 			routeInfo.parent, new_etx);
 #endif
 #endif
-	call Param.set(ETX, &new_etx, sizeof(new_etx));
+	if (new_etx < MAX_METRIC) {
+		call Param.set(ETX, &new_etx, sizeof(new_etx));
+	}
 }
 
     void chooseAdvertiseTime() {

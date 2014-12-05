@@ -276,7 +276,8 @@ use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (
 
 use source networkMinE $(FENNEC_FOX_LIB)/apps/networkMin (
 		uint16_t local = 0xFFFE,
-		uint16_t global = 0xFFFE,
+		uint16_t global = 0,
+		uint32_t delay = 10240, 
 		uint16_t threshold = 300
 )
 
