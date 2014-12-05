@@ -3,6 +3,7 @@
 
 nx_struct EED_header {
 	nx_uint16_t crc;
+	nx_uint32_t now;
 	nx_uint32_t left;
 };
 
