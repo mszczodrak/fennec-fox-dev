@@ -96,6 +96,14 @@ void setup_alarm(uint32_t d0, uint32_t dt ) {
 	end_32khz = d0 + dt;
 }
 
+task void startDone() {
+	signal SplitControl.startDone(SUCCESS);
+}
+
+task void stopDone() {
+	signal SplitControl.stopDone(SUCCESS);
+}
+
 command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
@@ -110,7 +118,7 @@ command error_t SplitControl.start() {
 	call Param.get(DELAY, &delay, sizeof(delay));
 	delay_32khz = _MILLI_2_32KHZ( repeat * delay );
 
-	signal SplitControl.startDone(SUCCESS);
+	post startDone();
 	return SUCCESS;
 }
 
@@ -119,7 +127,7 @@ command error_t SplitControl.stop() {
 	call SendTimer.stop();
 	call Alarm.stop();
 	delay_32khz = 0;
-	signal SplitControl.stopDone(SUCCESS);
+	post stopDone();
 	return SUCCESS;
 }
 

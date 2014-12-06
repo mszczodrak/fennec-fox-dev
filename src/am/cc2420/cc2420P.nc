@@ -77,6 +77,7 @@ uint8_t power;
 uint16_t sleepInterval;
 uint16_t sleepDelay;
 bool autoAck;
+bool turned_on = FALSE;
 
 bool pending_stop;
 uint8_t pending_process_id;
@@ -109,13 +110,15 @@ command error_t SplitControl.start() {
 }
 
 command error_t SplitControl.stop() {
+	turned_on = FALSE;
 	if (pending_msg != NULL) {
+		printf("pending stop\n");
 		pending_stop = TRUE;
 		call SubAMSend.cancel[pending_process_id](pending_msg);
 		return SUCCESS;
+	} else {
+		return call SubSplitControl.stop();
 	}
-		
-	return call SubSplitControl.stop();
 }
 
 event void SubSplitControl.startDone(error_t error) {
@@ -133,6 +136,7 @@ event void SubSplitControl.startDone(error_t error) {
 	post setChannel();
 	post setAutoAck();
 
+	turned_on = TRUE;
 	return signal SplitControl.startDone(error);
 }
 
@@ -145,6 +149,11 @@ event void SubSplitControl.stopDone(error_t error) {
 }
 
 command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t len) {
+	if (turned_on == FALSE) {
+		return EOFF;
+	}
+
+	printf("send\n");
 	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
 	call Param.get(POWER, &power, sizeof(power));
 
@@ -159,12 +168,14 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t 
 event void SubAMSend.sendDone[am_id_t id](message_t* msg, error_t error) {
 	pending_msg = NULL;
 	pending_process_id = UNKNOWN;
-	
+
+	printf("send done\n");	
 	signal AMSend.sendDone[id](msg, error);
 
 	if (pending_stop == TRUE) {
-		call SubSplitControl.stop();
+		printf("got send done\n");
 		pending_stop = FALSE;
+		call SubSplitControl.stop();
 	}
 }
 
