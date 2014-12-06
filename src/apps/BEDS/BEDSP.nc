@@ -108,6 +108,7 @@ task void send_msg() {
 }
 
 void resend(bool immediate) {
+	printf("resend %d\n", immediate);
 	if (immediate) {
 		call Timer.stop();
 		post send_msg();
@@ -214,6 +215,7 @@ event void FennecData.updated(uint8_t global_id, uint8_t var_index) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 #endif
 #endif
+	printf("Fennec updated\n");
 	data_sequence++;
 	var_hist[var_index] = data_sequence;
 	data_crc = call FennecData.getDataCrc();

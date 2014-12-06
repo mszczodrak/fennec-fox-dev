@@ -67,6 +67,7 @@ uint16_t threshold = 0;
 
 task void check() {
 	if ((global > threshold) && (! call Timer.isRunning())) {
+		printf("Event start timer\n");
 		call Timer.startOneShot(delay);
 	}
 }
@@ -75,7 +76,7 @@ task void new_local() {
 	call Param.get(LOCAL, &local, sizeof(local));
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//	printf("[%u] Event networkMin local %u\n", process, local);
+	printf("[%u] Event networkMin local %u\n", process, local);
 #else
 //	call SerialDbgs.dbgs(DBGS_BUSY, max_event_count, threshold, event_counter);
 #endif

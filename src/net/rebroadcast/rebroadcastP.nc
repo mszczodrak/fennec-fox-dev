@@ -94,6 +94,8 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	call Timer.startPeriodic(retry_delay);
 
+	printf("rebroadcast send\n");
+
 	if (pkt_addr == TOS_NODE_ID) {
 		hdr->repeat = 0;
 		signal AMSend.sendDone(pkt_msg, SUCCESS);

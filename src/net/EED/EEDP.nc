@@ -161,8 +161,6 @@ task void finish() {
 }
 
 async event void Alarm.fired() {
-	post finish();
-
 	if ( new_data && app_pkt ) {
 #ifdef __FLOCKLAB_LEDS__
 		call Leds.led2On();
@@ -177,6 +175,7 @@ async event void Alarm.fired() {
 #endif
 #endif
 	}
+	post finish();
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
