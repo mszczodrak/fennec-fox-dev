@@ -112,7 +112,6 @@ command error_t SplitControl.start() {
 command error_t SplitControl.stop() {
 	turned_on = FALSE;
 	if (pending_msg != NULL) {
-		printf("pending stop\n");
 		pending_stop = TRUE;
 		call SubAMSend.cancel[pending_process_id](pending_msg);
 		return SUCCESS;
@@ -153,7 +152,6 @@ command error_t AMSend.send[am_id_t id](am_addr_t addr, message_t* msg, uint8_t 
 		return EOFF;
 	}
 
-	printf("send\n");
 	call Param.get(SLEEPINTERVAL, &sleepInterval, sizeof(sleepInterval));
 	call Param.get(POWER, &power, sizeof(power));
 
@@ -169,11 +167,9 @@ event void SubAMSend.sendDone[am_id_t id](message_t* msg, error_t error) {
 	pending_msg = NULL;
 	pending_process_id = UNKNOWN;
 
-	printf("send done\n");	
 	signal AMSend.sendDone[id](msg, error);
 
 	if (pending_stop == TRUE) {
-		printf("got send done\n");
 		pending_stop = FALSE;
 		call SubSplitControl.stop();
 	}
