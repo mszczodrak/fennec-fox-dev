@@ -66,10 +66,11 @@ uint16_t send_delay;
 message_t packet;
 nx_uint8_t data_sequence;
 nx_uint16_t data_crc;
+nx_struct BEDS_data *data_msg = NULL;
+bool pending = FALSE;
 
 #define MAX_HIST_VARS	20
 nx_uint8_t var_hist[MAX_HIST_VARS];
-
 
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
@@ -77,8 +78,12 @@ task void schedule_send() {
 }
 
 task void send_msg() {
-	nx_struct BEDS_data *data_msg;
+	if (data_msg != NULL) {
+		pending = TRUE;
+		return;
+	}
 
+	printf("here 1\n");
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
    
 	if (data_msg == NULL) {
@@ -88,12 +93,14 @@ task void send_msg() {
 
 	data_msg->sequence = data_sequence;
 	data_msg->data_crc = data_crc;
+
 	call FennecData.load(data_msg->data);
 	memcpy(data_msg->var_hist, &var_hist, call FennecData.getNumOfGlobals());
 	data_msg->packet_crc = (nx_uint16_t) crc16(0, (uint8_t*) data_msg,
                 sizeof(nx_struct BEDS_data) -
                 sizeof(((nx_struct BEDS_data *)0)->packet_crc));
 
+	printf("here 5\n");
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data))  != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
@@ -114,6 +121,8 @@ command error_t SplitControl.start() {
 	for (i = 0; i < MAX_HIST_VARS; i++) {
 		var_hist[i] = 0;
 	}
+	data_msg = NULL;
+	pending = FALSE;
 	data_sequence = 0;
 	data_crc = 0;
 	post schedule_send();
@@ -123,32 +132,35 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
+	pending = FALSE;
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	nx_struct BEDS_data *data_msg = (nx_struct BEDS_data*) payload;
+	nx_struct BEDS_data *in_data_msg = (nx_struct BEDS_data*) payload;
 	uint8_t i;
 
-	if (data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) data_msg,
+	printf("receive\n");
+
+	if (in_data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) in_data_msg,
 		len - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
 		return msg;
 	}
 
 	call Timer.stop();
 
-	if (data_msg->data_crc == data_crc) {
+	if (in_data_msg->data_crc == data_crc) {
 		return msg;
 	}
 
 	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-		if (((data_msg->var_hist[i] >= var_hist[i]) && ((data_msg->var_hist[i] - var_hist[i]) < BEDS_WRAPPER)) || 
+		if (((in_data_msg->var_hist[i] >= var_hist[i]) && ((in_data_msg->var_hist[i] - var_hist[i]) < BEDS_WRAPPER)) || 
 				/* wrap around */
-			((var_hist[i] >= data_msg->var_hist[i]) && ((var_hist[i] - data_msg->var_hist[i]) > BEDS_WRAPPER))) {
+			((var_hist[i] >= in_data_msg->var_hist[i]) && ((var_hist[i] - in_data_msg->var_hist[i]) > BEDS_WRAPPER))) {
 
-			if (call FennecData.matchData(data_msg->data, i) != SUCCESS) {
-				if (var_hist[i] == data_msg->var_hist[i]) {
+			if (call FennecData.matchData(in_data_msg->data, i) != SUCCESS) {
+				if (var_hist[i] == in_data_msg->var_hist[i]) {
 					/* conflict: same sequence but different data */
 					var_hist[i] += (call Random.rand16() % BEDS_RANDOM_INCREASE);
 					if (((var_hist[i] > data_sequence) && (var_hist[i] - data_sequence) < BEDS_WRAPPER) ||
@@ -156,21 +168,21 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 						((data_sequence > var_hist[i]) && ((data_sequence - var_hist[i]) > BEDS_WRAPPER))) {
 						data_sequence = var_hist[i];
 					}
-					call FennecData.update(data_msg->data, i, TRUE);
+					call FennecData.update(in_data_msg->data, i, TRUE);
 				} else {
-					var_hist[i] = data_msg->var_hist[i];
-					call FennecData.update(data_msg->data, i, FALSE);
+					var_hist[i] = in_data_msg->var_hist[i];
+					call FennecData.update(in_data_msg->data, i, FALSE);
 				}
 			} else {
-				var_hist[i] = data_msg->var_hist[i];
+				var_hist[i] = in_data_msg->var_hist[i];
 			}
 		}
 	}
 
-	if (((data_msg->sequence > data_sequence) && (data_msg->sequence - data_sequence) < BEDS_WRAPPER) ||
+	if (((in_data_msg->sequence > data_sequence) && (in_data_msg->sequence - data_sequence) < BEDS_WRAPPER) ||
 				/* wrap around */ 
-		((data_sequence > data_msg->sequence) && ((data_sequence - data_msg->sequence) > BEDS_WRAPPER))) {
-		data_sequence = data_msg->sequence;
+		((data_sequence > in_data_msg->sequence) && ((data_sequence - in_data_msg->sequence) > BEDS_WRAPPER))) {
+		data_sequence = in_data_msg->sequence;
 	}
 
 	data_crc = call FennecData.getDataCrc();
@@ -179,6 +191,11 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	data_msg = NULL;	
+	if (pending == TRUE) {
+		pending = FALSE;
+		post send_msg();
+	}
 }
 
 event void Timer.fired() {
