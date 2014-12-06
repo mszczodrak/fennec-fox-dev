@@ -67,7 +67,6 @@ message_t packet;
 nx_uint8_t data_sequence;
 nx_uint16_t data_crc;
 nx_struct BEDS_data *data_msg = NULL;
-bool pending = FALSE;
 
 #define MAX_HIST_VARS	20
 nx_uint8_t var_hist[MAX_HIST_VARS];
@@ -78,14 +77,9 @@ task void schedule_send() {
 }
 
 task void send_msg() {
-	if (data_msg != NULL) {
-		pending = TRUE;
-		return;
-	}
-
-	printf("here 1\n");
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
    
+	printf("send\n");
 	if (data_msg == NULL) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
@@ -100,15 +94,12 @@ task void send_msg() {
                 sizeof(nx_struct BEDS_data) -
                 sizeof(((nx_struct BEDS_data *)0)->packet_crc));
 
-	printf("here 5\n");
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct BEDS_data))  != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
-	} else {
 	}
 }
 
 void resend(bool immediate) {
-	printf("resend %d\n", immediate);
 	if (immediate) {
 		call Timer.stop();
 		post send_msg();
@@ -122,8 +113,6 @@ command error_t SplitControl.start() {
 	for (i = 0; i < MAX_HIST_VARS; i++) {
 		var_hist[i] = 0;
 	}
-	data_msg = NULL;
-	pending = FALSE;
 	data_sequence = 0;
 	data_crc = 0;
 	post schedule_send();
@@ -133,7 +122,6 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	call Timer.stop();
-	pending = FALSE;
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -141,21 +129,21 @@ command error_t SplitControl.stop() {
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	nx_struct BEDS_data *in_data_msg = (nx_struct BEDS_data*) payload;
 	uint8_t i;
-
-	printf("receive\n");
-
-	if (in_data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) in_data_msg,
-		len - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
-		return msg;
-	}
-
 	call Timer.stop();
 
 	if (in_data_msg->data_crc == data_crc) {
 		return msg;
 	}
 
+	printf("receive\n");
+
+	if (in_data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) in_data_msg,
+		sizeof(nx_struct BEDS_data) - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
+		return msg;
+	}
+
 	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
+		printf("%d\n", i);
 		if (((in_data_msg->var_hist[i] >= var_hist[i]) && ((in_data_msg->var_hist[i] - var_hist[i]) < BEDS_WRAPPER)) || 
 				/* wrap around */
 			((var_hist[i] >= in_data_msg->var_hist[i]) && ((var_hist[i] - in_data_msg->var_hist[i]) > BEDS_WRAPPER))) {
@@ -184,7 +172,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	if (((in_data_msg->sequence > data_sequence) && (in_data_msg->sequence - data_sequence) < BEDS_WRAPPER) ||
 				/* wrap around */ 
 		((data_sequence > in_data_msg->sequence) && ((data_sequence - in_data_msg->sequence) > BEDS_WRAPPER))) {
-		printf("wrap\n");
 		data_sequence = in_data_msg->sequence;
 	}
 
@@ -196,11 +183,6 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	printf("send done\n");
-	data_msg = NULL;	
-	if (pending == TRUE) {
-		pending = FALSE;
-		post send_msg();
-	}
 }
 
 event void Timer.fired() {

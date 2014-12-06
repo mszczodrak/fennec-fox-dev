@@ -98,8 +98,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 
 	call Timer.startPeriodic(retry_delay);
 
-	printf("rebroadcast send\n");
-
 	if (pkt_addr == TOS_NODE_ID) {
 		hdr->repeat = 0;
 		signal AMSend.sendDone(pkt_msg, SUCCESS);
@@ -149,24 +147,15 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 
 	if ((retry == 0) || (hdr->repeat == 0)) {
-		printf("rebro senddone all\n");
 		signal AMSend.sendDone(msg, error);
 		call Timer.stop();
 		return;
 	}
-	printf("rebro senddone\n");
-
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
 
-//	printf("rebro receive\n");
-
-	dbg("", "[%d] rebroadcast Receive.receive(0x%1x, 0x%1x, %d )",
-			process, msg, 
-			ptr + sizeof(nx_struct rebroadcast_header), 
-			len - sizeof(nx_struct rebroadcast_header));
 	return signal Receive.receive(msg, 
 			ptr + sizeof(nx_struct rebroadcast_header), 
 			len - sizeof(nx_struct rebroadcast_header));
@@ -174,10 +163,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
-	dbg("", "[%d] rebroadcast Snoop.receive(0x%1x, 0x%1x, %d )",
-			process, msg, 
-			ptr + sizeof(nx_struct rebroadcast_header), 
-			len - sizeof(nx_struct rebroadcast_header));
+
 	return signal Snoop.receive(msg, 
 			ptr + sizeof(nx_struct rebroadcast_header), 
 			len - sizeof(nx_struct rebroadcast_header));
