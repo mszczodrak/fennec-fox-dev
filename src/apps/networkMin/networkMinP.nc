@@ -65,11 +65,17 @@ uint16_t global;
 uint32_t delay;
 uint16_t threshold = 0;
 
+task void check() {
+	if ((global > threshold) && (! call Timer.isRunning())) {
+		call Timer.startOneShot(delay);
+	}
+}
+
 task void new_local() {
 	call Param.get(LOCAL, &local, sizeof(local));
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Event networkMin local %u\n", process, local);
+//	printf("[%u] Event networkMin local %u\n", process, local);
 #else
 //	call SerialDbgs.dbgs(DBGS_BUSY, max_event_count, threshold, event_counter);
 #endif
@@ -88,10 +94,7 @@ task void new_local() {
 #endif
 	}
 
-	if (global > threshold) {
-		call Timer.startOneShot(delay);
-	}
-
+	post check();
 }
 
 task void new_global() {
@@ -105,17 +108,14 @@ task void new_global() {
 		global = tmp_global;
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] Event networkMin global %u\n", process, global);
+		printf("[%u] Event networkMin new global %u\n", process, global);
 #else
 //		call SerialDbgs.dbgs(DBGS_BUSY, max_event_count, threshold, event_counter);
 #endif
 #endif
 	}
 
-	if (global > threshold) {
-		call Timer.startOneShot(delay);
-	}
-
+	post check();
 }
 
 command error_t SplitControl.start() {
@@ -142,7 +142,6 @@ command error_t SplitControl.stop() {
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Event networkMin stop()\n", process);
-//	printf("[%u] Event networkMin max_event is %d  threshold is %d\n", process, max_event_count, threshold);
 #else
 //	call SerialDbgs.dbgs(DBGS_STATUS_UPDATE, src, max_event_count, threshold);
 #endif
@@ -152,21 +151,26 @@ command error_t SplitControl.stop() {
 }
 
 event void Timer.fired() {
+	if ((global > threshold) && (local > threshold)) {
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-        printf("[%u] Event networkMin fired()\n", process);
+        	printf("[%u] Event networkMin fired()\n", process);
 #else
-//	call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
+//		call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
 #endif
 #endif
-
-	if (global > threshold) {
-
+//		call Event.report(process, TRUE);
 	} else {
-
+#ifdef __DBGS__EVENT__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        	printf("[%u] Event networkMin reset to local\n", process);
+#else
+//		call SerialDbgs.dbgs(DBGS_TIMER_FIRED, src, (uint16_t)(delay >> 16), (uint16_t)delay);
+#endif
+#endif
+		global = local;
+		call Param.set(GLOBAL, &global, sizeof(global));
 	}
-
-//	call Event.report(process, TRUE);
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {}
