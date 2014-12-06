@@ -161,6 +161,7 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 			((var_hist[i] >= in_data_msg->var_hist[i]) && ((var_hist[i] - in_data_msg->var_hist[i]) > BEDS_WRAPPER))) {
 
 			if (call FennecData.matchData(in_data_msg->data, i) != SUCCESS) {
+				printf("match\n");
 				if (var_hist[i] == in_data_msg->var_hist[i]) {
 					/* conflict: same sequence but different data */
 					var_hist[i] += (call Random.rand16() % BEDS_RANDOM_INCREASE);
@@ -183,15 +184,18 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	if (((in_data_msg->sequence > data_sequence) && (in_data_msg->sequence - data_sequence) < BEDS_WRAPPER) ||
 				/* wrap around */ 
 		((data_sequence > in_data_msg->sequence) && ((data_sequence - in_data_msg->sequence) > BEDS_WRAPPER))) {
+		printf("wrap\n");
 		data_sequence = in_data_msg->sequence;
 	}
 
 	data_crc = call FennecData.getDataCrc();
+	printf("receive 2\n");
 	resend(1);
 	return msg;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
+	printf("send done\n");
 	data_msg = NULL;	
 	if (pending == TRUE) {
 		pending = FALSE;

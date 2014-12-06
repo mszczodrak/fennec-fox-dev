@@ -90,6 +90,10 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	pkt_msg = msg;
 
 	hdr = (nx_struct rebroadcast_header*) call SubAMSend.getPayload(pkt_msg, pkt_len);
+	if (hdr == NULL) {
+		signal AMSend.sendDone(msg, FAIL);
+		return SUCCESS;
+	}
 	hdr->repeat = repeat;
 
 	call Timer.startPeriodic(retry_delay);
@@ -145,15 +149,19 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 
 	if ((retry == 0) || (hdr->repeat == 0)) {
+		printf("rebro senddone all\n");
 		signal AMSend.sendDone(msg, error);
 		call Timer.stop();
 		return;
 	}
+	printf("rebro senddone\n");
 
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
+
+//	printf("rebro receive\n");
 
 	dbg("", "[%d] rebroadcast Receive.receive(0x%1x, 0x%1x, %d )",
 			process, msg, 
