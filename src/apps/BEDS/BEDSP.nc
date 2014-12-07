@@ -71,6 +71,8 @@ nx_struct BEDS_data *data_msg = NULL;
 #define MAX_HIST_VARS	20
 nx_uint8_t var_hist[MAX_HIST_VARS];
 
+nx_struct BEDS_data received_copy;
+
 task void schedule_send() {
 	call Param.get(SEND_DELAY, &send_delay, sizeof(send_delay));
 	call Timer.startOneShot(send_delay / 2 + (call Random.rand16() % send_delay) + 1);
@@ -79,7 +81,6 @@ task void schedule_send() {
 task void send_msg() {
 	data_msg = call SubAMSend.getPayload(&packet, call FennecData.getNxDataLen() + 4);
    
-	printf("send\n");
 	if (data_msg == NULL) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
@@ -126,30 +127,18 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	nx_struct BEDS_data *in_data_msg = (nx_struct BEDS_data*) payload;
+
+
+task void process_receive() {
+	nx_struct BEDS_data *in_data_msg = &received_copy;
 	uint8_t i;
-	call Timer.stop();
-
-	if (in_data_msg->data_crc == data_crc) {
-		return msg;
-	}
-
-	printf("receive\n");
-
-	if (in_data_msg->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) in_data_msg,
-		sizeof(nx_struct BEDS_data) - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
-		return msg;
-	}
 
 	for (i = 0; i < call FennecData.getNumOfGlobals(); i++) {	
-		printf("%d\n", i);
 		if (((in_data_msg->var_hist[i] >= var_hist[i]) && ((in_data_msg->var_hist[i] - var_hist[i]) < BEDS_WRAPPER)) || 
 				/* wrap around */
 			((var_hist[i] >= in_data_msg->var_hist[i]) && ((var_hist[i] - in_data_msg->var_hist[i]) > BEDS_WRAPPER))) {
 
 			if (call FennecData.matchData(in_data_msg->data, i) != SUCCESS) {
-				printf("match\n");
 				if (var_hist[i] == in_data_msg->var_hist[i]) {
 					/* conflict: same sequence but different data */
 					var_hist[i] += (call Random.rand16() % BEDS_RANDOM_INCREASE);
@@ -176,13 +165,28 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 	}
 
 	data_crc = call FennecData.getDataCrc();
-	printf("receive 2\n");
 	resend(1);
+}
+
+event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
+	nx_struct BEDS_data *in_beds = (nx_struct BEDS_data*) payload;
+	call Timer.stop();
+
+	if (in_beds->data_crc == data_crc) {
+		return msg;
+	}
+
+	if (in_beds->packet_crc != (nx_uint16_t) crc16(0, (uint8_t*) in_beds,
+		sizeof(nx_struct BEDS_data) - sizeof(((nx_struct BEDS_data *)0)->packet_crc)) ) {
+		return msg;
+	}
+
+	memcpy(&received_copy, payload, sizeof(nx_struct BEDS_data));
+	post process_receive();
 	return msg;
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	printf("send done\n");
 }
 
 event void Timer.fired() {
@@ -201,7 +205,6 @@ event void FennecData.updated(uint8_t global_id, uint8_t var_index) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 #endif
 #endif
-	printf("Fennec updated\n");
 	data_sequence++;
 	var_hist[var_index] = data_sequence;
 	data_crc = call FennecData.getDataCrc();
