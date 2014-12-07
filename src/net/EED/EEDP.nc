@@ -46,6 +46,7 @@ bool once = FALSE;
 norace uint32_t end_32khz;
 uint32_t delay_32khz = 0;
 uint32_t radio_tx_offset = 2;	/* 2 */
+uint16_t receive_counter = 0;
 
 task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
@@ -109,6 +110,7 @@ command error_t SplitControl.start() {
 	busy = FALSE;
 	new_data = FALSE;
 	once = FALSE;
+	receive_counter = 0;
 
 #ifdef __FLOCKLAB_LEDS__
 	call Leds.led2Off();
@@ -137,9 +139,11 @@ event void SendTimer.fired() {
 		return;
 	}
 
-	if (!busy) {
+	if (!busy || (receive_counter < 7)) {
 		post send_message();
 	}
+
+	receive_counter = 0;
 
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
@@ -147,7 +151,6 @@ event void SendTimer.fired() {
 
 task void finish() {
 	call SendTimer.stop();
-
 
 	if ( new_data ) {
 		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
@@ -158,6 +161,10 @@ task void finish() {
 		signal AMSend.sendDone(app_pkt, SUCCESS);
 		app_pkt = NULL;
 	}
+}
+
+void quick_send() {
+	call SendTimer.startPeriodic(call Random.rand16() % delay + 1);
 }
 
 async event void Alarm.fired() {
@@ -188,7 +195,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 			return SUCCESS;
 		}
 		once = TRUE;
-		post send_message();
+		quick_send();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED old local send                   T %lu\n", process, now);
@@ -199,7 +206,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	} else {
 		setup_alarm( now, delay_32khz );
 		make_copy(msg, app_payload, len);
-		post send_message();
+		quick_send();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED new local send                   T %lu\n", process, delay_32khz);
@@ -244,6 +251,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t payload_copy[100];
 	memcpy(&payload_copy, payload, len);
 	payload = payload_copy;
+
+	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
@@ -298,9 +307,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 #endif
 			}
-			if (!busy) {
-				post send_message();
-			}
+			quick_send();
 		}
                 return msg;
         }
@@ -331,7 +338,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 	}
 	make_copy(msg, payload, len);
-	post send_message();
+	quick_send();
 	return signal Receive.receive(msg, payload, len);
 }
 
