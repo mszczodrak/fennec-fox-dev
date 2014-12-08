@@ -21,6 +21,13 @@ use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter (
 		uint8_t repeat = 1,
 		uint16_t receive_event )
 
+
+use application down_sample $(FENNEC_FOX_LIB)/apps/down_sample (
+		uint16_t input = 0,
+		uint16_t output = 0,
+		uint16_t scale = 0 )
+
+
 use application dbgs $(FENNEC_FOX_LIB)/apps/tests/Dbgs (uint16_t delay = 1024)
 
 use application printf $(FENNEC_FOX_LIB)/apps/tests/PrintfApp ()
