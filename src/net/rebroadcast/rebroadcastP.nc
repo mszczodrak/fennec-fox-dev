@@ -32,30 +32,35 @@ uses interface PacketTimeStamp<T32khz, uint32_t> as SubPacketTimeStamp32khz;
 
 implementation {
 
-/* Parameters:
-uint8_t repeat = 1,
-float delay = 1
-*/
-
-
-uint8_t retry;
 uint16_t retry_delay;
 uint8_t repeat;
 bool busy = FALSE;
 uint8_t pkt_len;
 am_addr_t pkt_addr;
 message_t *pkt_msg;
-error_t pkt_err;
+void *pkt_payload;
 
 command error_t SplitControl.start() {
-	dbg("", "[%d] rebroadcast SplitControl.start()", process);
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] rebroadcast SplitControl.start()\n", process);
+#else
+
+#endif
+#endif
 	busy = FALSE;
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
-	dbg("", "[%d] rebroadcast SplitControl.stop()", process);
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%d] rebroadcast SplitControl.stop()\n", process);
+#else
+
+#endif
+#endif
 	busy = FALSE;
 	call Timer.stop();
 	signal SplitControl.stopDone(SUCCESS);
@@ -68,38 +73,33 @@ task void send_msg() {
 
 	busy = TRUE;
 
+	if (pkt_msg == NULL) {
+		signal SubAMSend.sendDone(pkt_msg, FAIL);
+	}
+
 	if (call SubAMSend.send(pkt_addr, pkt_msg, pkt_len) != SUCCESS) {
 		signal SubAMSend.sendDone(pkt_msg, FAIL);
 	}
 }
-
 
 event void Timer.fired() {
 	post send_msg();
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
-	nx_struct rebroadcast_header *hdr;
-
-	call Param.get(RETRY, &retry, sizeof(retry));
 	call Param.get(REPEAT, &repeat, sizeof(repeat));
 	call Param.get(RETRY_DELAY, &retry_delay, sizeof(retry_delay));
+
+	if (pkt_msg != NULL) {
+		signal AMSend.sendDone(pkt_msg, EALREADY);
+	}
 
 	pkt_len = len + sizeof(nx_struct rebroadcast_header);
 	pkt_addr = addr;
 	pkt_msg = msg;
-
-	hdr = (nx_struct rebroadcast_header*) call SubAMSend.getPayload(pkt_msg, pkt_len);
-	if (hdr == NULL) {
-		signal AMSend.sendDone(msg, FAIL);
-		return SUCCESS;
-	}
-	hdr->repeat = repeat;
-
-	call Timer.startPeriodic(retry_delay);
+	pkt_payload = call SubAMSend.getPayload(pkt_msg, pkt_len);
 
 	if (pkt_addr == TOS_NODE_ID) {
-		hdr->repeat = 0;
 		signal AMSend.sendDone(pkt_msg, SUCCESS);
 		signal SubReceive.receive(msg, 
 			call AMSend.getPayload(pkt_msg, pkt_len), pkt_len);
@@ -113,49 +113,53 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 }
 
 command error_t AMSend.cancel(message_t* msg) {
-	dbg("", "[%d] rebroadcast AMSend.cancel(0x%1x)", process, msg);
 	return call SubAMSend.cancel(msg);
 }
 
 command uint8_t AMSend.maxPayloadLength() {
-	dbg("", "[%d] rebroadcast AMSend.maxPayloadLength()", process);
 	return (call SubAMSend.maxPayloadLength() - 
 		sizeof(nx_struct rebroadcast_header));
 }
 
 command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 	uint8_t *ptr; 
-	dbg("", "[%d] rebroadcast AMSend.getpayload(0x%1x, %d )", process, msg, len);
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("[%u] rebroadcast AMSend.getpayload( 0x%p, %u )\n", process, msg, len);
+#else
+
+#endif
+#endif
 	ptr = (uint8_t*) call SubAMSend.getPayload(msg, 
 				len + sizeof(nx_struct rebroadcast_header));
 	return (void*) (ptr + sizeof(nx_struct rebroadcast_header));
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	nx_struct rebroadcast_header *hdr;
-
-	dbg("", "[%d] rebroadcast AMSend.sendDone(0x%1x, %d )", process, msg, error);
-
-	hdr = (nx_struct rebroadcast_header*) call SubAMSend.getPayload(msg, pkt_len);
-
-	if (error != SUCCESS) {
-		retry--;
-	} else {
-		hdr->repeat--;
-	}
-
+	repeat--;
 	busy = FALSE;
-
-	if ((retry == 0) || (hdr->repeat == 0)) {
-		signal AMSend.sendDone(msg, error);
+	if (repeat == 0) {
+		pkt_msg = NULL;
 		call Timer.stop();
-		return;
+		signal AMSend.sendDone(msg, error);
+	} else {
+		call Timer.startOneShot(retry_delay);
 	}
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
+	if (!memcmp(pkt_payload, payload, len)) {
+		return msg;
+	}
+	
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("[%u] rebroadcast Receive.receive( 0x%p, 0x%p, %u )\n", process, msg, payload, len);
+#else
 
+#endif
+#endif
 	return signal Receive.receive(msg, 
 			ptr + sizeof(nx_struct rebroadcast_header), 
 			len - sizeof(nx_struct rebroadcast_header));
