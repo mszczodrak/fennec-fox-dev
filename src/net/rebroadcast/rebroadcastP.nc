@@ -70,7 +70,7 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-task void send_msg() {
+task void send_message() {
 	if (busy)
 		return;
 
@@ -115,7 +115,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	}
 
 	receive_counter = 0;
-	post send_msg();
+	post send_message();
 
 	return SUCCESS;
 }
