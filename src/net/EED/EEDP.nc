@@ -80,11 +80,8 @@ void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
 
 	memcpy(payload, new_payload, new_payload_len);
 	packet_payload_len = new_payload_len;
-
 	new_data = TRUE;
-
 	header->crc = (nx_uint16_t) crc16(0, payload, packet_payload_len);
-	call SendTimer.startPeriodic(2);
 }
 
 bool same_packet(void *in_payload, uint8_t in_len) {
@@ -126,6 +123,7 @@ command error_t SplitControl.start() {
 
 command error_t SplitControl.stop() {
 	busy = FALSE;
+	receive_counter = 0;
 	call SendTimer.stop();
 	call Alarm.stop();
 	delay_32khz = 0;
@@ -164,10 +162,11 @@ task void finish() {
 }
 
 void quick_send() {
-	call SendTimer.startPeriodic(call Random.rand16() % delay + 1);
+	call SendTimer.startPeriodic((call Random.rand16() % delay) + 1);
 }
 
 async event void Alarm.fired() {
+	printf("fired\n");
 	if ( new_data && app_pkt ) {
 #ifdef __FLOCKLAB_LEDS__
 		call Leds.led2On();
@@ -198,7 +197,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		quick_send();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED old local send                   T %lu\n", process, now);
+//		printf("[%u] EED old local send                   T %lu\n", process, now);
 #else
 		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, process, (uint16_t)(now >> 16), (uint16_t)now);
 #endif
