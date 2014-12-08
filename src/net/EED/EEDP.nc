@@ -145,7 +145,7 @@ event void SendTimer.fired() {
 		return;
 	}
 
-	if (!busy || (receive_counter <= 7)) {
+	if (!busy || (receive_counter <= SUPPRESS_BROADCAST)) {
 		post send_message();
 	}
 
