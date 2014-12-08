@@ -31,6 +31,7 @@ command error_t SplitControl.start() {
 	call Param.get(INPUT, &input, sizeof(input));
 	call Param.get(OUTPUT, &output, sizeof(output));
 	call Param.get(SCALE, &scale, sizeof(scale));
+	printf("start with scale %u\n", scale);
 	event_counter = 0;
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
@@ -58,7 +59,6 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 		if (event_counter % scale == 0) {
 			output = event_counter / scale;
 			call Param.set(OUTPUT, &output, sizeof(output));
-			printf("output is %u\n", output);
 		}
                 break;
         default:
