@@ -39,6 +39,7 @@ uint8_t pkt_len;
 am_addr_t pkt_addr;
 message_t *pkt_msg;
 void *pkt_payload;
+uint8_t receive_counter = 0;
 
 command error_t SplitControl.start() {
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -49,6 +50,8 @@ command error_t SplitControl.start() {
 #endif
 #endif
 	busy = FALSE;
+	pkt_payload = NULL;
+	receive_counter = 0;
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
@@ -83,7 +86,11 @@ task void send_msg() {
 }
 
 event void Timer.fired() {
-	post send_msg();
+	if (!busy || (receive_counter <= SUPPRESS_REBROADCAST)) {
+		post send_message();
+	}
+
+	receive_counter = 0;
 }
 
 command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
@@ -107,6 +114,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		return SUCCESS;
 	}
 
+	receive_counter = 0;
 	post send_msg();
 
 	return SUCCESS;
@@ -149,6 +157,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
 	uint8_t *ptr = (uint8_t*) payload;
+	receive_counter++;
 	if (!memcmp(pkt_payload, payload, len)) {
 		return msg;
 	}
