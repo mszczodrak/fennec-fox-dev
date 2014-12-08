@@ -145,7 +145,7 @@ event void SendTimer.fired() {
 		return;
 	}
 
-	if (!busy || (receive_counter <= 3)) {
+	if (!busy || (receive_counter <= 7)) {
 		post send_message();
 	}
 
