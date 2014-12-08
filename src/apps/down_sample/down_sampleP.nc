@@ -31,13 +31,28 @@ command error_t SplitControl.start() {
 	call Param.get(INPUT, &input, sizeof(input));
 	call Param.get(OUTPUT, &output, sizeof(output));
 	call Param.get(SCALE, &scale, sizeof(scale));
-	printf("start with scale %u\n", scale);
 	event_counter = 0;
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application down_sample start()\n", process);
+#else
+	//call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
+#endif
+#endif
 	signal SplitControl.startDone(SUCCESS);
 	return SUCCESS;
 }
 
 command error_t SplitControl.stop() {
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] Application down_sample stop()\n", process);
+#else
+	//call SerialDbgs.dbgs(DBGS_MGMT_STOP, process, 0, 0);
+#endif
+#endif
 	signal SplitControl.stopDone(SUCCESS);
 	return SUCCESS;
 }
@@ -58,6 +73,13 @@ event void Param.updated(uint8_t var_id, bool conflict) {
                 event_counter++;
 		if (event_counter % scale == 0) {
 			output = event_counter / scale;
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+        		printf("[%u] Application down_sample output %u\n", process, output);
+#else
+	        	call SerialDbgs.dbgs(DBGS_SEND_DATA, 0, 0, 0);
+#endif
+#endif
 			call Param.set(OUTPUT, &output, sizeof(output));
 		}
                 break;
