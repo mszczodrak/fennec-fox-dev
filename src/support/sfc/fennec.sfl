@@ -281,6 +281,13 @@ use source noActivityE $(FENNEC_FOX_LIB)/apps/noActivity (
 		uint16_t activity
 )
 
+use source noSignalE $(FENNEC_FOX_LIB)/apps/noSignal (
+		uint16_t src = 0,
+		uint16_t input = 0,
+		uint16_t delay = 0,
+		uint16_t delay_scale = 1
+)
+
 use source networkMinE $(FENNEC_FOX_LIB)/apps/networkMin (
 		uint16_t local = 0xFFFE,
 		uint16_t global = 0,
