@@ -1,7 +1,7 @@
 #ifndef __EED_H_
 #define __EED_H_
 
-#define SUPPRESS_BROADCAST	4
+#define SUPPRESS_BROADCAST	6
 
 nx_struct EED_header {
 	nx_uint16_t crc;

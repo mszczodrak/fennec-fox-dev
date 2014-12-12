@@ -45,7 +45,7 @@ bool once = FALSE;
 
 norace uint32_t end_32khz;
 uint32_t delay_32khz = 0;
-//uint32_t radio_tx_offset = 2;	/* 2 */
+uint32_t radio_tx_offset = 2;	/* 2 */
 uint16_t receive_counter = 0;
 
 task void send_message() {
@@ -267,7 +267,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	/* calibrate sender timestamp */
 	/* remove default radio_tx_offset from the sender timestamp */
-	//sender_time_left -= radio_tx_offset;
+	sender_time_left -= radio_tx_offset;
 
 	if (delay_32khz == 0) {
 	        call Param.get(REPEAT, &repeat, sizeof(repeat));
