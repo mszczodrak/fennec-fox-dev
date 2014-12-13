@@ -69,4 +69,6 @@ PacketRSSI = SubPacketRSSI;
 SubPacketTimeStampMilli = rebroadcastP.SubPacketTimeStampMilli;
 SubPacketTimeStamp32khz = rebroadcastP.SubPacketTimeStamp32khz;
 
+components RandomC;
+rebroadcastP.Random -> RandomC;
 }

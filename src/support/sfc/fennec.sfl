@@ -166,7 +166,6 @@ use network ctp $(FENNEC_FOX_LIB)/net/ctp (uint16_t root = 0, uint16_t etx = 640
 
 use network rebroadcast $(FENNEC_FOX_LIB)/net/rebroadcast (
 		uint8_t repeat = 3,
-		uint8_t retry = 9,
 		uint16_t retry_delay = 25
 )
 

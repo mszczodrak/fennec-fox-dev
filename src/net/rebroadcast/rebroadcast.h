@@ -3,7 +3,4 @@
 
 #define SUPPRESS_REBROADCAST	3
 
-nx_struct rebroadcast_header {
-};
-
 #endif
