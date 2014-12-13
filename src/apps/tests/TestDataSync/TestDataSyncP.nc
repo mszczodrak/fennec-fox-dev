@@ -175,34 +175,11 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Param.updated(uint8_t var_id, bool conflict) {
 #ifdef __DBGS__APPLICATION__
-	uint8_t v = 0;
 	uint16_t d;
 	call Param.get(var_id, &d, sizeof(d));
-	switch(var_id) {
-	case VAL1:
-		v = 0;
-		break;
-
-	case VAL2:
-		v = 1;
-		break;
-
-	case VAL3:
-		v = 2;
-		break;
-
-
-	case VAL4:
-		v = 4;
-		break;
-
-	case VAL5:
-		v = 5;
-		break;
-	}
 
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] TestDataSync get var ID %u (var %u) to %u\n", process, var_id, v, d);
+	printf("[%u] TestDataSync get var ID %u to %u\n", process, var_id, d);
 	if (conflict) {
 		printf("[%u] TestDataSync Conflict\n", process);
 	}
