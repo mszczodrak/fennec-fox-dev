@@ -91,6 +91,7 @@ bool same_packet(void *in_payload, uint8_t in_len) {
 
 void setup_alarm(uint32_t d0, uint32_t dt ) {
 	uint32_t soon = call Alarm.getNow();
+	end_32khz = d0 + dt;
 	if (dt == 0) {
 		call Alarm.start(2);
 	}
@@ -210,8 +211,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 #endif
 #endif
 	} else {
-		end_32khz = now;
-		end_32khz += delay_32khz;
 		setup_alarm( now, delay_32khz );
 		make_copy(msg, app_payload, len);
 		quick_send();
