@@ -275,7 +275,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if ((sender_time_left > (2*delay_32khz)) && (sender_time_left < (-2*delay_32khz))) {
-//		printf("failed to timestamp %lu\n", sender_time_left);
+		printf("failed to timestamp %lu\n", sender_time_left);
 		sender_time_left = delay_32khz;
 	} else {
 		sender_time_left++;
@@ -291,37 +291,36 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if (new_end == end_32khz) {
 			return msg;
 		}
-		if (new_end < end_32khz) {
-			diff = end_32khz - new_end;
-			end_32khz = new_end;
+		if (new_end > end_32khz) {
+			return msg;
+		}
+		/* new_end < end_32khz */
+		diff = end_32khz - new_end;
+		end_32khz = new_end;
 
-			if ( call Alarm.isRunning() ) {
-				if ( sender_time_left < delay_32khz ) {
-					call Alarm.startAt( receiver_receive_time, sender_time_left );
-				}
-
-				if (-sender_time_left < delay_32khz) {
-					//printf("past 1 - %lu\n", new_end);
-				}
+		if ( call Alarm.isRunning() ) {
+			if ( sender_time_left < delay_32khz ) {
+				call Alarm.startAt( receiver_receive_time, sender_time_left );
 			}
-			quick_send();
 
-			if ((now + 320) < end_32khz) { 
+			if (-sender_time_left < delay_32khz) {
+				//printf("past 1 - %lu\n", new_end);
+			}
+		}
+		quick_send();
+
+		if ((now + 320) < end_32khz) { 
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
-					call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
+			printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
+				call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
 #else
-				call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
-					(uint16_t)(end_32khz >> 16),
-					(uint16_t)end_32khz);
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
+				(uint16_t)(end_32khz >> 16),
+				(uint16_t)end_32khz);
 #endif
 #endif
-			}
-		} else {
-			diff = new_end - end_32khz;
-			//printf("past 2 - %lu\n", diff);
 		}
                 return msg;
         }
