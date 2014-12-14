@@ -234,7 +234,6 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 		once = FALSE;
 		app_pkt = NULL;
 	}
-	printf("send done\n");
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
@@ -246,6 +245,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
 	uint32_t sender_time_left = footer->left;
 	uint32_t new_end;
+	uint32_t diff;
 	uint8_t payload_copy[100];
 	memcpy(&payload_copy, payload, len);
 	payload = payload_copy;
@@ -270,42 +270,62 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = now;
 	}
 
+	if ((sender_time_left > (2*delay_32khz)) && (sender_time_left < (-2*delay_32khz))) {
+//		printf("failed to timestamp %lu\n", sender_time_left);
+		sender_time_left = delay_32khz;
+	}
+
+
 	new_end = receiver_receive_time;
 	new_end += sender_time_left;
+
+//	printf("ne %lu  %lu  %lu\n", new_end, end_32khz, sender_time_left);
 
 	if (same_packet(payload, len)) {
 		if (new_end == end_32khz) {
 			return msg;
 		}
 		if (new_end < end_32khz) {
-			uint32_t adjust_by = end_32khz;
 			end_32khz = new_end;
-			adjust_by -= new_end;
+			diff = end_32khz - new_end;
 
 			if ( call Alarm.isRunning() ) {
 				if ( sender_time_left < delay_32khz ) {
 					call Alarm.startAt( receiver_receive_time, sender_time_left );
-				} else {
-					call Alarm.start( adjust_by );
+				}
+
+				if (-sender_time_left < delay_32khz) {
+					//printf("past 1 - %lu\n", new_end);
 				}
 			}
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
-				call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, adjust_by);
+				call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
 #else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)adjust_by,
-				(uint16_t)(sender_time_left >> 16),
-				(uint16_t)sender_time_left);
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
+				(uint16_t)(end_32khz >> 16),
+				(uint16_t)end_32khz);
 #endif
 #endif
 			quick_send();
+		} else {
+			diff = new_end - end_32khz;
+			//printf("past 2 - %lu\n", diff);
 		}
                 return msg;
         }
 
 	end_32khz = new_end;
-	call Alarm.startAt( receiver_receive_time, sender_time_left );
+	if ( new_end > now ) {
+		diff = new_end;
+		diff -= now;
+		call Alarm.start( diff );
+	} else {
+		printf("past 3\n");
+		call Alarm.startAt( now, delay_32khz );
+	}
+
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 //		printf("[%u] EED  new remote payload from %3u     T %lu @ %lu\n", process,
