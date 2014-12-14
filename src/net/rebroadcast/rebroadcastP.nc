@@ -80,7 +80,6 @@ command error_t SplitControl.stop() {
 }
 
 task void send_message() {
-	//printf("ss %u\n", broadcast_repeat);
 	if (pkt_msg == NULL) {
 		signal SubAMSend.sendDone(pkt_msg, FAIL);
 		return;
@@ -130,7 +129,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	receive_counter = 0;
 	post send_message();
 	call Timer.startPeriodic((retry_delay / 2) + call Random.rand16() % retry_delay);
-
 	return SUCCESS;
 }
 
@@ -147,21 +145,24 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
-	//printf("sd %u\n", broadcast_repeat);
 	if (broadcast_repeat == repeat) {
 		signal AMSend.sendDone(msg, error);
 	}
 
 	busy = FALSE;
-	broadcast_repeat--;
 
+	if (error != SUCCESS) {
+		post send_message();
+		return;
+	}
+
+	broadcast_repeat--;
 	if (broadcast_repeat > 0) {
 		call Timer.startPeriodic((retry_delay / 2) + call Random.rand16() % retry_delay);
 	}
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) {
-	//printf("rec\n");
 	if ((pkt_payload != NULL) && (!memcmp(pkt_payload, payload, len))) {
 		receive_counter++;
 		return msg;

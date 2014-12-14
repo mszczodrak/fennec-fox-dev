@@ -234,6 +234,7 @@ event void SubAMSend.sendDone(message_t *msg, error_t error) {
 		once = FALSE;
 		app_pkt = NULL;
 	}
+	printf("send done\n");
 }
 
 event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in_len) {
@@ -276,16 +277,22 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if (new_end == end_32khz) {
 			return msg;
 		}
-		if ( call Alarm.isRunning() && (new_end < end_32khz)) {
-
+		if (new_end < end_32khz) {
 			uint32_t adjust_by = end_32khz;
 			end_32khz = new_end;
-			call Alarm.startAt( receiver_receive_time, sender_time_left );
 			adjust_by -= new_end;
+
+			if ( call Alarm.isRunning() ) {
+				if ( sender_time_left < delay_32khz ) {
+					call Alarm.startAt( receiver_receive_time, sender_time_left );
+				} else {
+					call Alarm.start( adjust_by );
+				}
+			}
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-//				printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
-//					call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, adjust_by);
+			printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
+				call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, adjust_by);
 #else
 			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)adjust_by,
 				(uint16_t)(sender_time_left >> 16),
