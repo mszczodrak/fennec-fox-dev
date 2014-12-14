@@ -140,6 +140,8 @@ event void SendTimer.fired() {
 
 	receive_counter = 0;
 
+
+
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
 }
@@ -196,7 +198,8 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED old local send                   T %lu\n", process, now);
 #else
-		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, process, (uint16_t)(now >> 16), (uint16_t)now);
+		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, (uint16_t)delay_32khz, 
+			(uint16_t)(end_32khz >> 16), (uint16_t)end_32khz);
 #endif
 #endif
 	} else {
@@ -209,7 +212,8 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED new local send                   T %lu\n", process, delay_32khz);
 #else
-		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, 0, (uint16_t)(delay_32khz >> 16), (uint16_t)delay_32khz);
+		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)delay_32khz, 
+			(uint16_t)(end_32khz >> 16), (uint16_t)end_32khz_32khz);
 #endif
 #endif
 	}
@@ -259,10 +263,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		sender_time_left += offset;
 	}
 
-	/* calibrate sender timestamp */
-	/* remove default radio_tx_offset from the sender timestamp */
-	//sender_time_left -= radio_tx_offset;
-
 	if (delay_32khz == 0) {
 	        call Param.get(REPEAT, &repeat, sizeof(repeat));
         	call Param.get(DELAY, &delay, sizeof(delay));
@@ -273,6 +273,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = now;
 	}
 
+	/* calibrate sender timestamp */
 	sender_time_left++;
 
 	new_end = receiver_receive_time;
@@ -290,12 +291,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		end_32khz = new_end;
 
 		if ( call Alarm.isRunning() ) {
-			if ( sender_time_left < delay_32khz ) {
-				call Alarm.startAt( receiver_receive_time, sender_time_left );
-			}
-
-			if (-sender_time_left < delay_32khz) {
-				//printf("past 1 - %lu\n", new_end);
+			if (new_end > now) {
+				new_end -= now;
+				call Alarm.startAt(now, new_end);
+			} else {
+				printf("chmmm...\n");
 			}
 		}
 		quick_send();
@@ -320,9 +320,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if ( new_end > now ) {
 		diff = new_end;
 		diff -= now;
-		call Alarm.start( diff );
+		call Alarm.startAt( now, diff );
 	} else {
-		printf("past 3\n");
 		call Alarm.startAt( now, delay_32khz );
 	}
 
