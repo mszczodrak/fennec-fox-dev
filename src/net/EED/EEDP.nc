@@ -54,7 +54,6 @@ task void send_message() {
 	nx_struct EED_header *header = (nx_struct EED_header *) call SubAMSend.getPayload(&packet, 
 				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
-        header->now = call Alarm.getNow();
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -62,7 +61,10 @@ task void send_message() {
 	}
 
 	busy = TRUE;
+
+        header->now = call Alarm.getNow();
 	header->end = end_32khz;
+
         header->left = (int32_t)(end_32khz - header->now);
 	footer->left = header->now;
 	call SubPacketTimeStamp32khz.set(&packet, header->now);
@@ -72,10 +74,6 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
-
-//	if ( !call Alarm.isRunning() ) {
-	printf("send left %lu, %ld\n", header->left, -(header->left));
-//	}
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
@@ -258,7 +256,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
-		printf("fail crc\n");
 		return msg;
 	}
 
@@ -266,9 +263,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		sender_time_left = sender_time_left + (int32_t)(offset);
 	}
 
-	printf("from %u   %lu vs %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
-	//if (sender_time_left
-
+	//printf("from %u   %lu vs %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
 
 	if (delay_32khz == 0) {
 	        call Param.get(REPEAT, &repeat, sizeof(repeat));
@@ -287,7 +282,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	if (same_packet(payload, len)) {
 		if (new_end == end_32khz) {
-			printf("same\n");
 			return msg;
 		}
 
