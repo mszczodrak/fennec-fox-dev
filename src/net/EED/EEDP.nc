@@ -210,7 +210,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		printf("[%u] EED new local send                   T %lu\n", process, delay_32khz);
 #else
 		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)delay_32khz, 
-			(uint16_t)(end_32khz >> 16), (uint16_t)end_32khz_32khz);
+			(uint16_t)(end_32khz >> 16), (uint16_t)end_32khz);
 #endif
 #endif
 	}
