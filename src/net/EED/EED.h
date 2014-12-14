@@ -1,11 +1,12 @@
 #ifndef __EED_H_
 #define __EED_H_
 
-#define SUPPRESS_BROADCAST	6
+#define SUPPRESS_BROADCAST	3
 
 nx_struct EED_header {
 	nx_uint16_t crc;
 	nx_uint32_t now;
+	nx_uint32_t end;
 	nx_uint32_t left;
 };
 

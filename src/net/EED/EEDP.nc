@@ -61,10 +61,11 @@ task void send_message() {
 	}
 
 	busy = TRUE;
+	header->end = end_32khz;
         header->left = end_32khz;
         header->left -= header->now;
-	footer->left = end_32khz;
-	call SubPacketTimeStamp32khz.set(&packet, end_32khz);
+	footer->left = header->now;
+	call SubPacketTimeStamp32khz.set(&packet, header->now);
 
 	if (call SubAMSend.send(BROADCAST, &packet, packet_payload_len +
 					sizeof(nx_struct EED_header) +
@@ -243,17 +244,20 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct EED_header);
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
-	uint32_t sender_time_left = footer->left;
+	uint32_t offset = footer->left;
+	uint32_t sender_time_left = header->left;
 	uint32_t new_end;
 	uint32_t diff;
-	uint8_t payload_copy[100];
-	memcpy(&payload_copy, payload, len);
-	payload = payload_copy;
 
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
+	}
+
+	if (-offset < 480) {
+		printf("offset %lu \n", -offset);
+		sender_time_left += offset;
 	}
 
 	/* calibrate sender timestamp */
