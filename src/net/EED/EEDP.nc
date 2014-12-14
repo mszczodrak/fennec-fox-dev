@@ -256,7 +256,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if (-offset < 480) {
-		printf("offset %lu \n", -offset);
 		sender_time_left += offset;
 	}
 
@@ -274,18 +273,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		receiver_receive_time = now;
 	}
 
-	if ((sender_time_left > (2*delay_32khz)) && (sender_time_left < (-2*delay_32khz))) {
-		printf("failed to timestamp %lu\n", sender_time_left);
-		sender_time_left = delay_32khz;
-	} else {
-		sender_time_left++;
-	}
-
+	sender_time_left++;
 
 	new_end = receiver_receive_time;
 	new_end += sender_time_left;
-
-//	printf("ne %lu  %lu  %lu\n", new_end, end_32khz, sender_time_left);
 
 	if (same_packet(payload, len)) {
 		if (new_end == end_32khz) {
