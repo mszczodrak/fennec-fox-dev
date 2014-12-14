@@ -129,21 +129,18 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
-	if (!call Alarm.isRunning()) {
-		call SendTimer.stop();
-		return;
-	}
-
 	if (!busy || (receive_counter <= SUPPRESS_BROADCAST)) {
 		post send_message();
 	}
 
 	receive_counter = 0;
 
-
-
-	call Param.get(DELAY, &delay, sizeof(delay));
-	call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
+	if (!call Alarm.isRunning()) {
+		call SendTimer.stop();
+	} else {
+		call Param.get(DELAY, &delay, sizeof(delay));
+		call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
+	}
 }
 
 task void finish() {
@@ -284,6 +281,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			return msg;
 		}
 		if (new_end > end_32khz) {
+			if ( !call Alarm.isRunning() ) {
+				call SendTimer.startPeriodic((delay / 2) + 
+						call Random.rand16() % delay);
+			}
 			return msg;
 		}
 		/* new_end < end_32khz */
@@ -295,7 +296,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 				new_end -= now;
 				call Alarm.startAt(now, new_end);
 			} else {
-				printf("chmmm...\n");
 			}
 		}
 		quick_send();
