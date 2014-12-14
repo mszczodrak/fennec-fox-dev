@@ -47,6 +47,7 @@ norace uint32_t end_32khz;
 uint32_t delay_32khz = 0;
 uint32_t radio_tx_offset = 2;	/* 2 */
 uint16_t receive_counter = 0;
+uint8_t calib = 1;
 
 task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
@@ -62,8 +63,7 @@ task void send_message() {
 
 	busy = TRUE;
 	header->end = end_32khz;
-        header->left = end_32khz;
-        header->left -= header->now;
+        header->left = (int32_t)(end_32khz - header->now);
 	footer->left = header->now;
 	call SubPacketTimeStamp32khz.set(&packet, header->now);
 
@@ -72,6 +72,10 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
+
+//	if ( !call Alarm.isRunning() ) {
+	printf("send left %lu, %ld\n", header->left, -(header->left));
+//	}
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
@@ -246,19 +250,25 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
 	uint32_t offset = footer->left;
-	uint32_t sender_time_left = header->left;
+	int32_t sender_time_left = (int32_t)(header->left);
+	int32_t receiver_time_left = (end_32khz - now);
 	uint32_t new_end;
 	uint32_t diff;
 
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
+		printf("fail crc\n");
 		return msg;
 	}
 
 	if (-offset < 480) {
-		sender_time_left += offset;
+		sender_time_left = sender_time_left + (int32_t)(offset);
 	}
+
+	printf("from %u   %lu vs %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
+	//if (sender_time_left
+
 
 	if (delay_32khz == 0) {
 	        call Param.get(REPEAT, &repeat, sizeof(repeat));
@@ -271,41 +281,71 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	/* calibrate sender timestamp */
-	sender_time_left++;
 
 	new_end = receiver_receive_time;
 	new_end += sender_time_left;
 
 	if (same_packet(payload, len)) {
 		if (new_end == end_32khz) {
+			printf("same\n");
 			return msg;
 		}
-		if (new_end > end_32khz) {
+
+		if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left > receiver_time_left)) {
 			if ( !call Alarm.isRunning() ) {
+				printf("send 1\n");
 				call SendTimer.startPeriodic((delay / 2) + 
 						call Random.rand16() % delay);
 			}
 			return msg;
 		}
-		/* new_end < end_32khz */
-		diff = end_32khz - new_end;
-		end_32khz = new_end;
 
-		if ( call Alarm.isRunning() ) {
-			if (new_end > now) {
-				new_end -= now;
-				call Alarm.startAt(now, new_end);
-			} else {
+		if ((sender_time_left > 0) && (receiver_time_left < 0)) {
+			if ( !call Alarm.isRunning() ) {
+				printf("send 2\n");
+				call SendTimer.startPeriodic((delay / 2) + 
+						call Random.rand16() % delay);
 			}
+			return msg;
 		}
-		quick_send();
+
+		if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left)) {
+			diff = end_32khz - new_end;
+			end_32khz = new_end;
+
+			printf("adjust by diff %lu\n", diff);
+
+			if ( call Alarm.isRunning() ) {
+				if (new_end > now) {
+					new_end -= now;
+					call Alarm.startAt(now, new_end);
+				} else {
+				}
+			}
+			quick_send();
+		}
+
+		if ((sender_time_left < 0) && (receiver_time_left > 0)) {
+			diff = end_32khz - new_end;
+
+			printf("missed big diff %lu (%lu -> %lu)\n", diff, end_32khz, new_end);
+			end_32khz = new_end;
+
+			if ( call Alarm.isRunning() ) {
+				call Alarm.start(1);
+			}
+			quick_send();
+		}
+
+		diff = end_32khz - new_end;
+
 
 		if ((now + 320) < end_32khz) { 
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
-				call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
+	//		printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
+	//			call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
 #else
 			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
 				(uint16_t)(end_32khz >> 16),
@@ -316,6 +356,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
                 return msg;
         }
 
+	printf("new\n");
 	end_32khz = new_end;
 	if ( new_end > now ) {
 		diff = new_end;
