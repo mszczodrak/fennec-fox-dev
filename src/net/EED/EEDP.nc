@@ -46,7 +46,7 @@ bool once = FALSE;
 norace uint32_t end_32khz;
 uint32_t delay_32khz = 0;
 uint32_t radio_tx_offset = 2;	/* 2 */
-uint16_t receive_counter = 0;
+int16_t receive_counter = 0;
 uint8_t calib = 1;
 
 task void send_message() {
@@ -100,6 +100,11 @@ task void stopDone() {
 	signal SplitControl.stopDone(SUCCESS);
 }
 
+task void schedule_send() {
+	call Param.get(DELAY, &delay, sizeof(delay));
+	call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
+}
+
 command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
@@ -140,8 +145,7 @@ event void SendTimer.fired() {
 	if (!call Alarm.isRunning()) {
 		call SendTimer.stop();
 	} else {
-		call Param.get(DELAY, &delay, sizeof(delay));
-		call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
+		post schedule_send();
 	}
 }
 
@@ -159,8 +163,8 @@ task void finish() {
 	}
 }
 
-void quick_send() {
-	call SendTimer.startPeriodic((call Random.rand16() % delay) + 1);
+task void quick_send() {
+	call SendTimer.startPeriodic(delay / 2 + 1);
 }
 
 async event void Alarm.fired() {
@@ -192,7 +196,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 			return SUCCESS;
 		}
 		once = TRUE;
-		quick_send();
+		post schedule_send();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED old local send                   T %lu\n", process, now);
@@ -206,7 +210,8 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		end_32khz += delay_32khz;
 		call Alarm.startAt( now, delay_32khz );
 		make_copy(msg, app_payload, len);
-		quick_send();
+		post schedule_send();
+		post send_message();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED new local send                   T %lu\n", process, delay_32khz);
@@ -233,6 +238,11 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
+	printf("sd %u\n", error);
+	if (error != SUCCESS) {
+		post quick_send();
+		return;
+	}
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
@@ -247,7 +257,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct EED_header);
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
-	uint32_t offset = footer->left;
 	int32_t sender_time_left = (int32_t)(header->left);
 	int32_t receiver_time_left = (end_32khz - now);
 	uint32_t new_end;
@@ -259,11 +268,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
-	if (-offset < 480) {
-		sender_time_left = sender_time_left + (int32_t)(offset);
+	if (-(footer->left) < 480) {
+		sender_time_left = sender_time_left + (int32_t)(footer->left);
 	}
 
-	//printf("from %u   %lu vs %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
+	printf("from %u   %lu vs %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
 
 	if (delay_32khz == 0) {
 	        call Param.get(REPEAT, &repeat, sizeof(repeat));
@@ -285,52 +294,31 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			return msg;
 		}
 
-		if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left > receiver_time_left)) {
-			if ( !call Alarm.isRunning() ) {
-				printf("send 1\n");
-				call SendTimer.startPeriodic((delay / 2) + 
-						call Random.rand16() % delay);
-			}
-			return msg;
-		}
-
-		if ((sender_time_left > 0) && (receiver_time_left < 0)) {
-			if ( !call Alarm.isRunning() ) {
-				printf("send 2\n");
-				call SendTimer.startPeriodic((delay / 2) + 
-						call Random.rand16() % delay);
-			}
-			return msg;
-		}
-
-		if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left)) {
+		//if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left)) {
+		if ((sender_time_left > 0) && (new_end < end_32khz)) {
 			diff = end_32khz - new_end;
 			end_32khz = new_end;
 
 			printf("adjust by diff %lu\n", diff);
 
 			if ( call Alarm.isRunning() ) {
-				if (new_end > now) {
-					new_end -= now;
-					call Alarm.startAt(now, new_end);
-				} else {
-				}
+				call Alarm.startAt(receiver_receive_time, sender_time_left);
 			}
-			quick_send();
 		}
 
+		return msg;
 		if ((sender_time_left < 0) && (receiver_time_left > 0)) {
 			diff = end_32khz - new_end;
 
 			printf("missed big diff %lu (%lu -> %lu)\n", diff, end_32khz, new_end);
 			end_32khz = new_end;
 
-			if ( call Alarm.isRunning() ) {
-				call Alarm.start(1);
-			}
-			quick_send();
+			//if ( call Alarm.isRunning() ) {
+			//	call Alarm.start(1);
+			//}
 		}
 
+		return msg;
 		diff = end_32khz - new_end;
 
 
@@ -369,7 +357,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 #endif
 	make_copy(msg, payload, len);
-	quick_send();
+	post schedule_send();
 	return signal Receive.receive(msg, payload, len);
 }
 
