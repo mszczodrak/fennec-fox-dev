@@ -310,8 +310,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		diff = end_32khz - new_end;
 		end_32khz = new_end;
 
-		printf("adjust by diff %lu\n", diff);
-
 		if ( call Alarm.isRunning() ) {
 			call Alarm.startAt(receiver_receive_time, sender_time_left);
 		}
@@ -321,15 +319,14 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		}
 
 		if ((now + 320) < end_32khz) { 
-
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//		printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
-	//			call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
+			printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
+				call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
 #else
-	//		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
-	//			(uint16_t)(end_32khz >> 16),
-	//			(uint16_t)end_32khz);
+			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
+				(uint16_t)(end_32khz >> 16),
+				(uint16_t)end_32khz);
 #endif
 #endif
 		}
@@ -337,14 +334,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if ((sender_time_left < 0) && (receiver_time_left > 0)) {
-		printf("past\n");
 		return msg;
 	}
 
-	//printf("rec skip\n");
-
 	if ((now + 320) < end_32khz) {
-		printf("from %u s %lu r %lu, %lu < %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left, new_end, end_32khz);
+	//	printf("from %u s %lu r %lu, %lu < %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left, new_end, end_32khz);
 	}
 
         return msg;
