@@ -63,7 +63,6 @@ task void send_message() {
         header->now = call Alarm.getNow();
 	header->end = end_32khz;
 
-        header->left = (int32_t)(end_32khz - header->now);
 	footer->left = header->now;
 	call SubPacketTimeStamp32khz.set(&packet, header->now);
 
@@ -131,8 +130,6 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
-	//receive_counter++;
-	//if (!busy && ((call Random.rand16() % receive_counter) <= (SUPPRESS_BROADCAST + 1))) {
 	if (!busy && (receive_counter == 0)) {
 		post send_message();
 	}
@@ -258,7 +255,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t *payload = ((uint8_t*) in_payload) + sizeof(nx_struct EED_header);
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
-	int32_t sender_time_left = (int32_t)(header->left);
+	int32_t sender_time_left = (int32_t)(header->end - header->now);
 	int32_t receiver_time_left = (end_32khz - now);
 	uint32_t new_end;
 	uint32_t diff;
@@ -266,7 +263,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
-		printf("crc\n");
 		return msg;
 	}
 
