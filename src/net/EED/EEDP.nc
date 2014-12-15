@@ -273,80 +273,26 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		sender_time_left = sender_time_left + (int32_t)(footer->left);
 	}
 
-	printf("from %u   sender %lu vs receiver %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
-
 	if (delay == 0) {
         	call Param.get(DELAY, &delay, sizeof(delay));
 		delay = _MILLI_2_32KHZ(delay);
 	}
 
-	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
-		receiver_receive_time = now;
-	}
-
-	/* calibrate sender timestamp */
-
-	new_end = receiver_receive_time;
-	new_end += sender_time_left;
-
-	if (same_packet(payload, len)) {
-		if (new_end == end_32khz) {
-			return msg;
+	if (!same_packet(payload, len)) {
+		make_copy(msg, payload, len);
+		if (!call SubPacketTimeStamp32khz.isValid(msg)) {
+			receiver_receive_time = now;
 		}
 
-		//if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left)) {
-		if ((sender_time_left > 0) && (new_end < end_32khz)) {
-			diff = end_32khz - new_end;
-			end_32khz = new_end;
+		end_32khz = receiver_receive_time;
+		end_32khz += sender_time_left;
 
-			printf("adjust by diff %lu\n", diff);
-
-			if ( call Alarm.isRunning() ) {
-				call Alarm.startAt(receiver_receive_time, sender_time_left);
-			}
+		if ((end_32khz > (now + 10)) && (sender_time_left > 0)) {
+			call Alarm.startAt(receiver_receive_time, sender_time_left);
+		} else {
+			call Alarm.startAt(receiver_receive_time, delay);
 		}
-
-		return msg;
-		if ((sender_time_left < 0) && (receiver_time_left > 0)) {
-			diff = end_32khz - new_end;
-
-			printf("missed big diff %lu (%lu -> %lu)\n", diff, end_32khz, new_end);
-			end_32khz = new_end;
-
-			//if ( call Alarm.isRunning() ) {
-			//	call Alarm.start(1);
-			//}
-		}
-
-		return msg;
-		diff = end_32khz - new_end;
-
-
-		if ((now + 320) < end_32khz) { 
-
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//		printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
-	//			call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
-#else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
-				(uint16_t)(end_32khz >> 16),
-				(uint16_t)end_32khz);
-#endif
-#endif
-		}
-                return msg;
-        }
-
-	printf("new\n");
-	end_32khz = new_end;
-	if ( new_end > now ) {
-		diff = new_end;
-		diff -= now;
-		call Alarm.startAt( now, diff );
-	} else {
-		call Alarm.startAt( now, delay );
-	}
+		post schedule_send();
 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -356,9 +302,47 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 				(uint16_t)end_32khz);
 #endif
 #endif
-	make_copy(msg, payload, len);
-	post schedule_send();
-	return signal Receive.receive(msg, payload, len);
+		return signal Receive.receive(msg, payload, len);
+	}
+		
+	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
+		return msg;
+	}
+
+	new_end = receiver_receive_time;	
+	new_end += sender_time_left;
+
+	if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left)) {
+		diff = end_32khz - new_end;
+		end_32khz = new_end;
+
+		printf("adjust by diff %lu\n", diff);
+
+		if ( call Alarm.isRunning() ) {
+			call Alarm.startAt(receiver_receive_time, sender_time_left);
+		}
+
+		if ((now + 320) < end_32khz) { 
+
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	//		printf("[%u] EED same remote payload from %3u     T %lu @ %lu, adjust by %lu\n", process, 
+	//			call SubAMPacket.source(msg), sender_time_left, receiver_receive_time, diff);
+#else
+	//		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
+	//			(uint16_t)(end_32khz >> 16),
+	//			(uint16_t)end_32khz);
+#endif
+#endif
+		}
+		return msg;
+	}
+
+	printf("rec skip\n");
+
+	//printf("from %u   sender %lu vs receiver %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
+
+        return msg;
 }
 
 event message_t* SubSnoop.receive(message_t *msg, void* in_payload, uint8_t in_len) {
