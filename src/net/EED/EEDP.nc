@@ -101,6 +101,10 @@ task void schedule_send() {
 	call SendTimer.startPeriodic((EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD));
 }
 
+task void quick_send() {
+	call SendTimer.startPeriodic((EED_PERIOD / 3) + (call Random.rand16() % EED_PERIOD));
+}
+
 command error_t SplitControl.start() {
 	app_pkt = NULL;
 	busy = FALSE;
@@ -157,10 +161,6 @@ task void finish() {
 	}
 }
 
-task void quick_send() {
-	call SendTimer.startPeriodic(1 + (call Random.rand16() % EED_PERIOD));
-}
-
 async event void Alarm.fired() {
 	if ( new_data && app_pkt ) {
 #ifdef __FLOCKLAB_LEDS__
@@ -209,7 +209,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		end_32khz += delay;
 		call Alarm.startAt( now, delay );
 		make_copy(msg, app_payload, len);
-		post schedule_send();
+		post quick_send();
 		post send_message();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
@@ -237,10 +237,6 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
-	if (error != SUCCESS) {
-		post quick_send();
-		return;
-	}
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
@@ -280,7 +276,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if (!call SubPacketTimeStamp32khz.isValid(msg)) {
 			receiver_receive_time = now;
 		}
-		printf("new\n");
 
 		end_32khz = receiver_receive_time;
 		end_32khz += sender_time_left;
@@ -290,8 +285,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		} else {
 			call Alarm.startAt(receiver_receive_time, delay);
 		}
-		post schedule_send();
 
+		post schedule_send();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 #else
@@ -305,7 +300,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		
 	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
 		receiver_receive_time = now;
-//		printf("invalid\n");
 //		return msg;
 	}
 
@@ -320,6 +314,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 		if ( call Alarm.isRunning() ) {
 			call Alarm.startAt(receiver_receive_time, sender_time_left);
+		}
+
+		if (busy) {
+			call SubAMSend.cancel(&packet);
 		}
 
 		if ((now + 320) < end_32khz) { 
