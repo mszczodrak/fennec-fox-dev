@@ -238,7 +238,6 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
-	printf("sd %u\n", error);
 	if (error != SUCCESS) {
 		post quick_send();
 		return;
@@ -283,6 +282,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if (!call SubPacketTimeStamp32khz.isValid(msg)) {
 			receiver_receive_time = now;
 		}
+		printf("new\n");
 
 		end_32khz = receiver_receive_time;
 		end_32khz += sender_time_left;
@@ -306,13 +306,15 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 		
 	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
-		return msg;
+		receiver_receive_time = now;
+//		printf("invalid\n");
+//		return msg;
 	}
 
 	new_end = receiver_receive_time;	
 	new_end += sender_time_left;
 
-	if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left)) {
+	if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left) && (new_end < end_32khz)) {
 		diff = end_32khz - new_end;
 		end_32khz = new_end;
 
@@ -335,6 +337,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 #endif
 		}
+		return msg;
+	}
+
+	if ((sender_time_left < 0) && (receiver_time_left > 0)) {
+		printf("past\n");
 		return msg;
 	}
 
