@@ -131,7 +131,9 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
-	if (!busy || (receive_counter <= SUPPRESS_BROADCAST)) {
+	//receive_counter++;
+	//if (!busy && ((call Random.rand16() % receive_counter) <= (SUPPRESS_BROADCAST + 1))) {
+	if (!busy && (receive_counter == 0)) {
 		post send_message();
 	}
 
@@ -345,9 +347,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
-	printf("rec skip\n");
+	//printf("rec skip\n");
 
-	//printf("from %u   sender %lu vs receiver %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
+	if ((now + 320) < end_32khz) {
+		printf("from %u s %lu r %lu, %lu < %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left, new_end, end_32khz);
+	}
 
         return msg;
 }

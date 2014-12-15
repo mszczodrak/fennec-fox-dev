@@ -1,7 +1,7 @@
 #ifndef __EED_H_
 #define __EED_H_
 
-#define SUPPRESS_BROADCAST	1
+#define SUPPRESS_BROADCAST	0
 #define EED_PERIOD		20
 
 nx_struct EED_header {
