@@ -2,6 +2,7 @@
 #define __EED_H_
 
 #define SUPPRESS_BROADCAST	1
+#define EED_PERIOD		20
 
 nx_struct EED_header {
 	nx_uint16_t crc;

@@ -34,8 +34,7 @@ uses interface SerialDbgs;
 
 implementation {
 
-uint16_t delay;
-uint8_t repeat;
+uint32_t delay;
 bool busy = FALSE;
 message_t packet;
 uint8_t packet_payload_len;
@@ -44,7 +43,6 @@ norace bool new_data = FALSE;
 bool once = FALSE;
 
 norace uint32_t end_32khz;
-uint32_t delay_32khz = 0;
 uint32_t radio_tx_offset = 2;	/* 2 */
 int16_t receive_counter = 0;
 uint8_t calib = 1;
@@ -101,8 +99,7 @@ task void stopDone() {
 }
 
 task void schedule_send() {
-	call Param.get(DELAY, &delay, sizeof(delay));
-	call SendTimer.startPeriodic((delay / 2) + call Random.rand16() % delay);
+	call SendTimer.startPeriodic((EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD));
 }
 
 command error_t SplitControl.start() {
@@ -116,9 +113,8 @@ command error_t SplitControl.start() {
 	call Leds.led2Off();
 #endif
 
-	call Param.get(REPEAT, &repeat, sizeof(repeat));
 	call Param.get(DELAY, &delay, sizeof(delay));
-	delay_32khz = _MILLI_2_32KHZ( repeat * delay );
+	delay = _MILLI_2_32KHZ(delay);
 
 	post startDone();
 	return SUCCESS;
@@ -130,7 +126,6 @@ command error_t SplitControl.stop() {
 	once = FALSE;
 	call SendTimer.stop();
 	call Alarm.stop();
-	delay_32khz = 0;
 	post stopDone();
 	return SUCCESS;
 }
@@ -164,7 +159,7 @@ task void finish() {
 }
 
 task void quick_send() {
-	call SendTimer.startPeriodic(delay / 2 + 1);
+	call SendTimer.startPeriodic(1 + (call Random.rand16() % EED_PERIOD));
 }
 
 async event void Alarm.fired() {
@@ -191,6 +186,11 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	app_pkt = msg;
 	once = FALSE;
 
+	if (delay == 0) {
+        	call Param.get(DELAY, &delay, sizeof(delay));
+		delay = _MILLI_2_32KHZ(delay);
+	}
+
 	if (same_packet( app_payload, len )) {
 		if (call Alarm.isRunning()) {
 			return SUCCESS;
@@ -201,22 +201,22 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED old local send                   T %lu\n", process, now);
 #else
-		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, (uint16_t)delay_32khz, 
+		call SerialDbgs.dbgs(DBGS_SAME_LOCAL_PAYLOAD, (uint16_t)delay, 
 			(uint16_t)(end_32khz >> 16), (uint16_t)end_32khz);
 #endif
 #endif
 	} else {
 		end_32khz = now;
-		end_32khz += delay_32khz;
-		call Alarm.startAt( now, delay_32khz );
+		end_32khz += delay;
+		call Alarm.startAt( now, delay );
 		make_copy(msg, app_payload, len);
 		post schedule_send();
 		post send_message();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED new local send                   T %lu\n", process, delay_32khz);
+		printf("[%u] EED new local send                   T %lu\n", process, delay);
 #else
-		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)delay_32khz, 
+		call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, (uint16_t)delay, 
 			(uint16_t)(end_32khz >> 16), (uint16_t)end_32khz);
 #endif
 #endif
@@ -265,6 +265,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
+		printf("crc\n");
 		return msg;
 	}
 
@@ -272,12 +273,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		sender_time_left = sender_time_left + (int32_t)(footer->left);
 	}
 
-	printf("from %u   %lu vs %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
+	printf("from %u   sender %lu vs receiver %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left);
 
-	if (delay_32khz == 0) {
-	        call Param.get(REPEAT, &repeat, sizeof(repeat));
+	if (delay == 0) {
         	call Param.get(DELAY, &delay, sizeof(delay));
-	        delay_32khz = _MILLI_2_32KHZ( repeat * delay );
+		delay = _MILLI_2_32KHZ(delay);
 	}
 
 	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
@@ -345,7 +345,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		diff -= now;
 		call Alarm.startAt( now, diff );
 	} else {
-		call Alarm.startAt( now, delay_32khz );
+		call Alarm.startAt( now, delay );
 	}
 
 #ifdef __DBGS__NETWORK_ACTIONS__
