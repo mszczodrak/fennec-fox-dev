@@ -47,6 +47,13 @@ uint32_t radio_tx_offset = 2;	/* 2 */
 int16_t receive_counter = 0;
 uint8_t calib = 1;
 
+void check_delay() {
+	if (delay == 0) {
+        	call Param.get(DELAY, &delay, sizeof(delay));
+		delay = _MILLI_2_32KHZ(delay);
+	}
+}
+
 task void send_message() {
 	uint8_t *payload = (uint8_t*)call Packet.getPayload(&packet, packet_payload_len);
 	nx_struct EED_header *header = (nx_struct EED_header *) call SubAMSend.getPayload(&packet, 
@@ -59,9 +66,11 @@ task void send_message() {
 	}
 
 	busy = TRUE;
-
         header->now = call Alarm.getNow();
 	header->end = end_32khz;
+
+	check_delay();
+	header->delay = delay;
 
 	footer->left = header->now;
 	call SubPacketTimeStamp32khz.set(&packet, header->now);
@@ -185,10 +194,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	app_pkt = msg;
 	once = FALSE;
 
-	if (delay == 0) {
-        	call Param.get(DELAY, &delay, sizeof(delay));
-		delay = _MILLI_2_32KHZ(delay);
-	}
+	check_delay();
 
 	if (same_packet( app_payload, len )) {
 		if (call Alarm.isRunning()) {
@@ -262,28 +268,36 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
+	if ((sender_time_left > 0) && (sender_time_left > header->delay)) {
+		sender_time_left = header->delay;
+	}
+
 	if (-(footer->left) < 480) {
 		sender_time_left = sender_time_left + (int32_t)(footer->left);
 	}
 
-	if (delay == 0) {
-        	call Param.get(DELAY, &delay, sizeof(delay));
-		delay = _MILLI_2_32KHZ(delay);
+	check_delay();
+
+	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
+		receiver_receive_time = now;
+	}
+
+	new_end = receiver_receive_time;
+	new_end += sender_time_left;
+
+	if (new_end > (receiver_receive_time + header->delay)) {
+		new_end = receiver_receive_time + header->delay;
 	}
 
 	if (!same_packet(payload, len)) {
 		make_copy(msg, payload, len);
-		if (!call SubPacketTimeStamp32khz.isValid(msg)) {
-			receiver_receive_time = now;
-		}
 
-		end_32khz = receiver_receive_time;
-		end_32khz += sender_time_left;
+		end_32khz = new_end;
 
-		if ((end_32khz > (now + 10)) && (sender_time_left > 0)) {
+		if (sender_time_left > 0) {
 			call Alarm.startAt(receiver_receive_time, sender_time_left);
 		} else {
-			call Alarm.startAt(receiver_receive_time, delay);
+			call Alarm.startAt(receiver_receive_time, header->delay);
 		}
 
 		post schedule_send();
@@ -298,13 +312,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return signal Receive.receive(msg, payload, len);
 	}
 		
-	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
-		receiver_receive_time = now;
-//		return msg;
-	}
-
-	new_end = receiver_receive_time;	
-	new_end += sender_time_left;
 
 	if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left) && (new_end < end_32khz)) {
 		diff = end_32khz - new_end;
@@ -363,6 +370,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 #endif
 		}
 		return msg;
+	}
+
+	if ((sender_time_left < 0) && (new_end < end_32khz)) {
+		end_32khz = new_end;
 	}
 
 	if ((new_end < end_32khz)) {
