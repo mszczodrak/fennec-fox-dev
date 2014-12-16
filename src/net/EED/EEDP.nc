@@ -43,9 +43,7 @@ norace bool new_data = FALSE;
 bool once = FALSE;
 
 norace uint32_t end_32khz;
-uint32_t radio_tx_offset = 2;	/* 2 */
-int16_t receive_counter = 0;
-uint8_t calib = 1;
+norace uint16_t receive_counter = 0;
 
 void check_delay() {
 	if (delay == 0) {
@@ -80,6 +78,7 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
+	printf("send message\n");
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
@@ -143,10 +142,13 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
+	receive_counter++;
 	if (!busy && 
 		/* suppress to avoid congestions */
-			((call Random.rand16() % receive_counter) == 0)) {
+			((call Random.rand16() % receive_counter) <= EED_SUPPRESS_TX)) {
 		post send_message();
+	} else {
+		printf("suppress %u\n", receive_counter);
 	}
 
 	receive_counter = 0;
@@ -159,8 +161,6 @@ event void SendTimer.fired() {
 }
 
 task void finish() {
-	call SendTimer.stop();
-
 	if ( new_data ) {
 		call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
 		new_data = FALSE;
