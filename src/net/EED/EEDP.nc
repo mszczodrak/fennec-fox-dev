@@ -274,7 +274,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		sender_time_left = header->delay;
 	}
 
-	if (-(footer->left) < 480) {
+	if (-(footer->left) < 640) {
 		sender_time_left = sender_time_left + (int32_t)(footer->left);
 	}
 
@@ -337,7 +337,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			busy = FALSE;
 			call SubAMSend.cancel(&packet);
 			receive_counter = 0;
-			post schedule_send();
+			if (! call SendTimer.isRunning()) {
+				post schedule_send();
+			}
 		}
 
 		if ((now + 320) < end_32khz) { 
@@ -355,7 +357,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
-	if (new_end > (end_32khz + 10)) {
+	if (new_end > (end_32khz + 5)) {
 		if (! call SendTimer.isRunning()) {
 			//printf("l1 from %u by %lu - %lu %lu  s %ld\n", call SubAMPacket.source(msg),
 			//		new_end - end_32khz, new_end, end_32khz, sender_time_left);
@@ -367,7 +369,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
-	//printf("equal from %u\n", call SubAMPacket.source(msg));
         return msg;
 }
 

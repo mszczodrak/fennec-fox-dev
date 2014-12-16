@@ -1,7 +1,7 @@
 #ifndef __EED_H_
 #define __EED_H_
 
-#define EED_PERIOD		20
+#define EED_PERIOD		15
 
 nx_struct EED_header {
 	nx_uint16_t crc;
