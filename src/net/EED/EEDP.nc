@@ -80,7 +80,6 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
-	printf("sm\n");
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
@@ -144,7 +143,9 @@ command error_t SplitControl.stop() {
 }
 
 event void SendTimer.fired() {
-	if (!busy && (receive_counter == 0)) {
+	if (!busy && 
+		/* suppress to avoid congestions */
+			((call Random.rand16() % receive_counter) == 0)) {
 		post send_message();
 	}
 
@@ -284,7 +285,12 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	new_end = receiver_receive_time;
-	new_end += sender_time_left;
+
+	if ((sender_time_left < 0) && (receiver_receive_time < -sender_time_left)) {
+		new_end = 0;
+	} else {
+		new_end += sender_time_left;
+	}
 
 	if (new_end > (receiver_receive_time + header->delay)) {
 		new_end = receiver_receive_time + header->delay;
@@ -322,9 +328,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 		if ( call Alarm.isRunning() && (new_end > call Alarm.getNow() + 10)) {
 			call Alarm.startAt(receiver_receive_time, sender_time_left);
-			printf("l1 %lu by %lu\n", new_end, diff);
+			//printf("l1 %lu by %lu\n", new_end, diff);
 		} else {
-			printf("l2 %lu by %lu\n", new_end, diff);
+			//printf("fix %lu by %lu\n", new_end, diff);
 		}
 
 		if (busy) {
@@ -334,8 +340,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			post schedule_send();
 		}
 
-		//if ((now + 320) < end_32khz) { 
-		if ((now + 100) < end_32khz) { 
+		if ((now + 320) < end_32khz) { 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] EED same remote payload from %3u     T %lu ,adjust by %lu\n", process, 
@@ -352,16 +357,17 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	if (new_end > (end_32khz + 10)) {
 		if (! call SendTimer.isRunning()) {
-			printf("larger 1\n");
+			//printf("l1 from %u by %lu - %lu %lu  s %ld\n", call SubAMPacket.source(msg),
+			//		new_end - end_32khz, new_end, end_32khz, sender_time_left);
 			post schedule_send();
 		} else {
-			printf("larger 2\n");
+			//printf("l2 from %u by %lu - %lu %lu  s %ld\n", call SubAMPacket.source(msg),
+			//		new_end - end_32khz, new_end, end_32khz, sender_time_left);
 		}
 		return msg;
 	}
 
-	printf("equal from %u\n", call SubAMPacket.source(msg));
-
+	//printf("equal from %u\n", call SubAMPacket.source(msg));
         return msg;
 }
 
