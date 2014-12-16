@@ -80,6 +80,7 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
+	printf("sm\n");
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
@@ -300,7 +301,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			call Alarm.startAt(receiver_receive_time, header->delay);
 		}
 
-		post schedule_send();
+		if (! call SendTimer.isRunning()) {
+			post schedule_send();
+		}
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 #else
@@ -313,22 +316,27 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 		
 
-	if ((sender_time_left > 0) && (new_end < end_32khz)) {
+	if (new_end < end_32khz) {
 		diff = end_32khz - new_end;
+
+		if ( call Alarm.isRunning() && (new_end > call Alarm.getNow() + 10)) {
+			printf("adjust by %lu, from %lu to %lu\n", diff, end_32khz, new_end);
+			call Alarm.startAt(receiver_receive_time, sender_time_left);
+		} else {
+			printf("diff %lu\n", diff);
+		}
+
 		end_32khz = new_end;
 
-		if ( call Alarm.isRunning() ) {
-			call Alarm.startAt(receiver_receive_time, sender_time_left);
-		}
-
 		if (busy) {
+			busy = FALSE;
 			call SubAMSend.cancel(&packet);
 			receive_counter = 0;
-			busy = FALSE;
-			post quick_send();
+			post schedule_send();
 		}
 
-		if ((now + 320) < end_32khz) { 
+		//if ((now + 320) < end_32khz) { 
+		if ((now + 100) < end_32khz) { 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 			printf("[%u] EED same remote payload from %3u     T %lu ,adjust by %lu\n", process, 
@@ -343,21 +351,14 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
-	if ((sender_time_left < 0) && (new_end < end_32khz)) {
-		//end_32khz = new_end;
-	}
-
-	if ((new_end < end_32khz)) {
-		//printf("in from %u s %ld r %ld, %lu < %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left, new_end, end_32khz);
-	}
-
-	if ((sender_time_left < 0) && (receiver_time_left > 0)) {
-		//printf("diff from %u s %ld r %ld, %lu < %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left, new_end, end_32khz);
-		//return msg;
-	}
-
-	if ((now + 320) < end_32khz) {
-	//	printf("from %u s %lu r %lu, %lu < %lu\n", call SubAMPacket.source(msg), sender_time_left, receiver_time_left, new_end, end_32khz);
+	if (new_end > end_32khz) {
+		if (! call SendTimer.isRunning()) {
+			//printf("larger 1\n");
+			post schedule_send();
+		} else {
+			//printf("larger 2\n");
+		}
+		return msg;
 	}
 
         return msg;
