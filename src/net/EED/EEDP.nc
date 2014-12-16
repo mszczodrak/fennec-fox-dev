@@ -373,7 +373,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if ((sender_time_left < 0) && (new_end < end_32khz)) {
-		end_32khz = new_end;
+		//end_32khz = new_end;
 	}
 
 	if ((new_end < end_32khz)) {
