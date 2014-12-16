@@ -318,15 +318,14 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 
 	if (new_end < end_32khz) {
 		diff = end_32khz - new_end;
+		end_32khz = new_end;
 
 		if ( call Alarm.isRunning() && (new_end > call Alarm.getNow() + 10)) {
-			printf("adjust by %lu, from %lu to %lu\n", diff, end_32khz, new_end);
 			call Alarm.startAt(receiver_receive_time, sender_time_left);
+			printf("l1 %lu by %lu\n", new_end, diff);
 		} else {
-			printf("diff %lu\n", diff);
+			printf("l2 %lu by %lu\n", new_end, diff);
 		}
-
-		end_32khz = new_end;
 
 		if (busy) {
 			busy = FALSE;
@@ -351,15 +350,17 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return msg;
 	}
 
-	if (new_end > end_32khz) {
+	if (new_end > (end_32khz + 10)) {
 		if (! call SendTimer.isRunning()) {
-			//printf("larger 1\n");
+			printf("larger 1\n");
 			post schedule_send();
 		} else {
-			//printf("larger 2\n");
+			printf("larger 2\n");
 		}
 		return msg;
 	}
+
+	printf("equal from %u\n", call SubAMPacket.source(msg));
 
         return msg;
 }
