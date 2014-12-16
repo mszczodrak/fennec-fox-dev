@@ -313,7 +313,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 		
 
-	if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left) && (new_end < end_32khz)) {
+	//if ((sender_time_left > 0) && (receiver_time_left > 0) && (sender_time_left < receiver_time_left) && (new_end < end_32khz)) {
+	//if ((sender_time_left > 0) && (receiver_time_left > 0) && (new_end < end_32khz)) {
+	if ((sender_time_left > 0) && (new_end < end_32khz)) {
 		diff = end_32khz - new_end;
 		end_32khz = new_end;
 
@@ -325,36 +327,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			call SubAMSend.cancel(&packet);
 			receive_counter = 0;
 			busy = FALSE;
-		}
-
-		if ((now + 320) < end_32khz) { 
-#ifdef __DBGS__NETWORK_ACTIONS__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED same remote payload from %3u     T %lu ,adjust by %lu\n", process, 
-				call SubAMPacket.source(msg), end_32khz, diff);
-#else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
-				(uint16_t)(end_32khz >> 16),
-				(uint16_t)end_32khz);
-#endif
-#endif
-		}
-		return msg;
-	}
-
-	/* Here sender_time_left >= receiver_time_left */
-	if ((sender_time_left > 0) && (receiver_time_left > 0) && (new_end < end_32khz)) {
-		diff = end_32khz - new_end;
-		end_32khz = new_end;
-
-		if ( call Alarm.isRunning() ) {
-			call Alarm.startAt(receiver_receive_time, sender_time_left);
-		}
-
-		if (busy) {
-			call SubAMSend.cancel(&packet);
-			receive_counter = 0;
-			busy = FALSE;
+			post quick_send();
 		}
 
 		if ((now + 320) < end_32khz) { 
