@@ -78,7 +78,6 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
-	printf("send message\n");
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
@@ -148,7 +147,7 @@ event void SendTimer.fired() {
 			((call Random.rand16() % receive_counter) <= EED_SUPPRESS_TX)) {
 		post send_message();
 	} else {
-		printf("suppress %u\n", receive_counter);
+		//printf("suppress %u\n", receive_counter);
 	}
 
 	receive_counter = 0;
@@ -245,6 +244,8 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
+
+//	printf("send message %u\n", error);
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
