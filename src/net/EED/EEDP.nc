@@ -245,7 +245,7 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 
-//	printf("send message %u\n", error);
+	//printf("send message %u\n", error);
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
@@ -270,6 +270,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
 		return msg;
 	}
+
+	//printf("receive\n");
 
 	if ((sender_time_left > 0) && (sender_time_left > header->delay)) {
 		sender_time_left = header->delay;
