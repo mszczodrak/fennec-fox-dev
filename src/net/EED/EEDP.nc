@@ -261,7 +261,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint8_t len = in_len - sizeof(nx_struct EED_header) - sizeof(nx_struct EED_footer);
         nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + len);
 	int32_t sender_time_left = (int32_t)(header->end - header->now);
-	int32_t receiver_time_left = (end_32khz - now);
+	//int32_t receiver_time_left = (end_32khz - now);
 	uint32_t new_end;
 	uint32_t diff;
 
