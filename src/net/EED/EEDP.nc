@@ -245,7 +245,6 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
 
-	//printf("send message %u\n", error);
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
@@ -268,43 +267,33 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
-		//printf("crc\n");
 		return msg;
 	}
 
 	if ((sender_time_left > 0) && (sender_time_left > header->delay)) {
-		//printf("s %ld -> %ld\n", sender_time_left, header->delay);
 		sender_time_left = header->delay;
 	}
 
 	if (-(footer->left) < 960) {	/* which means we accept up to 30ms */
 		sender_time_left = sender_time_left + (int32_t)(footer->left);
-	} else {
-		//printf("footer was %lu\n", -(footer->left));
 	}
 
 	check_delay();
 
 	if (! call SubPacketTimeStamp32khz.isValid(msg)) {
-		//printf("rec not valid %lu -> %lu\n", receiver_receive_time, now);
 		receiver_receive_time = now;
 	}
 
 	new_end = receiver_receive_time;
 
-	//sender_time_left -= 1;
-
 	if ((sender_time_left < 0) && (receiver_receive_time < -sender_time_left)) {
-		//printf("end calib to 0\n");
 		new_end = 0;
 	} else {
 		new_end += sender_time_left;
 	}
 
 	if (new_end > (receiver_receive_time + header->delay)) {
-		//printf("end calib from %lu to %lu\n", new_end, receiver_receive_time + header->delay);
 		new_end = receiver_receive_time + header->delay;
-		//sender_time_left = header->delay;
 	}
 
 	if (!same_packet(payload, len)) {
@@ -334,14 +323,17 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 		
 
-	if ((new_end < end_32khz) && (call Alarm.isRunning())) {
+	if (new_end < end_32khz) {
 		diff = end_32khz - new_end;
 		end_32khz = new_end;
 
-		if ( new_end > call Alarm.getNow() + 10) {
-			call Alarm.startAt(receiver_receive_time, sender_time_left);
+		if (call Alarm.isRunning()) {
+			if ( new_end > call Alarm.getNow() + 10) {
+				call Alarm.startAt(receiver_receive_time, sender_time_left);
+			}
+		} else {
+			call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
 		}
-		//printf("[%u] EED change          T %lu to %lu\n", process, end_32khz, new_end);
 
 		if (busy) {
 			busy = FALSE;
