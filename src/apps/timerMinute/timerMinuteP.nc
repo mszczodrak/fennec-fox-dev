@@ -66,14 +66,14 @@ uint16_t src;
 uint32_t start_32khz;
 
 command error_t SplitControl.start() {
-	uint32_t now = call LocalTime.get();
+	//uint32_t now = call LocalTime.get();
 	call Param.get(DELAY, &delay, sizeof(delay));
 	call Param.get(SRC, &src, sizeof(src));
 	call Param.get(START_32KHZ, &start_32khz, sizeof(start_32khz));
 
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Event timerMinute start()\n", process);
+	printf("[%u] Event timerMinute start() - %lu %lu\n", process, delay, start_32khz);
 #else
 	//call SerialDbgs.dbgs(DBGS_MGMT_START, process, 0, 0);
 #endif
@@ -83,11 +83,12 @@ command error_t SplitControl.start() {
 		delay *= SECOND_TO_MILLI;
 		delay *= MINUTE_TO_SECOND;
 
-		if ((start_32khz == 0) || ((now - start_32khz) > _MILLI_2_32KHZ(30))) {
-			/* do not calibrate if offset is higher than 30 milliseconds */
+		if (start_32khz == 0) {
+			/* do not calibrate if offset is unknown */
 			call Timer.startOneShot(delay);
 		} else {
 			call Timer.startOneShotAt( _32KHZ_2_MILLI(start_32khz), delay );
+			start_32khz += _MILLI_2_32KHZ( delay );
 		}
 	}
 	signal SplitControl.startDone(SUCCESS);
@@ -111,6 +112,7 @@ command error_t SplitControl.stop() {
 
 
 event void Timer.fired() {
+	call Param.set(START_32KHZ, &start_32khz, sizeof(start_32khz));
 #ifdef __DBGS__EVENT__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] Event timerMinute fired()\n", process);
