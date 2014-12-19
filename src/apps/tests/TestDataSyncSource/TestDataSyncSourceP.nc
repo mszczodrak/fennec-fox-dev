@@ -67,7 +67,7 @@ uint16_t source;
 
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
-	call Param.get(SOURCE, &source, sizeof(source));
+	call Param.get(SRC, &source, sizeof(source));
 
 	if ((source == 0xFFFF) || (source == TOS_NODE_ID)) {
 		call Timer.startPeriodic(update_delay);
