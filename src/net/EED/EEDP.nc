@@ -58,15 +58,6 @@ task void send_message() {
 				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
 
-
-
-
-	{
-		nx_uint16_t *d = (nx_uint16_t*)payload;
-		printf("s [%u %u %u]\n", *d, *(d+1), *(d+2));
-	}
-
-
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
@@ -114,11 +105,11 @@ task void stopDone() {
 }
 
 task void schedule_send() {
-	call SendTimer.startPeriodic((EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD));
+	call SendTimer.startOneShot((EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD));
 }
 
 task void quick_send() {
-	call SendTimer.startPeriodic((EED_PERIOD / 3) + (call Random.rand16() % EED_PERIOD));
+	call SendTimer.startOneShot(1);
 }
 
 command error_t SplitControl.start() {
@@ -161,11 +152,6 @@ event void SendTimer.fired() {
 
 	receive_counter = 0;
 
-	if (!call Alarm.isRunning()) {
-		call SendTimer.stop();
-	} else {
-		post schedule_send();
-	}
 }
 
 task void finish() {
@@ -226,7 +212,6 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 		call Alarm.startAt( now, delay );
 		make_copy(msg, app_payload, len);
 		post quick_send();
-		post send_message();
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED new local send                   T %lu\n", process, end_32khz);
@@ -253,11 +238,14 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
-
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
 		app_pkt = NULL;
+	}
+
+	if ((once == TRUE) || (call Alarm.isRunning())) {
+		post schedule_send();
 	}
 }
 
@@ -306,6 +294,9 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	}
 
 	if (!same_packet(payload, len)) {
+		if (call Alarm.isRunning()) {
+			return signal Receive.receive(msg, payload, len);
+		}
 		make_copy(msg, payload, len);
 
 		end_32khz = new_end;
@@ -320,10 +311,10 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			post schedule_send();
 		}
 		
-		{
-			nx_uint16_t *d = (nx_uint16_t*)payload;
-			printf("r [%u %u %u]  --  %ld\n", *d, *(d+1), *(d+2), (int32_t)(footer->left));
-		}
+//		{
+//			nx_uint16_t *d = (nx_uint16_t*)payload;
+//			printf("r [%u %u %u]  --  %ld\n", *d, *(d+1), *(d+2), (int32_t)(footer->left));
+//		}
 
 
 #ifdef __DBGS__NETWORK_ACTIONS__
