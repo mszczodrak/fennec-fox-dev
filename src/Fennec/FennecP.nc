@@ -276,26 +276,31 @@ int8_t check_sequence(uint16_t received, uint16_t current) {
 command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) {
 	/* check if there is ongoing reconfiguration */
 	if (state_transitioning) {
+		printf("FE BUSY\n");
 		return EBUSY;	
 	}
 
 	if (new_state >= NUMBER_OF_STATES) {
+		printf("FE FAIL\n");
 		return FAIL;
 	}
 
 	/* Nothing new, receive current information */
 	if ((check_sequence(new_seq, current_seq) == 0)  && (new_state == current_state)) {
+		printf("FE SAME\n");
 		return SUCCESS;
 	}
 
 	/* Some mote is still in the old state, resend control message */
 	if (check_sequence(new_seq, current_seq) < 0) {
+		printf("FE RES\n");
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 
 	/* Network State sequnce has increased */
 	if ((check_sequence(new_seq, current_seq) > 0) && (new_state == current_state)) {
+		printf("FE NEW S1\n");
 		next_state = new_state;
 		next_seq = new_seq;
 		state_transitioning = TRUE;
@@ -305,6 +310,7 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Receive information about a new network state */
 	if (check_sequence(new_seq, current_seq) > 0) {
+		printf("FE NEW S2\n");
 		next_state = new_state;
 		next_seq = new_seq;
 		state_transitioning = TRUE;
@@ -314,11 +320,13 @@ command error_t FennecState.setStateAndSeq(state_t new_state, uint16_t new_seq) 
 
 	/* Receive same sequence but different states - synchronize using priority levels */
 	if (states[current_state].level > states[new_state].level) {
+		printf("FE DIFF\n");
 		signal FennecState.resend();
 		return SUCCESS;
 	}
 		
 	/* Receive same sequence but different states with the same priority levels */ 
+	printf("FE SYNC\n");
 	next_seq = current_seq + (call Random.rand16() % SEQ_RAND) + SEQ_OFFSET;
 	state_transitioning = TRUE;
 	signal FennecState.resend();

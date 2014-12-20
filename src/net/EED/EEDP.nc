@@ -58,6 +58,15 @@ task void send_message() {
 				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
 
+
+
+
+	{
+		nx_uint16_t *d = (nx_uint16_t*)payload;
+		printf("s [%u %u %u]\n", *d, *(d+1), *(d+2));
+	}
+
+
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
@@ -310,18 +319,24 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		if (! call SendTimer.isRunning()) {
 			post schedule_send();
 		}
+		
+		{
+			nx_uint16_t *d = (nx_uint16_t*)payload;
+			printf("r [%u %u %u]  --  %ld\n", *d, *(d+1), *(d+2), (int32_t)(footer->left));
+		}
+
+
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED new remote          T %lu\n", process, end_32khz);
+		printf("[%u] EED new remote from %3u   T %lu\n", process, call SubAMPacket.source(msg), end_32khz);
 #else
-		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, 1, 
+		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, call SubAMPacket.source(msg), 
 				(uint16_t)(end_32khz >> 16),
 				(uint16_t)end_32khz);
 #endif
 #endif
 		return signal Receive.receive(msg, payload, len);
 	}
-		
 
 	if (new_end < end_32khz) {
 		diff = end_32khz - new_end;
@@ -349,7 +364,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if ((now + 320) < end_32khz) { 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED same remote payload from %3u     T %lu ,adjust by %lu\n", process, 
+			printf("[%u] EED old remote from %3u   T %lu ,adjust by %lu\n", process, 
 				call SubAMPacket.source(msg), end_32khz, diff);
 #else
 			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,

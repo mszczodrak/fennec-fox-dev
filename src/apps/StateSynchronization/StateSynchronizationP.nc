@@ -74,16 +74,6 @@ task void schedule_send() {
 task void send_msg() {
 	nx_struct fennec_network_state *state_msg;
 
-#ifdef __DBGS__APPLICATION__
-#ifdef __DBGS__STATE_SYNC__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] Application StateSynchronization send_msg()\n", process);
-#else
-
-#endif
-#endif
-#endif
-
 	state_msg = (nx_struct fennec_network_state*) 
 	call SubAMSend.getPayload(&packet, sizeof(nx_struct fennec_network_state));
    
@@ -98,11 +88,21 @@ task void send_msg() {
 		sizeof(nx_struct fennec_network_state) - 
 		sizeof(((nx_struct fennec_network_state *)0)->crc));
 
+#ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] Application StateSynchronization send_msg() [%u %u %u]\n", process,
+		state_msg->seq, state_msg->state_id, state_msg->crc);
+#else
+
+#endif
+#endif
+#endif
+
 	if (call SubAMSend.send(BROADCAST, &packet, sizeof(nx_struct fennec_network_state)) != SUCCESS) {
-		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - FAIL", process);
 		signal SubAMSend.sendDone(&packet, FAIL);
 	} else {
-		dbg("StateSynchronization", "[%d] StateSynchronizationP send_state_sync_msg() - SUCCESS", process);
+
 	}
 }
 
@@ -152,13 +152,22 @@ event message_t* SubReceive.receive(message_t *msg, void* payload, uint8_t len) 
 
 	if (state_msg->crc != (nx_uint16_t) crc16(0, (uint8_t*) state_msg, 
 		len - sizeof(((nx_struct fennec_network_state *)0)->crc)) ) {
+
+#ifdef __DBGS__APPLICATION__
+#ifdef __DBGS__STATE_SYNC__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] Application StateSynchronization receive() - drop\n", process);
+#else
+#endif
+#endif
+#endif
 		return msg;
 	}
 
 #ifdef __DBGS__APPLICATION__
 #ifdef __DBGS__STATE_SYNC__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	//printf("[%u] Application StateSynchronization receive()\n", process);
+	printf("[%u] Application StateSynchronization receive()\n", process);
 #else
 #endif
 #endif
