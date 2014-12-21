@@ -58,7 +58,7 @@ task void send_message() {
 				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
 
-	//printf("send\n");
+	receive_counter = 0;
 
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
@@ -66,10 +66,10 @@ task void send_message() {
 	}
 
 	busy = TRUE;
+	check_delay();
+
         header->now = call Alarm.getNow();
 	header->end = end_32khz;
-
-	check_delay();
 	header->delay = delay;
 
 	footer->left = header->now;
@@ -118,8 +118,7 @@ task void stopDone() {
 }
 
 task void schedule_send() {
-	uint16_t d = (EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD);
-	//printf("send in %u\n", d);
+	uint16_t d = (EED_PERIOD / 4) + (call Random.rand16() % EED_PERIOD);
 	call SendTimer.startOneShot(d);
 }
 
@@ -161,9 +160,7 @@ event void SendTimer.fired() {
 		/* suppress to avoid congestions */
 			((call Random.rand16() % receive_counter) <= EED_SUPPRESS_TX)) {
 		post send_message();
-		receive_counter = 0;
 	} else {
-		receive_counter = 0;
 		signal SubAMSend.sendDone(&packet, EBUSY);
 	}
 }
@@ -203,6 +200,7 @@ command error_t AMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {
 	void *app_payload = call Packet.getPayload(msg, len);
 	app_pkt = msg;
 	once = FALSE;
+	receive_counter = 0;
 
 	check_delay();
 
@@ -252,7 +250,6 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
-	printf("sd %u\n", error);
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
@@ -276,7 +273,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint32_t new_end;
 	uint32_t diff = 0;
 
-	printf("rec\n");
 
 	receive_counter++;
 
@@ -330,7 +326,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("[%u] EED new remote from %3u   T %lu\n", process, call SubAMPacket.source(msg), end_32khz);
+		printf("[%u] EED new remote from %3u T %lu\n", process, call SubAMPacket.source(msg), end_32khz);
 #else
 		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, call SubAMPacket.source(msg), 
 				(uint16_t)(end_32khz >> 16),
@@ -349,10 +345,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		}
 
 		if (busy) {
-			busy = FALSE;
 			call SubAMSend.cancel(&packet);
-			receive_counter = 0;
-			post schedule_send();
 		}
 
 #ifdef __DBGS__NETWORK_ACTIONS__
@@ -371,6 +364,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		post schedule_send();
 	}
 
+	if ((now + 320) < end_32khz) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[%u] EED receive from %3u %lu\n", process, 
@@ -380,6 +374,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		call SubAMPacket.source(msg), (uint16_t)(new_end), (uint16_t)new_end);
 #endif
 #endif
+	}
 
         return msg;
 }
