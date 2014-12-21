@@ -311,12 +311,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 			post schedule_send();
 		}
 		
-//		{
-//			nx_uint16_t *d = (nx_uint16_t*)payload;
-//			printf("r [%u %u %u]  --  %ld\n", *d, *(d+1), *(d+2), (int32_t)(footer->left));
-//		}
-
-
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("[%u] EED new remote from %3u   T %lu\n", process, call SubAMPacket.source(msg), end_32khz);
