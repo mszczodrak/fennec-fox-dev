@@ -323,41 +323,46 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		return signal Receive.receive(msg, payload, len);
 	}
 
-	if (new_end < end_32khz) {
+	if ((new_end < end_32khz) && (call Alarm.isRunning())) {
 		diff = end_32khz - new_end;
 		end_32khz = new_end;
 
-		if (call Alarm.isRunning()) {
-			if ( new_end > call Alarm.getNow() + 10) {
-				call Alarm.startAt(receiver_receive_time, sender_time_left);
-			}
-		} else {
-			call Param.set(LAST_FINISH, &end_32khz, sizeof(end_32khz));
+		if ( new_end > call Alarm.getNow() + 10) {
+			call Alarm.startAt(receiver_receive_time, sender_time_left);
 		}
 
 		if (busy) {
 			busy = FALSE;
 			call SubAMSend.cancel(&packet);
 			receive_counter = 0;
+			post schedule_send();
 		}
+
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("[%u] EED same remote from %3u, diff %5u left %5u\n", process, 
+			call SubAMPacket.source(msg), (uint16_t)diff, (uint16_t)sender_time_left);
+#else
+		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD,
+			call SubAMPacket.source(msg), (uint16_t)diff, (uint16_t)sender_time_left);
+#endif
+#endif
+		return msg;
 	}
 
 	if ((new_end > (end_32khz + 5)) && (! call SendTimer.isRunning())) {
 		post schedule_send();
 	}
 
-	if ((now + 320) < end_32khz) { 
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-			printf("[%u] EED old remote from %3u   T %lu ,adjust by %lu\n", process, 
-				call SubAMPacket.source(msg), end_32khz, diff);
+	printf("[%u] EED receive from %3u %lu\n", process, 
+			call SubAMPacket.source(msg), new_end);
 #else
-			call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, (uint16_t)diff,
-				(uint16_t)(end_32khz >> 16),
-				(uint16_t)end_32khz);
+	call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 
+		call SubAMPacket.source(msg), (uint16_t)(new_end), (uint16_t)new_end);
 #endif
 #endif
-	}
 
         return msg;
 }
