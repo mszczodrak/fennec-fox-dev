@@ -118,7 +118,7 @@ task void stopDone() {
 }
 
 task void schedule_send() {
-	uint16_t d = (EED_PERIOD / 4) + (call Random.rand16() % EED_PERIOD);
+	uint16_t d = 1 + (call Random.rand16() % EED_PERIOD);
 	call SendTimer.startOneShot(d);
 }
 
