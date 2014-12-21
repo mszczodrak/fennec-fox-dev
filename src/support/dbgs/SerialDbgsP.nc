@@ -52,18 +52,11 @@ message_t queue[DBGS_QUEUE_LEN];
 norace uint8_t head = 0;
 norace uint8_t tail = 0;
 norace uint8_t size = 0;
-norace bool busy = FALSE;
 
-void send() {
+task void sendMessage() {
+
 	if (size == 0 ) {
 		return;
-	}
-
-	atomic {
-		if (busy == TRUE) {
-			return;
-		}
-		busy = TRUE;
 	}
 
 #ifdef FENNEC_TOS_PRINTF
@@ -82,10 +75,6 @@ void send() {
 			signal SerialAMSend.sendDone(&queue[head], FAIL);
 	}
 #endif
-}
-
-task void sendMessage() {
-	send();
 }
 
 #endif
@@ -117,14 +106,13 @@ command void SerialDbgs.dbgs[uint8_t id](uint8_t dbg, uint16_t d0, uint16_t d1, 
 		size++;
 	}
 
-	send();
+	post sendMessage();
 #endif
 }
 
 #ifdef __DBGS__
 
 event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
-	busy = FALSE;
 	atomic {
 		if (size > 0) {
 			head++;
