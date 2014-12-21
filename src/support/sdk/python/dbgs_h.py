@@ -316,7 +316,6 @@ def dbg_translate(dbg_num):
 	if dbg_num == DBGS_NEW_REMOTE_PAYLOAD:
 		return "New Remote Payload"
 
-
 	if dbg_num == DBGS_START_PERIOD:
 		return "Start Period"
 

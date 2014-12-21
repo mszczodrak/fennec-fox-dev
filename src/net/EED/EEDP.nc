@@ -78,6 +78,17 @@ task void send_message() {
 					sizeof(nx_struct EED_footer) ) != SUCCESS) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 	}
+
+#ifdef __DBGS__NETWORK_ACTIONS__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+//	printf("[%u] EED receive from %3u %lu\n", process, 
+//			call SubAMPacket.source(msg), new_end);
+#else
+//	call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 
+//		call SubAMPacket.source(msg), (uint16_t)(new_end), (uint16_t)new_end);
+#endif
+#endif
+
 }
 
 void make_copy(message_t *msg, void *new_payload, uint8_t new_payload_len) {
