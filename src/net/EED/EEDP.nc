@@ -58,6 +58,8 @@ task void send_message() {
 				sizeof(nx_struct EED_header) + packet_payload_len + sizeof(nx_struct EED_footer));
 	nx_struct EED_footer *footer = (nx_struct EED_footer*)(payload + packet_payload_len);
 
+	//printf("send\n");
+
 	if (busy) {
 		signal SubAMSend.sendDone(&packet, FAIL);
 		return;
@@ -116,7 +118,9 @@ task void stopDone() {
 }
 
 task void schedule_send() {
-	call SendTimer.startOneShot((EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD));
+	uint16_t d = (EED_PERIOD / 2) + (call Random.rand16() % EED_PERIOD);
+	//printf("send in %u\n", d);
+	call SendTimer.startOneShot(d);
 }
 
 task void quick_send() {
@@ -157,12 +161,11 @@ event void SendTimer.fired() {
 		/* suppress to avoid congestions */
 			((call Random.rand16() % receive_counter) <= EED_SUPPRESS_TX)) {
 		post send_message();
+		receive_counter = 0;
 	} else {
-		//printf("suppress %u\n", receive_counter);
+		receive_counter = 0;
+		signal SubAMSend.sendDone(&packet, EBUSY);
 	}
-
-	receive_counter = 0;
-
 }
 
 task void finish() {
@@ -249,13 +252,14 @@ command void* AMSend.getPayload(message_t* msg, uint8_t len) {
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
 	busy = FALSE;
+	printf("sd %u\n", error);
 	if (once == TRUE) {
 		signal AMSend.sendDone(app_pkt, error);
 		once = FALSE;
 		app_pkt = NULL;
 	}
 
-	if ((once == TRUE) || (call Alarm.isRunning())) {
+	if (call Alarm.isRunning()) {
 		post schedule_send();
 	}
 }
@@ -271,6 +275,8 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	//int32_t receiver_time_left = (end_32khz - now);
 	uint32_t new_end;
 	uint32_t diff = 0;
+
+	printf("rec\n");
 
 	receive_counter++;
 

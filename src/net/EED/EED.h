@@ -1,8 +1,8 @@
 #ifndef __EED_H_
 #define __EED_H_
 
-#define EED_SUPPRESS_TX	4
-#define EED_PERIOD	20
+#define EED_SUPPRESS_TX	0
+#define EED_PERIOD	25
 
 nx_struct EED_header {
 	nx_uint16_t crc;
