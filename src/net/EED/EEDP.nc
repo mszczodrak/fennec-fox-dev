@@ -367,11 +367,11 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	if ((now + 320) < end_32khz) {
 #ifdef __DBGS__NETWORK_ACTIONS__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] EED receive from %3u %lu\n", process, 
-			call SubAMPacket.source(msg), new_end);
+		printf("[%u] EED receive from %3u %lu\n", process, 
+				call SubAMPacket.source(msg), new_end);
 #else
-	call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 
-		call SubAMPacket.source(msg), (uint16_t)(new_end), (uint16_t)new_end);
+		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 
+			call SubAMPacket.source(msg), (uint16_t)(new_end >> 16), (uint16_t)new_end);
 #endif
 #endif
 	}
