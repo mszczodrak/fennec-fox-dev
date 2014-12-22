@@ -273,7 +273,6 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 	uint32_t new_end;
 	uint32_t diff = 0;
 
-
 	receive_counter++;
 
 	if (header->crc != (nx_uint16_t) crc16(0, payload, len)) {
@@ -370,7 +369,7 @@ event message_t* SubReceive.receive(message_t *msg, void* in_payload, uint8_t in
 		printf("[%u] EED receive from %3u %lu\n", process, 
 				call SubAMPacket.source(msg), new_end);
 #else
-		call SerialDbgs.dbgs(DBGS_SAME_REMOTE_PAYLOAD, 
+		call SerialDbgs.dbgs(DBGS_RECEIVE_PAYLOAD, 
 			call SubAMPacket.source(msg), (uint16_t)(new_end >> 16), (uint16_t)new_end);
 #endif
 #endif
