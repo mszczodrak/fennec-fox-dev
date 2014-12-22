@@ -82,6 +82,7 @@ void send() {
 			signal SerialAMSend.sendDone(&queue[head], FAIL);
 	}
 #endif
+}
 
 task void sendMessage() {
 	send();
