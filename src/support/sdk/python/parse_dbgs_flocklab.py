@@ -66,7 +66,7 @@ for l in all_lines:
 	timestamp_sec = timestamp_sec - time_offset
 
 	data.append({"timestamp_sec":timestamp_sec,
-			"timestamp_milli":timestamp_milli,
+			"timestamp_micro":timestamp_micro,
 			"mote_id":mote_id,
 			"version":version,
 			"did":did,
@@ -75,10 +75,10 @@ for l in all_lines:
 			"d1":d1,
 			"d2":d2})
 
-data.sort(key=lambda d: (d["timestamp_sec"], d["timestamp_milli"]))
+data.sort(key=lambda d: (d["timestamp_sec"], d["timestamp_micro"]))
 
 for d in data:
-	print "{:>8} {:03}".format(d["timestamp_sec"], d["timestamp_milli"]),
+	print "{:>8} {:06}".format(d["timestamp_sec"], d["timestamp_micro"]),
 	print "{:>7} ".format(d["mote_id"]),
 	print "{:>5} ".format(d["version"]),
 	print "{:>5} ".format(d["did"]),
