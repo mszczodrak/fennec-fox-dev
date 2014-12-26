@@ -44,8 +44,8 @@ for line in f.readlines():
 
 	time_stamp = time_stamp - time_offset
 
-	data.append({"timestamp_sec":timestamp_sec,
-			"timestamp_milli":timestamp_milli,
+	data.append({"timestamp_sec":time_stamp / 1000,
+			"timestamp_milli":time_stamp % 1000,
 			"mote_id":mote_id,
 			"version":version,
 			"did":did,
