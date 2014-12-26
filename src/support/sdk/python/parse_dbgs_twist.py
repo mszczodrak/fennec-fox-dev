@@ -19,6 +19,9 @@ time_offset = -1
 
 print "{:>8} {:>3} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "micro", "mote", "ver", "id", "dbg", "d0", "d1", "d2")
 
+
+data = []
+
 for line in f.readlines():
 	if line[0] == "#":
 		continue
@@ -63,12 +66,24 @@ for line in f.readlines():
 
 	timestamp_sec = timestamp_sec - time_offset
 
-	print "{:>8} {:03}".format(timestamp_sec, timestamp_milli),
-	print "{:>7} ".format(mote_id),
-	print "{:>5} ".format(version),
-	print "{:>5} ".format(did),
-	print "{:>5} ".format(dbg),
-	print "{:>5} ".format(d0),
-	print "{:>5} ".format(d1),
-	print "{:>5} ".format(d2)
+
+	data.append({"timestamp_sec":timestamp_sec,
+			"timestamp_milli":timestamp_milli,
+			"mote_id":mote_id,
+			"version":version,
+			"did":did,
+			"dbg":dbg,
+			"d0":d0,
+			"d1":d1,
+			"d2":d2})
+
+for d in data:
+	print "{:>8} {:03}".format(d["timestamp_sec"], d["timestamp_milli"]),
+	print "{:>7} ".format(d["mote_id"]),
+	print "{:>5} ".format(d["version"]),
+	print "{:>5} ".format(d["did"]),
+	print "{:>5} ".format(d["dbg"]),
+	print "{:>5} ".format(d["d0"]),
+	print "{:>5} ".format(d["d1"]),
+	print "{:>5} ".format(d["d2"])
 
