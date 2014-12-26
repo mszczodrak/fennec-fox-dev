@@ -19,7 +19,6 @@ time_offset = -1
 
 print "{:>8} {:>3} {:>7} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format("sec", "micro", "mote", "ver", "id", "dbg", "d0", "d1", "d2")
 
-
 data = []
 
 for line in f.readlines():
@@ -66,7 +65,6 @@ for line in f.readlines():
 
 	timestamp_sec = timestamp_sec - time_offset
 
-
 	data.append({"timestamp_sec":timestamp_sec,
 			"timestamp_milli":timestamp_milli,
 			"mote_id":mote_id,
@@ -76,6 +74,8 @@ for line in f.readlines():
 			"d0":d0,
 			"d1":d1,
 			"d2":d2})
+
+data.sort(key=lambda d: (d["timestamp_sec"], d["timestamp_milli"]))
 
 for d in data:
 	print "{:>8} {:03}".format(d["timestamp_sec"], d["timestamp_milli"]),
