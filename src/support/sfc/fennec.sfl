@@ -21,7 +21,7 @@ use application counter $(FENNEC_FOX_LIB)/apps/tests/Counter (
 		uint8_t repeat = 1,
 		uint16_t receive_event )
 
-use application sampleData $(FENNEC_FOX_LIB)/apps/sampleData ( 
+use application sample $(FENNEC_FOX_LIB)/apps/sampleData ( 
 		uint32_t delay,
 		uint16_t src = 0,
 		uint16_t dest = 0,
@@ -31,17 +31,17 @@ use application button $(FENNEC_FOX_LIB)/apps/button (
 		uint8_t button_in = 0,
 		uint16_t mote_addr = 0xFFFF )
 
-use application serialVars8 $(FENNEC_FOX_LIB)/apps/serialVars8 (
+use application serialVar8 $(FENNEC_FOX_LIB)/apps/serialVars8 (
 		uint8_t val1 = 0,
 		uint8_t val2 = 0,
 		uint8_t val3 = 0 )
 
-use application serialVars16 $(FENNEC_FOX_LIB)/apps/serialVars16 (
+use application serialVar16 $(FENNEC_FOX_LIB)/apps/serialVars16 (
 		uint16_t val1 = 0,
 		uint16_t val2 = 0,
 		uint16_t val3 = 0 )
 
-use application serialVars32 $(FENNEC_FOX_LIB)/apps/serialVars32 (
+use application serialVar32 $(FENNEC_FOX_LIB)/apps/serialVars32 (
 		uint32_t val1 = 0,
 		uint32_t val2 = 0,
 		uint32_t val3 = 0 )
