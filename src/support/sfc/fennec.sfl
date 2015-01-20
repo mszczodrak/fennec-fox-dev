@@ -153,6 +153,15 @@ use application TestDataSync $(FENNEC_FOX_LIB)/apps/tests/TestDataSync (
 		uint16_t val5 = 0
 )
 
+use application TestDataMerge $(FENNEC_FOX_LIB)/apps/tests/TestDataMerge (
+                uint32_t update_delay = 25000,
+                uint16_t val = 0,
+                uint16_t val_old = 0,
+                uint16_t mote1 = 0,
+                uint16_t mote2 = 0,
+                uint16_t mote3 = 0
+)
+
 use application TestDataSyncSource $(FENNEC_FOX_LIB)/apps/tests/TestDataSyncSource (
 		uint16_t src = 0xFFFF,
 		uint32_t update_delay = 25000,
