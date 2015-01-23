@@ -65,7 +65,6 @@ implementation {
 uint32_t update_delay;
 uint16_t mote1;
 uint16_t mote2;
-uint16_t mote3;
 uint16_t val;
 uint16_t val_old;
 
@@ -73,11 +72,10 @@ command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 	call Param.get(MOTE1, &mote1, sizeof(mote1));
 	call Param.get(MOTE2, &mote1, sizeof(mote2));
-	call Param.get(MOTE3, &mote1, sizeof(mote3));
 	call Param.get(VAL, &val, sizeof(val));
 	call Param.get(VAL_OLD, &val_old, sizeof(val_old));
 
-	if ((mote1 == TOS_NODE_ID) || (mote2 == TOS_NODE_ID) || (mote3 == TOS_NODE_ID)) {
+	if ((mote1 == TOS_NODE_ID) || (mote2 == TOS_NODE_ID)) {
 		call Timer.startOneShot(update_delay);
 	}
 
