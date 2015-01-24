@@ -132,6 +132,7 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 		printf("updated val1 with %u\n", temp);
 		if ((temp > val1) && 
 			(val2 != val1)) {
+				printf("merge\n");
 				val2 = val1;
 				call Param.set(val2, &val2, sizeof(val2));
 		}
@@ -150,49 +151,9 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 
 		printf("updated val1 with %u\n", temp);
 		val2 = temp;
+		printfRecord();
 		return;
 	}
 }
-
-
-void merge( uint16_t v ) {
-	bool up = FALSE;
-	if (val1 == 0) {
-		val1 = v;
-	} else {
-		/* move older */
-		if ( v > val1 ) {
-			val2 = val1;
-			val1 = v;
-			up = TRUE;
-		} else {
-			val2 = v;
-		}
-	}
-
-	call Param.set(VAL2, &val2, sizeof(val2));
-	if (up) {
-		call Param.set(VAL1, &val1, sizeof(val1));
-	}
-
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] TestDataMerge  SET got %u -> %u %u\n", process, v, val1, val2);
-#else
-	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, v, val, val2);
-#endif
-#endif
-
-}
-
-
-
-
-
-
-
-
-
-
 
 }
