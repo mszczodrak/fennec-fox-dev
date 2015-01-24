@@ -123,7 +123,7 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 	uint16_t temp;
 
 	if (var_id == VAL1) {
-		call Param.get(var_id, &temp, sizeof(temp));
+		call Param.get(VAL1, &temp, sizeof(temp));
 		if (temp == val1) {
 			printf("the same val1\n");
 			return;
@@ -134,7 +134,7 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 			(val2 != val1)) {
 				printf("merge\n");
 				val2 = val1;
-				call Param.set(val2, &val2, sizeof(val2));
+				call Param.set(VAL2, &val2, sizeof(val2));
 		}
 		val1 = temp;
 		printfRecord();
@@ -142,7 +142,7 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 	}
 
 	if (var_id == VAL2) {
-		call Param.get(var_id, &temp, sizeof(temp));
+		call Param.get(VAL2, &temp, sizeof(temp));
 
 		if (temp == val2) {
 			printf("the same val2\n");
