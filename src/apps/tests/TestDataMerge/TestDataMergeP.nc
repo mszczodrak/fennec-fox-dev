@@ -65,15 +65,20 @@ implementation {
 uint32_t update_delay;
 uint16_t mote1;
 uint16_t mote2;
-uint16_t val;
-uint16_t val_old;
+uint16_t val1;
+uint16_t val2;
+
+void printfRecord() {
+	printf("[ %u %u ]\n", val1, val2); 
+} 
+
 
 command error_t SplitControl.start() {
 	call Param.get(UPDATE_DELAY, &update_delay, sizeof(update_delay));
 	call Param.get(MOTE1, &mote1, sizeof(mote1));
-	call Param.get(MOTE2, &mote1, sizeof(mote2));
-	call Param.get(VAL, &val, sizeof(val));
-	call Param.get(VAL_OLD, &val_old, sizeof(val_old));
+	call Param.get(MOTE2, &mote2, sizeof(mote2));
+	call Param.get(VAL1, &val1, sizeof(val1));
+	call Param.get(VAL2, &val2, sizeof(val2));
 
 	if ((mote1 == TOS_NODE_ID) || (mote2 == TOS_NODE_ID)) {
 		call Timer.startOneShot(update_delay);
@@ -95,38 +100,11 @@ command error_t SplitControl.stop() {
 	return SUCCESS;
 }
 
-void updateData( uint16_t v ) {
-	bool up = FALSE;
-	if (val == 0) {
-		val = v;
-	} else {
-		/* move older */
-		if ( v > val ) {
-			val_old = val;
-			val = v;
-			up = TRUE;
-		} else {
-			val_old = v;
-		}
-	}
-
-	call Param.set(VAL_OLD, &val_old, sizeof(val_old));
-	if (up) {
-		call Param.set(VAL, &val, sizeof(val));
-	}
-
-#ifdef __DBGS__APPLICATION__
-#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] TestDataMerge  SET got %u -> %u %u\n", process, v, val, val_old);
-#else
-	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, v, val, val_old);
-#endif
-#endif
-
-}
-
 event void Timer.fired() {
-	updateData( call Random.rand16() );
+	val1 = call Random.rand16();
+	printf("Start with %u\n", val1); 
+	call Param.set(VAL1, &val1, sizeof(val1));
+	printfRecord();
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
@@ -143,8 +121,78 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Param.updated(uint8_t var_id, bool conflict) {
 	uint16_t temp;
-	call Param.get(var_id, &temp, sizeof(temp));
-	updateData( temp );
+
+	if (var_id == VAL1) {
+		call Param.get(var_id, &temp, sizeof(temp));
+		if (temp == val1) {
+			printf("the same val1\n");
+			return;
+		}
+
+		printf("updated val1 with %u\n", temp);
+		if ((temp > val1) && 
+			(val2 != val1)) {
+				val2 = val1;
+				call Param.set(val2, &val2, sizeof(val2));
+		}
+		val1 = temp;
+		printfRecord();
+		return;
+	}
+
+	if (var_id == VAL2) {
+		call Param.get(var_id, &temp, sizeof(temp));
+
+		if (temp == val2) {
+			printf("the same val2\n");
+			return;
+		}
+
+		printf("updated val1 with %u\n", temp);
+		val2 = temp;
+		return;
+	}
 }
+
+
+void merge( uint16_t v ) {
+	bool up = FALSE;
+	if (val1 == 0) {
+		val1 = v;
+	} else {
+		/* move older */
+		if ( v > val1 ) {
+			val2 = val1;
+			val1 = v;
+			up = TRUE;
+		} else {
+			val2 = v;
+		}
+	}
+
+	call Param.set(VAL2, &val2, sizeof(val2));
+	if (up) {
+		call Param.set(VAL1, &val1, sizeof(val1));
+	}
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("[%u] TestDataMerge  SET got %u -> %u %u\n", process, v, val1, val2);
+#else
+	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, v, val, val2);
+#endif
+#endif
+
+}
+
+
+
+
+
+
+
+
+
+
 
 }
