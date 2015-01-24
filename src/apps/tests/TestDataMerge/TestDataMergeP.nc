@@ -69,7 +69,13 @@ uint16_t val1;
 uint16_t val2;
 
 void printfRecord() {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 	printf("[ %u %u ]\n", val1, val2); 
+#else
+	call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, val1, val2);
+#endif
+#endif
 } 
 
 
@@ -111,7 +117,6 @@ event void Timer.fired() {
 #endif
 #endif
 	call Param.set(VAL1, &val1, sizeof(val1));
-	printfRecord();
 }
 
 event void SubAMSend.sendDone(message_t *msg, error_t error) {
@@ -153,8 +158,6 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("updated v1 with %u\n", temp);
-#else
-		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, val1, val2);
 #endif
 #endif
 		printfRecord();
@@ -174,8 +177,6 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 		printf("updated v2 with %u\n", temp);
-#else
-		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, val1, val2);
 #endif
 #endif
 		printfRecord();
