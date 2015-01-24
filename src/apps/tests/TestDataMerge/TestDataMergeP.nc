@@ -136,24 +136,33 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 
 	if (var_id == VAL1) {
 		call Param.get(VAL1, &temp, sizeof(temp));
-		if (temp == val1) {
-			//printf("the same val1\n");
-			return;
-		}
-
-
-		if ((temp > val1) && 
-			(val2 != val1)) {
+		if (temp > val1) {
+			
+			/* move val1 to val2 */
+			if (val1 != val2) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-				printf("merge\n");
+				printf("merge 1\n");
 #endif
 #endif
 
 				val2 = val1;
 				call Param.set(VAL2, &val2, sizeof(val2));
+			}
+			val1 = temp;
+		} else {
+			/* move temp to val2 */
+			if (temp != val2) {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+				printf("merge 2\n");
+#endif
+#endif
+
+				val2 = temp;
+				call Param.set(VAL2, &val2, sizeof(val2));
+			}
 		}
-		val1 = temp;
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
