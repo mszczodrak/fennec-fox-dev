@@ -102,7 +102,14 @@ command error_t SplitControl.stop() {
 
 event void Timer.fired() {
 	val1 = call Random.rand16();
-	printf("Start with %u\n", val1); 
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+	printf("Start with %u\n", val1);
+#else
+	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, process, val1, val1);
+#endif
+#endif
 	call Param.set(VAL1, &val1, sizeof(val1));
 	printfRecord();
 }
@@ -125,18 +132,31 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 	if (var_id == VAL1) {
 		call Param.get(VAL1, &temp, sizeof(temp));
 		if (temp == val1) {
-			printf("the same val1\n");
+			//printf("the same val1\n");
 			return;
 		}
 
-		printf("updated val1 with %u\n", temp);
+
 		if ((temp > val1) && 
 			(val2 != val1)) {
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 				printf("merge\n");
+#endif
+#endif
+
 				val2 = val1;
 				call Param.set(VAL2, &val2, sizeof(val2));
 		}
 		val1 = temp;
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("updated v1 with %u\n", temp);
+#else
+		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, val1, val2);
+#endif
+#endif
 		printfRecord();
 		return;
 	}
@@ -145,12 +165,19 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 		call Param.get(VAL2, &temp, sizeof(temp));
 
 		if (temp == val2) {
-			printf("the same val2\n");
+			//printf("the same val2\n");
 			return;
 		}
 
-		printf("updated val1 with %u\n", temp);
 		val2 = temp;
+
+#ifdef __DBGS__APPLICATION__
+#if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
+		printf("updated v2 with %u\n", temp);
+#else
+		call SerialDbgs.dbgs(DBGS_NEW_REMOTE_PAYLOAD, process, val1, val2);
+#endif
+#endif
 		printfRecord();
 		return;
 	}
