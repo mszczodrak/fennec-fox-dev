@@ -96,26 +96,33 @@ command error_t SplitControl.stop() {
 }
 
 void updateData( uint16_t v ) {
+	bool up = FALSE;
 	if (val == 0) {
 		val = v;
 	} else {
+		/* move older */
 		if ( v > val ) {
 			val_old = val;
 			val = v;
+			up = TRUE;
 		} else {
 			val_old = v;
 		}
 	}
 
+	call Param.set(VAL_OLD, &val_old, sizeof(val_old));
+	if (up) {
+		call Param.set(VAL, &val, sizeof(val));
+	}
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-	printf("[%u] TestDataMerge  SET  var ID %u (var %u) to %u\n", process, VAL, v, d);
+	printf("[%u] TestDataMerge  SET got %u -> %u %u\n", process, v, val, val_old);
 #else
-	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, VAL, v, d);
+	call SerialDbgs.dbgs(DBGS_NEW_LOCAL_PAYLOAD, v, val, val_old);
 #endif
 #endif
-	call Param.set(VAL, &d, sizeof(d));
+
 }
 
 event void Timer.fired() {
@@ -135,9 +142,9 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 }
 
 event void Param.updated(uint8_t var_id, bool conflict) {
-	uint16_t d;
-	call Param.get(var_id, &d, sizeof(d));
-	updateDate( d );
+	uint16_t temp;
+	call Param.get(var_id, &temp, sizeof(temp));
+	updateData( temp );
 }
 
 }
