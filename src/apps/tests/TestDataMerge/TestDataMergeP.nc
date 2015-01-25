@@ -65,8 +65,8 @@ implementation {
 uint32_t update_delay;
 uint16_t mote1;
 uint16_t mote2;
-uint16_t val1;
-uint16_t val2;
+uint16_t val1 = 0;
+uint16_t val2 = 0;
 
 void printfRecord() {
 #ifdef __DBGS__APPLICATION__
@@ -133,13 +133,13 @@ event message_t* SubSnoop.receive(message_t *msg, void* payload, uint8_t len) {
 
 event void Param.updated(uint8_t var_id, bool conflict) {
 	uint16_t temp;
+	call Param.get(var_id, &temp, sizeof(temp));
 
 	if (var_id == VAL1) {
-		call Param.get(VAL1, &temp, sizeof(temp));
 		if (temp > val1) {
 			
 			/* move val1 to val2 */
-			if (val1 != val2) {
+			if (val1 > val2) {
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
 				printf("merge 1\n");
@@ -150,7 +150,8 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 				call Param.set(VAL2, &val2, sizeof(val2));
 			}
 			val1 = temp;
-		} else {
+		}
+		if (temp < val1) {
 			/* move temp to val2 */
 			if (temp != val2) {
 #ifdef __DBGS__APPLICATION__
@@ -174,20 +175,15 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 	}
 
 	if (var_id == VAL2) {
-		call Param.get(VAL2, &temp, sizeof(temp));
-
-		if (temp == val2) {
-			//printf("the same val2\n");
-			return;
-		}
-
-		val2 = temp;
+		if (temp > val2) {
+			val2 = temp;
 
 #ifdef __DBGS__APPLICATION__
 #if defined(FENNEC_TOS_PRINTF) || defined(FENNEC_COOJA_PRINTF)
-		printf("updated v2 with %u\n", temp);
+			printf("updated v2 with %u\n", temp);
 #endif
 #endif
+		}
 		printfRecord();
 		return;
 	}
