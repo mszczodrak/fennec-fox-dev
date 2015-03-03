@@ -138,10 +138,10 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 	if (var_id == VAL1) {
 		if (temp != val1) {
 			/* move val1 to val2 */
-			if ((val1 != 0) && (val1 != val2)) {
-				val2 = val1;
-				call Param.set(VAL2, &val2, sizeof(val2));
-			}
+//			if ((val1 != 0) && (val1 != val2)) {
+//				val2 = val1;
+//				call Param.set(VAL2, &val2, sizeof(val2));
+//			}
 
 			val1 = temp;
 			printfRecord();
@@ -149,13 +149,14 @@ event void Param.updated(uint8_t var_id, bool conflict) {
 		}
 	}
 
-	if (var_id == VAL2) {
-		if (temp != val2) {
-			val2 = temp;
-			printfRecord();
-			return;
-		}
-	}
+//	if (var_id == VAL2) {
+//		if (temp != val2) {
+//			val2 = temp;
+//			printfRecord();
+//			return;
+//		}
+//	}
+
 }
 
 }
