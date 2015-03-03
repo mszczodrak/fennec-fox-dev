@@ -161,6 +161,14 @@ use application TestDataMerge $(FENNEC_FOX_LIB)/apps/tests/TestDataMerge (
                 uint16_t mote2 = 0
 )
 
+use application TestDataRandom $(FENNEC_FOX_LIB)/apps/tests/TestDataRandom (
+                uint32_t update_delay = 25000,
+                uint16_t val1 = 0,
+                uint16_t val2 = 0,
+                uint16_t mote1 = 0,
+                uint16_t mote2 = 0
+)
+
 use application TestDataSyncSource $(FENNEC_FOX_LIB)/apps/tests/TestDataSyncSource (
 		uint16_t src = 0xFFFF,
 		uint32_t update_delay = 25000,
